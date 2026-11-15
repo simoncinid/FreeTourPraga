@@ -56,3 +56,7 @@ Su richiesta del committente, rimossi la voce pubblica “Accedi o registrati”
 ## Accesso e verifica del gestionale
 
 Accesso staff: https://web-production-f3beeaff.up.railway.app/accesso; dashboard: https://web-production-f3beeaff.up.railway.app/admin. Il footer include il collegamento “Area staff”. Verificati sul dominio pubblico login, redirect delle richieste non autenticate, dieci sezioni (tour, prenotazioni, inserimento, calendario, CMS, pagine, impostazioni, richieste, email, audit), corrispondenza del catalogo pubblico con i tour pubblicati nell’admin e logout con revoca della sessione. Database PostgreSQL condiviso confermato; Stripe e SMTP restano da configurare dal committente.
+
+## Vista per la revisione del cliente
+
+Su richiesta del committente rimossi gli avvisi pubblici di anteprima e il messaggio di pagamento online in attivazione. Il checkout mostra solo i metodi disponibili. Restano attivi noindex, esclusione dai crawler e blocco dei pagamenti Stripe live, mentre il cliente può inserire i dati nel gestionale. Verificati online desktop, mobile, checkout e accesso staff dopo il rilascio `29cd15c`; CI superata. I dati persistenti non sono stati modificati.
