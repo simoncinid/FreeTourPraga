@@ -1,3 +1,5 @@
+import { publicPage } from "@/lib/platform/public";
+import { ContentBlock } from "@/components/ContentBlock";
 import Link from "next/link";
 import { Mail, MessageCircle } from "lucide-react";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -6,6 +8,8 @@ import { contentWhatsapp } from "@/lib/platform/content";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  const page = await publicPage("aiuto");
+  if (page) return <ContentBlock page={page} />;
   const c = await publicSiteContent();
   const g = c.globals;
   return (
@@ -50,9 +54,14 @@ export default async function Page() {
   );
 }
 
-export const metadata = {
+const baseMetadata = {
   title: "Aiuto",
   description:
     "Assistenza FreeTourPraga su WhatsApp ed email, tutti i giorni dalle 9:00 alle 19:00.",
   alternates: { canonical: "/aiuto" },
 };
+
+export async function generateMetadata() {
+  const page = await publicPage("aiuto");
+  return { ...baseMetadata, ...(page?.seoTitle ? { title: page.seoTitle } : {}), ...(page?.seoDescription ? { description: page.seoDescription } : {}) };
+}

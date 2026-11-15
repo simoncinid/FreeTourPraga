@@ -16,7 +16,7 @@ Decisioni operative: orari in Europe/Prague, importi in centesimi EUR, fasce d�
 
 ## 2. Frontend, SEO/GEO e integrazioni
 
-Pagine: home, catalogo, schede tour, tour privati, Partner Europa con modulo, contatti con modulo, FAQ, privacy e termini. Rendering server, metadata/canonical, Open Graph, lingua italiana, dati strutturati TravelAgency/WebSite/TouristTrip/FAQ/Breadcrumb, sitemap con FAQ e sole pagine HTML pubbliche. `llms.txt`, `llms-full.txt` e `ai-context.json` espongono il catalogo pubblicato e i contenuti aggiornati dal CMS. Nessun posizionamento nei motori è garantito.
+Pagine: home, catalogo, schede tour, tour privati, Partner Europa con modulo, contatti con modulo, Chi siamo, Informazioni utili, Blog, Aiuto, FAQ, privacy e termini. Le nuove pagine supportano anche testo e SEO personalizzati da `/admin/contenuti`. Rendering server, metadata/canonical, Open Graph, lingua italiana, dati strutturati TravelAgency/WebSite/TouristTrip/FAQ/Breadcrumb, sitemap con FAQ e sole pagine HTML pubbliche. `llms.txt`, `llms-full.txt` e `ai-context.json` espongono il catalogo pubblicato e i contenuti aggiornati dal CMS. Nessun posizionamento nei motori è garantito.
 
 Maps usa il punto d’incontro di ciascun tour. Social e profilo TripAdvisor sono configurabili; il widget richiede il codice ufficiale in `TRIPADVISOR_WIDGET_HTML` e `NEXT_PUBLIC_TRIPADVISOR_WIDGET_SCRIPT_SRC`. Nessun widget esterno viene simulato.
 

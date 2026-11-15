@@ -1,3 +1,5 @@
+import { publicPage } from "@/lib/platform/public";
+import { ContentBlock } from "@/components/ContentBlock";
 import Link from "next/link";
 import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -5,6 +7,8 @@ import { publicSiteContent } from "@/lib/platform/public";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  const page = await publicPage("informazioni-utili");
+  if (page) return <ContentBlock page={page} />;
   const c = await publicSiteContent();
   return (
     <section className="section">
@@ -21,9 +25,14 @@ export default async function Page() {
   );
 }
 
-export const metadata = {
+const baseMetadata = {
   title: "Informazioni utili",
   description:
     "Cosa sapere prima di prenotare un tour in italiano a Praga: gruppi, ritrovo, famiglie e assistenza.",
   alternates: { canonical: "/informazioni-utili" },
 };
+
+export async function generateMetadata() {
+  const page = await publicPage("informazioni-utili");
+  return { ...baseMetadata, ...(page?.seoTitle ? { title: page.seoTitle } : {}), ...(page?.seoDescription ? { description: page.seoDescription } : {}) };
+}

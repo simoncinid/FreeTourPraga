@@ -1,3 +1,5 @@
+import { publicPage } from "@/lib/platform/public";
+import { ContentBlock } from "@/components/ContentBlock";
 import Link from "next/link";
 import { ArrowRight, Headset, MapPin, ShieldCheck, Users } from "lucide-react";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -7,6 +9,8 @@ export const dynamic = "force-dynamic";
 const icons = [ShieldCheck, Users, MapPin, Headset];
 
 export default async function Page() {
+  const page = await publicPage("chi-siamo");
+  if (page) return <ContentBlock page={page} />;
   const { home } = await publicSiteContent();
   return (
     <section className="section">
@@ -41,9 +45,14 @@ export default async function Page() {
   );
 }
 
-export const metadata = {
+const baseMetadata = {
   title: "Chi siamo",
   description:
     "Guide certificate residenti a Praga, gruppi a numero chiuso e assistenza in italiano tutti i giorni.",
   alternates: { canonical: "/chi-siamo" },
 };
+
+export async function generateMetadata() {
+  const page = await publicPage("chi-siamo");
+  return { ...baseMetadata, ...(page?.seoTitle ? { title: page.seoTitle } : {}), ...(page?.seoDescription ? { description: page.seoDescription } : {}) };
+}

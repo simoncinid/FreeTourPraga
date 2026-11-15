@@ -1,3 +1,5 @@
+import { publicPage } from "@/lib/platform/public";
+import { ContentBlock } from "@/components/ContentBlock";
 import Image from "next/image";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -6,6 +8,8 @@ import { guideAnchor } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  const page = await publicPage("blog");
+  if (page) return <ContentBlock page={page} />;
   const c = await publicSiteContent();
   return (
     <section className="section">
@@ -46,9 +50,14 @@ export default async function Page() {
   );
 }
 
-export const metadata = {
+const baseMetadata = {
   title: "Guide e consigli di viaggio",
   description:
     "Consigli locali e informazioni pratiche prima di un tour in italiano a Praga.",
   alternates: { canonical: "/blog" },
 };
+
+export async function generateMetadata() {
+  const page = await publicPage("blog");
+  return { ...baseMetadata, ...(page?.seoTitle ? { title: page.seoTitle } : {}), ...(page?.seoDescription ? { description: page.seoDescription } : {}) };
+}

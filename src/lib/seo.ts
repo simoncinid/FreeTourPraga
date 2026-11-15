@@ -59,7 +59,7 @@ export function tourJsonLd(tour: Tour) {
     "@id": `${absoluteUrl(`/tour/${tour.slug}`)}#tour`,
     name: tour.title,
     description: tour.seoDescription || tour.shortDescription,
-    image: tour.imageUrl,
+    image: absoluteUrl(tour.imageUrl),
     url: absoluteUrl(`/tour/${tour.slug}`),
     inLanguage: "it-IT",
     touristType: "Italian travelers in Prague",
@@ -70,7 +70,7 @@ export function tourJsonLd(tour: Tour) {
       "@type": "Offer",
       price: (tour.basePriceCents / 100).toFixed(2),
       priceCurrency: "EUR",
-      availability: "https://schema.org/InStock",
+      availability: tour.slots.some(slot => slot.capacity > slot.reserved) ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
       url: absoluteUrl(`/tour/${tour.slug}`),
     },
     itinerary: {

@@ -1788,6 +1788,10 @@ function ContentEditor({
       <nav className="flex flex-wrap gap-2">
         {[
           "homepage",
+          "chi-siamo",
+          "informazioni-utili",
+          "blog",
+          "aiuto",
           "catalogo",
           "tour-privati",
           "partner-europa",

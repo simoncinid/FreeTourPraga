@@ -28,9 +28,6 @@ const baseMetadata: Metadata = {
   publisher: site.name,
   alternates: {
     canonical: "/",
-    languages: {
-      "it-IT": "/",
-    },
   },
   robots: {
     index: true,
