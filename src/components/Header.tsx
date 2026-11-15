@@ -10,9 +10,11 @@ const primaryHrefs = [
   "/informazioni-utili",
   "/contatti",
 ];
+const menuTourLimit = 5;
 
 export async function Header() {
   const [c, tours] = await Promise.all([publicSiteContent(), catalog()]);
+  const menuTours = tours.slice(0, menuTourLimit);
   const links = c.globals.navigation;
   const account = links.find(
     (link) => link.href === "/account" || link.href === "/accesso",
@@ -45,7 +47,7 @@ export async function Header() {
                   <ChevronDown size={14} aria-hidden />
                 </summary>
                 <div className="absolute left-0 top-9 z-40 grid w-72 gap-1 rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
-                  {tours.map((tour) => (
+                  {menuTours.map((tour) => (
                     <Link
                       key={tour.slug}
                       href={`/tour/${tour.slug}`}
@@ -127,7 +129,7 @@ export async function Header() {
                     {link.label}
                   </Link>
                   {link.href === "/tour" &&
-                    tours.map((tour) => (
+                    menuTours.map((tour) => (
                       <Link
                         key={tour.slug}
                         href={`/tour/${tour.slug}`}
