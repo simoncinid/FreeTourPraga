@@ -63,6 +63,7 @@ export const siteContentSchema = z.object({
       .array(
         z.object({
           title: short,
+          subtitle: z.string().trim().max(250).default(""),
           items: z
             .array(z.object({ title: short, href: localPath }))
             .min(1)

@@ -18,25 +18,26 @@ import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp, type SiteContent } from "@/lib/platform/content";
 import { guideAnchor } from "@/lib/format";
+import type { Tour } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 const featureIcons = [Languages, BadgeCheck, CalendarCheck, MessageCircle];
 const pillarIcons = [ShieldCheck, Users, MapPin, Headset];
 
-function liveGroups(
-  groups: SiteContent["home"]["groups"],
-  tours: { slug: string }[],
-) {
-  const slugs = new Set(tours.map((tour) => tour.slug));
+function liveGroups(groups: SiteContent["home"]["groups"], tours: Tour[]) {
+  const bySlug = new Map(tours.map((tour) => [tour.slug, tour]));
   return groups.map((group) => ({
-    ...group,
+    title: group.title,
+    subtitle: group.subtitle,
     items: group.items.map((item) => {
       const slug = item.href.startsWith("/tour/")
         ? item.href.slice("/tour/".length)
         : "";
-      if (slug && !slugs.has(slug)) return { ...item, href: "/tour" };
-      return item;
+      const tour = slug ? bySlug.get(slug) : undefined;
+      return tour
+        ? { title: item.title, tour }
+        : { title: item.title, href: "/contatti" };
     }),
   }));
 }

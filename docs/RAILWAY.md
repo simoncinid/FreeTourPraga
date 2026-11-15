@@ -21,7 +21,7 @@ Il repository sorgente è `simoncinid/FreeTourPraga`, ramo `main`. La CI GitHub 
 
 Indirizzo: https://web-production-f3beeaff.up.railway.app
 
-HTTPS è fornito dal dominio Railway. `NEXT_PUBLIC_SITE_URL` contiene questo stesso URL; worker usa il medesimo dominio in `PLATFORM_URL`. `SITE_PREVIEW=true` contrassegna i dati dimostrativi e disabilita l’indicizzazione. Per passare al dominio personalizzato aggiornare DNS/dominio su Railway, URL pubblico, URL worker e gli endpoint configurati su Stripe; quindi ridistribuire web. Le variabili `NEXT_PUBLIC_*` possono essere incorporate durante la build.
+HTTPS è fornito dal dominio Railway. Il dominio inoltra alla porta **8080**, quella assegnata da Railway al processo web (`PORT`). `NEXT_PUBLIC_SITE_URL` contiene questo stesso URL; worker usa il medesimo dominio in `PLATFORM_URL`. `SITE_PREVIEW=true` contrassegna i dati dimostrativi e disabilita l’indicizzazione. Per passare al dominio personalizzato aggiornare DNS/dominio su Railway, URL pubblico, URL worker e gli endpoint configurati su Stripe; quindi ridistribuire web. Le variabili `NEXT_PUBLIC_*` possono essere incorporate durante la build.
 
 ## Variabili web
 

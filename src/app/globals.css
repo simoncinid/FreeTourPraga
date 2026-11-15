@@ -256,6 +256,19 @@ details:not([open]) > :not(summary) {
   display: none !important;
 }
 
+.experience-panel {
+  animation: experience-in 0.35s ease;
+}
+
+@keyframes experience-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-panel { animation: none; }
+}
+
 .site-brand-accent {
   color: rgb(var(--primary));
 }

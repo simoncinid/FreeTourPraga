@@ -44,7 +44,11 @@ export type SiteContent = {
     faqTitle: string;
     stats: { value: string; label: string }[];
     pillars: { title: string; text: string }[];
-    groups: { title: string; items: { title: string; href: string }[] }[];
+    groups: {
+      title: string;
+      subtitle: string;
+      items: { title: string; href: string }[];
+    }[];
   };
   gallery: { title: string; caption: string; imageUrl: string }[];
   faqs: { q: string; a: string }[];
@@ -131,43 +135,48 @@ export function defaultSiteContent(): SiteContent {
       groups: [
         {
           title: "Gli essenziali",
+          subtitle: "I tour più importanti per la scoperta di Praga.",
           items: [
             {
               title: "Free tour Città Vecchia e quartiere ebraico",
               href: "/tour/citta-vecchia-ponte-carlo",
             },
             {
-              title: "Castello, Malá Strana e Città Nuova",
+              title: "Castello e Malá Strana",
               href: "/tour/castello-praga-mala-strana",
             },
+            { title: "Città Nuova", href: "/contatti" },
           ],
         },
         {
           title: "Tuffo nella storia",
+          subtitle: "Percorsi per entrare nella storia della città.",
           items: [
-            { title: "Tour del comunismo", href: "/tour" },
-            { title: "Praga esoterica", href: "/tour" },
+            { title: "Tour del comunismo", href: "/contatti" },
+            { title: "Praga esoterica", href: "/contatti" },
           ],
         },
         {
           title: "Gli angoli nascosti",
+          subtitle: "Luoghi meno battuti, con una guida in italiano.",
           items: [
             {
               title: "Tour di Petřín e Monastero di Strahov",
-              href: "/tour",
+              href: "/contatti",
             },
-            { title: "Tour di Vyšehrad", href: "/tour" },
+            { title: "Tour di Vyšehrad", href: "/contatti" },
           ],
         },
         {
           title: "Escursioni Fuori Porta",
+          subtitle: "Giornate organizzate fuori dal centro di Praga.",
           items: [
             {
               title: "Escursione al campo di concentramento di Terezin",
-              href: "/tour",
+              href: "/contatti",
             },
-            { title: "Tour al birrificio di Plzen", href: "/tour" },
-            { title: "Karlovy Vary", href: "/tour" },
+            { title: "Tour al birrificio di Plzen", href: "/contatti" },
+            { title: "Karlovy Vary", href: "/contatti" },
           ],
         },
       ],

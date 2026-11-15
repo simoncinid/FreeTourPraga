@@ -14,7 +14,20 @@
         "healthcheckPath": "/api/platform/health",
         "healthcheckTimeout": 120,
         "restartPolicyType": "ON_FAILURE",
-        "restartPolicyMaxRetries": 10
+        "restartPolicyMaxRetries": 10,
+        "watchPatterns": [
+          "/src/**",
+          "/public/**",
+          "/prisma/**",
+          "/scripts/worker.mjs",
+          "/package.json",
+          "/package-lock.json",
+          "/Dockerfile",
+          "/next.config.mjs",
+          "/tailwind.config.ts",
+          "/postcss.config.mjs",
+          "/tsconfig.json"
+        ]
       }
     },
     "worker": {
@@ -25,7 +38,20 @@
         "preDeployCommand": [],
         "healthcheckPath": null,
         "restartPolicyType": "ON_FAILURE",
-        "restartPolicyMaxRetries": 10
+        "restartPolicyMaxRetries": 10,
+        "watchPatterns": [
+          "/src/**",
+          "/public/**",
+          "/prisma/**",
+          "/scripts/worker.mjs",
+          "/package.json",
+          "/package-lock.json",
+          "/Dockerfile",
+          "/next.config.mjs",
+          "/tailwind.config.ts",
+          "/postcss.config.mjs",
+          "/tsconfig.json"
+        ]
       }
     },
     "backup": {
@@ -36,7 +62,11 @@
         "preDeployCommand": [],
         "healthcheckPath": null,
         "cronSchedule": "0 2 * * *",
-        "restartPolicyType": "NEVER"
+        "restartPolicyType": "NEVER",
+        "watchPatterns": [
+          "/scripts/backup.py",
+          "/deploy/Dockerfile.backup"
+        ]
       }
     }
   }
