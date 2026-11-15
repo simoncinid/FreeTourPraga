@@ -213,7 +213,7 @@ export function SiteContentEditor({
           ["home", "Sezioni home"],
           ["gallery", "Galleria"],
           ["faqs", "FAQ"],
-          ["answers", "Risposte rapide"],
+          ["answers", "Prima di prenotare"],
           ["navigation", "Menu"],
           ["socialLinks", "Social"],
           ["stats", "Dati in evidenza"],
@@ -245,7 +245,7 @@ export function SiteContentEditor({
                 key={key}
                 label={labels[key] || key}
                 value={value as string}
-                multi={/Body|Text|Note|description/i.test(key)}
+                multi={/Body|Text|Note|description|trustTitle/i.test(key)}
                 onChange={(v) =>
                   setC((p) => ({
                     ...p,
@@ -295,7 +295,7 @@ export function SiteContentEditor({
             ["Voce menu", "Percorso sul sito"],
           )}
         {tab === "stats" &&
-          rows("stats", ["value", "label"], ["Valore", "Descrizione"])}
+          rows("stats", ["value", "label"], ["Titolo", "Testo"])}
         {tab === "pillars" &&
           rows("pillars", ["title", "text"], ["Titolo", "Testo"])}
       </div>

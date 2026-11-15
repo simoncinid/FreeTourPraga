@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useBrowserStorage, useHydrated } from "@/lib/browser-storage";
+import { useRouter } from "next/navigation";
 import {
-  getCartItems,
   removeFromCart,
   clearCart,
   cartItemTotal,
@@ -10,14 +11,23 @@ import {
 } from "@/lib/cart";
 import { formatMoney } from "@/lib/format";
 export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [ready, setReady] = useState(false);
+  const router = useRouter();
+  const storedCart = useBrowserStorage("ftp-cart");
+  const items = useMemo<CartItem[]>(() => {
+    try {
+      const parsed = JSON.parse(storedCart || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  }, [storedCart]);
+  const ready = useHydrated();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [affiliateCode, setAffiliate] = useState("");
+  const affiliateCode = useBrowserStorage("ftp-affiliate") || "";
   const [method, setMethod] = useState<"cash" | "stripe">("cash");
-  const [quote, setQuote] = useState<
-    | { subtotalCents: number; discountCents: number; totalCents: number }[]
+  const [stripeAvailable, setStripeAvailable] = useState(false);
+  const [whatsappAvailable, setWhatsappAvailable] = useState(false);
+  const [quoteResult, setQuote] = useState<
+    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number }[] }
     | null
   >(null);
   const [rules, setRules] = useState({
@@ -27,16 +37,12 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   });
   const key = useRef("");
   useEffect(() => {
-    setItems(getCartItems());
-    setAffiliate(localStorage.getItem("ftp-affiliate") || "");
-    key.current =
-      sessionStorage.getItem("ftp-checkout-key") || crypto.randomUUID();
-    sessionStorage.setItem("ftp-checkout-key", key.current);
-    setReady(true);
     fetch("/api/platform/catalog")
       .then((r) => r.json())
       .then((d) => {
         if (d.settings) setRules(d.settings);
+        setStripeAvailable(Boolean(d.payments?.stripe));
+        setWhatsappAvailable(Boolean(d.features?.whatsapp));
       })
       .catch(() => {});
   }, []);
@@ -47,33 +53,37 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
     children: i.children,
     infants: i.infants || 0,
   }));
+  const quoteKey = JSON.stringify({ items: payloadItems, affiliateCode });
+  const quote = quoteResult?.key === quoteKey ? quoteResult.items : null;
   useEffect(() => {
-    if (!items.length) return;
+    if (!JSON.parse(quoteKey).items.length) return;
     const abort = new AbortController();
-    setQuote(null);
     fetch("/api/platform/quote", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: payloadItems, affiliateCode }),
+      body: quoteKey,
       signal: abort.signal,
     })
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw Error(d.error);
-        setQuote(d.items);
+        if (abort.signal.aborted) return;
+        setQuote({ key: quoteKey, items: d.items });
         setError("");
       })
       .catch((e) => {
         if (e.name !== "AbortError") setError(e.message);
       });
     return () => abort.abort();
-  }, [items, affiliateCode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [quoteKey]);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     setError("");
     const f = new FormData(e.currentTarget);
     try {
+      key.current = sessionStorage.getItem("ftp-checkout-key") || crypto.randomUUID();
+      sessionStorage.setItem("ftp-checkout-key", key.current);
       const input = {
         items: payloadItems,
         affiliateCode,
@@ -114,7 +124,8 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       clearCart();
       sessionStorage.removeItem("ftp-checkout-key");
       sessionStorage.removeItem("ftp-checkout-fingerprint");
-      window.location.assign(d.paymentUrl || d.confirmationUrl);
+      if (d.paymentUrl) window.location.assign(d.paymentUrl);
+      else router.push(d.confirmationUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Errore di connessione");
       setBusy(false);
@@ -170,7 +181,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 className="text-sm underline"
                 onClick={() => {
                   removeFromCart(i.id);
-                  setItems(getCartItems());
                 }}
               >
                 Rimuovi
@@ -242,9 +252,10 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                     type="radio"
                     name="payment"
                     checked={method === "stripe"}
+                    disabled={!stripeAvailable}
                     onChange={() => setMethod("stripe")}
                   />{" "}
-                  Carta con link sicuro Stripe
+                  {stripeAvailable ? "Carta con link sicuro Stripe" : "Pagamento online in attivazione"}
                 </label>
               </fieldset>
               <p className="text-sm">
@@ -252,11 +263,11 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 prima. Per i pagamenti online, i posti restano riservati per 30
                 minuti.
               </p>
-              <label className="flex items-start gap-3 text-sm">
+              {whatsappAvailable && <label className="flex items-start gap-3 text-sm">
                 <input name="whatsapp" type="checkbox" />
                 Desidero ricevere il promemoria del tour su WhatsApp al numero
                 indicato (facoltativo).
-              </label>
+              </label>}
               <label className="flex items-start gap-3 text-sm">
                 <input name="terms" type="checkbox" required />
                 <span>
@@ -285,14 +296,20 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             {rules.multiTourPercent}%.
           </p>
           <label className="text-sm">
-            Codice partner (facoltativo)
+            Codice partner
             <input
               className="text-input"
               value={affiliateCode}
               maxLength={40}
-              onChange={(e) => setAffiliate(e.target.value.toUpperCase())}
+              readOnly
+              placeholder="Assegnato automaticamente dal link partner"
             />
           </label>
+          {affiliateCode ? (
+            <p className="text-xs text-muted">
+              Partner associato alla prenotazione.
+            </p>
+          ) : null}
           {discount > 0 && (
             <p className="flex justify-between text-success">
               <span>Sconto multi-tour</span>

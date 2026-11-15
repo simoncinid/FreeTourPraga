@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import sharp from "sharp";
 import { HttpError, requireStaff, checkOrigin } from "./security";
-import { localMode } from "./store";
+import { database, localMode } from "./store";
 export async function uploadMedia(request: Request) {
   await requireStaff(["admin"]);
   checkOrigin(request);
@@ -41,6 +41,10 @@ export async function uploadMedia(request: Request) {
   if (localMode()) {
     await mkdir(".data/media", { recursive: true });
     await writeFile(`.data/media/${key}`, image, { mode: 0o600 });
+    return { url: `/api/media/${key}` };
+  }
+  if (!process.env.MEDIA_BUCKET) {
+    await database().mediaAsset.create({ data: { id: key, data: new Uint8Array(image) } });
     return { url: `/api/media/${key}` };
   }
   if (

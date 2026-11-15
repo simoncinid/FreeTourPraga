@@ -15,7 +15,7 @@ export const site = {
   longitude: 14.4208,
   tagline: "Goditi Praga con gli occhi, non con lo schermo del telefono. Al resto pensiamo noi.",
   description:
-    "Tour guidati in italiano a Praga, prenotazione semplice e assistenza tutti i giorni dalle 9:00 alle 19:00.",
+    "Scopri l'anima autentica di Praga con guide locali in italiano. Prenotazione semplice, informazioni chiare via email e assistenza su WhatsApp.",
   keywords: [
     "tour guidati Praga italiano",
     "guida italiana Praga",

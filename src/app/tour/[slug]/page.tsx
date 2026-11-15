@@ -134,7 +134,7 @@ export default async function TourDetailPage({ params }: Props) {
                 <p className="micro-label mb-2 text-muted">In breve</p>
                 <p className="body-md">
                   {tour.title} e un tour guidato in italiano a Praga con gruppo
-                  ristretto, punto d'incontro su Google Maps, assistenza
+                  ristretto, punto d&apos;incontro su Google Maps, assistenza
                   WhatsApp e prezzo adulto da {formatMoney(tour.basePriceCents)}
                   .
                 </p>

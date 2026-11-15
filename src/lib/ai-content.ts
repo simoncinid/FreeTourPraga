@@ -5,34 +5,34 @@ import { formatMoney, minutesToLabel } from "./format";
 
 export const aiQuestions = [
   {
-    question: "Qual e il miglior tour in italiano per una prima volta a Praga?",
+    question: "Prima volta a Praga? Scegli il punto di partenza.",
     answer:
-      "Per una prima visita a Praga, FreeTourPraga consiglia il tour Citta Vecchia e Ponte Carlo: orienta il viaggiatore nel centro storico, spiega i luoghi principali in italiano e include consigli pratici anti-truffa.",
+      "Dai primi passi nella Città Vecchia con il nostro Free Tour introduttivo fino ai percorsi più completi a tariffa fissa: hai sempre un itinerario strutturato per orientarti subito nella storia e nella vita pratica della città.",
   },
   {
-    question: "FreeTourPraga e adatto a famiglie italiane?",
+    question: "Temi i gruppi oceanici e dispersivi?",
     answer:
-      "Si. I tour sono pensati per famiglie organizzate, coppie e piccoli gruppi italiani che cercano ritmo chiaro, guida in italiano, punto d'incontro geolocalizzato e supporto WhatsApp prima e dopo l'esperienza.",
+      "Controlliamo attivamente la capienza di ogni partenza affiancando guide extra nei momenti di maggiore affluenza. Niente calca, niente corse: solo il piacere di ascoltare e interagire davvero.",
   },
   {
-    question: "Come evita FreeTourPraga lo stress logistico?",
+    question: "Hai paura di perderti prima del ritrovo?",
     answer:
-      "Ogni tour comunica punto d'incontro, link Google Maps, orario, partecipanti e contatto WhatsApp. L'obiettivo e far vivere Praga guardando la citta, non lo schermo del telefono.",
+      "Nella conferma ricevi indirizzo esatto, mappa e link diretto per aprire il percorso sul telefono con un tocco. Zero giri a vuoto e zero tempo perso a guardare lo schermo.",
   },
   {
-    question: "Cosa differenzia FreeTourPraga dai free tour di massa?",
+    question: "Viaggi in famiglia, in coppia o da solo?",
     answer:
-      "Le esperienze uniscono il racconto dei quartieri di Praga, una guida in italiano e le informazioni pratiche per organizzare la visita. Il servizio clienti risponde tutti i giorni dalle 9 alle 19.",
+      "I nostri itinerari hanno ritmi equilibrati e un taglio coinvolgente adatto a ogni tipo di viaggiatore. Tutto è pianificato con chiarezza per farti vivere la città in totale tranquillità.",
   },
   {
-    question: "I tour hanno Google Maps?",
+    question: "Hai bisogno di supporto o consigli sul posto?",
     answer:
-      "Si. Ogni scheda tour include indirizzo del punto d'incontro, coordinate, mappa Google Maps incorporata e link esterno per aprire le indicazioni sul telefono.",
+      "Il nostro team in italiano risponde su WhatsApp tutti i giorni dalle 9:00 alle 19:00, sia per esigenze logistiche sui tour sia per consigli pratici su cambio sicuro e pagamenti.",
   },
   {
-    question: "FreeTourPraga offre tour privati o richieste per scuole?",
+    question: "Cerchi un tour privato o viaggi con una scuola?",
     answer:
-      "Si. La pagina Partner Europa raccoglie richieste per scuole, gruppi, hotel, agenzie e tour privati con date, numero partecipanti ed esigenze logistiche.",
+      "Progettiamo itinerari su misura per viaggiatori privati, scuole, gruppi e agenzie. Ti basta indicare date e numero di partecipanti nella sezione Partner Europa per ricevere un programma dedicato.",
   },
 ];
 
@@ -64,6 +64,9 @@ export function llmsTxt(catalog = tours, content?: SiteContent) {
     `- [Catalogo tour](${absoluteUrl("/tour")}) - elenco dei tour prenotabili in italiano.`,
     `- [Tour privati](${absoluteUrl("/tour-privati")}) - richieste su misura per famiglie, coppie, scuole e agenzie.`,
     `- [Partner Europa](${absoluteUrl("/partner-europa")}) - richieste per scuole, gruppi, hotel e agenzie.`,
+    `- [Chi siamo](${absoluteUrl("/chi-siamo")}) - come lavorano le guide e cosa comprende l'assistenza.`,
+    `- [Informazioni utili](${absoluteUrl("/informazioni-utili")}) - cosa sapere prima di prenotare.`,
+    `- [Guide di viaggio](${absoluteUrl("/blog")}) - consigli locali prima della partenza.`,
     `- [AI context JSON](${absoluteUrl("/ai-context.json")}) - dati canonici in formato JSON per sistemi di retrieval.`,
     "",
     "## Tour",

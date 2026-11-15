@@ -1,13 +1,46 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MessageCircle, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarCheck,
+  Headset,
+  Languages,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { TourCard } from "@/components/TourCard";
-import { JsonLd } from "@/components/JsonLd";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
+import { ExperienceRotator } from "@/components/ExperienceRotator";
+import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
-import { contentWhatsapp } from "@/lib/platform/content";
-import { faqJsonLd } from "@/lib/seo";
+import { contentWhatsapp, type SiteContent } from "@/lib/platform/content";
+import { guideAnchor } from "@/lib/format";
+
 export const dynamic = "force-dynamic";
+
+const featureIcons = [Languages, BadgeCheck, CalendarCheck, MessageCircle];
+const pillarIcons = [ShieldCheck, Users, MapPin, Headset];
+
+function liveGroups(
+  groups: SiteContent["home"]["groups"],
+  tours: { slug: string }[],
+) {
+  const slugs = new Set(tours.map((tour) => tour.slug));
+  return groups.map((group) => ({
+    ...group,
+    items: group.items.map((item) => {
+      const slug = item.href.startsWith("/tour/")
+        ? item.href.slice("/tour/".length)
+        : "";
+      if (slug && !slugs.has(slug)) return { ...item, href: "/tour" };
+      return item;
+    }),
+  }));
+}
+
 export default async function HomePage() {
   const [tours, page, c] = await Promise.all([
     catalog(),
@@ -15,6 +48,7 @@ export default async function HomePage() {
     publicSiteContent(),
   ]);
   const h = c.home;
+  const groups = liveGroups(h.groups, tours);
   return (
     <>
       <section className="relative isolate overflow-hidden bg-navy text-white">
@@ -58,14 +92,20 @@ export default async function HomePage() {
         </div>
       </section>
       {h.stats.length > 0 && (
-        <section className="border-b bg-white py-8">
-          <div className="container-page grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {h.stats.map((s, i) => (
-              <div key={i} className="text-center">
-                <strong className="block text-ink">{s.value}</strong>
-                <span className="text-sm text-muted">{s.label}</span>
-              </div>
-            ))}
+        <section className="border-b bg-white py-10">
+          <div className="container-page grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {h.stats.map((item, index) => {
+              const Icon = featureIcons[index % featureIcons.length];
+              return (
+                <div key={item.value} className="flex gap-4">
+                  <Icon className="mt-0.5 shrink-0 text-primary" size={28} />
+                  <div>
+                    <strong className="title-md block">{item.value}</strong>
+                    <p className="body-sm mt-1">{item.label}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -73,75 +113,88 @@ export default async function HomePage() {
         <div className="container-page">
           <p className="uppercase-tag mb-3 text-primary">{h.toursEyebrow}</p>
           <h2 className="display-lg mb-3">{h.toursTitle}</h2>
-          <p className="body-md mb-8">{h.toursBody}</p>
-          <div className="grid gap-5 md:grid-cols-3">
-            {tours.map((t) => (
-              <TourCard key={t.id} tour={t} />
-            ))}
-          </div>
+          <p className="body-md mb-8 max-w-3xl">{h.toursBody}</p>
+          {groups.length > 0 ? (
+            <ExperienceRotator groups={groups} />
+          ) : (
+            <div className="grid gap-5 md:grid-cols-3">
+              {tours.map((tour) => (
+                <TourCard key={tour.id} tour={tour} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
       <section className="editorial-section bg-navy text-on-dark">
         <div className="container-page grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
           <div>
             <p className="uppercase-tag mb-3 text-primary">{h.trustEyebrow}</p>
-            <h2 className="display-lg !text-white">{h.trustTitle}</h2>
+            <h2 className="display-lg !text-white">
+              {h.trustTitle.split("\n").map((line, index) => (
+                <span key={index} className="block">
+                  {line}
+                </span>
+              ))}
+            </h2>
             <p className="body-md mt-5 !text-white/85">{h.trustBody}</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            {h.pillars.map((p, i) => (
-              <article key={i} className="border-b border-white/20 py-4">
-                <ShieldCheck size={24} className="mb-4 text-primary" />
-                <h3 className="title-md !text-white">{p.title}</h3>
-                <p className="body-sm mt-3 !text-white/80">{p.text}</p>
-              </article>
-            ))}
+            {h.pillars.map((pillar, index) => {
+              const Icon = pillarIcons[index % pillarIcons.length];
+              return (
+                <article
+                  key={pillar.title}
+                  className="rounded-lg border border-white/15 bg-white/5 p-5"
+                >
+                  <Icon size={24} className="mb-4 text-primary" />
+                  <h3 className="title-md !text-white">{pillar.title}</h3>
+                  <p className="body-sm mt-3 !text-white/80">{pillar.text}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
-      {c.gallery.length > 0 && (
-        <section className="editorial-section">
-          <div className="container-page">
-            <p className="uppercase-tag mb-3 text-primary">
-              {h.galleryEyebrow}
-            </p>
-            <h2 className="display-lg mb-3">{h.galleryTitle}</h2>
-            <p className="body-md mb-8">{h.galleryBody}</p>
+      <section className="editorial-section">
+        <div className="container-page">
+          <p className="uppercase-tag mb-3 text-primary">{h.galleryEyebrow}</p>
+          <h2 className="display-lg mb-3">{h.galleryTitle}</h2>
+          <p className="body-md mb-8 max-w-3xl">{h.galleryBody}</p>
+          {c.gallery.length > 0 && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {c.gallery.map((photo, i) => (
-                <figure className="card overflow-hidden" key={i}>
-                  <div className="relative aspect-[4/3]">
-                    <Image
-                      src={photo.imageUrl}
-                      alt={photo.title}
-                      fill
-                      sizes="(min-width:1024px) 33vw, 100vw"
-                      className="object-cover"
-                    />
-                  </div>
-                  <figcaption className="p-5">
-                    <strong className="title-md">{photo.title}</strong>
-                    <p className="body-sm mt-2">{photo.caption}</p>
-                  </figcaption>
-                </figure>
+              {c.gallery.map((photo) => (
+                <Link
+                  key={photo.title}
+                  href={`/blog#${guideAnchor(photo.title)}`}
+                  className="card overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card"
+                >
+                  <figure>
+                    <div className="relative aspect-[4/3]">
+                      <Image
+                        src={photo.imageUrl}
+                        alt={photo.title}
+                        fill
+                        sizes="(min-width:1024px) 33vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <figcaption className="p-5">
+                      <strong className="title-md">{photo.title}</strong>
+                      <p className="body-sm mt-2">{photo.caption}</p>
+                    </figcaption>
+                  </figure>
+                </Link>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
       {c.answers.length > 0 && (
         <section className="editorial-section bg-surface-soft">
           <div className="container-page">
             <h2 className="display-lg mb-4">{h.answersTitle}</h2>
-            <p className="body-md mb-8">{h.answersBody}</p>
-            <div className="grid gap-5 md:grid-cols-2">
-              {c.answers.map((a, i) => (
-                <article key={i} className="card p-6">
-                  <h3 className="title-md">{a.question}</h3>
-                  <p className="body-sm mt-3">{a.answer}</p>
-                </article>
-              ))}
-            </div>
+            <p className="body-md mb-8 max-w-3xl">{h.answersBody}</p>
+            <PracticalAnswers items={c.answers} />
           </div>
         </section>
       )}
@@ -157,27 +210,10 @@ export default async function HomePage() {
         </div>
       </section>
       <TripAdvisorSection />
-      {c.faqs.length > 0 && (
-        <section className="editorial-section">
-          <div className="container-page max-w-4xl">
-            <JsonLd data={faqJsonLd(c.faqs)} />
-            <h2 className="display-lg mb-7">{h.faqTitle}</h2>
-            <div className="grid gap-4">
-              {c.faqs.map((f, i) => (
-                <details key={i} className="card p-5">
-                  <summary className="cursor-pointer font-bold text-ink">
-                    {f.q}
-                  </summary>
-                  <p className="body-md mt-4">{f.a}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }
+
 export async function generateMetadata() {
   const [p, c] = await Promise.all([
     publicPage("homepage"),

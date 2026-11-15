@@ -20,6 +20,7 @@ import {
   settingsSchema,
   tourSchema,
 } from "./validation";
+import { affiliatePublicLink } from "./affiliates-wp";
 import {
   slotFor,
   cancelReservation,
@@ -76,6 +77,8 @@ export async function platformApi(request: Request, path: string[]) {
           googleAdsId: s.settings.googleAdsId,
           googleAdsLabel: s.settings.googleAdsLabel,
         },
+        payments: { cash: true, stripe: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET) },
+        features: { whatsapp: Boolean(process.env.TWILIO_CONTENT_SID) },
       });
     }
     if (route === "login" && method === "POST") {
@@ -512,11 +515,13 @@ export async function platformApi(request: Request, path: string[]) {
         const s = await readState();
         if (!s.affiliates.some((a) => a.code === code))
           throw new HttpError(404, "Affiliato non trovato");
+        const affiliate = s.affiliates.find((a) => a.code === code)!;
         return new NextResponse(
-          await QRCode.toString(
-            `${site.url}/?ref=${encodeURIComponent(code)}`,
-            { type: "svg", width: 400, margin: 2 },
-          ),
+          await QRCode.toString(affiliatePublicLink(site.url, affiliate), {
+            type: "svg",
+            width: 400,
+            margin: 2,
+          }),
           {
             headers: {
               "Content-Type": "image/svg+xml",

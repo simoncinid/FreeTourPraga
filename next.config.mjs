@@ -18,8 +18,7 @@ const nextConfig = {
     ],
   },
   distDir: buildDir,
-  // Standalone per Docker/Render; su Vercel usa l'output Next nativo.
-  ...(process.env.VERCEL ? {} : { output: "standalone" }),
+  output: "standalone",
   devIndicators: false,
   poweredByHeader: false,
   images: {
@@ -53,7 +52,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src https://www.google.com https://www.tripadvisor.com https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`,
+            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.tripadvisor.it https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com https://www.tripadvisor.it; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src https://www.google.com https://www.tripadvisor.com https://www.tripadvisor.it https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`,
           },
         ],
       },

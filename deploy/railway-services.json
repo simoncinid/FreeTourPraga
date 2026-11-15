@@ -1,0 +1,43 @@
+{
+  "projectId": "7a0fae1d-ca22-4b6e-9030-483094639511",
+  "environmentId": "c79ec804-a114-472d-b3a0-09e7aff51ee0",
+  "services": {
+    "web": {
+      "serviceId": "14f20c1b-dd1d-47a3-9c23-61b382f26a8f",
+      "input": {
+        "dockerfilePath": "/Dockerfile",
+        "startCommand": "node server.js",
+        "preDeployCommand": [
+          "node node_modules/prisma/build/index.js migrate deploy"
+        ],
+        "preDeployTimeoutSeconds": 300,
+        "healthcheckPath": "/api/platform/health",
+        "healthcheckTimeout": 120,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      }
+    },
+    "worker": {
+      "serviceId": "a94a908f-f817-4379-b6a9-752dfa834546",
+      "input": {
+        "dockerfilePath": "/Dockerfile",
+        "startCommand": "node scripts/worker.mjs",
+        "preDeployCommand": [],
+        "healthcheckPath": null,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      }
+    },
+    "backup": {
+      "serviceId": "2a504084-50a0-4dba-ae54-42f65dcb46d4",
+      "input": {
+        "dockerfilePath": "/deploy/Dockerfile.backup",
+        "startCommand": null,
+        "preDeployCommand": [],
+        "healthcheckPath": null,
+        "cronSchedule": "0 2 * * *",
+        "restartPolicyType": "NEVER"
+      }
+    }
+  }
+}

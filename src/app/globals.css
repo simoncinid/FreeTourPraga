@@ -244,6 +244,18 @@ textarea {
   color: rgb(var(--primary));
 }
 
+.nav-more > summary {
+  list-style: none;
+}
+
+.nav-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+details:not([open]) > :not(summary) {
+  display: none !important;
+}
+
 .site-brand-accent {
   color: rgb(var(--primary));
 }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { addToCart } from "@/lib/cart";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { availableSeats } from "@/lib/pricing";
 import type { Tour } from "@/lib/types";
@@ -61,10 +62,10 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
   const firstSlot = tour.slots[0];
   const [step, setStep] = useState(0);
   const [month, setMonth] = useState(() =>
-    new Date(firstSlot?.startsAt || Date.now()).getMonth(),
+    Number(dayKey(firstSlot?.startsAt || new Date().toISOString()).split("-")[1]) - 1,
   );
   const [year, setYear] = useState(() =>
-    new Date(firstSlot?.startsAt || Date.now()).getFullYear(),
+    Number(dayKey(firstSlot?.startsAt || new Date().toISOString()).split("-")[0]),
   );
   const [selectedDay, setSelectedDay] = useState("");
   const [slotId, setSlotId] = useState("");
@@ -79,7 +80,7 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
       map.set(key, [...(map.get(key) || []), slot]);
     });
     return map;
-  }, [tour.slots]);
+  }, [tour]);
 
   const daySlots = slotsByDay.get(selectedDay) || [];
   const selectedSlot = tour.slots.find((slot) => slot.id === slotId);
@@ -148,9 +149,9 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
           Al momento non ci sono partenze prenotabili. Contattaci per
           organizzare la visita.
         </p>
-        <a href="/contatti" className="button-secondary mt-5">
+        <Link href="/contatti" className="button-secondary mt-5">
           Contatta il team
-        </a>
+        </Link>
       </aside>
     );
   return (
@@ -228,16 +229,14 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
               ))}
               {Array.from({ length: daysInMonth }, (_, index) => {
                 const day = index + 1;
-                const key = new Date(year, month, day).toLocaleDateString(
-                  "en-CA",
-                  { timeZone: "Europe/Prague" },
-                );
+                const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                 const available = slotsByDay.has(key);
                 const active = key === selectedDay;
                 return (
                   <button
                     key={key}
                     type="button"
+                    aria-label={`Seleziona il ${key}`}
                     disabled={!available}
                     onClick={() => chooseDay(key)}
                     className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm ${active ? "bg-primary font-bold text-on-primary" : available ? "font-semibold text-ink hover:bg-surface-soft" : "cursor-not-allowed text-muted-soft line-through"}`}

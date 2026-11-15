@@ -3,6 +3,10 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { tours } from "../data";
+import {
+  ensureWpAffiliates,
+  wpAffiliatesSeed,
+} from "./affiliates-wp";
 import type { PlatformState } from "./model";
 const runtime = globalThis as unknown as {
   platformPrisma?: PrismaClient;
@@ -13,8 +17,10 @@ export function database() {
 }
 export function hasProductionDatabase() {
   const url = process.env.DATABASE_URL || "";
-  // Evita che un .env locale (localhost) finisca su Vercel e rompa la produzione.
-  return Boolean(url) && !/localhost|127\.0\.0\.1/i.test(url);
+  try {
+    const parsed = new URL(url);
+    return ["postgres:", "postgresql:"].includes(parsed.protocol) && Boolean(parsed.hostname);
+  } catch { return false; }
 }
 export function localMode() {
   return (
@@ -37,7 +43,7 @@ export function initialState(): PlatformState {
     bookings: [],
     orders: [],
     jobs: [],
-    affiliates: [],
+    affiliates: structuredClone(wpAffiliatesSeed),
     pages: {},
     ota: [],
     inquiries: [],
@@ -59,16 +65,20 @@ export function initialState(): PlatformState {
 }
 const file = () =>
   resolve(process.env.PLATFORM_DATA_FILE || ".data/platform.json");
+function hydrate(state: PlatformState) {
+  ensureWpAffiliates(state);
+  return state;
+}
 async function readLocal() {
   try {
-    return JSON.parse(await readFile(file(), "utf8")) as PlatformState;
+    return hydrate(JSON.parse(await readFile(file(), "utf8")) as PlatformState);
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
     return initialState();
   }
 }
 // All mutations, including inventory, outbox and deduplication, commit together.
-// PostgreSQL row lock serializes requests across Vercel instances and workers.
+// PostgreSQL row lock serializes requests across application instances and workers.
 export async function transaction<T>(
   work: (state: PlatformState) => T | Promise<T>,
 ): Promise<T> {
@@ -105,7 +115,7 @@ export async function transaction<T>(
       const row = await tx.platformState.findUniqueOrThrow({
         where: { id: "main" },
       });
-      const state = row.data as unknown as PlatformState;
+      const state = hydrate(row.data as unknown as PlatformState);
       const result = await work(state);
       await tx.platformState.update({
         where: { id: "main" },
@@ -122,12 +132,13 @@ export async function readState(): Promise<PlatformState> {
       throw new Error("Archivio locale vietato in produzione");
     return readLocal();
   }
-  // Anteprima Vercel senza Postgres reale: pagine pubbliche con seed, nessuna scrittura.
-  if (!hasProductionDatabase()) return initialState();
+  if (!hasProductionDatabase()) throw new Error("DATABASE_URL PostgreSQL richiesta");
   const row = await database().platformState.findUnique({
     where: { id: "main" },
   });
-  return row ? (row.data as unknown as PlatformState) : initialState();
+  return row
+    ? hydrate(row.data as unknown as PlatformState)
+    : initialState();
 }
 export function audit(
   s: PlatformState,

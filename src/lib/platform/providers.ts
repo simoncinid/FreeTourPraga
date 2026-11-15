@@ -15,10 +15,14 @@ export function stripe() {
 export async function preparePayment(orderId: string) {
   const s = await readState();
   const order = s.orders.find((o) => o.id === orderId)!;
+  if (!order) throw new HttpError(404, "Ordine non trovato");
+  if (new Date(order.expiresAt).getTime() <= Date.now() || s.bookings.some((b) => b.orderId === orderId && b.status === "cancelled"))
+    throw new HttpError(409, "Prenotazione scaduta o cancellata: scegli una nuova partenza.");
   if (order.paymentUrl) return order;
   const checkout = await stripe().checkout.sessions.create(
     {
       mode: "payment",
+      payment_method_types: ["card"],
       customer_email: s.bookings.find((b) => b.orderId === orderId)!.email,
       line_items: [
         {
@@ -39,6 +43,7 @@ export async function preparePayment(orderId: string) {
   );
   return transaction((s) => {
     const o = s.orders.find((o) => o.id === orderId)!;
+    if (o.stripeSessionId === checkout.id) return { ...o };
     o.expiresAt = new Date(checkout.expires_at * 1000).toISOString();
     o.paymentUrl = checkout.url || undefined;
     o.stripeSessionId = checkout.id;
@@ -176,12 +181,15 @@ export async function runJobs() {
           greetingTimeout: 10000,
           socketTimeout: 12000,
         });
-        const { to, subject, text } = job;
+        const { to, subject, text, html, bcc } = job;
         await transport.sendMail({
           from: process.env.SMTP_FROM,
           to,
+          bcc: bcc || undefined,
           subject,
           text,
+          html: html || undefined,
+          attachments: job.calendar ? [{ filename: `${job.bookingPnr}.ics`, content: job.calendar, contentType: "text/calendar; charset=utf-8" }] : undefined,
           messageId: `<${job.id}@freetourpraga.com>`,
         });
       } else if (job.type === "whatsapp") {

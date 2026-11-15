@@ -23,6 +23,9 @@ export async function maintainPrivacy() {
         for (const job of s.jobs.filter((j) => j.bookingPnr === b.pnr)) {
           job.to = "";
           job.text = "Dati rimossi";
+          job.html = undefined;
+          job.calendar = undefined;
+          job.bcc = undefined;
           job.error = undefined;
           if (job.status !== "sent") job.status = "failed";
         }

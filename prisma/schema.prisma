@@ -165,3 +165,10 @@ model PlatformState {
   data      Json
   updatedAt DateTime @updatedAt
 }
+
+// CMS images persist with the database and are included in its daily backups.
+model MediaAsset {
+  id        String   @id
+  data      Bytes
+  createdAt DateTime @default(now())
+}

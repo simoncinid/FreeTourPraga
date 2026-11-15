@@ -12,6 +12,11 @@ import {
 import type { Job, Order, PlatformState, Reservation } from "./model";
 import { siteContent } from "./content";
 import { site } from "../site";
+import { reservationIcs } from "./calendar";
+import {
+  bookingAdminRecipients,
+  resolveAffiliate,
+} from "./affiliates-wp";
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export function enqueue(
   s: PlatformState,
@@ -44,26 +49,57 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   const { tour, slot } = slotFor(s, b);
   const contact = siteContent(s.siteContent).globals;
   const order = s.orders.find((o) => o.id === b.orderId)!;
+  const when = new Date(slot.startsAt).toLocaleString("it-IT", {
+    timeZone: "Europe/Prague",
+  });
+  const manageUrl = `${site.url}/gestisci-prenotazione/${b.pnr}/${bookingManagementProof(b.id, b.pnr)}`;
+  const calendarUrl = `${site.url}/api/calendar/booking/${b.pnr}?manage=${bookingManagementProof(b.id, b.pnr)}`;
+  const paymentLine =
+    order.totalCents === 0
+      ? "Nessun pagamento richiesto."
+      : b.paymentMethod === "stripe"
+      ? `Pagamento dell’ordine complessivo (${order.pnrs.length} tour, EUR ${(order.totalCents / 100).toFixed(2)}): ${order.paymentUrl || "link in preparazione"}`
+      : b.paymentMethod === "ota"
+        ? "Pagamento gestito dal provider esterno."
+        : "Pagamento in contanti sul posto.";
+  const affiliate = resolveAffiliate(s, b.affiliateCode, false);
   const text = [
     `Prenotazione ${b.pnr}: ${kind}`,
     `Ciao ${b.name},`,
     tour.title,
-    new Date(slot.startsAt).toLocaleString("it-IT", {
-      timeZone: "Europe/Prague",
-    }),
-    `${b.totalGuests} partecipanti · EUR ${(b.totalCents / 100).toFixed(2)}`,
+    when,
+    `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants) · EUR ${(b.totalCents / 100).toFixed(2)}`,
     `Punto d'incontro: ${tour.meetingPoint}, ${tour.meetingAddress}`,
     tour.mapUrl,
-    b.paymentMethod === "stripe"
-      ? `Pagamento dell’ordine complessivo (${order.pnrs.length} tour, EUR ${(order.totalCents / 100).toFixed(2)}): ${order.paymentUrl || "link in preparazione"}`
-      : b.paymentMethod === "ota"
-        ? "Pagamento gestito dal provider esterno."
-        : "Pagamento in contanti sul posto.",
-    `Gestisci questa prenotazione: ${site.url}/gestisci-prenotazione/${b.pnr}/${bookingManagementProof(b.id, b.pnr)}`,
-    `Assistenza: ${contact.email} · riferimento ${b.pnr}.`,
-    `Calendario: ${site.url}/api/calendar/booking/${b.pnr}?manage=${bookingManagementProof(b.id, b.pnr)}`,
+    paymentLine,
+    `Gestisci questa prenotazione: ${manageUrl}`,
+    `Assistenza: ${contact.email} · ${contact.phone || ""} · riferimento ${b.pnr}.`,
+    `Calendario: ${calendarUrl}`,
     s.settings.emailFooter,
   ].join("\n");
+  // Stile conferma cliente WP CF7 (mail 2): HTML + dettagli meeting point.
+  const html = `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
+<p>Grazie per aver prenotato con noi.</p>
+<h3 style="background-color:#167895;color:#ffffff;padding:5px">${kind} · ${b.pnr}</h3>
+<ul>
+<li style="margin-bottom:10px"><b>Nome:</b> ${escapeHtml(b.name)}</li>
+<li style="margin-bottom:10px"><b>Tour:</b> ${escapeHtml(tour.title)}</li>
+<li style="margin-bottom:10px"><b>Data/ora:</b> ${escapeHtml(when)}</li>
+<li style="margin-bottom:10px"><b>Persone:</b> ${b.adults} adulti + ${b.children} minori</li>
+<li style="margin-bottom:10px"><b>Totale:</b> EUR ${(b.totalCents / 100).toFixed(2)}</li>
+<li style="margin-bottom:10px"><b>Lingua:</b> italiano</li>
+</ul>
+<h3 style="background-color:#167895;color:#ffffff;padding:5px">Punto di partenza</h3>
+<p>${escapeHtml(tour.meetingPoint)} · ${escapeHtml(tour.meetingAddress)}<br/>
+<a href="${escapeHtml(tour.mapUrl)}">Mappa »</a></p>
+<p><b>Telefono:</b> ${escapeHtml(contact.phone || "")}</p>
+<p>${escapeHtml(paymentLine)}</p>
+${order.paymentUrl && b.paymentStatus === "pending" ? `<p><a href="${escapeHtml(order.paymentUrl)}">Completa il pagamento sicuro con Stripe</a></p>` : ""}
+<p><a href="${manageUrl}">Gestisci modifica o cancellazione</a> · <a href="${calendarUrl}">Aggiungi al calendario</a></p>
+<p style="text-align:center;padding-top:20px">${escapeHtml(s.settings.emailFooter)}<br/>
+<a href="${site.url}">${escapeHtml(contact.brandName || "freetourpraga.com")}</a></p>
+</div>`;
+  b.calendarSequence = (b.calendarSequence ?? -1) + 1;
   enqueue(s, {
     key: `email:${b.pnr}:${kind}:${randomUUID()}`,
     type: "email",
@@ -71,8 +107,48 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     to: b.email,
     subject: `${kind} · ${b.pnr} · ${contact.brandName}`,
     text,
+    html,
+    calendar: reservationIcs(s, b),
     runAt: new Date().toISOString(),
   });
+  // Stile mail admin WP CF7 (mail 1): solo sulle conferme/cancellazioni (non su ogni update).
+  const adminKinds = new Set([
+    "Confermata",
+    "Pagamento ricevuto",
+    "Confermata dal provider",
+    "Cancellata",
+    "Cancellata e rimborso richiesto",
+  ]);
+  const adminTo = bookingAdminRecipients();
+  if (adminTo && adminKinds.has(kind)) {
+    const adminText = [
+      `Tour: ${tour.title}`,
+      `Stato: ${kind}`,
+      `PNR: ${b.pnr}`,
+      `De: ${b.name}`,
+      `Email: ${b.email}`,
+      `Telefono: ${b.phone}`,
+      `Fecha: ${when}`,
+      `Adulti: ${b.adults}`,
+      `Minori: ${b.children}`,
+      `Idioma del Tour: italiano`,
+      `Afiliado: ${affiliate ? `${affiliate.name} (${affiliate.code}${affiliate.wpId != null ? ` / wp#${affiliate.wpId}` : ""})` : b.affiliateCode || "—"}`,
+      `Mensaje: ${b.notes || "—"}`,
+      `Totale: EUR ${(b.totalCents / 100).toFixed(2)}`,
+      `Gestione: ${manageUrl}`,
+      `--`,
+      `Email inviata dal sistema prenotazioni Free Tour Praga`,
+    ].join("\n");
+    enqueue(s, {
+      key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
+      type: "email",
+      bookingPnr: b.pnr,
+      to: adminTo,
+      subject: `Reserva freetourpraga.com italiano · ${b.pnr} · ${kind}`,
+      text: adminText,
+      runAt: new Date().toISOString(),
+    });
+  }
   for (const j of s.jobs)
     if (
       j.type === "whatsapp" &&
@@ -94,6 +170,13 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
         runAt: at.toISOString(),
       });
   }
+}
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 export function releaseExpired(s: PlatformState) {
   for (const o of s.orders) {
@@ -124,7 +207,7 @@ export function quote(
       : 0;
   if (
     input.affiliateCode &&
-    !s.affiliates.some((a) => a.code === input.affiliateCode && a.active)
+    !resolveAffiliate(s, input.affiliateCode)
   )
     throw new HttpError(400, "Codice affiliato non valido");
   return input.items.map((item) => {
@@ -162,6 +245,8 @@ export async function createOrder(
   key: string,
   source = "site",
 ) {
+  if (input.paymentMethod === "stripe" && process.env.SITE_PREVIEW === "true" && process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_"))
+    throw new HttpError(503, "L’anteprima accetta solo pagamenti Stripe di prova.");
   if (input.paymentMethod === "stripe" && !process.env.STRIPE_SECRET_KEY)
     throw new HttpError(
       503,
@@ -195,9 +280,7 @@ export async function createOrder(
       expiresAt: new Date(Date.now() + 31 * 60000).toISOString(),
     };
     s.orders.push(order);
-    const affiliate = s.affiliates.find(
-      (a) => a.code === input.affiliateCode && a.active,
-    );
+    const affiliate = resolveAffiliate(s, input.affiliateCode);
     for (const item of prices) {
       const { slot } = slotFor(s, item);
       slot.reserved += item.totalGuests;

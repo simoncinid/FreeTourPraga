@@ -92,6 +92,7 @@ export default async function RootLayout({
         <a className="skip-link" href="#contenuto">
           Vai al contenuto
         </a>
+        {process.env.SITE_PREVIEW === "true" && <div className="bg-primary-soft px-4 py-3 text-center text-sm text-ink">Anteprima · Tour, tariffe e disponibilità sono dimostrativi. Le prenotazioni sono prove.</div>}
         <Header />
         <JsonLd
           data={[organizationJsonLd(c.globals), websiteJsonLd(c.globals)]}
@@ -118,6 +119,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const { globals: g } = await publicSiteContent();
   return {
     ...baseMetadata,
+    ...(process.env.SITE_PREVIEW === "true" ? { robots: { index: false, follow: false } } : {}),
     title: {
       default: `${g.brandName} - Tour guidati in italiano`,
       template: `%s | ${g.brandName}`,

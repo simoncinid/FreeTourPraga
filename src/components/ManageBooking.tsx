@@ -44,8 +44,22 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
     }
   }
   useEffect(() => {
-    send();
-  }, [pnr, proof]); // eslint-disable-line react-hooks/exhaustive-deps
+    const controller = new AbortController();
+    fetch(`/api/platform/manage/${encodeURIComponent(pnr)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ proof, action: "view" }),
+      signal: controller.signal,
+    }).then(async (r) => {
+      const data = await r.json();
+      if (!r.ok) throw Error(data.error);
+      setBooking(data);
+      setSlot(data.slotId);
+    }).catch((e) => {
+      if (!controller.signal.aborted) setError(e.message);
+    });
+    return () => controller.abort();
+  }, [pnr, proof]);
   return (
     <section className="section">
       <div className="container-page max-w-3xl">

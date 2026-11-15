@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 export function AccessForm() {
+  const router = useRouter();
   const [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
   return (
@@ -19,7 +21,8 @@ export function AccessForm() {
           });
           const d = await r.json();
           if (!r.ok) throw Error(d.error);
-          window.location.assign("/admin");
+          router.replace("/admin");
+          router.refresh();
         } catch (e) {
           setMessage(e instanceof Error ? e.message : "Errore connessione");
         } finally {

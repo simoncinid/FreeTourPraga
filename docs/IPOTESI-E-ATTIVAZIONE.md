@@ -1,3 +1,5 @@
+> Documento storico. Per la richiesta attuale (solo Fase 1, GitHub e Railway) fare riferimento a [FASE-1.md](FASE-1.md) e [RAILWAY.md](RAILWAY.md).
+
 # Ipotesi adottate e attivazione
 
 ## Perimetro aggiornato secondo la precisazione del cliente

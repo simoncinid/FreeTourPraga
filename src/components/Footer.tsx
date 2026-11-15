@@ -26,11 +26,18 @@ export async function Footer() {
         <div>
           <h2 className="mb-4 font-bold text-white">Informazioni</h2>
           <div className="mb-5 grid gap-3 text-sm">
-            {g.navigation.map((n) => (
-              <Link key={n.href} href={n.href}>
-                {n.label}
-              </Link>
-            ))}
+            {g.navigation
+              .filter(
+                (n) =>
+                  n.href !== "/account" &&
+                  n.href !== "/accesso" &&
+                  n.href !== "/faq",
+              )
+              .map((n) => (
+                <Link key={`${n.href}-${n.label}`} href={n.href}>
+                  {n.label}
+                </Link>
+              ))}
             <Link href="/faq">Domande frequenti</Link>
             <Link href="/privacy">Privacy e cookie</Link>
             <Link href="/termini">Termini e cancellazioni</Link>

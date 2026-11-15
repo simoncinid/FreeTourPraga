@@ -34,6 +34,15 @@ export function formatTime(value: string | Date) {
   }).format(new Date(value));
 }
 
+export function guideAnchor(title: string) {
+  return title
+    .toLocaleLowerCase("it")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export function minutesToLabel(minutes: number) {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;

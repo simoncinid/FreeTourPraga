@@ -1,15 +1,28 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useBrowserStorage } from "@/lib/browser-storage";
 type Consent = "essential" | "marketing";
 export function ConsentAndTracking() {
-  const [consent, setConsent] = useState<Consent | null>(null);
+  const savedConsent = useBrowserStorage("ftp-consent");
+  const consent = savedConsent === "marketing" || savedConsent === "essential" ? savedConsent : null;
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    setConsent(localStorage.getItem("ftp-consent") as Consent | null);
-    const ref = new URLSearchParams(window.location.search).get("ref");
-    if (ref && /^[A-Z0-9_-]{3,40}$/.test(ref))
-      localStorage.setItem("ftp-affiliate", ref);
+    // Parità WP Affiliates: ?affiliates=ID (cookie 30gg) + legacy ?ref=CODICE.
+    const params = new URLSearchParams(window.location.search);
+    const affiliates = params.get("affiliates");
+    const ref = params.get("ref");
+    const value =
+      affiliates && /^\d+$/.test(affiliates)
+        ? affiliates
+        : ref && /^[A-Z0-9_-]{3,40}$/i.test(ref)
+          ? ref.toUpperCase()
+          : "";
+    if (!value) return;
+    localStorage.setItem("ftp-affiliate", value);
+    window.dispatchEvent(new Event("ftp-storage"));
+    const maxAge = 30 * 24 * 60 * 60;
+    document.cookie = `ftp_affiliates=${encodeURIComponent(value)}; Max-Age=${maxAge}; path=/; SameSite=Lax`;
   }, []);
   useEffect(() => {
     if (consent !== "marketing") return;
@@ -52,7 +65,7 @@ export function ConsentAndTracking() {
   }, [consent]);
   function choose(v: Consent) {
     localStorage.setItem("ftp-consent", v);
-    setConsent(v);
+    window.dispatchEvent(new Event("ftp-storage"));
     setOpen(false);
     window.dispatchEvent(new Event("ftp-consent"));
     if (v === "essential") {

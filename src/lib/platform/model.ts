@@ -45,6 +45,7 @@ export type Reservation = {
   whatsappConsent: boolean;
   consentAt: string;
   termsVersion: string;
+  calendarSequence?: number;
 };
 export type Order = {
   id: string;
@@ -67,6 +68,9 @@ export type Job = {
   to?: string;
   subject?: string;
   text?: string;
+  html?: string;
+  calendar?: string;
+  bcc?: string;
   orderId?: string;
   amount?: number;
   status: "queued" | "running" | "sent" | "failed";
@@ -83,6 +87,8 @@ export type Affiliate = {
   type: "hotel" | "guide" | "promoter" | "agency";
   commissionPercent: number;
   active: boolean;
+  /** ID numerico legacy WordPress Affiliates (`?affiliates=ID`). */
+  wpId?: number;
 };
 export type ContentPage = {
   title: string;

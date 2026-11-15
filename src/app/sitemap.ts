@@ -12,11 +12,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/tour-privati",
     "/partner-europa",
     "/contatti",
+    "/chi-siamo",
+    "/informazioni-utili",
+    "/blog",
+    "/aiuto",
+    "/faq",
+    "/chi-siamo",
+    "/informazioni-utili",
+    "/blog",
+    "/aiuto",
     "/privacy",
-    "/termini",
-    "/llms.txt",
-    "/llms-full.txt",
-    "/ai-context.json"
+    "/termini"
   ].map((path) => ({
     url: absoluteUrl(path || "/"),
     lastModified: now,

@@ -44,6 +44,7 @@ export type SiteContent = {
     faqTitle: string;
     stats: { value: string; label: string }[];
     pillars: { title: string; text: string }[];
+    groups: { title: string; items: { title: string; href: string }[] }[];
   };
   gallery: { title: string; caption: string; imageUrl: string }[];
   faqs: { q: string; a: string }[];
@@ -64,70 +65,132 @@ export function defaultSiteContent(): SiteContent {
       footerNote:
         "Un riferimento locale prima, durante e dopo il tuo viaggio a Praga.",
       tripAdvisorUrl: tripAdvisor.profileUrl,
-      tripAdvisorTitle: "Le esperienze di chi è già partito.",
-      tripAdvisorBody:
-        "Consulta le recensioni dei viaggiatori sul nostro profilo TripAdvisor.",
+      tripAdvisorTitle: "Dicono di noi",
+      tripAdvisorBody: "Le parole di chi ha esplorato Praga con noi.",
       socialLinks: structuredClone(socialLinks),
       navigation: [
-        { label: "Tour", href: "/tour" },
-        { label: "Tour privati", href: "/tour-privati" },
-        { label: "Partner Europa", href: "/partner-europa" },
+        { label: "I Nostri Tour", href: "/tour" },
+        { label: "Chi siamo", href: "/chi-siamo" },
+        { label: "Informazioni utili", href: "/informazioni-utili" },
         { label: "Contatti", href: "/contatti" },
+        { label: "Partner tour in Europa", href: "/partner-europa" },
+        { label: "Agenzie e scuole", href: "/tour-privati" },
+        { label: "Blog", href: "/blog" },
+        { label: "FAQ", href: "/faq" },
+        { label: "Aiuto", href: "/aiuto" },
+        { label: "Accedi o registrati", href: "/account" },
       ],
     },
     home: {
       heroImage:
         "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1800&q=85",
-      heroTitle: "Vivi Praga, senza pensieri.",
+      heroTitle: "Scopri l'anima autentica di Praga, in totale sicurezza.",
       heroEyebrow: "Tour guidati in italiano a Praga",
       heroBody:
-        "Scopri la storia, i quartieri e i luoghi simbolo della capitale ceca con una guida in italiano. Prenotazione semplice, conferma via email e assistenza locale.",
-      primaryLabel: "Vedi tour disponibili",
+        "Esplora la capitale ceca con guide locali esperte al tuo fianco. Prenotazione semplice, informazioni chiare via email e assistenza dedicata su WhatsApp.",
+      primaryLabel: "I nostri tour",
       primaryHref: "/tour",
-      secondaryLabel: "Scrivi su WhatsApp",
-      toursEyebrow: "Esperienze selezionate",
-      toursTitle: "La città, a modo tuo",
-      toursBody: "Esperienze in italiano con guide locali.",
+      secondaryLabel: "Scrivici su WhatsApp",
+      toursEyebrow: "Le nostre esperienze",
+      toursTitle: "Scegli il tuo itinerario.",
+      toursBody:
+        "Abbiamo selezionato percorsi chiari, completi e ben strutturati per accompagnarti alla scoperta di Praga con competenza e cura.",
       trustEyebrow: "Perché sceglierci",
-      trustTitle: "Non sei solo un turista. Sei nostro ospite.",
+      trustTitle: "Non sei un semplice turista.\nSei nostro ospite.",
       trustBody:
-        "Conosciamo Praga e vogliamo farti scoprire la sua anima autentica.",
-      galleryEyebrow: "Praga da scoprire",
-      galleryTitle: "La città, con i tuoi occhi.",
+        "Curiamo ogni dettaglio pratico e organizzativo delle nostre visite guidate, offrendoti supporto costante e informazioni utili prima, durante e dopo ogni tour.",
+      galleryEyebrow: "Guide e consigli di viaggio",
+      galleryTitle: "Tutto quello che c'è da sapere prima di partire.",
       galleryBody:
-        "Luoghi iconici e quartieri storici da esplorare con una guida locale.",
-      answersTitle: "Le informazioni essenziali, scritte in modo chiaro.",
-      answersBody: "Le risposte pratiche da conoscere prima di prenotare.",
-      partnerEyebrow: "Partner Europa",
-      partnerTitle: "Scuole, gruppi, hotel e agenzie hanno un canale dedicato.",
+        "Articoli, consigli locali e approfondimenti culturali selezionati dal nostro team per farti orientare al meglio in città.",
+      answersTitle: "Prima di prenotare",
+      answersBody: "L'essenziale per risolvere ogni tuo dubbio.",
+      partnerEyebrow: "Agenzie e scuole",
+      partnerTitle:
+        "Soluzioni su misura per scuole, gruppi, hotel e agenzie.",
       partnerBody:
-        "Organizzi un viaggio di gruppo o vuoi consigliare un’esperienza ai tuoi ospiti? Raccontaci cosa hai in mente.",
-      partnerLabel: "Invia richiesta B2B",
+        "Organizzi un viaggio di istruzione, un tour di gruppo o cerchi un partner affidabile a Praga per i tuoi ospiti? Progettiamo itinerari personalizzati con logistica dedicata e supporto diretto in italiano.",
+      partnerLabel: "Richiedi una proposta dedicata",
       faqTitle: "Domande frequenti",
       stats: [
-        { value: "Italiano", label: "Guide locali" },
-        { value: "Piccoli gruppi", label: "Capienza controllata" },
-        { value: "Prenota online", label: "Conferma via email" },
-        { value: "Un riferimento", label: "Assistenza locale" },
+        {
+          value: "Tour in italiano",
+          label: "Guide certificate, residenti a Praga",
+        },
+        { value: "Posti garantiti", label: "Gruppi organizzati, zero caos" },
+        {
+          value: "Prenotazione semplice",
+          label: "Conferma immediata e zero sorprese",
+        },
+        {
+          value: "Sempre al tuo fianco",
+          label: "Assistenza diretta su WhatsApp",
+        },
       ],
       pillars: structuredClone(trustPillars),
+      groups: [
+        {
+          title: "Gli essenziali",
+          items: [
+            {
+              title: "Free tour Città Vecchia e quartiere ebraico",
+              href: "/tour/citta-vecchia-ponte-carlo",
+            },
+            {
+              title: "Castello, Malá Strana e Città Nuova",
+              href: "/tour/castello-praga-mala-strana",
+            },
+          ],
+        },
+        {
+          title: "Tuffo nella storia",
+          items: [
+            { title: "Tour del comunismo", href: "/tour" },
+            { title: "Praga esoterica", href: "/tour" },
+          ],
+        },
+        {
+          title: "Gli angoli nascosti",
+          items: [
+            {
+              title: "Tour di Petřín e Monastero di Strahov",
+              href: "/tour",
+            },
+            { title: "Tour di Vyšehrad", href: "/tour" },
+          ],
+        },
+        {
+          title: "Escursioni Fuori Porta",
+          items: [
+            {
+              title: "Escursione al campo di concentramento di Terezin",
+              href: "/tour",
+            },
+            { title: "Tour al birrificio di Plzen", href: "/tour" },
+            { title: "Karlovy Vary", href: "/tour" },
+          ],
+        },
+      ],
     },
     gallery: [
       {
-        title: "Ponte Carlo",
-        caption: "Tra il centro storico e le rive della Moldava.",
+        title: "Città Vecchia e Ponte Carlo",
+        caption:
+          "Da dove partire al primo giorno e come muoversi nel centro senza perdere tempo.",
         imageUrl:
           "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1200&q=80",
       },
       {
         title: "Castello e Malá Strana",
-        caption: "Panorami e vicoli storici.",
+        caption:
+          "Ritmo, salite e punto d'incontro chiari prima di arrivare al Castello.",
         imageUrl:
           "https://images.unsplash.com/photo-1541849546-216549ae216d?auto=format&fit=crop&w=1200&q=80",
       },
       {
-        title: "Cultura della birra ceca",
-        caption: "Storie e tradizioni da conoscere insieme.",
+        title: "Cambio, pagamenti e assistenza",
+        caption:
+          "Come pagare in modo chiaro e a chi scrivere, tutti i giorni dalle 9:00 alle 19:00.",
         imageUrl:
           "https://images.unsplash.com/photo-1600788886242-5c96aabe3757?auto=format&fit=crop&w=1200&q=80",
       },

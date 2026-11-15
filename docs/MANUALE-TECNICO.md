@@ -1,3 +1,5 @@
+> Documento storico. Per la richiesta attuale (solo Fase 1, GitHub e Railway) fare riferimento a [FASE-1.md](FASE-1.md) e [RAILWAY.md](RAILWAY.md).
+
 # Manuale tecnico e operativo
 
 Versione: 6 novembre 2026. Fonte dei requisiti: `freetour-praga-contratto.pdf`. Vedere anche [matrice requisiti](REQUISITI-CONTRATTO.md) e [ipotesi](IPOTESI-E-ATTIVAZIONE.md).

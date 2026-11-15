@@ -1,8 +1,12 @@
-# FreeTourPraga — piattaforma tour
+# FreeTourPraga
 
-> **Stato di consegna: non ancora completo e collaudato rispetto al contratto ufficiale.** Leggere [il rapporto tecnico aggiornato](docs/STATO-CONSEGNA.md), che distingue sviluppo, test locali e attività mancanti.
+Sito Next.js, booking e gestionale della **Fase 1** del contratto. Infrastruttura: **GitHub + Railway** (web, PostgreSQL, worker email e backup cifrato giornaliero).
 
-Implementazione locale delle due fasi di `freetour-praga-contratto.pdf`: sito responsive, booking multi-tour, gestionale, inventario condiviso, checkout senza account, Stripe, email/ICS, affiliati/QR, import OTA, reminder WhatsApp e KPI.
+L’ambiente Railway è un’**anteprima con catalogo dimostrativo**, su richiesta del committente. Stripe e SMTP saranno configurati dal committente su Railway. Non è ancora una consegna commerciale validata: [stato e attività residue](docs/STATO-CONSEGNA.md).
+
+- [Requisiti e manuale Fase 1](docs/FASE-1.md)
+- [Deploy e configurazione Railway](docs/RAILWAY.md)
+- [Collaudo](docs/COLLAUDO.md)
 
 ```bash
 npm ci
@@ -10,41 +14,18 @@ npm run setup:local
 npm run dev
 ```
 
-- **Sito:** http://localhost:3100
-- **Gestionale:** http://localhost:3100/accesso
-- **Accesso solo locale:** `admin@freetourpraga.local` / `PragaLocale!2026`
-
-L'anteprima conserva realmente i dati su file locale. In produzione usa PostgreSQL con transazioni. Nessun pagamento o invio esterno viene dichiarato riuscito senza il provider configurato.
-
-## Documentazione
-
-- [Copertura di ogni requisito contrattuale](docs/REQUISITI-CONTRATTO.md)
-- [Ipotesi adottate e attivazione](docs/IPOTESI-E-ATTIVAZIONE.md)
-- [Manuale tecnico, operativo e deploy](docs/MANUALE-TECNICO.md)
-- [Piano Google Ads](docs/GOOGLE-ADS.md)
-- [Risultati e limiti del collaudo](docs/COLLAUDO.md)
-
-## Verifica
+Sito locale: http://localhost:3100. Gestionale: `/accesso`. Gli utenti locali generati da `setup:local` sono solo per sviluppo.
 
 ```bash
+npm run lint
 npm run typecheck
 npm test
-node scripts/test-postgres.mjs
+npm run test:postgres
+npx playwright install chromium
+npm run test:browser
 npm audit --audit-level=moderate
-npm run build
-npm run test:http
 ```
 
-Stack: Next.js/React/TypeScript/Tailwind, PostgreSQL/Prisma, Stripe, SMTP, Twilio e IMAP. Deploy predisposto per **GitHub + Vercel + Render + DigitalOcean** con CI, migrazione, worker, immagini Spaces e backup cifrato giornaliero.
+`test:browser` crea un database PostgreSQL locale temporaneo, compila il bundle standalone, verifica API e pagine e percorre il checkout nel browser desktop/mobile. Non usa il database di produzione. Credenziali, chiavi di ripristino e altri materiali privati restano fuori da Git e Docker nella cartella locale `privato/`.
 
-**Stato esterno:** non pubblicato; account, dominio, database e credenziali non sono stati provisionati. Servono accessi e collaudi reali per attivare pagamenti, messaggi, import OTA, backup e campagne. Le precedenti note “solo frontend Fase 1” sono storiche e sono superate dalla documentazione sopra.
-
-## Precisazione: sito pubblico e carrello browser
-
-Non esistono area cliente, registrazione o login per i viaggiatori. Il carrello è salvato in `localStorage` nel browser/dispositivo utilizzato. Il riepilogo dopo il checkout è disponibile nella stessa scheda tramite una ricevuta temporanea (`sessionStorage`), senza account. L’email contiene un link protetto limitato alla singola prenotazione per cambio partenza, cancellazione e consenso reminder. L’accesso con password riguarda solo il gestionale.
-
-- **Sconto e cancellazione:** `/admin/impostazioni`, percentuale/soglia tour e ore/rimborso.
-- **Fasce d’età e tariffe:** `/admin/tour`, per ciascun tour.
-- Le impostazioni sono persistite e usate dal motore server; i valori iniziali non sono vincoli fissi.
-
-Il CMS globale è in `/admin/sito`: home, FAQ, galleria, contatti, social e footer. `npm run test:http:production` collauda il bundle standalone su PostgreSQL temporaneo; `npm run preflight` verifica la configurazione dei servizi, senza provarne il funzionamento reale.
+Il repository contiene anche codice storico per funzionalità della Fase 2. La richiesta attuale riguarda esclusivamente la Fase 1: OTA e campagne non vengono attivati.

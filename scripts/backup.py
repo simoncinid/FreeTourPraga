@@ -1,8 +1,8 @@
-"""Daily encrypted PostgreSQL backup -> private DigitalOcean Spaces bucket.
+"""Daily encrypted PostgreSQL backup -> private S3-compatible bucket.
 Requires: pg_dump (same/newer major than server), age, AWS CLI.
 No password in arguments, output or files; age private key stays offline.
 """
-import datetime, os, pathlib, subprocess, tempfile, urllib.parse
+import datetime, json, os, pathlib, subprocess, tempfile, urllib.parse
 required=['DATABASE_URL','AGE_RECIPIENT','BACKUP_BUCKET','SPACES_ENDPOINT','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY']
 for key in required:
     if not os.getenv(key): raise SystemExit(f'Missing configuration: {key}')
@@ -18,5 +18,16 @@ with tempfile.TemporaryDirectory(prefix='ftp-backup-') as temp:
     subprocess.run(['age','-r',os.environ['AGE_RECIPIENT'],'-o',str(encrypted),str(dump)],check=True)
     stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y/%m/%d/%H%M%S')
     key=f'freetourpraga/{stamp}.dump.age'
-    subprocess.run(['aws','s3','cp',str(encrypted),f's3://{os.environ["BACKUP_BUCKET"]}/{key}','--endpoint-url',os.environ['SPACES_ENDPOINT'],'--only-show-errors','--acl','private'],check=True)
+    subprocess.run(['aws','s3','cp',str(encrypted),f's3://{os.environ["BACKUP_BUCKET"]}/{key}','--endpoint-url',os.environ['SPACES_ENDPOINT'],'--only-show-errors'],check=True)
     print(f'Encrypted backup uploaded: {key}')
+    retention=int(os.getenv('BACKUP_RETENTION_DAYS','30'))
+    if retention < 7: raise SystemExit('Backup retention must be at least 7 days')
+    cutoff=datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=retention)
+    listing=subprocess.run(['aws','s3api','list-objects-v2','--bucket',os.environ['BACKUP_BUCKET'],'--prefix','freetourpraga/','--endpoint-url',os.environ['SPACES_ENDPOINT'],'--output','json'],check=True,capture_output=True,text=True)
+    removed=0
+    for item in json.loads(listing.stdout).get('Contents',[]):
+        timestamp=datetime.datetime.fromisoformat(item['LastModified'].replace('Z','+00:00'))
+        if timestamp < cutoff and item['Key'].endswith('.dump.age'):
+            subprocess.run(['aws','s3api','delete-object','--bucket',os.environ['BACKUP_BUCKET'],'--key',item['Key'],'--endpoint-url',os.environ['SPACES_ENDPOINT']],check=True,capture_output=True)
+            removed+=1
+    print(f'Backup retention: {retention} days, {removed} expired objects removed')

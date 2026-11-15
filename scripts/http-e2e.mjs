@@ -288,7 +288,7 @@ const contact = await (await fetch(base + "/contatti")).text();
 assert.match(contact, /Contatti QA verificati/);
 assert.match(contact, /SEO QA/);
 assert.match(contact, /Invia richiesta/);
-if (process.env.HTTP_TEST_PRODUCTION !== "1") {
+{
   const image = await fetch(base + "/api/platform/admin/media", {
     method: "POST",
     headers: { Cookie: cookie, Origin: base, "Content-Type": "image/png" },
@@ -304,7 +304,7 @@ if (process.env.HTTP_TEST_PRODUCTION !== "1") {
   const downloaded = await fetch(base + media.url);
   assert.equal(downloaded.status, 200);
   assert.equal(downloaded.headers.get("content-type"), "image/webp");
-  await rm(`.data/media/${media.url.split("/").pop()}`);
+  if (process.env.HTTP_TEST_PRODUCTION !== "1") await rm(`.data/media/${media.url.split("/").pop()}`);
 }
 const cms = (await call("/api/platform/admin/state", undefined, "GET"))
   .siteContent;
@@ -317,10 +317,11 @@ await call("/api/platform/admin/site-content", cms, "PUT");
 const home = await (await fetch(base + "/")).text();
 assert.match(home, /Footer pubblicato dal gestionale QA/);
 assert.match(home, /Titolo fiducia modificato QA/);
-assert.match(home, /Domanda QA pubblicata/);
+
 assert.match(home, /Foto QA dal gestionale/);
 assert.match(home, /assistenza-qa@example.com/);
 const faq = await (await fetch(base + "/faq")).text();
+assert.match(faq, /Domanda QA pubblicata/);
 assert.match(faq, /Risposta QA dal backend/);
 const ai = await (await fetch(base + "/ai-context.json")).json();
 assert.equal(ai.faq[0].a, "Risposta QA dal backend.");

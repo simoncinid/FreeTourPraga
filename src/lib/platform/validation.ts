@@ -35,6 +35,7 @@ export const affiliateSchema = z.object({
   type: z.enum(["hotel", "guide", "promoter", "agency"]),
   commissionPercent: z.number().min(0).max(100),
   active: z.boolean(),
+  wpId: z.number().int().positive().optional(),
 });
 export const settingsSchema = z.object({
   multiTourPercent: z.number().min(0).max(100),
@@ -56,7 +57,7 @@ export const tourSchema = z.object({
   description: text(20000),
   imageUrl: z.string().refine((v) => {
     if (/^\/api\/media\/[-a-f0-9]{36}\.webp$/.test(v))
-      return process.env.NODE_ENV !== "production";
+      return true;
     try {
       const u = new URL(v);
       return (

@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { SiteContentEditor } from "./SiteContentEditor";
 import type { SiteContent } from "@/lib/platform/content";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -133,6 +133,7 @@ function time(value: string) {
   });
 }
 export function AdminWorkspace() {
+  const router = useRouter();
   const path = usePathname().split("/").filter(Boolean);
   const raw = path[1] || "";
   const section = ["prezzi", "sconti", "last-minute"].includes(raw)
@@ -151,19 +152,19 @@ export function AdminWorkspace() {
   const [month, setMonth] = useState(() =>
     new Date().toISOString().slice(0, 7),
   );
-  async function load() {
+  const load = useCallback(async () => {
     const r = await fetch("/api/platform/admin/state");
     if (r.status === 401) {
-      window.location.replace("/accesso");
+      router.replace("/accesso");
       return;
     }
     const d = await r.json();
     if (!r.ok) throw Error(d.error);
     setData(d);
-  }
+  }, [router]);
   useEffect(() => {
     load().catch((e) => setMessage(e.message));
-  }, []);
+  }, [load]);
   async function mutate(route: string, body: unknown, method = "POST") {
     setBusy(true);
     setMessage("");
@@ -377,7 +378,7 @@ export function AdminWorkspace() {
           className="mt-4 flex gap-2 text-sm"
           onClick={async () => {
             await fetch("/api/platform/logout", { method: "POST" });
-            window.location.assign("/accesso");
+            router.replace("/accesso");
           }}
         >
           <LogOut size={16} />
@@ -527,6 +528,7 @@ export function AdminWorkspace() {
                 <a
                   className="button-secondary"
                   href="/api/platform/admin/export"
+                  download
                 >
                   Esporta CSV
                 </a>
@@ -685,7 +687,9 @@ export function AdminWorkspace() {
                       <div>
                         <h2 className="display-md">{a.name}</h2>
                         <p>
-                          {a.type} · {a.code} · {a.commissionPercent}% ·{" "}
+                          {a.type} · {a.code}
+                          {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
+                          {a.commissionPercent}% ·{" "}
                           {a.active ? "Attivo" : "Sospeso"}
                         </p>
                         <p>
@@ -696,12 +700,18 @@ export function AdminWorkspace() {
                         </p>
                         <a
                           className="block break-all text-sm underline"
-                          href={`/?ref=${a.code}`}
+                          href={
+                            a.wpId != null
+                              ? `/?affiliates=${a.wpId}`
+                              : `/?ref=${a.code}`
+                          }
                         >
                           {typeof window !== "undefined"
                             ? window.location.origin
                             : ""}
-                          /?ref={a.code}
+                          {a.wpId != null
+                            ? `/?affiliates=${a.wpId}`
+                            : `/?ref=${a.code}`}
                         </a>
                       </div>
                       <a
@@ -964,6 +974,7 @@ export function AdminWorkspace() {
             <a
               className="button-secondary mt-6"
               href="/api/platform/admin/export"
+              download
             >
               Scarica dati prenotazioni
             </a>
@@ -993,6 +1004,7 @@ function ManualBooking({
   save: (v: unknown) => Promise<unknown>;
 }) {
   const [tour, setTour] = useState(tours[0]?.slug || "");
+  const [now] = useState(() => Date.now());
   const [message, setMessage] = useState("");
   const selected = tours.find((t) => t.slug === tour);
   return (
@@ -1043,7 +1055,7 @@ function ManualBooking({
           Partenza
           <select name="slotId" required className="text-input">
             {selected?.slots
-              .filter((s) => new Date(s.startsAt).getTime() > Date.now())
+              .filter((s) => new Date(s.startsAt).getTime() > now)
               .map((s) => (
                 <option key={s.id} value={s.id}>
                   {time(s.startsAt)} · {s.capacity - s.reserved} posti
@@ -1664,6 +1676,18 @@ function AffiliateEditor({
           value={a.commissionPercent}
           onChange={(v) => setA({ ...a, commissionPercent: Number(v) })}
         />
+        <Field
+          label="ID WordPress Affiliates (opzionale)"
+          type="number"
+          min={1}
+          value={a.wpId ?? ""}
+          onChange={(v) =>
+            setA({
+              ...a,
+              wpId: v ? Number(v) : undefined,
+            })
+          }
+        />
         <label>
           Tipologia
           <select
@@ -1680,8 +1704,9 @@ function AffiliateEditor({
         </label>
       </div>
       <p className="text-sm">
-        La commissione matura dopo la partecipazione. Le prenotazioni cancellate
-        sono escluse. Inserisci un codice esistente per aggiornare il partner.
+        Link partner WP: <code>/?affiliates=ID</code>. Commissione 0 = solo
+        attribuzione (come free tour su WP). Matura dopo presenza; le cancellate
+        sono escluse.
       </p>
       <button disabled={busy} className="button-primary">
         Salva affiliato

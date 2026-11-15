@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17
+        image: postgres:18
         env:
           POSTGRES_PASSWORD: test-only
           POSTGRES_DB: ftp_test_ci
@@ -29,6 +29,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:migrate
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm test
@@ -37,4 +38,12 @@ jobs:
           TEST_POSTGRES: "1"
       - run: npm run test:http
       - run: npm audit --audit-level=moderate
-      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-qa
+          path: tmp/browser-qa
+          if-no-files-found: ignore
+          retention-days: 7

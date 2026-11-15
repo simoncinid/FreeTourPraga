@@ -1,44 +1,31 @@
-# Stato tecnico rispetto al contratto
+# Stato della Fase 1 — 15 novembre 2026
 
-Verifica del 6 novembre 2026 su `freetour-praga-contratto.pdf` (5 pagine).
+Perimetro richiesto: sei step della Fase 1 del PDF, con Railway al posto di Vercel e backup giornaliero. Il committente ha confermato il mantenimento del catalogo dimostrativo e la successiva configurazione di Stripe e SMTP su Railway. Incluse le modifiche contemporanee a home, menu, Chi siamo, Informazioni utili, Blog e Aiuto.
 
-**Esito: piattaforma non pronta per essere dichiarata interamente completata e collaudata rispetto al PDF.**
+## Verifiche completate sul codice
 
-Questo è un rapporto tecnico sul codice e sulle verifiche effettuate, non un verbale di accettazione. I test automatici superati non provano l'esecuzione di attività esterne mai effettuate. Il software è stato sviluppato e verificato in locale; non risulta pubblicato e collaudato in produzione da questa sessione.
+- Lint senza errori o avvisi e TypeScript superati.
+- 27 test superati; anche i test applicativi su PostgreSQL reale sono superati.
+- Build standalone, migrazioni e smoke HTTP delle 23 pagine/risorse previsti superati.
+- E2E API: checkout cash multi-tour, sconto server, idempotenza, permessi, CMS, upload immagini PostgreSQL, calendario e gestione staff.
+- Browser desktop/mobile: pagine, assenza di overflow, date di Praga da un browser in fuso americano, carrello, checkout cash, conferma e calendario. Accesso staff e pagine tour/calendario/CMS/impostazioni verificati.
+- Protocollo Stripe: sessione mock HTTPS, importo/metadati/idempotency key, link email, webhook firmato, eventi duplicati e rifiuto di pagamenti live nell’anteprima.
+- SMTP locale: 13 messaggi ricevuti da server isolato STARTTLS, con verifica dell’HTML e dell’allegato calendario. Non sono state inviate email su Internet.
+- Audit npm: nessuna vulnerabilità segnalata.
 
-## Stato per ciascuno dei 12 step
+## Infrastruttura
 
-| Step del contratto                                              | Stato ed evidenze disponibili                                                                                                                                               | Cosa manca prima di dichiararlo concluso                                                                                                                                                                                                                                                                                             |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1. Analisi UX/UI, prototipi e documentazione                    | Flussi, interfacce e documentazione presenti nel progetto.                                                                                                                  | Verifica del prototipo della versione attuale e validazione finale dei flussi.                                                                                                                                                                                                                                                       |
-| 2. Frontend, SEO/GEO, Maps, social, TripAdvisor, Partner Europa | Pagine e integrazioni sviluppate; rendering server e risposte HTTP verificati.                                                                                              | QA visiva e interattiva desktop/mobile; contenuti, immagini e link ufficiali; verifica sul dominio definitivo. Nessuna misurazione Lighthouse o audit accessibilità completo eseguiti.                                                                                                                                               |
-| 3. Back-office tour, orari e contenuti                          | Gestione tour, partenze, capienza, fasce, tariffe, pagine e CMS globale: home, FAQ, galleria, contatti, menu, social e footer.                                                        | Validazione dei contenuti ufficiali e verifica editoriale nel browser. |
-| 4. Booking engine e Stripe                                      | Carrello locale, checkout anonimo, prezzi server, inventario e contanti testati. Stripe Checkout, firma webhook, deduplica e rimborsi sviluppati; eventi sintetici testati. | Pagamento e rimborso con account Stripe test, verifica email del payment link, casi di abbandono e ritorno nel browser; configurazione live successiva.                                                                                                                                                                              |
-| 5. Email transazionali e calendario                             | Outbox, retry e download ICS testati localmente.                                                                                                                            | Invio e recapito SMTP reali, autenticazione dominio, attivazione worker e verifica comunicazioni effettive dopo modifica/cancellazione.                                                                                                                                                                                              |
-| 6. Messa online, SSL e deploy                                   | File Vercel, Render, Docker e GitHub CI predisposti.                                                                                                                        | Repository remoto/CI effettiva, servizi e DB di produzione, migrazione, dominio, DNS, certificato SSL, deploy e collaudo online. Nessuna pubblicazione eseguita.                                                                                                                                                                     |
-| 7. Master inventory e overbooking                               | Transazioni PostgreSQL e richieste concorrenti testate sull'inventario interno.                                                                                             | Prova con i canali reali e verifica della gestione disponibilità sui portali OTA. La sola lettura di email successive alla vendita non blocca preventivamente una vendita sul portale esterno. Non è possibile dichiarare azzerato quel rischio sulla sola base dei test interni.                                                    |
-| 8. Self-service cliente                                         | Pagina protetta della singola prenotazione, senza account: cambio partenza, cancellazione con policy, consenso e ICS. | Flusso approvato dal committente; verificare recapito email reale e interazioni browser. |
-| 9. Affiliati e QR                                               | Creazione partner, attribuzione, QR SVG, calcolo e registrazione commissioni testati via API.                                                                               | Partner reali, regole commerciali approvate e verifica nel browser di link/QR fino alla prenotazione, compresi i report da liquidare.                                                                                                                                                                                                |
-| 10. Parsing email Civitatis/GetYourGuide                        | IMAP, controllo mittenti/DKIM, parser per campi riconosciuti, deduplica e coda revisione implementati; fixture rappresentative testate.                                     | Campioni reali di entrambi i provider, corrispondenza attività/orari, autorizzazioni e casella collegata. Il parser generico non è una compatibilità certificata con tutte le email reali.                                                                                                                                           |
-| 11. Reminder WhatsApp                                           | Worker, consenso, schedulazione, template Twilio e retry implementati.                                                                                                      | Mittente e template approvati; invio e recapito reali; verifica cancellazioni/riprogrammazioni e gestione opt-out nello scenario definitivo.                                                                                                                                                                                         |
-| 12. Google Ads, KPI e manuale                                   | KPI interni, tag/consenso/conversione e manuale presenti; piano Ads documentato.                                                                                            | Configurazione effettiva dell'account e delle campagne, conversioni osservate in account e collaudo del tracciamento. Un piano scritto non equivale al setup delle campagne.                                                                                                                                                         |
+Railway è autenticato e collegato al progetto indicato. Configurati web, worker, database e servizio backup con cron giornaliero e bucket privato. Corrette le cause dei crash precedenti (percorso server, Prisma CLI e script worker mancanti). Creato account staff con password casuale, salvata solo nel file locale privato. Impostata anteprima non indicizzabile.
 
-## Backup giornaliero
+**Rilascio GitHub/web e collaudo online in corso al momento di questo aggiornamento.** Il rapporto sarà aggiornato con gli esiti effettivi.
 
-Script di esportazione, cifratura, caricamento Spaces e cron Render predisposti. Non è stato eseguito un backup su storage reale né un ripristino verificato. La previsione contrattuale del backup giornaliero non può essere dichiarata operativa finché non sono attivati il job e il relativo monitoraggio.
+## Attività riservate al committente prima del lancio commerciale
 
-## Cosa è stato effettivamente verificato
+1. Configurare Stripe e webhook e verificare una transazione nel proprio account.
+2. Configurare SMTP e dominio mittente, quindi verificare recapito a una casella controllata.
+3. Inserire e approvare tour, tariffe, partenze, contenuti e informative definitivi dal gestionale.
+4. Validare gli step previsti dal contratto e, solo al termine, disattivare l’anteprima.
 
-Nell'ultima esecuzione: TypeScript e build di produzione riusciti; 24 test applicativi locali superati; smoke di 18 pagine ed E2E delle API superati sul bundle standalone con PostgreSQL temporaneo. È stato verificato che sconto, cancellazione e fasce siano configurabili dal backend. Verificati carrello in localStorage, assenza di account, prove firmate limitate alla prenotazione e CMS globale. Il rimborso cash è registrato manualmente, senza inviare richieste Stripe. Le firme Stripe provate erano sintetiche; nessun messaggio, pagamento o campagna reale è stato eseguito.
+Il dominio Railway è la destinazione richiesta; il dominio personalizzato non è richiesto per questa anteprima. Fase 2, campagne Ads, Twilio e OTA non vengono attivati. Il widget TripAdvisor recuperato dal sito precedente è il certificato 2020, non una certificazione aggiornata.
 
-Le evidenze sono descritte in `COLLAUDO.md`. Non sono presenti evidenze di collaudo visivo completo della versione attuale, di utilizzo dei servizi reali, di deploy online o di accettazione finale del cliente.
-
-## Distinzione da mantenere nella consegna
-
-- **Sviluppato:** codice presente.
-- **Testato localmente:** comportamento verificato nell'ambiente indicato.
-- **Attivato:** servizio esterno configurato e funzionante.
-- **Collaudato:** caso reale eseguito con esito documentato.
-- **Pronto per consegna completa:** tutti i requisiti concordati coperti e verificati; le attività esterne richieste sono state effettivamente eseguite.
-
-Lo stato attuale non soddisfa l'ultima condizione. Non usare le formule “tutto pronto”, “100% conforme al contratto” o “consegna completa collaudata” per descriverlo.
+La consegna commerciale completa non viene dichiarata finché queste attività rimangono aperte. Le istruzioni operative sono in [RAILWAY.md](RAILWAY.md), il manuale e la matrice della Fase 1 in [FASE-1.md](FASE-1.md).

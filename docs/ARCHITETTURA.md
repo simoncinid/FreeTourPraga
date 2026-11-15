@@ -1,3 +1,5 @@
+> Documento storico. Per la richiesta attuale (solo Fase 1, GitHub e Railway) fare riferimento a [FASE-1.md](FASE-1.md) e [RAILWAY.md](RAILWAY.md).
+
 > Documento storico, superato il 6 novembre 2026. Per il sistema attuale leggere [Manuale tecnico](MANUALE-TECNICO.md), [copertura contratto](REQUISITI-CONTRATTO.md) e [ipotesi](IPOTESI-E-ATTIVAZIONE.md).
 
 # Architettura tecnica

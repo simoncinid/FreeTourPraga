@@ -207,20 +207,20 @@ export const tours: Tour[] = [
 
 export const trustPillars = [
   {
-    title: "Scudo anti-truffe",
-    text: "Cambio sicuro, ATM da evitare e pagamenti chiari in euro prima che il problema si presenti."
+    title: "Tutela e trasparenza",
+    text: "Consigli pratici su cambio sicuro e pagamenti trasparenti, per metterti al riparo da spiacevoli sorprese."
   },
   {
-    title: "Gruppi ristretti",
-    text: "Numero chiuso per ascoltare la guida, fare domande e non sentirsi trascinati da una folla."
+    title: "Gruppi a numero chiuso",
+    text: "Gestiamo con attenzione la capienza di ogni gruppo per assicurarti un ritmo piacevole, spazio per le tue domande e un ascolto sempre ottimale."
   },
   {
-    title: "Addio Google Maps",
-    text: "Punti d'incontro geolocalizzati, email di conferma e indicazioni native da aprire con un tocco."
+    title: "Punti d'incontro chiari",
+    text: "Posizione esatta del punto d'incontro via email e WhatsApp, con percorsi rapidi da aprire sul telefono in un attimo."
   },
   {
-    title: "WhatsApp ogni giorno",
-    text: "Il servizio clienti risponde dalle 9:00 alle 19:00 per informazioni e richieste sui tour."
+    title: "Assistenza diretta 7 giorni su 7",
+    text: "Il nostro servizio clienti ti assiste ogni giorno dalle 9:00 alle 19:00 per informazioni e supporto sui tuoi tour."
   }
 ];
 

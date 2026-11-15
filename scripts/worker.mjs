@@ -23,7 +23,7 @@ async function tick() {
   try {
     await Promise.allSettled([
       call("jobs"),
-      ...(iteration % 5 === 0 ? [call("mailbox")] : []),
+      ...(process.env.ENABLE_OTA === "true" && iteration % 5 === 0 ? [call("mailbox")] : []),
       ...(iteration % 1440 === 0 ? [call("maintenance")] : []),
     ]);
     iteration++;

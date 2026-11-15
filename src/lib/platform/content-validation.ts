@@ -31,7 +31,7 @@ export const siteContentSchema = z.object({
     navigation: z
       .array(z.object({ label: short, href: localPath }))
       .min(1)
-      .max(8),
+      .max(12),
   }),
   home: z.object({
     heroImage: tourSchema.shape.imageUrl,
@@ -59,6 +59,17 @@ export const siteContentSchema = z.object({
     faqTitle: short,
     stats: z.array(z.object({ value: short, label: short })).max(8),
     pillars: z.array(z.object({ title: short, text: body })).max(12),
+    groups: z
+      .array(
+        z.object({
+          title: short,
+          items: z
+            .array(z.object({ title: short, href: localPath }))
+            .min(1)
+            .max(6),
+        }),
+      )
+      .max(6),
   }),
   gallery: z
     .array(

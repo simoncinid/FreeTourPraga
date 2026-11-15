@@ -4,9 +4,26 @@ import { CartBadge } from "@/components/CartBadge";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
 
+const primaryHrefs = [
+  "/tour",
+  "/chi-siamo",
+  "/informazioni-utili",
+  "/contatti",
+];
+
 export async function Header() {
   const c = await publicSiteContent();
   const links = c.globals.navigation;
+  const account = links.find(
+    (link) => link.href === "/account" || link.href === "/accesso",
+  );
+  const rest = links.filter((link) => link !== account);
+  const primary = rest.filter((link) => primaryHrefs.includes(link.href));
+  const more = rest.filter((link) => !primary.includes(link));
+  const showSplit = primary.length > 0 && more.length > 0;
+  const visible = showSplit ? primary : rest;
+  const overflow = showSplit ? more : [];
+
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-navy text-on-dark shadow-[0_4px_18px_rgba(7,26,53,0.18)]">
       <div className="container-page flex h-[74px] items-center justify-between gap-6">
@@ -17,13 +34,43 @@ export async function Header() {
           {c.globals.brandName}
         </Link>
         <nav className="hidden items-center gap-5 xl:flex">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="nav-link">
+          {visible.map((link) => (
+            <Link
+              key={`${link.href}-${link.label}`}
+              href={link.href}
+              className="nav-link whitespace-nowrap"
+            >
               {link.label}
             </Link>
           ))}
+          {overflow.length > 0 && (
+            <details className="nav-more relative">
+              <summary className="nav-link cursor-pointer whitespace-nowrap">
+                Altro
+              </summary>
+              <div className="absolute left-0 top-9 z-40 grid w-64 gap-1 rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
+                {overflow.map((link) => (
+                  <Link
+                    key={`${link.href}-${link.label}`}
+                    href={link.href}
+                    className="rounded-sm px-3 py-3 hover:bg-surface-soft"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          )}
         </nav>
         <div className="flex items-center gap-4">
+          {account && (
+            <Link
+              href={account.href}
+              className="nav-link hidden whitespace-nowrap xl:inline !text-primary"
+            >
+              {account.label}
+            </Link>
+          )}
           <CartBadge />
           <a
             href={contentWhatsapp(
@@ -41,11 +88,11 @@ export async function Header() {
             >
               <Menu size={20} />
             </summary>
-            <nav className="absolute right-0 top-12 grid w-56 gap-1 rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
+            <nav className="absolute right-0 top-12 grid max-h-[70vh] w-72 gap-1 overflow-auto rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
               {links.map((link) => (
                 <Link
                   className="rounded-sm px-3 py-3 hover:bg-surface-soft"
-                  key={link.href}
+                  key={`${link.href}-${link.label}`}
                   href={link.href}
                 >
                   {link.label}
