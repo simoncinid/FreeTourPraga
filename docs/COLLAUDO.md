@@ -10,7 +10,7 @@ Next.js 16.4.5, bundle standalone, PostgreSQL temporaneo dedicato, SMTP isolato 
 | `npm run typecheck` | Superato |
 | `npm test` | 27 test superati |
 | `npm run test:postgres` | Superato su database temporaneo; entrambe le migrazioni applicate |
-| `npm run test:browser` | Build, 23 risposte HTTP, E2E API, browser desktop/mobile e SMTP superati |
+| `npm run test:browser` | Build, 22 risposte HTTP, E2E API, browser desktop/mobile e SMTP superati |
 | `npm audit --audit-level=moderate` | Zero vulnerabilità |
 | `git diff --check` | Superato |
 

@@ -25,7 +25,7 @@ Railway è autenticato e collegato al progetto indicato. Configurati web, worker
 - Worker attivo; le richieste periodiche ai job restituiscono HTTP 200.
 - Backup giornaliero alle 02:00 UTC: due esecuzioni di prova con caricamento riuscito sul bucket privato Railway.
 - Backup del 15 novembre alle 15:35:38 UTC scaricato, decifrato e ripristinato integralmente in un database PostgreSQL locale isolato: 1 stato applicativo, 3 tour, 1 immagine e 2 migrazioni verificati. Database temporaneo e archivio decifrato eliminati dopo la prova. [Evidenza del ripristino](evidenze/backup-restore.json).
-- Repository aggiornato su GitHub; CI con lint, tipi, test, PostgreSQL, browser e allegati QA attiva. Anche l’ultima revisione applicativa `8d44d32` ha superato la [CI GitHub](https://github.com/simoncinid/FreeTourPraga/actions/runs/43731125905). La sitemap online contiene 15 URL tutti distinti.
+- Repository aggiornato su GitHub; CI con lint, tipi, test, PostgreSQL, browser e allegati QA attiva. La precedente revisione applicativa `8d44d32` ha superato la [CI GitHub](https://github.com/simoncinid/FreeTourPraga/actions/runs/43731125905). La sitemap online contiene 15 URL tutti distinti.
 
 ## Copertura dei sei step
 
@@ -51,4 +51,4 @@ La consegna commerciale completa non viene dichiarata finché queste attività r
 
 ## Rimozione dell’accesso clienti dalla Fase 1
 
-Su richiesta del committente, rimossi la voce pubblica “Accedi o registrati” e la pagina `/account` (HTTP 404), anche quando il collegamento è presente in una navigazione CMS salvata in precedenza. Il checkout resta senza account; `/accesso` rimane riservato allo staff. Verificati lint, TypeScript, 27 test e collaudo HTTP del bundle di produzione.
+Su richiesta del committente, rimossi la voce pubblica “Accedi o registrati” e la pagina `/account` (HTTP 404), anche quando il collegamento è presente in una navigazione CMS salvata in precedenza. Il checkout resta senza account; `/accesso` rimane riservato allo staff. Verificati lint, TypeScript, 27 test e collaudo HTTP del bundle di produzione. La [CI della rimozione](https://github.com/simoncinid/FreeTourPraga/actions/runs/43734454362) è superata e la revisione `7fedcc7` è distribuita su Railway. Verificati online HTTP 404, assenza della voce nei menu desktop/mobile, accesso staff disponibile e API amministrative protette. Le schermate del prototipo sono aggiornate.
