@@ -12,7 +12,6 @@ const pages = [
   "/informazioni-utili",
   "/blog",
   "/aiuto",
-  "/account",
   "/privacy",
   "/termini",
   "/checkout",
@@ -31,8 +30,7 @@ for (const page of pages) {
   console.log(`200 ${page}`);
 }
 assert.equal((await fetch(base + "/api/platform/admin/state")).status, 401);
-const account = await (await fetch(base + "/account")).text();
-assert.match(account, /Prenoti senza creare un account/);
+assert.equal((await fetch(base + "/account")).status, 404);
 assert.equal((await fetch(base + "/self-service/test")).status, 404);
 assert.equal((await fetch(base + "/api/platform/customer/test")).status, 410);
 assert.equal(
@@ -46,7 +44,8 @@ assert.equal(
   410,
 );
 const home = await (await fetch(base + "/")).text();
-assert.doesNotMatch(account, /<form/);
+assert.doesNotMatch(home, /href="\/account(?:[/?#]|"|&)/);
+assert.doesNotMatch(home, /Accedi o registrati/);
 
 assert.equal((await fetch(base + "/api/admin/bookings")).status, 410);
 assert.equal((await fetch(base + "/api/platform/cron")).status, 401);

@@ -48,3 +48,7 @@ Railway è autenticato e collegato al progetto indicato. Configurati web, worker
 Il dominio Railway è la destinazione richiesta; il dominio personalizzato non è richiesto per questa anteprima. Fase 2, campagne Ads, Twilio e OTA non vengono attivati. Il widget TripAdvisor recuperato dal sito precedente è il certificato 2020, non una certificazione aggiornata.
 
 La consegna commerciale completa non viene dichiarata finché queste attività rimangono aperte. Le istruzioni operative sono in [RAILWAY.md](RAILWAY.md), il manuale e la matrice della Fase 1 in [FASE-1.md](FASE-1.md).
+
+## Rimozione dell’accesso clienti dalla Fase 1
+
+Su richiesta del committente, rimossi la voce pubblica “Accedi o registrati” e la pagina `/account` (HTTP 404), anche quando il collegamento è presente in una navigazione CMS salvata in precedenza. Il checkout resta senza account; `/accesso` rimane riservato allo staff. Verificati lint, TypeScript, 27 test e collaudo HTTP del bundle di produzione.

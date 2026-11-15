@@ -16,10 +16,7 @@ export async function Header() {
   const [c, tours] = await Promise.all([publicSiteContent(), catalog()]);
   const menuTours = tours.slice(0, menuTourLimit);
   const links = c.globals.navigation;
-  const account = links.find(
-    (link) => link.href === "/account" || link.href === "/accesso",
-  );
-  const rest = links.filter((link) => link !== account);
+  const rest = links;
   const primary = rest.filter((link) => primaryHrefs.includes(link.href));
   const more = rest.filter((link) => !primary.includes(link));
   const showSplit = primary.length > 0 && more.length > 0;
@@ -94,14 +91,6 @@ export async function Header() {
           )}
         </nav>
         <div className="flex items-center gap-4">
-          {account && (
-            <Link
-              href={account.href}
-              className="nav-link hidden whitespace-nowrap xl:inline !text-primary"
-            >
-              {account.label}
-            </Link>
-          )}
           <CartBadge />
           <a
             href={contentWhatsapp(

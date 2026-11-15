@@ -82,7 +82,6 @@ export function defaultSiteContent(): SiteContent {
         { label: "Blog", href: "/blog" },
         { label: "FAQ", href: "/faq" },
         { label: "Aiuto", href: "/aiuto" },
-        { label: "Accedi o registrati", href: "/account" },
       ],
     },
     home: {
@@ -210,7 +209,7 @@ export function defaultSiteContent(): SiteContent {
 }
 export function siteContent(stored?: SiteContent): SiteContent {
   const base = defaultSiteContent();
-  return stored
+  const content = stored
     ? {
         ...base,
         ...stored,
@@ -218,6 +217,11 @@ export function siteContent(stored?: SiteContent): SiteContent {
         home: { ...base.home, ...stored.home },
       }
     : base;
+  // Discard legacy customer-account links, including navigation already saved in the CMS.
+  content.globals.navigation = content.globals.navigation.filter(
+    (link) => !/^\/account(?:[/?#]|$)/.test(link.href),
+  );
+  return content;
 }
 export function contentWhatsapp(content: SiteContent, message: string) {
   return `https://wa.me/${content.globals.whatsappNumber}?text=${encodeURIComponent(message)}`;
