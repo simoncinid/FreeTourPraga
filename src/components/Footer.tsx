@@ -46,7 +46,12 @@ export async function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 py-5">
-        <p className="container-page text-sm text-white/80">{g.footerNote}</p>
+        <div className="container-page flex flex-wrap items-center justify-between gap-4 text-sm text-white/80">
+          <p>{g.footerNote}</p>
+          <Link href="/accesso" className="underline underline-offset-4">
+            Area staff
+          </Link>
+        </div>
       </div>
     </footer>
   );

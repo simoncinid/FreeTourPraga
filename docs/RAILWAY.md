@@ -33,6 +33,8 @@ HTTPS è fornito dal dominio Railway. Il dominio inoltra alla porta **8080**, qu
 - Social: `NEXT_PUBLIC_INSTAGRAM_URL`, `NEXT_PUBLIC_FACEBOOK_URL` e gli altri canali effettivi.
 - TripAdvisor: profilo e codice widget ufficiale del sito precedente. Il widget recuperato è il certificato **2020**, esattamente come sul sito attuale; non è una certificazione per l’anno corrente. Il caricamento richiede il clic del visitatore.
 
+Dal sito usare “Area staff” nel footer, oppure aprire `/accesso`; dopo il login si entra in `/admin`. Sito e gestionale condividono il database PostgreSQL Railway.
+
 Le credenziali staff iniziali sono in `privato/railway-accesso.txt`, mai nel repository o nel container. Le password non sono recuperabili dal gestionale: per sostituirle generare un nuovo hash e aggiornare `STAFF_USERS`.
 
 ## Attivare Stripe (committente)

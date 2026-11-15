@@ -52,3 +52,7 @@ La consegna commerciale completa non viene dichiarata finché queste attività r
 ## Rimozione dell’accesso clienti dalla Fase 1
 
 Su richiesta del committente, rimossi la voce pubblica “Accedi o registrati” e la pagina `/account` (HTTP 404), anche quando il collegamento è presente in una navigazione CMS salvata in precedenza. Il checkout resta senza account; `/accesso` rimane riservato allo staff. Verificati lint, TypeScript, 27 test e collaudo HTTP del bundle di produzione. La [CI della rimozione](https://github.com/simoncinid/FreeTourPraga/actions/runs/43734454362) è superata e la revisione `7fedcc7` è distribuita su Railway. Verificati online HTTP 404, assenza della voce nei menu desktop/mobile, accesso staff disponibile e API amministrative protette. Le schermate del prototipo sono aggiornate.
+
+## Accesso e verifica del gestionale
+
+Accesso staff: https://web-production-f3beeaff.up.railway.app/accesso; dashboard: https://web-production-f3beeaff.up.railway.app/admin. Il footer include il collegamento “Area staff”. Verificati sul dominio pubblico login, redirect delle richieste non autenticate, dieci sezioni (tour, prenotazioni, inserimento, calendario, CMS, pagine, impostazioni, richieste, email, audit), corrispondenza del catalogo pubblico con i tour pubblicati nell’admin e logout con revoca della sessione. Database PostgreSQL condiviso confermato; Stripe e SMTP restano da configurare dal committente.
