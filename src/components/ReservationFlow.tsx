@@ -247,16 +247,15 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   />{" "}
                   Contanti sul posto
                 </label>
-                <label className="card flex gap-3 p-4">
+                {stripeAvailable && <label className="card flex gap-3 p-4">
                   <input
                     type="radio"
                     name="payment"
                     checked={method === "stripe"}
-                    disabled={!stripeAvailable}
                     onChange={() => setMethod("stripe")}
                   />{" "}
-                  {stripeAvailable ? "Carta con link sicuro Stripe" : "Pagamento online in attivazione"}
-                </label>
+                  Carta con link sicuro Stripe
+                </label>}
               </fieldset>
               <p className="text-sm">
                 Cancellazione gratuita fino a {rules.cancellationHours} ore

@@ -20,7 +20,7 @@ Pagine: home, catalogo, schede tour, tour privati, Partner Europa con modulo, co
 
 Maps usa il punto d’incontro di ciascun tour. Social e profilo TripAdvisor sono configurabili; il widget richiede il codice ufficiale in `TRIPADVISOR_WIDGET_HTML` e `NEXT_PUBLIC_TRIPADVISOR_WIDGET_SCRIPT_SRC`. Nessun widget esterno viene simulato.
 
-In anteprima `SITE_PREVIEW=true`: avviso pubblico, meta noindex/nofollow e robots che esclude la scansione. Prima del lancio inserire catalogo e testi definitivi e cambiare questa variabile in `false`. Non indicizzare tariffe dimostrative.
+Durante la revisione del cliente `SITE_PREVIEW=true` mantiene meta noindex/nofollow, esclusione dai crawler e blocco dei pagamenti live. Su richiesta del committente non vengono mostrati banner di anteprima. Prima del lancio inserire catalogo e testi definitivi e cambiare questa variabile in `false`. Non indicizzare tariffe dimostrative.
 
 ## 3. Gestionale tour, orari, disponibilità e contenuti
 
@@ -43,7 +43,7 @@ Il visitatore seleziona data/orario e fasce d’età, aggiunge più tour e vede 
 
 Contanti: prenotazione confermata e saldo sul posto. Stripe: Checkout esterno, link in email, blocco posti per circa 30 minuti. Il ritorno alla pagina non vale come pagamento: servono evento firmato, sessione associata, valuta EUR e importo coincidente. Eventi duplicati non riapplicano il pagamento. Link scaduti/cancellati vengono rifiutati; pagamenti tardivi non rioccupano posti già liberati.
 
-Finché non sono presenti chiave Stripe e firma webhook, l’opzione carta risulta in attivazione. Nell’anteprima sono ammessi solo pagamenti Stripe di test. La configurazione e il collaudo dell’account reale restano da eseguire dal committente.
+Finché non sono presenti chiave Stripe e firma webhook, il checkout propone solo i metodi disponibili e non mostra avvisi di attivazione. Nell’anteprima sono ammessi solo pagamenti Stripe di test. La configurazione e il collaudo dell’account reale restano da eseguire dal committente.
 
 ## 5. Email transazionali e calendario
 
