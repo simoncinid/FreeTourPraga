@@ -26,4 +26,8 @@ Non sono dichiarati punteggi Lighthouse, certificazioni di accessibilità, posiz
 
 ## Verifiche Railway e GitHub
 
-Provisioning e primo backup avviati. Rilascio web, CI remota, HTTPS e prova di ripristino sono in corso; gli esiti effettivi saranno riportati in [STATO-CONSEGNA.md](STATO-CONSEGNA.md). Nessun pagamento, recapito SMTP Internet o validazione del cliente viene dichiarato eseguito senza evidenze.
+Anteprima HTTPS pubblicata e verificata. Test remoti su 17 risorse pubbliche, metadati noindex, protezione degli endpoint, accesso staff e persistenza di una foto caricata. Browser desktop/mobile, caricamento Maps e widget TripAdvisor verificati senza creare prenotazioni o inviare email esterne. Worker con job HTTP 200.
+
+Backup cifrato `freetourpraga/2026/11/15/153538.dump.age` scaricato dal bucket Railway, decifrato con la chiave offline e ripristinato integralmente in un database temporaneo locale con client PostgreSQL 18. Verificati stato applicativo, tre tour, un’immagine e due migrazioni. Il database di prova e il file decifrato sono stati eliminati. Il database Railway attivo non è stato ripristinato o sostituito.
+
+La revisione applicativa `8d44d32` ha superato integralmente la [CI GitHub](https://github.com/simoncinid/FreeTourPraga/actions/runs/43731125905). La sitemap online contiene 15 URL distinti. [Stato e attività del committente](STATO-CONSEGNA.md). Il controllo di configurazione con le variabili effettive Railway (`preflight`) segnala esclusivamente chiave Stripe, firma webhook e SMTP ancora da configurare, coerentemente con la scelta del committente.

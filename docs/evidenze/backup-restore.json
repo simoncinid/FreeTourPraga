@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-15",
+  "environment": "Railway production preview",
+  "backupObject": "freetourpraga/2026/11/15/153538.dump.age",
+  "archive": "PostgreSQL custom (pg_dump 18)",
+  "encryption": "age; private key kept offline",
+  "restoreTarget": "isolated temporary local PostgreSQL database",
+  "result": "passed",
+  "verifiedCounts": {
+    "states": 1,
+    "tours": 3,
+    "images": 1,
+    "migrations": 2
+  },
+  "cleanup": "Temporary database dropped; decrypted archive removed; active Railway database unchanged"
+}

@@ -10,7 +10,7 @@ Flusso pubblico: home → catalogo/filtri → scheda tour → data → orario �
 
 Flusso staff: accesso → tour e orari → prezzi/fasce/capienze → pubblicazione → calendario → prenotazioni. Le modifiche editoriali sono disponibili in Contenuti e Home/FAQ/contatti. I ruoli admin e operator hanno permessi distinti.
 
-Interfaccia: palette blu/arancio del progetto, caratteri locali Manrope/Fraunces, navigazione mobile, form etichettati, focus tastiera, link al contenuto e riepilogo visibile. Maps e TripAdvisor si caricano su richiesta. Il prototipo navigabile coincide con l’applicazione; le schermate del collaudo vengono salvate in `tmp/browser-qa/`.
+Interfaccia: palette blu/arancio del progetto, caratteri locali Manrope/Fraunces, navigazione mobile, form etichettati, focus tastiera, link al contenuto e riepilogo visibile. Maps e TripAdvisor si caricano su richiesta. Il prototipo navigabile coincide con l’applicazione; le schermate dell’anteprima pubblica sono in `docs/prototipi/`, mentre le schermate automatiche del collaudo vengono salvate in `tmp/browser-qa/`.
 
 Decisioni operative: orari in Europe/Prague, importi in centesimi EUR, fasce d’età configurabili per tour, anche gli infanti occupano capienza. Gli orari si salvano in UTC. La data scelta nel calendario rimane quella di Praga anche per utenti in altri fusi. Lo sconto multi-tour è configurabile e viene applicato dal server. I dati dimostrativi non rappresentano offerte definitive.
 
