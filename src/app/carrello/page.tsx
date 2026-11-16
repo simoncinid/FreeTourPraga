@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import { CartClient } from "@/components/CartClient";
 
 export const metadata = {
@@ -7,7 +8,7 @@ export const metadata = {
 
 export default function CartPage() {
   return (
-    <section className="section bg-surface-soft">
+    <section className={`${ui.page} ${ui.reservation} section bg-surface-soft`}>
       <div className="container-page max-w-5xl">
         <CartClient />
       </div>

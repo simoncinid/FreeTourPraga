@@ -1,4 +1,5 @@
 "use client";
+import ui from "./public-ui.module.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { managedBooking } from "@/lib/platform/booking";
@@ -61,7 +62,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
     return () => controller.abort();
   }, [pnr, proof]);
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.management} section`}>
       <div className="container-page max-w-3xl">
         <p className="micro-label text-primary">La tua prenotazione · {pnr}</p>
         <h1 className="display-xl my-5">Organizza la tua visita.</h1>
@@ -83,7 +84,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
         {booking && (
           <>
             <article className="card mb-6 grid gap-4 p-6">
-              <span className="status-chip">
+              <span className={`status-chip ${booking.status === "confirmed" ? "status-success" : booking.status === "pending" ? "status-warning" : "status-muted"}`}>
                 {
                   {
                     confirmed: "Confermata",

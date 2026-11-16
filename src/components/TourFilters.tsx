@@ -1,5 +1,6 @@
 "use client";
 
+import { RotateCcw, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TourCard } from "@/components/TourCard";
 import type { Tour } from "@/lib/types";
@@ -14,6 +15,7 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
     const searchable = `${tour.title} ${tour.category} ${tour.shortDescription}`.toLocaleLowerCase("it");
     if (!searchable.includes(query.toLocaleLowerCase("it"))) return false;
     if (category !== "all" && tour.category !== category) return false;
+    if (!date && guests === "1") return true;
     const party = Number(guests);
     return tour.slots.some((slot) => {
       const matchingDate = !date || slot.startsAt.startsWith(date);
@@ -21,6 +23,8 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
     });
   });
 
+  const filtered = Boolean(query || category !== "all" || date || guests !== "1");
+  function reset() { setQuery(""); setCategory("all"); setDate(""); setGuests("1"); }
   return <>
     <div className="mb-8 grid gap-3 rounded-[28px] border border-hairline bg-surface-card p-3 md:grid-cols-2 lg:grid-cols-4">
       <label className="grid gap-1 px-3"><span className="caption text-ink">Cerca</span><input aria-label="Cerca un tour" placeholder="Es. Castello, birra..." value={query} onChange={(e) => setQuery(e.target.value)} className="min-w-0 bg-transparent text-sm text-body outline-none" /></label>
@@ -28,6 +32,7 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
       <label className="grid gap-1 border-hairline px-3 lg:border-r lg:px-5"><span className="caption text-ink">Data</span><input aria-label="Data disponibile" type="date" value={date} min={dates[0]} max={dates[dates.length - 1]} onChange={(e) => setDate(e.target.value)} className="bg-transparent text-sm text-body outline-none" /></label>
       <label className="grid gap-1 px-3"><span className="caption text-ink">Partecipanti</span><select aria-label="Numero partecipanti" value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent text-sm text-body outline-none">{[1, 2, 3, 4, 5, 6].map((item) => <option key={item} value={item}>{item} {item === 1 ? "persona" : "persone"}</option>)}</select></label>
     </div>
-    {visibleTours.length ? <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{visibleTours.map((tour) => <TourCard key={tour.id} tour={tour} />)}</div> : <div className="card p-8 text-center"><p className="body-md">Nessun tour corrisponde ai filtri scelti. Prova un&apos;altra data o meno partecipanti.</p></div>}
+    <div className="mb-5 flex items-center justify-between gap-4 text-xs" aria-live="polite"><p>{visibleTours.length} {visibleTours.length === 1 ? "esperienza" : "esperienze"}</p>{filtered && <button type="button" className="flex items-center gap-2 font-semibold text-ink" onClick={reset}><RotateCcw size={13} /> Azzera filtri</button>}</div>
+    {visibleTours.length ? <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{visibleTours.map((tour) => <TourCard key={tour.id} tour={tour} />)}</div> : <div className="card p-8 text-center"><Search size={26} className="mx-auto mb-4 text-primary" aria-hidden /><p className="body-md">Nessun tour corrisponde ai filtri scelti. Prova un&apos;altra data o meno partecipanti.</p><button type="button" className="button-secondary mt-5" onClick={reset}>Mostra tutti i tour <RotateCcw size={14} /></button></div>}
   </>;
 }

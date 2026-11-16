@@ -38,6 +38,7 @@ export function AccessForm() {
           name="email"
           type="email"
           autoComplete="username"
+          placeholder="La tua email di lavoro"
           required
           className="text-input"
         />
@@ -55,7 +56,7 @@ export function AccessForm() {
       <button className="button-primary" disabled={busy}>
         {busy ? "Attendi…" : "Accedi"}
       </button>
-      {message && <p role="status">{message}</p>}
+      {message && <p role="alert" className="text-sm text-red-700">{message}</p>}
     </form>
   );
 }

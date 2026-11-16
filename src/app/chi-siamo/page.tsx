@@ -1,5 +1,6 @@
 import { publicPage } from "@/lib/platform/public";
 import { ContentBlock } from "@/components/ContentBlock";
+import ui from "@/components/public-ui.module.css";
 import Link from "next/link";
 import { ArrowRight, Headset, MapPin, ShieldCheck, Users } from "lucide-react";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -13,9 +14,9 @@ export default async function Page() {
   if (page) return <ContentBlock page={page} />;
   const { home } = await publicSiteContent();
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.about} section`}>
       <div className="container-page max-w-4xl">
-        <p className="uppercase-tag mb-4 text-primary">Chi siamo</p>
+        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Chi siamo</p>
         <h1 className="display-xl mb-6">
           {home.trustTitle.split("\n").map((line, index) => (
             <span key={index} className="block">

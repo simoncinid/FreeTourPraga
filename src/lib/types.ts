@@ -3,19 +3,12 @@ export type AgeBand = "adults" | "children" | "infants";
 export type PaymentMethod = "cash" | "stripe";
 
 export type BookingStatus =
-  | "pending"
-  | "confirmed"
-  | "cancelled"
-  | "modified"
-  | "no_show"
-  | "present";
+  "pending" | "confirmed" | "cancelled" | "modified" | "no_show" | "present";
 
 export type PaymentStatus =
-  | "not_required"
-  | "pending"
-  | "paid"
-  | "failed"
-  | "refunded";
+  "not_required" | "pending" | "paid" | "failed" | "refunded";
+
+export type TourPhoto = { url: string; alt: string };
 
 export type Tour = {
   id: string;
@@ -25,6 +18,7 @@ export type Tour = {
   shortDescription: string;
   description: string;
   imageUrl: string;
+  galleryImages?: TourPhoto[];
   meetingPoint: string;
   meetingAddress: string;
   mapUrl: string;
@@ -46,6 +40,8 @@ export type Tour = {
   seoDescription?: string;
   seoKeywords?: string[];
   highlights: string[];
+  /** Foto per ogni punto saliente, allineate a `highlights` (max 4 URL a riga). */
+  highlightGalleries?: string[][];
   inclusions: string[];
   safetyNotes: string[];
   slots: TourSlot[];

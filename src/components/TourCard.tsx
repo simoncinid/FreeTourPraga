@@ -1,41 +1,74 @@
+import styles from "./public-ui.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, Footprints, MapPin, Star } from "lucide-react";
+import { Clock, Footprints, MapPin, ArrowUpRight } from "lucide-react";
 import { formatMoney, minutesToLabel } from "@/lib/format";
 import type { Tour } from "@/lib/types";
 
 export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
   const name = title || tour.title;
   return (
-    <article className="card flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card">
-      <Link href={`/tour/${tour.slug}`} className="block">
-        <div className="relative aspect-[4/3]">
-          <Image src={tour.imageUrl} alt={name} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
-          <span className="absolute left-3 top-3 bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[1.3px] text-on-primary">In italiano</span>
-        </div>
-      </Link>
+    <Link
+      href={`/tour/${tour.slug}`}
+      className={`${styles.tourCard} card flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card`}
+    >
+      <div className="relative aspect-[4/3]">
+        <Image
+          src={tour.imageUrl}
+          alt={name}
+          fill
+          sizes="(min-width: 1024px) 33vw, 100vw"
+          className="object-cover"
+        />
+        <span className="absolute left-3 top-3 bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[1.3px] text-on-primary">
+          In italiano
+        </span>
+      </div>
       <div className="grid flex-1 gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
-          <Link href={`/tour/${tour.slug}`} className="title-md">
-            {name}
-          </Link>
-
+          <span className="title-md">{name}</span>
         </div>
         <p className="body-sm line-clamp-2">{tour.shortDescription}</p>
         <div className="grid gap-2 text-sm text-muted">
-          <span className="flex items-center gap-2"><Clock size={16} /> {minutesToLabel(tour.durationMinutes)}</span>
-          <span className="flex items-center gap-2"><MapPin size={16} /> {tour.meetingPoint}</span>
-          <span className="flex items-center gap-2" aria-label={`Difficoltà a piedi: ${tour.walkingDifficulty} su 5`}><Footprints size={16} /> A piedi <span className="ml-1 flex gap-0.5">{Array.from({ length: 5 }, (_, index) => <Footprints key={index} size={14} className={index < tour.walkingDifficulty ? "text-primary" : "text-hairline"} fill="currentColor" />)}</span></span>
+          <span className="flex items-center gap-2">
+            <Clock size={16} /> {minutesToLabel(tour.durationMinutes)}
+          </span>
+          <span className="flex items-center gap-2">
+            <MapPin size={16} /> {tour.meetingPoint}
+          </span>
+          <span
+            className="flex items-center gap-2"
+            aria-label={`Difficoltà a piedi: ${tour.walkingDifficulty} su 5`}
+          >
+            <Footprints size={16} /> A piedi{" "}
+            <span className="ml-1 flex gap-0.5">
+              {Array.from({ length: 5 }, (_, index) => (
+                <Footprints
+                  key={index}
+                  size={14}
+                  className={
+                    index < tour.walkingDifficulty
+                      ? "text-primary"
+                      : "text-hairline"
+                  }
+                  fill="currentColor"
+                />
+              ))}
+            </span>
+          </span>
         </div>
         <div className="mt-auto flex items-center justify-between border-t border-hairline-soft pt-3">
           <span className="text-sm text-muted">
-            da <strong className="text-base text-ink">{formatMoney(tour.basePriceCents)}</strong>
+            da{" "}
+            <strong className="text-base text-ink">
+              {formatMoney(tour.basePriceCents)}
+            </strong>
           </span>
-          <Link href={`/tour/${tour.slug}`} className="button-secondary !min-h-0 !px-3 !py-2 text-[10px]">
-            Scopri
-          </Link>
+          <span className="button-secondary !min-h-0 !px-3 !py-2 text-[10px]">
+            Scopri <ArrowUpRight size={13} aria-hidden />
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

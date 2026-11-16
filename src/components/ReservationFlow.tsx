@@ -1,4 +1,6 @@
 "use client";
+import ui from "./public-ui.module.css";
+import { Compass } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBrowserStorage, useHydrated } from "@/lib/browser-storage";
@@ -134,7 +136,8 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   if (!ready) return <p role="status">Caricamento…</p>;
   if (!items.length)
     return (
-      <div className="card mx-auto max-w-xl p-10 text-center">
+      <div className={`${ui.emptyState} card mx-auto max-w-xl p-10 text-center`}>
+        <Compass size={34} className="mx-auto mb-5 text-primary" aria-hidden />
         <h1 className="display-lg mb-5">Il tuo viaggio comincia qui.</h1>
         <p className="mb-6">Scegli un tour e aggiungilo al carrello.</p>
         <Link className="button-primary" href="/tour">
@@ -168,7 +171,9 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 <p className="my-2">
                   {new Date(i.startsAt).toLocaleString("it-IT", {
                     timeZone: "Europe/Prague",
-                  })}
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  })} · ora di Praga
                 </p>
                 <p className="text-sm">
                   {i.adults} adulti · {i.children} bambini · {i.infants || 0}{" "}
@@ -287,7 +292,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
         <aside className="card sticky top-24 grid gap-5 p-7">
           <h2 className="display-md">Il tuo riepilogo</h2>
           <div className="flex justify-between">
-            <span>{items.length} esperienze</span>
+            <span>{items.length} {items.length === 1 ? "esperienza" : "esperienze"}</span>
             <strong>{formatMoney(subtotal)}</strong>
           </div>
           <p className="text-sm">
@@ -301,7 +306,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
               value={affiliateCode}
               maxLength={40}
               readOnly
-              placeholder="Assegnato automaticamente dal link partner"
+              placeholder="Nessun codice partner"
             />
           </label>
           {affiliateCode ? (

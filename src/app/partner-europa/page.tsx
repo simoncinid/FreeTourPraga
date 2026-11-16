@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import {publicPage} from "@/lib/platform/public";
 import {ContentBlock} from "@/components/ContentBlock";
 export const dynamic="force-dynamic";
@@ -11,10 +12,10 @@ const baseMetadata = {
 export default async function Page() {
  const page=await publicPage("partner-europa"); if(page)return <><ContentBlock page={page}/><div className="container-page mb-16 max-w-3xl"><InquiryForm partner/></div></>;
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.partner} section`}>
       <div className="container-page grid items-start gap-16 lg:grid-cols-[.9fr_1.1fr]">
         <div>
-          <p className="uppercase-tag mb-4 text-primary">Partner Europa</p>
+          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Partner Europa</p>
           <h1 className="display-xl mb-5">
             Grandi esperienze.
             <br />
@@ -41,8 +42,8 @@ export default async function Page() {
               "Affiliazioni e codici per riconoscere le prenotazioni dei tuoi clienti.",
             ],
           ].map(([Icon, title, text]) => (
-            <div key={String(title)} className="mb-7 flex gap-4">
-              <Icon className="shrink-0 text-navy" size={24} />
+            <div key={String(title)} className={`${ui.partnerBenefit} mb-7 flex gap-4`}>
+              <Icon className="shrink-0" size={24} />
               <div>
                 <h2 className="title-md mb-2">{String(title)}</h2>
                 <p className="body-sm">{String(text)}</p>

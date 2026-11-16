@@ -1,4 +1,5 @@
 "use client";
+import ui from "./public-ui.module.css";
 import { useState } from "react";
 import Link from "next/link";
 export function InquiryForm({ partner = false }: { partner?: boolean }) {
@@ -6,7 +7,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
   return sent ? (
-    <div className="card grid gap-5 p-8">
+    <div className={`${ui.inquiry} card grid gap-5 p-8`}>
       <h2 className="display-md">Richiesta ricevuta.</h2>
       <p>Il team ti risponderà all’indirizzo indicato.</p>
       <button className="button-secondary" onClick={() => setSent(false)}>
@@ -15,7 +16,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
     </div>
   ) : (
     <form
-      className="card grid gap-5 p-8"
+      className={`${ui.inquiry} card grid gap-5 p-8`}
       onSubmit={async (e) => {
         e.preventDefault();
         const f = new FormData(e.currentTarget);
@@ -59,6 +60,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
           minLength={2}
           maxLength={120}
           autoComplete="name"
+          placeholder="Es. Mario Rossi"
           className="text-input"
         />
       </label>
@@ -69,6 +71,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
           required
           type="email"
           autoComplete="email"
+          placeholder="nome@esempio.it"
           className="text-input"
         />
       </label>

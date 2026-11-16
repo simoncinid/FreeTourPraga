@@ -36,9 +36,40 @@ export const socialLinks = [
 ].filter((link) => Boolean(link.url));
 
 export const tripAdvisor = {
-  profileUrl: process.env.NEXT_PUBLIC_TRIPADVISOR_URL || "https://www.tripadvisor.it/Attraction_Review-g274707-d7365510-Reviews-Free_Tour_Praga-Prague_Bohemia.html",
+  profileUrl:
+    process.env.NEXT_PUBLIC_TRIPADVISOR_URL ||
+    "https://www.tripadvisor.it/Attraction_Review-g274707-d7365510-Reviews-Free_Tour_Praga-Prague_Bohemia.html",
   widgetHtml: process.env.TRIPADVISOR_WIDGET_HTML || "",
-  widgetScriptSrc: process.env.NEXT_PUBLIC_TRIPADVISOR_WIDGET_SCRIPT_SRC || ""
+  widgetScriptSrc: process.env.NEXT_PUBLIC_TRIPADVISOR_WIDGET_SCRIPT_SRC || "",
+  // Dati profilo Attraction d7365510 (TripAdvisor / Tripadvisor.cn, nov 2026).
+  rating: 4.8,
+  reviewCount: 771,
+  reviews: [
+    {
+      author: "644bbc",
+      place: "Praga",
+      rating: 5,
+      date: "lug 2026",
+      avatarUrl: "/images/reviews/stefano-reviewer.jpg",
+      text: "Free tour Praga, visita guidata molto accurata ed interessante, bravissimo Stefano, preparatissimo ed empatico. Fortemente consigliata. Bravi!",
+    },
+    {
+      author: "Viaggiatore TripAdvisor",
+      place: "Praga",
+      rating: 5,
+      date: "apr 2026",
+      avatarUrl: "/images/reviews/pavel-reviewer.jpg",
+      text: "Great tour I thoroughly recommend. Our local tour guide Pavel lived in Prague his whole life, his passion for the city is contagious & he can put its history in a way everyone can understand. The walk is full of Old Town's highlights, with a nice stop at a local cafe.",
+    },
+    {
+      author: "Maps4644740",
+      place: "Praga",
+      rating: 5,
+      date: "apr 2026",
+      avatarUrl: "/images/reviews/castle-reviewer.jpg",
+      text: "Great tour of Prague's Castle area on a glorious warm sunny day! Our tour guide, Ilya, was a great chap with a very good historical knowledge & a captivating storyteller. It was a little group so I feel it was more relaxed. Thoroughly recommend these tours!",
+    },
+  ],
 };
 
 export function whatsappHref(message: string) {

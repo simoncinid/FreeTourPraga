@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
+import { tourGalleryImages } from "../tour-gallery";
 import QRCode from "qrcode";
 import { audit, localMode, readState, transaction } from "./store";
 import {
@@ -64,6 +65,7 @@ export async function platformApi(request: Request, path: string[]) {
           .filter((t) => t.published)
           .map((t) => ({
             ...t,
+            galleryImages: tourGalleryImages(t),
             slots: t.slots.filter(
               (x) =>
                 new Date(x.startsAt).getTime() >
@@ -600,6 +602,13 @@ export async function platformApi(request: Request, path: string[]) {
                 409,
                 "Non puoi eliminare partenze con prenotazioni",
               );
+            if (input.galleryImages === undefined && old?.galleryImages)
+              input.galleryImages = old.galleryImages;
+            if (
+              input.highlightGalleries === undefined &&
+              old?.highlightGalleries
+            )
+              input.highlightGalleries = old.highlightGalleries;
             const index = s.tours.findIndex((t) => t.id === input.id);
             if (index < 0) s.tours.push(input);
             else s.tours[index] = input;

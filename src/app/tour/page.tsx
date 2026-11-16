@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import { Suspense } from "react";
 import { AddedToCartBanner } from "@/components/AddedToCartBanner";
 import { JsonLd } from "@/components/JsonLd";
@@ -31,7 +32,7 @@ const baseMetadata = {
 export default async function TourListingPage() {
  const tours=await catalog(); const content=await publicPage("catalogo");
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.catalog} section`}>
       <JsonLd
         data={{
           "@context": "https://schema.org",

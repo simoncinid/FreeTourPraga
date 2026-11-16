@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import { AccessForm } from "@/components/AccessForm";
 export const metadata = {
   title: "Accesso staff",
@@ -5,7 +6,7 @@ export const metadata = {
 };
 export default function Page() {
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.access} section`}>
       <div className="container-page">
         <AccessForm />
       </div>

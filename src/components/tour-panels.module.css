@@ -1,0 +1,325 @@
+.highlightList {
+  display: grid;
+  gap: 0;
+}
+
+.highlightRow {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid var(--hairline-soft);
+  padding: 18px 0;
+}
+
+@media (min-width: 768px) {
+  .highlightRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+  }
+}
+
+.highlightCopy {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.highlightThumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+@media (min-width: 768px) {
+  .highlightThumbs {
+    justify-content: flex-end;
+  }
+}
+
+.highlightThumb {
+  position: relative;
+  width: 72px;
+  height: 56px;
+  overflow: hidden;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #efebe3;
+  padding: 0;
+  cursor: zoom-in;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.highlightThumb:hover {
+  transform: translateY(-1px);
+  border-color: #ff4812aa;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: #071a35f2;
+  padding: 56px 16px 24px;
+}
+
+.lightboxStage {
+  position: relative;
+  width: min(1100px, 100%);
+  height: min(78vh, 820px);
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff18;
+  color: #fff;
+  cursor: pointer;
+}
+
+.lightboxClose:hover {
+  background: #ffffff2a;
+}
+
+.lightboxCaption {
+  position: absolute;
+  top: 22px;
+  left: 20px;
+  right: 72px;
+  margin: 0;
+  color: #ffffffd6;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.lightboxNav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff1f;
+  color: #fff;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.lightboxNav:hover {
+  background: #ffffff33;
+}
+
+.lightboxPrev {
+  left: 12px;
+}
+
+.lightboxNext {
+  right: 12px;
+}
+
+.panelOrange,
+.panelBlue {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid transparent;
+}
+
+.panelOrange {
+  border-color: #ffd0bc;
+  background:
+    radial-gradient(120% 90% at 12% 18%, #fff3eb 0%, transparent 55%),
+    radial-gradient(90% 80% at 88% 12%, #ffd8c4 0%, transparent 50%),
+    linear-gradient(135deg, #fff8f3 0%, #ffe6d8 42%, #fff1e8 72%, #ffdcc8 100%);
+  background-size: 140% 140%;
+  animation: waveOrange 14s ease-in-out infinite;
+}
+
+.panelBlue {
+  border-color: #c9d6e6;
+  background:
+    radial-gradient(120% 90% at 14% 20%, #eef4fb 0%, transparent 55%),
+    radial-gradient(90% 80% at 90% 10%, #c9d8ea 0%, transparent 52%),
+    linear-gradient(135deg, #f4f8fc 0%, #dce7f3 40%, #eaf1f8 70%, #cfdcec 100%);
+  background-size: 140% 140%;
+  animation: waveBlue 16s ease-in-out infinite;
+}
+
+.panelOrange::before,
+.panelBlue::before {
+  content: "";
+  position: absolute;
+  inset: -35% -20%;
+  z-index: -1;
+  opacity: 0.55;
+  background:
+    radial-gradient(ellipse at 20% 40%, #ff9a6d55 0%, transparent 42%),
+    radial-gradient(ellipse at 80% 70%, #ff481233 0%, transparent 45%);
+  animation: drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.panelBlue::before {
+  background:
+    radial-gradient(ellipse at 18% 38%, #7f9ab855 0%, transparent 42%),
+    radial-gradient(ellipse at 82% 72%, #071a3522 0%, transparent 45%);
+}
+
+.panelOrange :global(.body-sm),
+.panelBlue :global(.body-sm) {
+  color: #243246;
+}
+
+.panelList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panelTickItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.panelTick {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #ff4812;
+}
+
+.panelInfo {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #1f4e7a;
+}
+
+.panelTitleRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panelTitleOneLine {
+  flex-shrink: 1;
+  white-space: nowrap !important;
+  text-wrap: nowrap !important;
+  font-size: clamp(17px, 1.85vw, 24px);
+  line-height: 1.2;
+}
+
+.panelIcon {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 6px 12px #ff481226);
+}
+
+.panelIconWhatsapp {
+  filter: drop-shadow(0 6px 12px #25d36640);
+}
+
+.panelIconBlue {
+  filter: drop-shadow(0 6px 12px #071a3526);
+}
+
+.panelWhatsapp {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid #1f6b45;
+  background:
+    radial-gradient(120% 90% at 12% 18%, #1a4d35 0%, transparent 55%),
+    radial-gradient(90% 80% at 90% 10%, #25d36633 0%, transparent 50%),
+    linear-gradient(135deg, #071a35 0%, #0d2f24 45%, #103826 100%);
+  background-size: 140% 140%;
+  animation: waveBlue 16s ease-in-out infinite;
+}
+
+.panelWhatsapp::before {
+  content: "";
+  position: absolute;
+  inset: -35% -20%;
+  z-index: -1;
+  opacity: 0.45;
+  background:
+    radial-gradient(ellipse at 18% 38%, #25d36655 0%, transparent 42%),
+    radial-gradient(ellipse at 82% 72%, #071a3588 0%, transparent 45%);
+  animation: drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.panelWhatsapp .panelTitleRow {
+  margin-bottom: 12px;
+}
+
+.panelWhatsapp .panelTitleRow :global(h2) {
+  margin: 0;
+}
+
+@keyframes waveOrange {
+  0%,
+  100% {
+    background-position: 0% 40%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+}
+
+@keyframes waveBlue {
+  0%,
+  100% {
+    background-position: 100% 35%;
+  }
+  50% {
+    background-position: 0% 65%;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-2%, -1%, 0) rotate(-2deg);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) rotate(3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panelOrange,
+  .panelBlue,
+  .panelWhatsapp,
+  .panelOrange::before,
+  .panelBlue::before,
+  .panelWhatsapp::before,
+  .highlightThumb {
+    animation: none !important;
+    transition: none !important;
+  }
+}

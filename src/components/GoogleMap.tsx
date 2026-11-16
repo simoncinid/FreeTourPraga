@@ -1,4 +1,5 @@
 "use client";
+import { MapPin } from "lucide-react";
 import { useState } from "react";
 import type { Tour } from "@/lib/types";
 export function GoogleMap({ tour }: { tour: Tour }) {
@@ -22,7 +23,8 @@ export function GoogleMap({ tour }: { tour: Tour }) {
             allowFullScreen
           />
         ) : (
-          <div className="grid h-full place-content-center gap-4 p-6 text-center">
+          <div className="map-consent grid h-full place-content-center justify-items-center gap-4 p-6 text-center">
+            <MapPin size={30} className="text-primary" aria-hidden />
             <p className="text-sm">
               Caricando la mappa condividi dati di navigazione con Google.
             </p>

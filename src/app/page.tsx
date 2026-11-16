@@ -1,11 +1,9 @@
 import Image from "next/image";
+import styles from "./home.module.css";
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgeCheck,
-  CalendarCheck,
   Headset,
-  Languages,
   MapPin,
   MessageCircle,
   ShieldCheck,
@@ -18,11 +16,17 @@ import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp, type SiteContent } from "@/lib/platform/content";
 import { guideAnchor } from "@/lib/format";
+import { guideImage } from "@/lib/guide-media";
 import type { Tour } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const featureIcons = [Languages, BadgeCheck, CalendarCheck, MessageCircle];
+const featureIcons = [
+  "/images/benefits/italian.webp",
+  "/images/benefits/guaranteed.webp",
+  "/images/benefits/booking.webp",
+  "/images/benefits/support.webp",
+];
 const pillarIcons = [ShieldCheck, Users, MapPin, Headset];
 
 function liveGroups(groups: SiteContent["home"]["groups"], tours: Tour[]) {
@@ -36,7 +40,7 @@ function liveGroups(groups: SiteContent["home"]["groups"], tours: Tour[]) {
         : "";
       const tour = slug ? bySlug.get(slug) : undefined;
       return tour
-        ? { title: item.title, tour }
+        ? { title: tour.basePriceCents > 0 ? item.title.replace(/^Free tour\b/i, "Tour") : item.title, tour }
         : { title: item.title, href: "/contatti" };
     }),
   }));
@@ -51,24 +55,24 @@ export default async function HomePage() {
   const h = c.home;
   const groups = liveGroups(h.groups, tours);
   return (
-    <>
-      <section className="relative isolate overflow-hidden bg-navy text-white">
+    <div className={styles.home}>
+      <section className={`${styles.hero} relative isolate overflow-hidden bg-navy text-white`}>
         <Image
           src={h.heroImage}
           alt="Praga"
           fill
-          priority
+          preload
           sizes="100vw"
           className="object-cover"
         />
         <div className="hero-overlay" aria-hidden />
         <div className="container-page relative z-10 grid min-h-[570px] items-center py-20">
-          <div className="max-w-2xl">
+          <div className={`${styles.heroCopy} max-w-2xl`}>
             <p className="uppercase-tag mb-5 text-primary">
               {page?.subtitle || h.heroEyebrow}
             </p>
             <h1 className="display-xl hero-title mb-5 !text-white">
-              {page?.title || h.heroTitle}
+              {(page?.title || h.heroTitle) === "Scopri l'anima autentica di Praga, in totale sicurezza." ? <>Scopri l&apos;anima autentica <span className={styles.keepTogether}>di Praga,</span> in totale sicurezza.</> : page?.title || h.heroTitle}
             </h1>
             <p className="body-md mb-8 max-w-xl !text-white/90">
               {page?.body || h.heroBody}
@@ -93,13 +97,20 @@ export default async function HomePage() {
         </div>
       </section>
       {h.stats.length > 0 && (
-        <section className="border-b bg-white py-10">
+        <section className={`${styles.stats} border-b bg-white py-10`}>
           <div className="container-page grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {h.stats.map((item, index) => {
-              const Icon = featureIcons[index % featureIcons.length];
+              const icon = featureIcons[index % featureIcons.length];
               return (
-                <div key={item.value} className="flex gap-4">
-                  <Icon className="mt-0.5 shrink-0 text-primary" size={28} />
+                <div key={item.value} className={`${styles.benefit} flex`}>
+                  <Image
+                    src={icon}
+                    alt=""
+                    width={56}
+                    height={56}
+                    sizes="56px"
+                    className={styles.benefitIcon}
+                  />
                   <div>
                     <strong className="title-md block">{item.value}</strong>
                     <p className="body-sm mt-1">{item.label}</p>
@@ -114,7 +125,7 @@ export default async function HomePage() {
         <div className="container-page">
           <p className="uppercase-tag mb-3 text-primary">{h.toursEyebrow}</p>
           <h2 className="display-lg mb-3">{h.toursTitle}</h2>
-          <p className="body-md mb-8 max-w-3xl">{h.toursBody}</p>
+          <p className={`${styles.toursLead} body-md mb-8`}>{h.toursBody}</p>
           {groups.length > 0 ? (
             <ExperienceRotator groups={groups} />
           ) : (
@@ -126,7 +137,7 @@ export default async function HomePage() {
           )}
         </div>
       </section>
-      <section className="editorial-section bg-navy text-on-dark">
+      <section className={`${styles.trust} editorial-section bg-navy text-on-dark`}>
         <div className="container-page grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
           <div>
             <p className="uppercase-tag mb-3 text-primary">{h.trustEyebrow}</p>
@@ -172,7 +183,7 @@ export default async function HomePage() {
                   <figure>
                     <div className="relative aspect-[4/3]">
                       <Image
-                        src={photo.imageUrl}
+                        src={guideImage(photo)}
                         alt={photo.title}
                         fill
                         sizes="(min-width:1024px) 33vw, 100vw"
@@ -191,7 +202,7 @@ export default async function HomePage() {
         </div>
       </section>
       {c.answers.length > 0 && (
-        <section className="editorial-section bg-surface-soft">
+        <section className={`${styles.answers} editorial-section bg-surface-soft`}>
           <div className="container-page">
             <h2 className="display-lg mb-4">{h.answersTitle}</h2>
             <p className="body-md mb-8 max-w-3xl">{h.answersBody}</p>
@@ -211,7 +222,7 @@ export default async function HomePage() {
         </div>
       </section>
       <TripAdvisorSection />
-    </>
+    </div>
   );
 }
 

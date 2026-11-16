@@ -1,3 +1,4 @@
+import { tourGalleryImages } from "../tour-gallery";
 import { cache } from "react";
 import { readState } from "./store";
 import { siteContent } from "./content";
@@ -11,6 +12,7 @@ export const catalog = cache(async () => {
     .filter((t) => t.published)
     .map((t) => ({
       ...t,
+      galleryImages: tourGalleryImages(t),
       slots: t.slots.filter(
         (s) =>
           new Date(s.startsAt).getTime() >

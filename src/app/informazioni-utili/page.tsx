@@ -1,5 +1,6 @@
 import { publicPage } from "@/lib/platform/public";
 import { ContentBlock } from "@/components/ContentBlock";
+import ui from "@/components/public-ui.module.css";
 import Link from "next/link";
 import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -11,9 +12,9 @@ export default async function Page() {
   if (page) return <ContentBlock page={page} />;
   const c = await publicSiteContent();
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.practical} section`}>
       <div className="container-page">
-        <p className="uppercase-tag mb-4 text-primary">Prima di partire</p>
+        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Prima di partire</p>
         <h1 className="display-xl mb-4">Informazioni utili</h1>
         <p className="body-md mb-10 max-w-3xl">{c.home.answersBody}</p>
         <PracticalAnswers items={c.answers} />

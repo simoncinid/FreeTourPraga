@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import { publicSiteContent, publicPage } from "@/lib/platform/public";
 import { ContentBlock } from "@/components/ContentBlock";
 export const dynamic = "force-dynamic";
@@ -26,10 +27,10 @@ export default async function Page() {
       </>
     );
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.contact} section`}>
       <div className="container-page grid gap-16 lg:grid-cols-2">
         <div>
-          <p className="uppercase-tag mb-4 text-primary">
+          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
             Un consiglio da chi vive qui
           </p>
           <h1 className="display-xl mb-6">
@@ -46,7 +47,7 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={whatsappHref("Ciao, vorrei informazioni sui tour.")}
             >
-              <MessageCircle className="text-navy" />
+              <MessageCircle className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">Scrivici su WhatsApp</strong>
                 <small>
@@ -58,14 +59,14 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={`mailto:${site.email}`}
             >
-              <Mail className="text-navy" />
+              <Mail className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">Email</strong>
                 <small>{site.email}</small>
               </span>
             </a>
             <div className="flex items-center gap-4">
-              <MapPin className="text-navy" />
+              <MapPin className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">
                   Punto d’incontro principale

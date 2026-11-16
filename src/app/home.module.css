@@ -1,0 +1,238 @@
+/* Visual refinements only. Keep the original hero, grids and section order. */
+.home > :global(.editorial-section) {
+  padding-block: 88px;
+}
+
+.heroCopy {
+  max-width: 760px;
+}
+
+.hero :global(.hero-title) {
+  max-width: 760px;
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.hero :global(.body-md) {
+  max-width: 580px;
+  line-height: 1.7;
+}
+
+.hero :global(.uppercase-tag) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero :global(.uppercase-tag)::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+}
+
+.stats > div > div {
+  min-width: 0;
+}
+
+.stats :global(.body-sm) {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.benefit {
+  align-items: center;
+  gap: 12px;
+}
+
+.benefit > div {
+  min-width: 0;
+}
+
+.benefitIcon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+}
+
+.benefit:hover .benefitIcon {
+  transform: translateY(-2px);
+}
+
+@media (min-width: 1024px) {
+  .home .stats {
+    padding-block: 35px;
+  }
+
+  .stats > div {
+    column-gap: 16px;
+  }
+
+  .home .stats > div > div + div {
+    padding-left: 8px;
+  }
+}
+
+.home h2 {
+  text-wrap: balance;
+}
+
+.home :global(.card) {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.home a:global(.card):hover,
+.home article:global(.card):hover {
+  border-color: #c9c8bf;
+  box-shadow: 0 10px 28px #071a350b;
+}
+
+.home :global(.button-primary),
+.home :global(.button-secondary) {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home :global(.button-primary):hover {
+  box-shadow: 0 5px 18px #ff481226;
+}
+
+.home :where(a, button):focus-visible {
+  outline: 3px solid #ff916a;
+  outline-offset: 5px;
+}
+
+@media (max-width: 767px) {
+  .home > :global(.editorial-section) {
+    padding-block: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home *,
+  .home *::before,
+  .home *::after {
+    transition: none !important;
+  }
+}
+
+.keepTogether {
+  white-space: nowrap;
+}
+
+.toursLead {
+  max-width: 48rem;
+}
+
+@media (min-width: 1024px) {
+  .toursLead {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+.stats > div > div + div {
+  border-left: 1px solid var(--hairline-soft);
+  padding-left: 20px;
+}
+
+.home :global(.experience-panel) > h3 {
+  font-size: 28px;
+}
+.home :global(.experience-panel) > p {
+  margin-bottom: 24px;
+}
+.home :global([role="tab"]) {
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.home :global([role="tab"][aria-selected="false"]):hover {
+  border-color: var(--hairline);
+  background: #eae6dd;
+}
+.home :global(.card) > a > div {
+  overflow: hidden;
+}
+.home :global(.card) > a img {
+  transition: transform 0.65s ease;
+}
+.home :global(.card):hover > a img {
+  transform: scale(1.035);
+}
+.home :global(.card) > div > div:first-child > a {
+  text-wrap: pretty;
+}
+.trust {
+  background-image: radial-gradient(
+    ellipse at 10% 100%,
+    #1b365655,
+    transparent 60%
+  );
+}
+.trust h2 {
+  font-size: clamp(31px, 2.8vw, 40px);
+  text-wrap: pretty;
+}
+.trust article {
+  transition:
+    border-color 0.25s,
+    background-color 0.25s;
+}
+.trust article:hover {
+  border-color: #ff916a66;
+  background-color: #ffffff0c;
+}
+.trust article > svg {
+  padding: 9px;
+  box-sizing: content-box;
+  background: #ffffff08;
+  border: 1px solid #ffffff18;
+  border-radius: 10px;
+}
+.trust article > p {
+  line-height: 1.65;
+}
+.home figure {
+  height: 100%;
+}
+.home figcaption {
+  border-top: 1px solid var(--hairline-soft);
+}
+.home figcaption strong {
+  display: block;
+}
+.home figcaption p {
+  line-height: 1.65;
+}
+.answers :global(.card) {
+  border-color: #dedbd2;
+  box-shadow: 0 3px 12px #071a3503;
+}
+.answers :global(.card) > p:first-child {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  border: 1px solid #ff481230;
+  border-radius: 50%;
+  font-size: 21px;
+  background: #fff5ee;
+}
+.answers :global(.body-sm) {
+  line-height: 1.7;
+}
+@media (max-width: 767px) {
+  .stats > div > div + div {
+    border-left: 0;
+    padding-left: 0;
+  }
+}

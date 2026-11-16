@@ -1,8 +1,11 @@
 import { publicPage } from "@/lib/platform/public";
 import { ContentBlock } from "@/components/ContentBlock";
+import ui from "@/components/public-ui.module.css";
+import { guideImage } from "@/lib/guide-media";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { publicSiteContent } from "@/lib/platform/public";
+import { publicSiteContent, catalog } from "@/lib/platform/public";
 import { guideAnchor } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -10,11 +13,16 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   const page = await publicPage("blog");
   if (page) return <ContentBlock page={page} />;
-  const c = await publicSiteContent();
+  const [c, tours] = await Promise.all([publicSiteContent(), catalog()]);
+  function guideHref(guide: (typeof c.gallery)[number]) {
+    if (guide.title === "Cambio, pagamenti e assistenza") return "/informazioni-utili";
+    const tour = tours.find((tour) => tour.imageUrl === guide.imageUrl);
+    return tour ? `/tour/${tour.slug}` : "/tour";
+  }
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.blog} section`}>
       <div className="container-page">
-        <p className="uppercase-tag mb-4 text-primary">
+        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
           {c.home.galleryEyebrow}
         </p>
         <h1 className="display-xl mb-4">{c.home.galleryTitle}</h1>
@@ -28,7 +36,7 @@ export default async function Page() {
             >
               <div className="relative min-h-48">
                 <Image
-                  src={guide.imageUrl}
+                  src={guideImage(guide)}
                   alt={guide.title}
                   fill
                   sizes="(min-width: 768px) 280px, 100vw"
@@ -38,8 +46,8 @@ export default async function Page() {
               <div className="p-6">
                 <h2 className="display-md">{guide.title}</h2>
                 <p className="body-md mt-4">{guide.caption}</p>
-                <Link href="/tour" className="mt-6 inline-block font-semibold text-ink underline">
-                  Vedi i tour
+                <Link href={guideHref(guide)} className="mt-6 inline-flex items-center gap-3 text-sm font-semibold text-ink underline underline-offset-4">
+                  {guide.title === "Cambio, pagamenti e assistenza" ? "Informazioni utili" : "Scopri il tour"} <ArrowUpRight size={15} />
                 </Link>
               </div>
             </article>

@@ -1,4 +1,6 @@
 "use client";
+import ui from "./public-ui.module.css";
+import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
@@ -65,11 +67,14 @@ export function BookingConfirmation() {
   const pending = receipt?.bookings.some((b) => b.status === "pending");
   const cancelled = receipt?.bookings.every((b) => b.status === "cancelled");
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.confirmation} section`}>
       <div className="container-page max-w-3xl">
         <p className="micro-label text-primary">Il tuo viaggio a Praga</p>
+        {receipt && receipt.bookings.length > 0 && receipt.bookings.every(b => b.status === "confirmed") && <CheckCircle2 size={34} className="mt-5 text-success" aria-hidden />}
         <h1 className="display-xl my-5">
-          {cancelled
+          {!receipt
+            ? "La tua prenotazione."
+            : cancelled
             ? "Prenotazione non attiva."
             : pending
               ? "Prenotazione registrata."
@@ -91,10 +96,10 @@ export function BookingConfirmation() {
               prenotazione, senza creare un account.
             </p>
             {receipt.bookings.map((b) => (
-              <article key={b.pnr} className="card mb-5 grid gap-4 p-6">
+              <article key={b.pnr} data-status={b.status} className="card mb-5 grid gap-4 p-6">
                 <div className="flex flex-wrap justify-between gap-3">
                   <strong>{b.pnr}</strong>
-                  <span className="status-chip">
+                  <span className={`status-chip ${b.status === "confirmed" ? "status-success" : b.status === "pending" ? "status-warning" : "status-muted"}`}>
                     {
                       {
                         confirmed: "Confermata",

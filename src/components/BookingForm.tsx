@@ -143,7 +143,7 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
 
   if (!tour.slots.length)
     return (
-      <aside className="card p-6">
+      <aside className="card self-start lg:sticky lg:top-24 p-6">
         <h2 className="display-md">Nuove partenze in arrivo.</h2>
         <p className="mt-4">
           Al momento non ci sono partenze prenotabili. Contattaci per
@@ -157,8 +157,8 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
   return (
     <aside className="card shadow-card sticky top-24 self-start overflow-hidden">
       <div className="bg-primary-soft px-6 py-4 text-sm font-semibold text-ink">
-        <span className="mr-2 text-primary">ϟ</span> Prenota online, scegli come
-        pagare
+        <span className="mr-2 text-primary">ϟ</span> Prenota online, paga anche
+        in contanti
       </div>
 
       <div className="grid gap-5 p-6">
@@ -189,14 +189,6 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
 
         {step === 0 ? (
           <>
-            <div>
-              <h3 className="font-display text-2xl font-medium text-ink">
-                Scegli la data
-              </h3>
-              <p className="mt-1 text-sm text-muted">
-                Solo i giorni evidenziabili sono disponibili.
-              </p>
-            </div>
             <div className="flex items-center justify-between">
               <button
                 type="button"

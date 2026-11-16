@@ -1,0 +1,698 @@
+/* Finishing touches only: existing containers, grids and section order stay intact. */
+.page h1 {
+  text-wrap: pretty;
+}
+.page h2 {
+  text-wrap: pretty;
+}
+.page :global(.body-md) {
+  line-height: 1.75;
+}
+.page :global(.body-sm) {
+  line-height: 1.65;
+}
+.page :global(.card) {
+  box-shadow: 0 4px 20px #071a3505;
+}
+.page :where(a, button, summary, input, textarea, select):focus-visible {
+  outline: 3px solid #cc3c10;
+  outline-offset: 4px;
+}
+.page :global(.button-primary),
+.page :global(.button-secondary) {
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.page :global(.button-primary):hover {
+  box-shadow: 0 5px 18px #ff481226;
+}
+.page :global(.button-secondary):hover {
+  background: var(--surface-soft);
+  border-color: #a9afb7;
+}
+.page :global(.text-input) {
+  border-radius: 6px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.page :global(.text-input):focus {
+  border-color: #cc3c10;
+  box-shadow: 0 0 0 3px #ff481212;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+}
+.catalog {
+  background-image: radial-gradient(
+    ellipse at top right,
+    #eee9df60,
+    transparent 60%
+  );
+}
+.catalog > div > div:first-of-type > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #b73512;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+}
+.catalog > div > div:first-of-type > p:first-child::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+}
+.catalog :global(input),
+.catalog :global(select) {
+  min-height: 30px;
+}
+.tourCard {
+  border-color: #e1dfd8;
+  color: inherit;
+  text-decoration: none;
+}
+.tourCard > div:first-child {
+  overflow: hidden;
+}
+.tourCard img {
+  transition: transform 0.6s ease;
+}
+.tourCard:hover img {
+  transform: scale(1.035);
+}
+.tourCard > div:last-child {
+  padding: 20px;
+}
+.tourCard > div:last-child > p {
+  min-height: 2.9em;
+  line-height: 1.5;
+}
+.tourCard > div:last-child > div:first-child {
+  align-items: start;
+}
+.tourCard > div:last-child > div:first-child > :is(a, span) {
+  text-wrap: pretty;
+}
+.tourCard > div:last-child > div:last-child {
+  padding-top: 15px;
+}
+.tourCard > div:last-child > div:last-child > :is(a, span) {
+  letter-spacing: 0.8px;
+  border-color: #b7bdc5;
+}
+.tourCard:hover > div:last-child > div:last-child > :is(a, span) {
+  border-color: #cc3c10;
+  color: #b73512;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .tourCard,
+  .tourCard img {
+    transition: none !important;
+  }
+}
+.detail :global(.tour-detail-title) {
+  white-space: normal;
+  text-wrap: pretty;
+}
+.detail > div > div:first-of-type {
+  gap: 26px;
+}
+.detail :global(#esperienza) > div:first-child {
+  border-radius: 0 8px 8px 0;
+}
+.detail :global(#incontro) > div {
+  border-top: 0;
+}
+.detail aside {
+  border-top: 3px solid rgb(var(--primary));
+  box-shadow: 0 8px 30px #071a3509;
+}
+.detail aside > h2 {
+  font-size: 29px;
+}
+.detail aside > p {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.detail :global(.map-consent) {
+  background: radial-gradient(ellipse at center, #eee9df, var(--canvas));
+}
+.detail :global(.map-consent) > p {
+  max-width: 360px;
+  line-height: 1.6;
+}
+.detail :global(.section) > :global(.container-page) {
+  width: calc(100% - 40px);
+  align-items: center;
+}
+.detail :global(.section) :global(.display-lg) {
+  font-size: 32px;
+}
+.detail :global(.section) :global(.card) {
+  padding: 20px;
+  font-size: 13px;
+}
+@media (min-width: 1024px) {
+  .detail :global(.map-consent) {
+    min-height: 260px;
+  }
+}
+.about {
+  background-image: radial-gradient(
+    ellipse at top left,
+    #f1ece160,
+    transparent 65%
+  );
+}
+.about h1 {
+  font-size: clamp(38px, 4vw, 55px);
+}
+.about :global(.card) {
+  border-color: #dedbd2;
+  position: relative;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.about :global(.card):hover {
+  border-color: #d8b09b;
+  box-shadow: 0 7px 25px #071a3509;
+}
+.about :global(.card) > svg {
+  padding: 10px;
+  box-sizing: content-box;
+  background: #fff1e9;
+  border-radius: 12px;
+}
+.about :global(.card)::after {
+  position: absolute;
+  top: 28px;
+  right: 25px;
+  color: #cbc8c0;
+  font-family: var(--font-display);
+  font-size: 21px;
+}
+.about :global(.card):nth-child(1)::after {
+  content: "01";
+}
+.about :global(.card):nth-child(2)::after {
+  content: "02";
+}
+.about :global(.card):nth-child(3)::after {
+  content: "03";
+}
+.about :global(.card):nth-child(4)::after {
+  content: "04";
+}
+.practical :global(.card) {
+  border-color: #dedbd2;
+  border-top: 2px solid #e1d4bf;
+}
+.practical ol > li > p:first-child {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ff481233;
+  border-radius: 50%;
+  background: #fff5ee;
+  font-size: 22px;
+}
+.practical ol > li h3 {
+  line-height: 1.5;
+}
+.practical ol > li {
+  transition: border-color 0.25s;
+}
+.practical ol > li:hover {
+  border-top-color: #cc3c10;
+}
+.contact > div {
+  align-items: start;
+}
+.contact h1 {
+  font-size: clamp(38px, 4vw, 56px);
+  line-height: 1.16;
+}
+.contactIcon {
+  box-sizing: content-box;
+  flex-shrink: 0;
+  padding: 11px;
+  color: #b73512;
+  background: var(--surface-soft);
+  border: 1px solid #e2ded3;
+  border-radius: 50%;
+}
+.contact small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.contact a:hover strong {
+  color: #b73512;
+}
+.inquiry {
+  border-top: 3px solid rgb(var(--primary));
+  box-shadow: 0 10px 35px #071a3507;
+}
+.inquiry h2 {
+  font-size: 30px;
+  line-height: 1.2;
+}
+.inquiry label {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.inquiry :global(.text-input) {
+  margin-top: 8px;
+  border-radius: 6px;
+  background: #fdfcf9;
+  font-size: 14px;
+  font-weight: 400;
+}
+.inquiry :global(.text-input)::placeholder {
+  color: #818891;
+}
+.inquiry :global(.form-grid) {
+  align-items: start;
+}
+.inquiry input:focus-visible,
+.inquiry textarea:focus-visible,
+.inquiry select:focus-visible {
+  outline: 2px solid #cc3c10;
+  outline-offset: 3px;
+}
+.partner h1 {
+  font-size: clamp(36px, 3.25vw, 47px);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+}
+.partnerBenefit {
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  align-items: start;
+}
+.partnerBenefit > svg {
+  color: #b73512;
+  background: #fff1e9;
+  padding: 9px;
+  box-sizing: content-box;
+  border-radius: 10px;
+}
+.partnerBenefit h2 {
+  margin-top: 3px;
+}
+.privateTours h1 {
+  font-size: clamp(38px, 4vw, 54px);
+  max-width: 1100px;
+}
+.privateTours :global(.private-description) {
+  max-width: 850px;
+}
+.privateTours :global(.card) {
+  background: linear-gradient(145deg, #fff, #f8f5ee);
+  border-top: 2px solid #d8d0bf;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.privateTours :global(.card):hover {
+  border-top-color: #cc3c10;
+  box-shadow: 0 7px 24px #071a3508;
+}
+.privateTours :global(.card) > svg {
+  padding: 10px;
+  box-sizing: content-box;
+  background: white;
+  border: 1px solid #e9e3d8;
+  border-radius: 12px;
+}
+.blog h1 {
+  max-width: 950px;
+  font-size: clamp(38px, 4vw, 55px);
+  text-wrap: balance;
+}
+.blog article {
+  border-color: #e1dfd8;
+  transition:
+    box-shadow 0.25s,
+    border-color 0.25s;
+}
+.blog article:hover {
+  border-color: #ccc7bc;
+  box-shadow: 0 7px 25px #071a3508;
+}
+.blog article > div:last-child {
+  align-self: center;
+  padding: 26px 30px;
+}
+.blog article h2 {
+  font-size: 29px;
+  line-height: 1.25;
+}
+.blog article a:hover {
+  color: #b73512;
+}
+@media (min-width: 768px) {
+  .blog article {
+    grid-template-columns: 300px 1fr;
+  }
+}
+.help {
+  background-image: radial-gradient(ellipse at top, #eee9df70, transparent 65%);
+}
+.help h1 {
+  font-size: clamp(38px, 4vw, 54px);
+}
+.help :global(.button-secondary) {
+  text-transform: none;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.help > div > div:last-child > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hairline);
+  padding: 12px 0;
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--ink);
+  transition: color 0.2s;
+}
+.help > div > div:last-child > a:hover {
+  color: #b73512;
+}
+.help > div > div:last-child > a svg {
+  color: #b73512;
+}
+.faq h1 {
+  font-size: clamp(38px, 4vw, 55px);
+}
+.faq details {
+  padding: 0;
+  border-color: #dedbd2;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary > svg {
+  flex-shrink: 0;
+  color: #b73512;
+  transition: transform 0.2s;
+}
+.faq details:hover {
+  border-color: #c7bca9;
+}
+.faq details[open] {
+  border-color: #e4b79e;
+  background: #fffdf9;
+}
+.faq details[open] summary > svg {
+  transform: rotate(45deg);
+}
+.faq details > p {
+  padding: 0 24px 24px;
+  margin-top: 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.legal h1 {
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: 1.18;
+}
+.legal :global(.card) {
+  border-top: 3px solid #cbbda4;
+  padding: 32px;
+  gap: 22px;
+}
+.legal :global(.card) > p {
+  font-size: 14px;
+  line-height: 1.85;
+  text-wrap: pretty;
+}
+.legal :global(.card) > h2 {
+  font-size: 26px;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--hairline-soft);
+  padding-bottom: 10px;
+}
+.legal :global(.card) > p:last-child {
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline-soft);
+  color: var(--muted);
+  font-size: 12px;
+}
+.legal a {
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  .legal :global(.card) {
+    padding: 24px;
+  }
+}
+.access {
+  background-image: radial-gradient(
+    ellipse at center top,
+    #eee9df70,
+    transparent 70%
+  );
+}
+.access form {
+  border-top: 3px solid rgb(var(--primary));
+  box-shadow: 0 10px 35px #071a3508;
+}
+.access form > p {
+  line-height: 1.75;
+  font-size: 14px;
+}
+.access form > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.access :global(.text-input) {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 400;
+}
+.emptyState {
+  border-top: 3px solid #cbbda4;
+}
+.emptyState h1 {
+  font-size: 36px;
+  text-wrap: balance;
+}
+.reservation h1 {
+  font-size: clamp(38px, 4vw, 54px);
+}
+.reservation article h2 {
+  font-size: 27px;
+  line-height: 1.3;
+}
+.reservation article > div > p {
+  font-size: 13px;
+  line-height: 1.75;
+}
+.reservation article > button {
+  align-self: start;
+  font-size: 12px;
+  color: #a43b21;
+  text-underline-offset: 4px;
+}
+.reservation aside {
+  border-top: 3px solid rgb(var(--primary));
+  box-shadow: 0 10px 35px #071a3508;
+}
+.reservation aside h2 {
+  font-size: 27px;
+}
+.reservation aside > p {
+  line-height: 1.75;
+}
+.reservation aside :global(.text-input) {
+  background: #f6f4ee;
+  font-size: 12px;
+}
+.reservation aside > div:last-of-type {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.reservation :global(#reservation) {
+  border-top: 2px solid #d2c7b4;
+}
+.reservation :global(#reservation) > label {
+  font-size: 13px;
+  color: var(--ink);
+}
+.reservation :global(#reservation) > label > :global(.text-input) {
+  margin-top: 7px;
+  font-size: 14px;
+}
+.reservation fieldset label {
+  font-size: 14px;
+  align-items: center;
+}
+.reservation fieldset label:has(input:checked) {
+  border-color: #d9a083;
+  background: #fff7f0;
+}
+@media (max-width: 767px) {
+  .emptyState h1 {
+    font-size: 30px;
+  }
+  .reservation aside {
+    position: static;
+  }
+}
+.reservation .emptyState h1 {
+  font-size: 36px;
+}
+.reservation button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+.reservation :global(input[type="radio"]),
+.reservation :global(input[type="checkbox"]) {
+  accent-color: #cc3c10;
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .reservation .emptyState h1 {
+    font-size: 30px;
+  }
+}
+.confirmation h1 {
+  font-size: clamp(38px, 4vw, 52px);
+  text-wrap: balance;
+  line-height: 1.18;
+}
+.confirmation article h2 {
+  font-size: 28px;
+  line-height: 1.3;
+}
+.confirmation article {
+  border-top: 2px solid #d2c7b4;
+}
+.confirmation article[data-status="confirmed"] {
+  border-top-color: #57916a;
+}
+.confirmation article[data-status="pending"] {
+  border-top-color: #e2a260;
+}
+.confirmation article p {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.confirmation article > div:first-child > strong {
+  color: var(--ink);
+  letter-spacing: 1px;
+}
+.management h1 {
+  font-size: clamp(38px, 4vw, 54px);
+}
+.management h2 {
+  font-size: 28px;
+  line-height: 1.3;
+}
+.management :global(.card) {
+  border-color: #dedbd2;
+}
+.management article {
+  border-top: 2px solid #cbbda4;
+}
+.management article > p,
+.management form > p {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.management article > :global(.status-chip) {
+  justify-self: start;
+}
+.management :global([role="alert"]) {
+  border-left: 3px solid #b45343;
+  background: #fff6f2;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.management :global([role="status"].card) {
+  border-left: 3px solid #57916a;
+}
+.management form label {
+  font-size: 13px;
+  color: var(--ink);
+}
+.management form :global(.text-input) {
+  margin-top: 8px;
+  font-size: 14px;
+}
+.management button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.management details summary {
+  font-size: 14px;
+  color: #a43b21;
+}
+.notFound {
+  min-height: 540px;
+  display: grid;
+  align-items: center;
+}
+.notFound h1 {
+  font-size: clamp(34px, 4vw, 44px);
+}
+.footer > div:first-child {
+  padding-block: 40px;
+}
+.footer > div:first-child > div {
+  min-width: 0;
+}
+.footer > div:first-child > div:last-child > div:first-of-type {
+  gap: 8px;
+  font-size: 13px;
+}
+.footer a {
+  overflow-wrap: anywhere;
+  transition: color 0.2s;
+}
+.footer a:hover {
+  color: #ff916a;
+}
+.footer a:focus-visible {
+  outline: 2px solid #ff916a;
+  outline-offset: 4px;
+}

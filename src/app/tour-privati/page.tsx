@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import {publicPage} from "@/lib/platform/public";
 import {ContentBlock} from "@/components/ContentBlock";
 export const dynamic="force-dynamic";
@@ -15,11 +16,11 @@ const baseMetadata = {
 export default async function PrivateToursPage() {
  const page=await publicPage("tour-privati"); if(page)return <><ContentBlock page={page}/><div className="container-page mb-16"><Link href="/partner-europa" className="button-primary">Richiedi un tour privato</Link></div></>;
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.privateTours} section`}>
       <div className="container-page">
         <div className="private-copy">
-          <p className="micro-label mb-2 text-muted">Tour privati</p>
-          <h1 className="display-xl private-headline mb-4">Percorsi su misura senza frizione logistica.</h1>
+          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Tour privati</p>
+          <h1 className="display-xl private-headline mb-4">Praga al tuo ritmo, con una guida dedicata.</h1>
           <p className="body-md private-description mb-8">
             Per famiglie, coppie, scuole e agenzie che vogliono una guida italiana, orari adattati e un riferimento operativo prima del tour.
           </p>
@@ -29,7 +30,7 @@ export default async function PrivateToursPage() {
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {[
-            [Users, "Ritmo adatto al gruppo", "Percorsi calibrati su eta, mobilita e priorita."],
+            [Users, "Ritmo adatto al gruppo", "Percorsi calibrati su età, mobilità e priorità."],
             [Clock, "Orari flessibili", "Partenza e durata concordate in base al soggiorno."],
             [ShieldCheck, "Un riferimento locale", "Assistenza via WhatsApp tutti i giorni dalle 9 alle 19."]
           ].map(([Icon, title, text]) => (

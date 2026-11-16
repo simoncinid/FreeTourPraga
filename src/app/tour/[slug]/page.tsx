@@ -1,24 +1,22 @@
+import ui from "@/components/public-ui.module.css";
 import type { Metadata } from "next";
-import Image from "next/image";
+import { TourGallery } from "@/components/TourGallery";
+import { tourPhotos } from "@/lib/tour-gallery";
 import { notFound } from "next/navigation";
-import {
-  CheckCircle2,
-  Clock3,
-  MessageCircle,
-  ShieldCheck,
-  Star,
-  Users,
-} from "lucide-react";
+import Image from "next/image";
+import { CheckCircle2, Clock3, Info, Users } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
+import { TourHighlights } from "@/components/TourHighlights";
 import { JsonLd } from "@/components/JsonLd";
+import panels from "@/components/tour-panels.module.css";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
 import { catalog } from "@/lib/platform/public";
 export const dynamic = "force-dynamic";
 import { formatMoney, minutesToLabel } from "@/lib/format";
-import { absoluteUrl, site, whatsappHref } from "@/lib/site";
+import { absoluteUrl, site } from "@/lib/site";
 import { breadcrumbJsonLd, tourJsonLd } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -72,7 +70,7 @@ export default async function TourDetailPage({ params }: Props) {
   const whatsappHref = (m: string) => contentWhatsapp(content, m);
 
   return (
-    <section className="pb-20 pt-10">
+    <section className={`${ui.page} ${ui.detail} pb-20 pt-10`}>
       <JsonLd
         data={[
           tourJsonLd(tour),
@@ -84,39 +82,36 @@ export default async function TourDetailPage({ params }: Props) {
         ]}
       />
       <div className="container-page">
-        <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="min-w-0">
-            <p className="micro-label mb-3 text-primary">
-              Praga · {tour.category}
-            </p>
-            <h1 className="display-xl tour-detail-title mb-3">{tour.title}</h1>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-              <span className="flex items-center gap-1">
-                <Clock3 size={15} /> {minutesToLabel(tour.durationMinutes)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users size={15} /> Guida in {tour.language}
-              </span>
+        <div className="mb-7">
+          <p className="micro-label mb-3 text-primary">
+            Praga · {tour.category}
+          </p>
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <h1 className="display-xl tour-detail-title mb-0 min-w-0">
+              {tour.title}
+            </h1>
+            <div className="shrink-0 text-left lg:text-right">
+              <span className="block text-sm text-muted">A partire da soli</span>
+              <strong className="font-display text-4xl text-primary leading-none">
+                {formatMoney(tour.basePriceCents)}
+              </strong>
             </div>
           </div>
-          <div className="shrink-0 text-left lg:text-right">
-            <span className="block text-sm text-muted">A partire da</span>
-            <strong className="font-display text-4xl text-primary">
-              {formatMoney(tour.basePriceCents)}
-            </strong>
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+            <span className="flex items-center gap-1">
+              <Clock3 size={15} /> {minutesToLabel(tour.durationMinutes)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Users size={15} /> Guida in {tour.language}
+            </span>
           </div>
         </div>
 
-        <div className="relative mb-10 aspect-[16/10] overflow-hidden rounded-xl md:aspect-[21/9]">
-          <Image
-            src={tour.imageUrl}
-            alt={tour.title}
-            fill
-            priority
-            sizes="(min-width: 1280px) 1200px, 100vw"
-            className="object-cover"
-          />
-        </div>
+        <TourGallery
+          key={tour.id}
+          title={tour.title}
+          photos={tourPhotos(tour)}
+        />
 
         <div className="mb-8 border-b border-hairline pb-4 text-sm font-semibold text-ink">
           <a href="#esperienza" className="mr-7 border-b-2 border-primary pb-4">
@@ -130,65 +125,91 @@ export default async function TourDetailPage({ params }: Props) {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-10">
             <section id="esperienza">
-              <div className="mb-7 border-l-2 border-primary bg-surface-soft p-6">
-                <p className="micro-label mb-2 text-muted">In breve</p>
-                <p className="body-md">
-                  {tour.title} e un tour guidato in italiano a Praga con gruppo
-                  ristretto, punto d&apos;incontro su Google Maps, assistenza
-                  WhatsApp e prezzo adulto da {formatMoney(tour.basePriceCents)}
-                  .
-                </p>
-              </div>
               <h2 className="display-md mb-4">L&apos;esperienza</h2>
               <p className="body-md">{tour.description}</p>
             </section>
             <section id="dettagli">
               <h2 className="display-md mb-4">Cosa vedrai</h2>
-              <div className="grid gap-3">
-                {tour.highlights.map((item) => (
-                  <div
-                    key={item}
-                    className="flex gap-3 border-b border-hairline-soft py-4"
-                  >
-                    <CheckCircle2 className="shrink-0 text-primary" size={22} />
-                    <span className="body-md">{item}</span>
-                  </div>
-                ))}
-              </div>
+              <TourHighlights
+                items={tour.highlights.map((text, index) => ({
+                  text,
+                  images: (tour.highlightGalleries?.[index] || []).slice(0, 4),
+                }))}
+              />
             </section>
             <section id="incontro" className="grid gap-4 md:grid-cols-2">
-              <div className="card p-6">
-                <ShieldCheck className="mb-3 text-primary" size={26} />
-                <h2 className="display-md mb-4">Incluso</h2>
-                <ul className="grid gap-3">
+              <div className={`card p-6 ${panels.panelOrange}`}>
+                <div className={panels.panelTitleRow}>
+                  <Image
+                    src="/images/icons/shield-3d.png"
+                    alt=""
+                    width={42}
+                    height={42}
+                    className={panels.panelIcon}
+                  />
+                  <h2 className={`display-md !mb-0 ${panels.panelTitleOneLine}`}>
+                    Incluso
+                  </h2>
+                </div>
+                <ul className={panels.panelList}>
                   {tour.inclusions.map((item) => (
-                    <li key={item} className="body-sm">
-                      {item}
+                    <li key={item} className={`${panels.panelTickItem} body-sm`}>
+                      <CheckCircle2
+                        className={panels.panelTick}
+                        size={18}
+                        aria-hidden
+                      />
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="card p-6">
-                <p className="micro-label mb-2 text-muted">Prima di partire</p>
-                <h2 className="display-md mb-4">Informazioni pratiche</h2>
-                <ul className="grid gap-3">
+              <div className={`card p-6 ${panels.panelBlue}`}>
+                <div className={panels.panelTitleRow}>
+                  <Image
+                    src="/images/icons/info-3d.png"
+                    alt=""
+                    width={42}
+                    height={42}
+                    className={`${panels.panelIcon} ${panels.panelIconBlue}`}
+                  />
+                  <h2 className={`display-md !mb-0 ${panels.panelTitleOneLine}`}>
+                    Informazioni pratiche
+                  </h2>
+                </div>
+                <ul className={panels.panelList}>
                   {tour.safetyNotes.map((note) => (
-                    <li key={note} className="body-sm">
-                      {note}
+                    <li key={note} className={`${panels.panelTickItem} body-sm`}>
+                      <Info
+                        className={panels.panelInfo}
+                        size={18}
+                        aria-hidden
+                      />
+                      <span>{note}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </section>
             <GoogleMap tour={tour} />
-            <section className="bg-navy p-7 text-on-dark">
-              <MessageCircle className="mb-3 text-whatsapp" size={26} />
-              <h2 className="display-md mb-3 !text-on-dark">
-                Hai un dubbio prima di prenotare?
-              </h2>
+            <section
+              className={`${panels.panelWhatsapp} rounded-xl p-7 text-on-dark`}
+            >
+              <div className={panels.panelTitleRow}>
+                <Image
+                  src="/images/icons/whatsapp-3d.png"
+                  alt=""
+                  width={42}
+                  height={42}
+                  className={`${panels.panelIcon} ${panels.panelIconWhatsapp}`}
+                />
+                <h2 className="display-md !mb-0 !text-on-dark">
+                  Hai un dubbio prima di prenotare?
+                </h2>
+              </div>
               <p className="body-sm mb-5 !text-hairline-soft">
-                Scrivici: nel messaggio troveremo gia il nome del tour, cosi
-                possiamo risponderti piu rapidamente.
+                Scrivici: nel messaggio troveremo già il nome del tour, così
+                possiamo risponderti più rapidamente.
               </p>
               <a
                 className="button-primary !bg-whatsapp hover:!bg-[#1fb75a]"
@@ -199,7 +220,7 @@ export default async function TourDetailPage({ params }: Props) {
                 Scrivi su WhatsApp
               </a>
             </section>
-            <TripAdvisorSection />
+            <TripAdvisorSection layout="card" />
           </div>
           <BookingForm tour={tour} />
         </div>

@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { TourGalleryEditor } from "./TourGalleryEditor";
+import { tourGalleryImages } from "@/lib/tour-gallery";
 import { SiteContentEditor } from "./SiteContentEditor";
 import type { SiteContent } from "@/lib/platform/content";
 import { usePathname, useRouter } from "next/navigation";
@@ -1346,7 +1348,9 @@ function TourEditor({
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
-  const [t, setT] = useState(tour);
+  const [t, setT] = useState(() => ({ ...tour, galleryImages: tourGalleryImages(tour) }));
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const set = (key: keyof CatalogTour, value: unknown) =>
     setT((p) => ({ ...p, [key]: value }));
@@ -1357,7 +1361,7 @@ function TourEditor({
     ["language", "Lingua"],
     ["durationMinutes", "Durata in minuti", "number"],
     ["maxGuests", "Dimensione gruppo", "number"],
-    ["imageUrl", "URL foto"],
+    ["imageUrl", "URL foto copertina"],
     ["meetingPoint", "Punto d’incontro"],
     ["meetingAddress", "Indirizzo"],
     ["mapUrl", "Link Google Maps"],
@@ -1379,6 +1383,7 @@ function TourEditor({
       className="grid gap-6"
       onSubmit={(e) => {
         e.preventDefault();
+        if (busy || galleryUploading || coverUploading) return;
         save({
           ...t,
           slots: t.slots.map((s) => ({
@@ -1395,13 +1400,15 @@ function TourEditor({
       <div className="card grid gap-5 p-6">
         <h2 className="display-md">Informazioni e tariffe</h2>
         <label>
-          Carica foto (JPEG, PNG o WebP; massimo 5 MB)
+          Carica foto copertina (JPEG, PNG o WebP; massimo 5 MB)
           <input
+            disabled={busy || galleryUploading || coverUploading}
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
+              setCoverUploading(true);
               setUploadMessage("Caricamento…");
               try {
                 const r = await fetch("/api/platform/admin/media", {
@@ -1419,6 +1426,8 @@ function TourEditor({
                 setUploadMessage(
                   e instanceof Error ? e.message : "Errore caricamento",
                 );
+              } finally {
+                setCoverUploading(false);
               }
             }}
           />
@@ -1435,11 +1444,6 @@ function TourEditor({
             />
           ))}
         </div>
-        <Text
-          label="Introduzione"
-          value={t.shortDescription}
-          onChange={(v) => set("shortDescription", v)}
-        />
         <Text
           label="Descrizione completa"
           value={t.description}
@@ -1460,6 +1464,27 @@ function TourEditor({
           />
         ))}
         <Text
+          label="Foto punti salienti (gruppi separati da riga vuota, max 4 URL per gruppo)"
+          value={(t.highlightGalleries || [])
+            .map((group) => group.join("\n"))
+            .join("\n\n")}
+          onChange={(v) =>
+            set(
+              "highlightGalleries",
+              v
+                .split(/\n\s*\n/)
+                .map((group) =>
+                  group
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .slice(0, 4),
+                )
+                .filter((group) => group.length > 0),
+            )
+          }
+        />
+        <Text
           label="Titoli o ID attività OTA (uno per riga)"
           value={(t.otaAliases || []).join("\n")}
           onChange={(v) => set("otaAliases", v.split("\n").filter(Boolean))}
@@ -1473,6 +1498,7 @@ function TourEditor({
           Pubblica sul sito
         </label>
       </div>
+      <TourGalleryEditor photos={t.galleryImages} disabled={busy || coverUploading} onChange={(photos) => set("galleryImages", photos)} onUploading={setGalleryUploading} />
       <div className="card grid gap-5 p-6">
         <h2 className="display-md">Partenze e disponibilità</h2>
         <p className="text-sm">
@@ -1559,7 +1585,7 @@ function TourEditor({
           Aggiungi partenza
         </button>
       </div>
-      <button className="button-primary" disabled={busy}>
+      <button className="button-primary" disabled={busy || galleryUploading || coverUploading}>
         Salva tour e partenze
       </button>
     </form>

@@ -48,6 +48,20 @@ export const settingsSchema = z.object({
   googleAdsId: z.string().regex(/^(AW-\d+)?$/),
   googleAdsLabel: z.string().max(100),
 });
+export const tourImageUrlSchema = z.string().refine((v) => {
+  if (/^\/api\/media\/[-a-f0-9]{36}\.webp$/.test(v)) return true;
+  try {
+    const u = new URL(v);
+    return (
+      u.protocol === "https:" &&
+      (u.hostname === "images.unsplash.com" ||
+        (!!process.env.MEDIA_PUBLIC_BASE &&
+          u.origin === new URL(process.env.MEDIA_PUBLIC_BASE).origin))
+    );
+  } catch {
+    return false;
+  }
+}, "Usa una foto caricata o un URL immagini autorizzato");
 export const tourSchema = z.object({
   id: text(),
   slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -55,21 +69,16 @@ export const tourSchema = z.object({
   category: text(),
   shortDescription: text(1000),
   description: text(20000),
-  imageUrl: z.string().refine((v) => {
-    if (/^\/api\/media\/[-a-f0-9]{36}\.webp$/.test(v))
-      return true;
-    try {
-      const u = new URL(v);
-      return (
-        u.protocol === "https:" &&
-        (u.hostname === "images.unsplash.com" ||
-          (!!process.env.MEDIA_PUBLIC_BASE &&
-            u.origin === new URL(process.env.MEDIA_PUBLIC_BASE).origin))
-      );
-    } catch {
-      return false;
-    }
-  }, "Usa una foto caricata o un URL immagini autorizzato"),
+  imageUrl: tourImageUrlSchema,
+  galleryImages: z
+    .array(
+      z.object({
+        url: tourImageUrlSchema,
+        alt: z.string().trim().max(250).default(""),
+      }),
+    )
+    .max(20)
+    .optional(),
   meetingPoint: text(),
   meetingAddress: text(),
   mapUrl: z
@@ -95,6 +104,10 @@ export const tourSchema = z.object({
   seoDescription: z.string().max(500).optional(),
   seoKeywords: z.array(z.string()).optional(),
   highlights: z.array(text(1000)).max(30),
+  highlightGalleries: z
+    .array(z.array(tourImageUrlSchema).max(4))
+    .max(30)
+    .optional(),
   inclusions: z.array(text(1000)).max(30),
   safetyNotes: z.array(text(1000)).max(30),
   published: z.boolean(),

@@ -70,8 +70,11 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   if (!ready) throw Error("Server QA non disponibile");
-  await run("scripts/http-smoke.mjs");
-  await run("scripts/http-e2e.mjs");
+  if (!process.argv.includes("--gallery")) {
+    await run("scripts/http-smoke.mjs");
+    await run("scripts/http-e2e.mjs");
+  }
+  await run("scripts/tour-gallery-e2e.mjs");
 } catch (e) {
   console.error(logs);
   throw e;

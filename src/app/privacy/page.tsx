@@ -1,3 +1,4 @@
+import ui from "@/components/public-ui.module.css";
 import { publicSiteContent } from "@/lib/platform/public";
 import { readState } from "@/lib/platform/store";
 import { publicPage } from "@/lib/platform/public";
@@ -13,7 +14,7 @@ export default async function Page() {
   if (content) return <ContentBlock page={content} />;
   const { settings } = await readState();
   return (
-    <section className="section">
+    <section className={`${ui.page} ${ui.legal} section`}>
       <div className="container-page max-w-3xl">
         <h1 className="display-xl mb-7">Privacy e cookie</h1>
         <div className="card grid gap-6 p-7">

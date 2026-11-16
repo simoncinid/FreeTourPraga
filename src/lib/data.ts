@@ -1,4 +1,5 @@
 import {pragueInstant} from "./platform/time";
+import { oldTownGallery } from "./tour-gallery";
 import type { Tour } from "./types";
 
 const today = new Date(new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Prague"})+"T12:00:00Z");
@@ -9,6 +10,10 @@ function googleMapUrl(query: string) {
 
 function googleMapEmbed(latitude: number, longitude: number) {
   return `https://www.google.com/maps?q=${latitude},${longitude}&z=16&output=embed`;
+}
+
+function photo(id: string, width = 900) {
+  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=80`;
 }
 
 function slot(id: string, tourId: string, dayOffset: number, hour: number, capacity = 14, reserved = 0) {
@@ -30,6 +35,7 @@ function slot(id: string, tourId: string, dayOffset: number, hour: number, capac
 export const tours: Tour[] = [
   {
     id: "old-town",
+    galleryImages: oldTownGallery,
     slug: "citta-vecchia-ponte-carlo",
     title: "Citta Vecchia e Ponte Carlo senza stress",
     category: "Classico",
@@ -68,6 +74,29 @@ export const tours: Tour[] = [
       "Quartiere ebraico esterno senza code inutili",
       "Consigli anti-cambio e ATM Euronet",
       "Ritmo adatto a famiglie e prime visite"
+    ],
+    highlightGalleries: [
+      [
+        photo("photo-1600623471616-8c1966c91ff6"),
+        photo("photo-1580852710598-96912fc48065"),
+        photo("photo-1519677100203-a0e668c92439"),
+        photo("photo-1541849546-216549ae216d"),
+      ],
+      [
+        photo("photo-1715388302950-6ad4ad794d07"),
+        photo("photo-1581200309617-836d0d7f9c04"),
+        photo("photo-1581525046703-e553ee7b3de9"),
+      ],
+      [
+        photo("photo-1556740749-887f6717d7e4"),
+        photo("photo-1578662996442-48f60103fc96"),
+      ],
+      [
+        photo("photo-1529156069898-49953e39b3ac"),
+        photo("photo-1476514525535-07fb3b4ae5f1"),
+        photo("photo-1488646953014-85cb44e25828"),
+        photo("photo-1467269204594-9661b134dd2b"),
+      ],
     ],
     inclusions: [
       "Guida italiana o italofona locale",
@@ -128,6 +157,28 @@ export const tours: Tour[] = [
       "Gruppo piu piccolo per ascoltare bene la guida",
       "Perfetto dopo il tour base della Citta Vecchia"
     ],
+    highlightGalleries: [
+      [
+        photo("photo-1541849546-216549ae216d"),
+        photo("photo-1555861496-0666c8981751"),
+        photo("photo-1565008576549-57569a49371d"),
+        photo("photo-1519677100203-a0e668c92439"),
+      ],
+      [
+        photo("photo-1467269204594-9661b134dd2b"),
+        photo("photo-1578662996442-48f60103fc96"),
+        photo("photo-1580852710598-96912fc48065"),
+      ],
+      [
+        photo("photo-1529156069898-49953e39b3ac"),
+        photo("photo-1476514525535-07fb3b4ae5f1"),
+      ],
+      [
+        photo("photo-1488646953014-85cb44e25828"),
+        photo("photo-1600623471616-8c1966c91ff6"),
+        photo("photo-1519677100203-a0e668c92439"),
+      ],
+    ],
     inclusions: [
       "Guida italiana o italofona locale",
       "Link mappa a un tocco",
@@ -185,6 +236,28 @@ export const tours: Tour[] = [
       "Contesto culturale sulla birra ceca",
       "Consigli pratici per evitare locali turistici",
       "Gruppo piccolo e atmosfera ordinata"
+    ],
+    highlightGalleries: [
+      [
+        photo("photo-1600788886242-5c96aabe3757"),
+        photo("photo-1556740749-887f6717d7e4"),
+        photo("photo-1578662996442-48f60103fc96"),
+      ],
+      [
+        photo("photo-1519677100203-a0e668c92439"),
+        photo("photo-1541849546-216549ae216d"),
+        photo("photo-1467269204594-9661b134dd2b"),
+        photo("photo-1581525046703-e553ee7b3de9"),
+      ],
+      [
+        photo("photo-1488646953014-85cb44e25828"),
+        photo("photo-1715388302950-6ad4ad794d07"),
+      ],
+      [
+        photo("photo-1529156069898-49953e39b3ac"),
+        photo("photo-1476514525535-07fb3b4ae5f1"),
+        photo("photo-1581200309617-836d0d7f9c04"),
+      ],
     ],
     inclusions: [
       "Guida italiana o italofona locale",

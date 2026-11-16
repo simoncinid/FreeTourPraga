@@ -1,3 +1,4 @@
+import ui from "./public-ui.module.css";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
@@ -6,7 +7,7 @@ export async function Footer() {
   const c = await publicSiteContent();
   const g = c.globals;
   return (
-    <footer className="border-t-4 border-primary bg-navy text-white">
+    <footer className={`${ui.footer} border-t-4 border-primary bg-navy text-white`}>
       <div className="container-page grid gap-8 py-12 md:grid-cols-3">
         <div>
           <strong className="font-display text-2xl">{g.brandName}</strong>

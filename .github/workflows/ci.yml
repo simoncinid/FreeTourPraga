@@ -36,9 +36,9 @@ jobs:
         env:
           PLATFORM_STORAGE: postgres
           TEST_POSTGRES: "1"
+      - run: npx playwright install --with-deps chromium
       - run: npm run test:http
       - run: npm audit --audit-level=moderate
-      - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - uses: actions/upload-artifact@v4
         if: always()
