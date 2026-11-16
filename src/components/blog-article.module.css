@@ -40,7 +40,7 @@
   margin-bottom: 16px;
 }
 .hero h1 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), Arial, sans-serif;
   font-size: clamp(32px, 3.2vw, 44px);
   line-height: 1.08;
   letter-spacing: -0.035em;
@@ -85,7 +85,7 @@
 }
 .prose h2,
 .split h2 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), Arial, sans-serif;
   color: #0b2038;
   font-size: clamp(26px, 2.6vw, 34px);
   line-height: 1.2;

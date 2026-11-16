@@ -44,7 +44,7 @@
 
 .score {
   color: #00aa6c;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), Arial, sans-serif;
   font-size: clamp(36px, 4vw, 48px);
   font-weight: 600;
   line-height: 0.92;
@@ -276,7 +276,7 @@
 .showcaseBrand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
 .showcaseBrand > span { color: #216148; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .showcaseTitle {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), Arial, sans-serif;
   font-size: clamp(46px, 5.5vw, 76px);
   line-height: 1.08;
   letter-spacing: -.035em;
@@ -285,7 +285,7 @@
 }
 .showcaseTitle > span { color: #00aa6c; }
 .showcaseRating { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin: 8px 0 22px; }
-.showcaseRating > strong { font-family: var(--font-display), Georgia, serif; color: #005d3e; font-size: 72px; line-height: 1; letter-spacing: -.05em; }
+.showcaseRating > strong { font-family: var(--font-display), Arial, sans-serif; color: #005d3e; font-size: 72px; line-height: 1; letter-spacing: -.05em; }
 .showcaseRating > strong > span { font-family: var(--font-body), sans-serif; font-size: 20px; font-weight: 500; letter-spacing: 0; margin-left: 5px; color: #6a8075; }
 .cardRating {
   margin: 14px 0 18px;

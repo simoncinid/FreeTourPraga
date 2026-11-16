@@ -62,7 +62,7 @@ const config: Config = {
           "Arial",
           "sans-serif"
         ],
-        display: ["var(--font-display)", "Georgia", "serif"]
+        display: ["var(--font-display)", "Arial", "sans-serif"]
       }
     }
   },

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Manrope Variable", Arial, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Poppins", Arial, sans-serif;
+  --font-display: "Poppins", Arial, sans-serif;
   /* Arancio-rosso acceso, appena sotto il neon */
   --primary: 255 72 18;
   --primary-active: 232 58 10;
@@ -12,7 +12,7 @@
   --primary-soft: #ffe4d8;
   --primary-soft-strong: #ffa888;
   --primary-muted: #cc3c10;
-  --on-primary: #000000;
+  --on-primary: #ffffff;
   /*
    * Alternativa giallo acceso (swap futuro dei token primary):
    * --primary: 255 196 0;
@@ -76,9 +76,9 @@ textarea {
 }
 
 .display-xl, .display-lg, .display-md {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-family: var(--font-display), Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .display-xl {
@@ -155,7 +155,7 @@ textarea {
   border: 0;
   border-radius: 10px;
   background: rgb(var(--primary));
-  color: var(--on-primary);
+  color: #ffffff;
   padding: 14px 24px;
   font-size: 14px;
   font-weight: 700;
@@ -163,8 +163,19 @@ textarea {
   cursor: pointer;
 }
 
+.button-primary,
+a.button-primary,
+button.button-primary {
+  color: #ffffff !important;
+}
+
+.button-primary svg {
+  color: #ffffff;
+}
+
 .button-primary:hover {
   background: rgb(var(--primary-active));
+  color: #ffffff !important;
 }
 
 .button-secondary {
@@ -307,14 +318,17 @@ footer.border-primary {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /* Sinistra più scura; a destra overlay quasi assente */
+  /* Estrema sinistra più forte, poi soft verso metà e quasi nullo a dx */
   background: linear-gradient(
     90deg,
-    rgba(4, 28, 54, 0.92) 0%,
-    rgba(4, 28, 54, 0.88) 28%,
-    rgba(8, 42, 78, 0.58) 55%,
-    rgba(12, 58, 102, 0.06) 82%,
-    rgba(12, 58, 102, 0) 100%
+    rgba(4, 28, 54, 0.97) 0%,
+    rgba(4, 28, 54, 0.9) 12%,
+    rgba(4, 28, 54, 0.72) 28%,
+    rgba(4, 28, 54, 0.5) 40%,
+    rgba(4, 28, 54, 0.32) 50%,
+    rgba(4, 28, 54, 0.14) 68%,
+    rgba(4, 28, 54, 0.04) 85%,
+    rgba(4, 28, 54, 0) 100%
   );
 }
 

@@ -1,0 +1,78 @@
+.wrap {
+  display: grid;
+  gap: 28px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 520px);
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid #d8d3c8;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  box-shadow: 0 4px 16px #071a3506;
+}
+
+.search:focus-within {
+  border-color: rgb(var(--primary));
+  color: var(--ink);
+  box-shadow: 0 0 0 3px #ff481218;
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.search input::placeholder {
+  color: var(--muted-soft);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(11 29 55 / 0.18);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dot:hover {
+  background: rgb(11 29 55 / 0.4);
+}
+
+.dotActive {
+  background: rgb(var(--primary));
+  transform: scale(1.15);
+}
+
+.meta {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
