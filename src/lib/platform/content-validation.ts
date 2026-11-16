@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { tourSchema } from "./validation";
+import { sanitizeRichText } from "../rich-text";
 const short = z.string().trim().min(1).max(250),
   body = z.string().trim().min(1).max(5000);
 const localPath = z
@@ -22,6 +23,7 @@ const articleHref = z.union([z.literal(""), localPath, https]);
 export const blogBlockSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
+    html: z.string().max(100000).transform(sanitizeRichText).optional(),
     heading: optionalText(250),
     text: z.string().trim().min(1).max(20000),
   }),
@@ -43,6 +45,14 @@ export const blogBlockSchema = z.discriminatedUnion("type", [
 ]);
 export const blogArticleSchema = z
   .object({
+    id: z.string().regex(/^[a-zA-Z0-9:_-]+$/).max(220).optional(),
+    canonicalPath: z.string().max(500).regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/).optional(),
+    seoTitle: optionalText(250).optional(),
+    seoDescription: optionalText(500).optional(),
+    sourceUrl: z.string().url().optional(),
+    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(200).optional(),
+    slugAliases: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(200)).max(100).optional(),
+    updatedAt: z.string().datetime().optional(),
     title: short,
     caption: body,
     imageUrl: tourSchema.shape.imageUrl,
@@ -145,7 +155,7 @@ export const siteContentSchema = z.object({
       )
       .max(6),
   }),
-  gallery: z.array(blogArticleSchema).max(20),
+  gallery: z.array(blogArticleSchema).max(100),
   faqs: z.array(z.object({ q: short, a: body })).max(50),
   answers: z.array(z.object({ question: short, answer: body })).max(30),
 });

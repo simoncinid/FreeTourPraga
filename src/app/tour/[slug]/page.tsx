@@ -18,24 +18,26 @@ export const dynamic = "force-dynamic";
 import { formatMoney, minutesToLabel } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 import { breadcrumbJsonLd, tourJsonLd } from "@/lib/seo";
+import { tourPath } from "@/lib/public-paths";
+import { RichContent } from "@/components/RichContent";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const tour = (await catalog()).find((t) => t.slug === slug);
+  const tour = (await catalog()).find((t) => t.slug === slug || t.canonicalPath === `/tour/${slug}/`);
   if (!tour) return {};
   return {
-    title: tour.seoTitle || tour.title,
+    title: tour.importedFromWordpress && tour.seoTitle ? { absolute: tour.seoTitle } : tour.seoTitle || tour.title,
     description: tour.seoDescription || tour.shortDescription,
     keywords: [...site.keywords, ...(tour.seoKeywords || [])],
     alternates: {
-      canonical: `/tour/${tour.slug}`,
+      canonical: tourPath(tour),
     },
     openGraph: {
       title: tour.seoTitle || tour.title,
       description: tour.seoDescription || tour.shortDescription,
-      url: absoluteUrl(`/tour/${tour.slug}`),
+      url: absoluteUrl(tourPath(tour)),
       type: "article",
       locale: "it_IT",
       images: [
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TourDetailPage({ params }: Props) {
   const { slug } = await params;
-  const tour = (await catalog()).find((t) => t.slug === slug);
+  const tour = (await catalog()).find((t) => t.slug === slug || t.canonicalPath === `/tour/${slug}/`);
   if (!tour) notFound();
   const content = await publicSiteContent();
   const whatsappHref = (m: string) => contentWhatsapp(content, m);
@@ -77,7 +79,7 @@ export default async function TourDetailPage({ params }: Props) {
           breadcrumbJsonLd([
             { name: "Home", url: site.url },
             { name: "Tour", url: absoluteUrl("/tour") },
-            { name: tour.title, url: absoluteUrl(`/tour/${tour.slug}`) },
+            { name: tour.title, url: absoluteUrl(tourPath(tour)) },
           ]),
         ]}
       />
@@ -91,9 +93,9 @@ export default async function TourDetailPage({ params }: Props) {
               {tour.title}
             </h1>
             <div className="shrink-0 text-left lg:text-right">
-              <span className="block text-sm text-muted">A partire da soli</span>
+              <span className="block text-sm text-muted">{tour.priceLabel ? "Free Tour" : "A partire da soli"}</span>
               <strong className="font-display text-4xl text-primary leading-none">
-                {formatMoney(tour.basePriceCents)}
+                {tour.priceLabel || formatMoney(tour.basePriceCents)}
               </strong>
             </div>
           </div>
@@ -126,7 +128,7 @@ export default async function TourDetailPage({ params }: Props) {
           <div className="grid gap-10">
             <section id="esperienza">
               <h2 className="display-md mb-4">L&apos;esperienza</h2>
-              <p className="body-md">{tour.description}</p>
+              <div className="body-md">{tour.descriptionHtml ? <RichContent html={tour.descriptionHtml} /> : <p>{tour.description}</p>}</div>
             </section>
             <section id="dettagli">
               <h2 className="display-md mb-4">Cosa vedrai</h2>

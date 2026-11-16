@@ -6,10 +6,10 @@ import { TourCard } from "@/components/TourCard";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
 import { ExperienceRotator } from "@/components/ExperienceRotator";
 import { PracticalAnswers } from "@/components/PracticalAnswers";
+import { HomeGallery } from "@/components/HomeGallery";
+import { HeroTourCta } from "@/components/HeroTourCta";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
 import type { SiteContent } from "@/lib/platform/content";
-import { guideAnchor } from "@/lib/format";
-import { guideImage } from "@/lib/guide-media";
 import type { Tour } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -97,17 +97,17 @@ export default async function HomePage() {
               <h1 className="display-xl hero-title mb-5 !text-white">
                 {(h.heroTitle) === "Scopri l'anima autentica di Praga, in totale sicurezza." ? <>Scopri l&apos;anima autentica <span className={styles.keepTogether}>di Praga,</span> in totale sicurezza.</> : h.heroTitle}
               </h1>
-              <p className="body-md mb-8 max-w-xl !text-white/90">
-                {h.heroBody}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
+              <div className={styles.heroCtaBlock}>
+                <p className="body-md mb-8 !text-white/90">{h.heroBody}</p>
+                <HeroTourCta
                   href={h.primaryHref}
-                  className={`button-primary ${styles.heroCta}`}
-                >
-                  {h.primaryLabel}
-                  <ArrowRight size={18} className={styles.heroCtaArrow} aria-hidden />
-                </Link>
+                  label={h.primaryLabel}
+                  tours={tours.map((t) => ({
+                    title: t.title,
+                    imageUrl: t.imageUrl,
+                    slug: t.slug,
+                  }))}
+                />
               </div>
             </div>
           </div>
@@ -202,33 +202,7 @@ export default async function HomePage() {
           <p className="uppercase-tag mb-3 text-primary">{h.galleryEyebrow}</p>
           <h2 className="display-lg mb-3">{h.galleryTitle}</h2>
           <p className={`${styles.galleryLead} body-md mb-8`}>{h.galleryBody}</p>
-          {c.gallery.length > 0 && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {c.gallery.map((photo) => (
-                <Link
-                  key={photo.title}
-                  href={`/blog/${guideAnchor(photo.title)}`}
-                  className="card overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card"
-                >
-                  <figure>
-                    <div className="relative aspect-[4/3]">
-                      <Image
-                        src={guideImage(photo)}
-                        alt={photo.title}
-                        fill
-                        sizes="(min-width:1024px) 33vw, 100vw"
-                        className="object-cover"
-                      />
-                    </div>
-                    <figcaption className="p-5">
-                      <strong className="title-md">{photo.title}</strong>
-                      <p className="body-sm mt-2">{photo.caption}</p>
-                    </figcaption>
-                  </figure>
-                </Link>
-              ))}
-            </div>
-          )}
+          <HomeGallery items={c.gallery} />
         </div>
       </section>
       {c.answers.length > 0 && (
@@ -274,12 +248,18 @@ export default async function HomePage() {
 }
 
 export async function generateMetadata() {
-  const [p, c] = await Promise.all([
+  const [p, c, historicalSeo] = await Promise.all([
     publicPage("homepage"),
     publicSiteContent(),
+    publicPage("legacy-homepage-seo"),
   ]);
+  const title = p?.seoTitle || historicalSeo?.seoTitle || `${c.globals.brandName} - Tour guidati in italiano`;
+  const description = p?.seoDescription || historicalSeo?.seoDescription || c.globals.description;
   return {
-    title: p?.seoTitle || `${c.globals.brandName} - Tour guidati in italiano`,
-    description: p?.seoDescription || c.globals.description,
+    title: { absolute: title },
+    description,
+    alternates: { canonical: "/" },
+    openGraph: { title, description, url: "/", type: "website", locale: "it_IT", images: [{ url: c.home.heroImage, alt: "Free Tour Praga in italiano" }] },
+    twitter: { card: "summary_large_image" as const, title, description, images: [c.home.heroImage] },
   };
 }

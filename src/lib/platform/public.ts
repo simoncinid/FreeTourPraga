@@ -36,3 +36,7 @@ export const publicPage = cache(async (key: string) => {
   const s = await publicState();
   return s.pages[key]?.published ? s.pages[key] : null;
 });
+export const publicLegacyPages = cache(async () => {
+  const s = await publicState();
+  return Object.entries(s.pages).filter(([key, page]) => key.startsWith("legacy:") && page.published && page.canonicalPath).map(([, page]) => page);
+});

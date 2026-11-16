@@ -1,4 +1,4 @@
-import { guideAnchor } from "@/lib/format";
+import { guideSlug } from "@/lib/public-paths";
 import type { SiteContent } from "@/lib/platform/content";
 
 export type GuideItem = SiteContent["gallery"][number];
@@ -7,7 +7,7 @@ export function findGuide(
   gallery: GuideItem[],
   slug: string,
 ): GuideItem | undefined {
-  return gallery.find((guide) => guideAnchor(guide.title) === slug);
+  return gallery.find((guide) => guideSlug(guide) === slug || guide.slugAliases?.includes(slug));
 }
 
 /** Only an explicit admin choice can add a call to action to an article. */

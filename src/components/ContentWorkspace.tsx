@@ -81,7 +81,7 @@ function PageEditor({
       <h2 className="display-md">
         {seoOnly
           ? "Metadati per i motori di ricerca"
-          : pageLabels[pageKey as keyof typeof pageLabels]}
+          : pageLabels[pageKey as keyof typeof pageLabels] || pages[pageKey]?.title}
       </h2>
       {seoOnly ? (
         <p className="text-sm">
@@ -163,7 +163,8 @@ export function ContentWorkspace({
   saveSite: (content: SiteContent) => Promise<unknown>;
   savePage: (body: unknown) => Promise<unknown>;
 }) {
-  const isPage = Boolean(detail && Object.hasOwn(pageLabels, detail));
+  const labels = { ...pageLabels, ...Object.fromEntries(Object.entries(pages).filter(([key]) => key.startsWith("legacy:")).map(([key, page]) => [key, page.title])) };
+  const isPage = Boolean(detail && Object.hasOwn(labels, detail));
   const section: ContentSection =
     isPage || detail === "pagine"
       ? "pagine"
@@ -207,10 +208,10 @@ export function ContentWorkspace({
             contatti.
           </p>
           <nav aria-label="Pagine del sito" className="flex flex-wrap gap-2">
-            {Object.entries(pageLabels).map(([key, label]) => (
+            {Object.entries(labels).map(([key, label]) => (
               <Link
                 key={key}
-                href={`/admin/contenuti/${key}`}
+                href={`/admin/contenuti/${encodeURIComponent(key)}`}
                 aria-current={pageKey === key ? "page" : undefined}
                 className={
                   pageKey === key ? "button-primary" : "button-secondary"

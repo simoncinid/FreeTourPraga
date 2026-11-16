@@ -45,6 +45,7 @@ const smtpPort = smtp.server.address().port;
 const env = {
   ...process.env,
   NODE_ENV: "production",
+  SITE_PREVIEW: "false",
   DATABASE_URL: testUrl.toString(),
   PLATFORM_STORAGE: "postgres",
   NEXT_DIST_DIR: ".next-http",
@@ -124,6 +125,8 @@ try {
   assert.ok(parsedEmails.some(message => message.attachments.some(file => file.filename?.endsWith(".ics") && file.content.toString().includes("BEGIN:VCALENDAR"))), "SMTP must deliver the actual calendar attachment");
   assert.ok(parsedEmails.some(message => message.text?.includes("Punto d'incontro") && message.html?.includes("gestisci-prenotazione")), "SMTP must deliver booking details and scoped links");
   console.log(`PASS SMTP: ${parsedEmails.length} messages received by isolated STARTTLS server; booking HTML and ICS attachments verified. No internet email sent.`);
+  await run(process.execPath, ["scripts/import-seo-content.mjs", "--postgres", "--editorial", "--apply"]);
+  await run(process.execPath, ["scripts/check-seo.mjs", "--url", "http://localhost:3101"], testEnv);
   console.log(
     "PASS: production build + isolated PostgreSQL + complete HTTP workflows. External services disabled.",
   );

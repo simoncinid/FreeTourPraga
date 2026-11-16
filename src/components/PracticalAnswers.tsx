@@ -16,11 +16,7 @@ export function PracticalAnswers({
             <h3 className="title-md min-w-0">{item.question}</h3>
           </div>
           <p className="body-sm mt-3">
-            <LinkedPhrase
-              text={item.answer}
-              phrase="Partner Europa"
-              href="/partner-europa"
-            />
+            <LinkedPhrase text={item.answer} />
           </p>
         </li>
       ))}
@@ -30,26 +26,24 @@ export function PracticalAnswers({
 
 function LinkedPhrase({
   text,
-  phrase,
-  href,
 }: {
   text: string;
-  phrase: string;
-  href: string;
 }) {
-  const [before, ...rest] = text.split(phrase);
-  if (!rest.length) return text;
+  const links: Record<string, string> = {
+    "Partner Europa": "/partner-europa",
+    "scheda del Free Tour": "/tour/free-tour-praga",
+    "tour del Castello di Praga e Malá Strana": "/tour/castello/",
+    "cambio euro-corona ceca": "/cambio-euro-corona-ceca/",
+    "collegamenti dall’aeroporto": "/come-raggiungerci-dallaeroporto/",
+    "ristoranti tipici": "/dove-mangiare-a-praga/",
+  };
+  const phrases = Object.keys(links).map((phrase) => phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const parts = text.split(new RegExp(`(${phrases.join("|")})`, "g"));
   return (
     <>
-      {before}
-      {rest.map((part, index) => (
-        <span key={index}>
-          <Link href={href} className="font-semibold text-ink underline">
-            {phrase}
-          </Link>
-          {part}
-        </span>
-      ))}
+      {parts.map((part, index) => links[part]
+        ? <Link key={index} href={links[part]} className="font-semibold text-ink underline">{part}</Link>
+        : part)}
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { tourPath } from "@/lib/public-paths";
 import styles from "./public-ui.module.css";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +10,7 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
   const name = title || tour.title;
   return (
     <Link
-      href={`/tour/${tour.slug}`}
+      href={tourPath(tour)}
       className={`${styles.tourCard} card flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card`}
     >
       <div className="relative aspect-[4/3]">
@@ -59,9 +60,9 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
         </div>
         <div className="mt-auto flex items-center justify-between border-t border-hairline-soft pt-3">
           <span className="text-sm text-muted">
-            da{" "}
+            {tour.priceLabel ? "" : "da "}
             <strong className="text-base text-ink">
-              {formatMoney(tour.basePriceCents)}
+              {tour.priceLabel || formatMoney(tour.basePriceCents)}
             </strong>
           </span>
           <span className={styles.tourCardCta}>

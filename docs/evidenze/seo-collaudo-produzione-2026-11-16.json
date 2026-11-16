@@ -1,0 +1,2746 @@
+{
+  "origin": "http://localhost:3101",
+  "launch": false,
+  "preview": false,
+  "checked": 205,
+  "passed": 205,
+  "failed": [],
+  "sitemapUrls": 74,
+  "results": [
+    {
+      "path": "/blog-de-praga/",
+      "final": "/blog-de-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog-de-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cattedrale-di-san-vito/",
+      "final": "/cattedrale-di-san-vito/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/cattedrale-di-san-vito/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/bambino-gesu-di-praga/",
+      "final": "/bambino-gesu-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/bambino-gesu-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/metropolitana-di-praga/",
+      "final": "/metropolitana-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/metropolitana-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/clementinum/",
+      "final": "/clementinum/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/clementinum/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/mappa-di-praga/",
+      "final": "/mappa-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/mappa-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/musei-di-praga/",
+      "final": "/musei-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/musei-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-mangiare-a-praga/",
+      "final": "/cosa-mangiare-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/cosa-mangiare-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/museo-nazionale-di-praga/",
+      "final": "/museo-nazionale-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/museo-nazionale-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/orologio-astronomico-di-praga/",
+      "final": "/orologio-astronomico-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/orologio-astronomico-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/praga-a-natale/",
+      "final": "/praga-a-natale/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/praga-a-natale/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/le-prigioni-della-gestapo/",
+      "final": "/le-prigioni-della-gestapo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/le-prigioni-della-gestapo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/lo-sapevate-che/",
+      "final": "/lo-sapevate-che/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/lo-sapevate-che/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/il-monastero-di-strahov/",
+      "final": "/il-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/il-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/ponte-carlo/",
+      "final": "/ponte-carlo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/ponte-carlo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cambio-euro-corona-ceca/",
+      "final": "/cambio-euro-corona-ceca/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/cambio-euro-corona-ceca/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/come-raggiungerci-dallaeroporto/",
+      "final": "/come-raggiungerci-dallaeroporto/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/come-raggiungerci-dallaeroporto/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/quartiere-ebraico-di-praga/",
+      "final": "/quartiere-ebraico-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/quartiere-ebraico-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/citta-vecchia-di-praga/",
+      "final": "/citta-vecchia-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/citta-vecchia-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/arte-a-praga-e-in-boemia-parte-1/",
+      "final": "/arte-a-praga-e-in-boemia-parte-1/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/arte-a-praga-e-in-boemia-parte-1/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/mala-strana/",
+      "final": "/mala-strana/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/mala-strana/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/il-quartiere-della-citta-nuova-di-praga/",
+      "final": "/il-quartiere-della-citta-nuova-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/il-quartiere-della-citta-nuova-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "final": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/castello-di-praga/",
+      "final": "/tour/castello/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/castello-di-praga/",
+          "status": 301,
+          "location": "/tour/castello/"
+        },
+        {
+          "path": "/tour/castello/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/",
+      "final": "/fotos-de-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/contatto/",
+      "final": "/contatto/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/contatto/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/dove-mangiare-a-praga/",
+      "final": "/dove-mangiare-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/dove-mangiare-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/teatro-nero-di-praga/sconto/",
+      "final": "/teatro-nero-di-praga/sconto/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/teatro-nero-di-praga/sconto/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/guias/",
+      "final": "/guias/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/guias/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/",
+      "final": "/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prague-card/",
+      "final": "/prague-card/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prague-card/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cookie-policy/",
+      "final": "/cookie-policy/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/cookie-policy/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/politica-sulla-privacy/",
+      "final": "/politica-sulla-privacy/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/politica-sulla-privacy/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/terezin/",
+      "final": "/tour/terezin/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/terezin/",
+          "status": 301,
+          "location": "/tour/terezin/"
+        },
+        {
+          "path": "/tour/terezin/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/gite-in-barca-a-praga/",
+      "final": "/gite-in-barca-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/gite-in-barca-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/castello/",
+      "final": "/tour/castello/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/castello/",
+          "status": 301,
+          "location": "/tour/castello/"
+        },
+        {
+          "path": "/tour/castello/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/tour-del-comunismo/",
+      "final": "/tour/comunismo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/tour-del-comunismo/",
+          "status": 301,
+          "location": "/tour/comunismo/"
+        },
+        {
+          "path": "/tour/comunismo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/concerto-di-musica-classica/",
+      "final": "/concerto-di-musica-classica/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/concerto-di-musica-classica/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/",
+      "final": "/hotel-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/teatro-nero-di-praga/",
+      "final": "/teatro-nero-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/teatro-nero-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/citta-nuova/",
+      "final": "/tour/citta-nuova-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/citta-nuova/",
+          "status": 301,
+          "location": "/tour/citta-nuova-di-praga/"
+        },
+        {
+          "path": "/tour/citta-nuova-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/tour-dei-mercatini-di-natale/",
+      "final": "/tour/tour-dei-mercatini-di-natale/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/tour-dei-mercatini-di-natale/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/tour-mercatini-natale/",
+      "final": "/tour/tour-dei-mercatini-di-natale/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/tour-mercatini-natale/",
+          "status": 301,
+          "location": "/tour/tour-dei-mercatini-di-natale/"
+        },
+        {
+          "path": "/tour/tour-dei-mercatini-di-natale/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni-tour-degli-interni-del-castello-di-praga/",
+      "final": "/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni-tour-degli-interni-del-castello-di-praga/",
+          "status": 301,
+          "location": "/tour-degli-interni-del-castello-di-praga/"
+        },
+        {
+          "path": "/tour-degli-interni-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/free-tour/",
+      "final": "/tour/free-tour-praga",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/free-tour/",
+          "status": 301,
+          "location": "/tour/free-tour-praga"
+        },
+        {
+          "path": "/tour/free-tour-praga",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/contatti/",
+      "final": "/contatti/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/contatti/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-del-castello-di-praga/",
+      "final": "/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/free-tour-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-del-castello-di-praga-2/",
+      "final": "/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/free-tour-del-castello-di-praga-2/",
+          "status": 301,
+          "location": "/free-tour-del-castello-di-praga/"
+        },
+        {
+          "path": "/free-tour-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/tour-serale/",
+      "final": "/tour/tour-praga-esoterica/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/tour-serale/",
+          "status": 301,
+          "location": "/tour/tour-praga-esoterica/"
+        },
+        {
+          "path": "/tour/tour-praga-esoterica/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour-di-petrin-e-monastero-di-strahov/",
+      "final": "/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/",
+      "final": "/prenotazioni/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/",
+      "final": "/tour/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/terezin/",
+      "final": "/tour/terezin/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/terezin/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/",
+      "final": "/tour/castello/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/castello/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+      "final": "/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+          "status": 301,
+          "location": "/tour-di-petrin-e-monastero-di-strahov/"
+        },
+        {
+          "path": "/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/comunismo/",
+      "final": "/tour/comunismo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/comunismo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+      "final": "/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/tour-praga-esoterica/",
+      "final": "/tour/tour-praga-esoterica/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/tour-praga-esoterica/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/citta-nuova-di-praga/",
+      "final": "/tour/citta-nuova-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/citta-nuova-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour-degli-interni-del-castello-di-praga/",
+      "final": "/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour-degli-interni-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/category/consigli-utili/",
+      "final": "/category/consigli-utili/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/category/consigli-utili/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/category/dove-mangiare-a-praga/",
+      "final": "/category/dove-mangiare-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/category/dove-mangiare-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/category/cosa-vedere-a-praga/",
+      "final": "/category/cosa-vedere-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/category/cosa-vedere-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/category/sin-categoria/",
+      "final": "/category/sin-categoria/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/category/sin-categoria/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tag/birrerie/",
+      "final": "/tag/birrerie/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tag/birrerie/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tag/monumenti/",
+      "final": "/tag/monumenti/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tag/monumenti/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tag/castello-di-praga/",
+      "final": "/tag/castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tag/castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tag/ristoranti/",
+      "final": "/tag/ristoranti/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tag/ristoranti/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/astronomical-clock/",
+      "final": "/fotos-de-praga/astronomical-clock/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/astronomical-clock/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/astronomical-clock-prague-960x600/",
+      "final": "/fotos-de-praga/astronomical-clock-prague-960x600/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/astronomical-clock-prague-960x600/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-praga/clock-orloj/",
+      "final": "/free-tour-praga/clock-orloj/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/free-tour-praga/clock-orloj/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/boats-for-rent/",
+      "final": "/fotos-de-praga/boats-for-rent/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/boats-for-rent/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-praga/clock-orloj-960x600/",
+      "final": "/free-tour-praga/clock-orloj-960x600/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/free-tour-praga/clock-orloj-960x600/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/dancing-house-prague/",
+      "final": "/fotos-de-praga/dancing-house-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/dancing-house-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/david-cerni-sculpture/",
+      "final": "/fotos-de-praga/david-cerni-sculpture/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/david-cerni-sculpture/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/charles-bridge/",
+      "final": "/fotos-de-praga/charles-bridge/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/charles-bridge/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/charles-bridge-960x600/",
+      "final": "/fotos-de-praga/charles-bridge-960x600/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/charles-bridge-960x600/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/author/maxifedpuebla/",
+      "final": "/author/maxifedpuebla/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/author/maxifedpuebla/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/author/webmaster/",
+      "final": "/author/webmaster/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/author/webmaster/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/charles-bridge-cross/",
+      "final": "/fotos-de-praga/charles-bridge-cross/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/charles-bridge-cross/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/charles-bridge-prague/",
+      "final": "/fotos-de-praga/charles-bridge-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/charles-bridge-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/charles-university/",
+      "final": "/fotos-de-praga/charles-university/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/charles-university/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/christmas-market-prague/",
+      "final": "/fotos-de-praga/christmas-market-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/christmas-market-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/jan-palach-sculpture/",
+      "final": "/fotos-de-praga/jan-palach-sculpture/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/jan-palach-sculpture/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/kafka-sculpture-prague/",
+      "final": "/fotos-de-praga/kafka-sculpture-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/kafka-sculpture-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/jewish-cementery-prague/",
+      "final": "/fotos-de-praga/jewish-cementery-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/jewish-cementery-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/john-lennon-wall-prague/",
+      "final": "/fotos-de-praga/john-lennon-wall-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/john-lennon-wall-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/jewish-quarter-prague/",
+      "final": "/fotos-de-praga/jewish-quarter-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/jewish-quarter-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/municipal-house/",
+      "final": "/fotos-de-praga/municipal-house/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/municipal-house/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/new-town-prague/",
+      "final": "/fotos-de-praga/new-town-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/new-town-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/old-town-metro-prague/",
+      "final": "/fotos-de-praga/old-town-metro-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/old-town-metro-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/old-town-square/",
+      "final": "/fotos-de-praga/old-town-square/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/old-town-square/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/old-town-street-prague/",
+      "final": "/fotos-de-praga/old-town-street-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/old-town-street-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/powder-tower/",
+      "final": "/fotos-de-praga/powder-tower/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/powder-tower/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/powder-tower-prague/",
+      "final": "/fotos-de-praga/powder-tower-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/powder-tower-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/saint-nicholas-church/",
+      "final": "/fotos-de-praga/saint-nicholas-church/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/saint-nicholas-church/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/saint-nicholas-prague/",
+      "final": "/fotos-de-praga/saint-nicholas-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/saint-nicholas-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/saint-savior-church-prague/",
+      "final": "/fotos-de-praga/saint-savior-church-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/saint-savior-church-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/statue-smetana/",
+      "final": "/fotos-de-praga/statue-smetana/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/statue-smetana/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/spanish-synagogue-prague/",
+      "final": "/fotos-de-praga/spanish-synagogue-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/spanish-synagogue-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/town-hall-tower/",
+      "final": "/fotos-de-praga/town-hall-tower/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/town-hall-tower/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/tyn-church-prague/",
+      "final": "/fotos-de-praga/tyn-church-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/tyn-church-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/vltava-river/",
+      "final": "/fotos-de-praga/vltava-river/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/vltava-river/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/fotos-de-praga/wenceslas-square-prague/",
+      "final": "/fotos-de-praga/wenceslas-square-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/fotos-de-praga/wenceslas-square-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/guias/pablo/",
+      "final": "/guias/pablo/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/guias/pablo/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/guias/araceli/",
+      "final": "/guias/araceli/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/guias/araceli/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/guias/fran/",
+      "final": "/guias/fran/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/guias/fran/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/guias/nacho/",
+      "final": "/guias/nacho/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/guias/nacho/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/castillo-2/",
+      "final": "/tour/castello/castillo-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/castillo-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-praga/freetourpraga-com/",
+      "final": "/free-tour-praga/freetourpraga-com/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/free-tour-praga/freetourpraga-com/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/free-tour-praga/free-tour-praga-2/",
+      "final": "/free-tour-praga/free-tour-praga-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/free-tour-praga/free-tour-praga-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/tour-cerveza-praga/",
+      "final": "/tour/tour-cerveza-praga/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/tour-cerveza-praga/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/bedbooks-art-hotel/",
+      "final": "/hotel-a-praga/bedbooks-art-hotel/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/bedbooks-art-hotel/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/terezin-campo-de-concentracion/",
+      "final": "/tour/terezin-campo-de-concentracion/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/terezin-campo-de-concentracion/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/karlovy-vary-2-2/",
+      "final": "/tour/karlovy-vary-2-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/karlovy-vary-2-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/apartments-mlynarska-4/",
+      "final": "/hotel-a-praga/apartments-mlynarska-4/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/apartments-mlynarska-4/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/grandior-hotel-prague/",
+      "final": "/hotel-a-praga/grandior-hotel-prague/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/grandior-hotel-prague/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/arpacay-hackpackers-hostel/",
+      "final": "/hotel-a-praga/arpacay-hackpackers-hostel/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/arpacay-hackpackers-hostel/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/bohemia-antique-apartment/",
+      "final": "/hotel-a-praga/bohemia-antique-apartment/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/bohemia-antique-apartment/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/eurostars-thalia/",
+      "final": "/hotel-a-praga/eurostars-thalia/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/eurostars-thalia/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/hostel-one-home/",
+      "final": "/hotel-a-praga/hostel-one-home/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/hostel-one-home/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/hotel-u-krale-karla/",
+      "final": "/hotel-a-praga/hotel-u-krale-karla/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/hotel-u-krale-karla/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/little-quarter-hostel/",
+      "final": "/hotel-a-praga/little-quarter-hostel/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/little-quarter-hostel/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/prague-inn/",
+      "final": "/hotel-a-praga/prague-inn/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/prague-inn/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/prague-1-hostel/",
+      "final": "/hotel-a-praga/prague-1-hostel/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/prague-1-hostel/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/rybna-deluxe-apartment/",
+      "final": "/hotel-a-praga/rybna-deluxe-apartment/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/rybna-deluxe-apartment/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/hotel-a-praga/wenceslas-square-hotel/",
+      "final": "/hotel-a-praga/wenceslas-square-hotel/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/hotel-a-praga/wenceslas-square-hotel/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/catedral-praga-ico/",
+      "final": "/tour/castello/catedral-praga-ico/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/catedral-praga-ico/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/guardia-castillo-ico/",
+      "final": "/tour/castello/guardia-castillo-ico/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/guardia-castillo-ico/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/antiguo-palacio-real/",
+      "final": "/tour/castello/antiguo-palacio-real/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/antiguo-palacio-real/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/callejon-del-oro/",
+      "final": "/tour/castello/callejon-del-oro/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/callejon-del-oro/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/plaza-hradcany/",
+      "final": "/tour/castello/plaza-hradcany/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/plaza-hradcany/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/mala-strana/",
+      "final": "/tour/castello/mala-strana/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/mala-strana/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/puente-carlos-ico/",
+      "final": "/tour/castello/puente-carlos-ico/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/puente-carlos-ico/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/teatro-nero-di-praga/teatro-negro-praga-2/",
+      "final": "/teatro-nero-di-praga/teatro-negro-praga-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/teatro-nero-di-praga/teatro-negro-praga-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/cesky-krumlov-2-2/",
+      "final": "/tour/cesky-krumlov-2-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/cesky-krumlov-2-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/castello-di-praga/cortile-castello-di-praga/",
+      "final": "/castello-di-praga/cortile-castello-di-praga/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/castello-di-praga/cortile-castello-di-praga/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/castello-di-praga/vicolo-d-oro-castello-di-praga/",
+      "final": "/castello-di-praga/vicolo-d-oro-castello-di-praga/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/castello-di-praga/vicolo-d-oro-castello-di-praga/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/terezin/campo-di-concentramento-di-theresienstadt/",
+      "final": "/tour/terezin/campo-di-concentramento-di-theresienstadt/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/terezin/campo-di-concentramento-di-theresienstadt/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/strada-nerudova/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/strada-nerudova/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/strada-nerudova/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello/castillo-de-praga-2/",
+      "final": "/tour/castello/castillo-de-praga-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/tour/castello/castillo-de-praga-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/castello-di-praga/castello-di-praga-2/",
+      "final": "/castello-di-praga/castello-di-praga-2/",
+      "status": 410,
+      "chain": [
+        {
+          "path": "/castello-di-praga/castello-di-praga-2/",
+          "status": 410,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/tour-degli-interni-del-castello-di-praga/",
+      "final": "/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/tour-degli-interni-del-castello-di-praga/",
+          "status": 301,
+          "location": "/tour-degli-interni-del-castello-di-praga/"
+        },
+        {
+          "path": "/tour-degli-interni-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+      "final": "/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+          "status": 301,
+          "location": "/tour-di-petrin-e-monastero-di-strahov/"
+        },
+        {
+          "path": "/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/tour-degli-interni-del-castello-di-praga/",
+      "final": "/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/tour-degli-interni-del-castello-di-praga/",
+          "status": 301,
+          "location": "/tour-degli-interni-del-castello-di-praga/"
+        },
+        {
+          "path": "/tour-degli-interni-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/free-tour-del-castello-di-praga/",
+      "final": "/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/free-tour-del-castello-di-praga/",
+          "status": 301,
+          "location": "/free-tour-del-castello-di-praga/"
+        },
+        {
+          "path": "/free-tour-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/aeroporto-di-praga/",
+      "final": "/come-raggiungerci-dallaeroporto/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/aeroporto-di-praga/",
+          "status": 301,
+          "location": "/come-raggiungerci-dallaeroporto/"
+        },
+        {
+          "path": "/come-raggiungerci-dallaeroporto/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/castello-praga-mala-strana/",
+      "final": "/tour/castello/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/castello-praga-mala-strana/",
+          "status": 301,
+          "location": "/tour/castello/"
+        },
+        {
+          "path": "/tour/castello/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/prenotazioni-free-tour-del-castello-di-praga/",
+      "final": "/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/prenotazioni-free-tour-del-castello-di-praga/",
+          "status": 301,
+          "location": "/free-tour-del-castello-di-praga/"
+        },
+        {
+          "path": "/free-tour-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/tour-di-petrin-e-monastero-di-strahov/",
+      "final": "/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 301,
+          "location": "/tour-di-petrin-e-monastero-di-strahov/"
+        },
+        {
+          "path": "/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/free-tour-castello-praga/",
+      "final": "/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/free-tour-castello-praga/",
+          "status": 301,
+          "location": "/free-tour-del-castello-di-praga/"
+        },
+        {
+          "path": "/free-tour-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/mercatini-natale/",
+      "final": "/tour/tour-dei-mercatini-di-natale/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/mercatini-natale/",
+          "status": 301,
+          "location": "/tour/tour-dei-mercatini-di-natale/"
+        },
+        {
+          "path": "/tour/tour-dei-mercatini-di-natale/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/petrin-monastero-strahov/",
+      "final": "/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/petrin-monastero-strahov/",
+          "status": 301,
+          "location": "/tour-di-petrin-e-monastero-di-strahov/"
+        },
+        {
+          "path": "/tour-di-petrin-e-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/interni-castello-praga/",
+      "final": "/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/interni-castello-praga/",
+          "status": 301,
+          "location": "/tour-degli-interni-del-castello-di-praga/"
+        },
+        {
+          "path": "/tour-degli-interni-del-castello-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/cattedrale-di-san-vito/",
+      "final": "/cattedrale-di-san-vito/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/cattedrale-di-san-vito/",
+          "status": 301,
+          "location": "/cattedrale-di-san-vito/"
+        },
+        {
+          "path": "/cattedrale-di-san-vito/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/bambino-gesu-di-praga/",
+      "final": "/bambino-gesu-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/bambino-gesu-di-praga/",
+          "status": 301,
+          "location": "/bambino-gesu-di-praga/"
+        },
+        {
+          "path": "/bambino-gesu-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/cambio-euro-corona-ceca/",
+      "final": "/cambio-euro-corona-ceca/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/cambio-euro-corona-ceca/",
+          "status": 301,
+          "location": "/cambio-euro-corona-ceca/"
+        },
+        {
+          "path": "/cambio-euro-corona-ceca/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/arte-a-praga-e-in-boemia-parte-1/",
+      "final": "/arte-a-praga-e-in-boemia-parte-1/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/arte-a-praga-e-in-boemia-parte-1/",
+          "status": 301,
+          "location": "/arte-a-praga-e-in-boemia-parte-1/"
+        },
+        {
+          "path": "/arte-a-praga-e-in-boemia-parte-1/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/cosa-mangiare-a-praga/",
+      "final": "/cosa-mangiare-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/cosa-mangiare-a-praga/",
+          "status": 301,
+          "location": "/cosa-mangiare-a-praga/"
+        },
+        {
+          "path": "/cosa-mangiare-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/citta-vecchia-di-praga/",
+      "final": "/citta-vecchia-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/citta-vecchia-di-praga/",
+          "status": 301,
+          "location": "/citta-vecchia-di-praga/"
+        },
+        {
+          "path": "/citta-vecchia-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/clementinum/",
+      "final": "/clementinum/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/clementinum/",
+          "status": 301,
+          "location": "/clementinum/"
+        },
+        {
+          "path": "/clementinum/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/come-raggiungerci-dallaeroporto/",
+      "final": "/come-raggiungerci-dallaeroporto/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/come-raggiungerci-dallaeroporto/",
+          "status": 301,
+          "location": "/come-raggiungerci-dallaeroporto/"
+        },
+        {
+          "path": "/come-raggiungerci-dallaeroporto/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/cosa-vedere-a-praga-in-3-giorni/",
+      "final": "/cosa-vedere-a-praga-in-3-giorni/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/cosa-vedere-a-praga-in-3-giorni/",
+          "status": 301,
+          "location": "/cosa-vedere-a-praga-in-3-giorni/"
+        },
+        {
+          "path": "/cosa-vedere-a-praga-in-3-giorni/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "final": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+          "status": 301,
+          "location": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/"
+        },
+        {
+          "path": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/il-monastero-di-strahov/",
+      "final": "/il-monastero-di-strahov/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/il-monastero-di-strahov/",
+          "status": 301,
+          "location": "/il-monastero-di-strahov/"
+        },
+        {
+          "path": "/il-monastero-di-strahov/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/dove-mangiare-a-praga/",
+      "final": "/dove-mangiare-a-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/dove-mangiare-a-praga/",
+          "status": 301,
+          "location": "/dove-mangiare-a-praga/"
+        },
+        {
+          "path": "/dove-mangiare-a-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/il-quartiere-della-citta-nuova-di-praga/",
+      "final": "/il-quartiere-della-citta-nuova-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/il-quartiere-della-citta-nuova-di-praga/",
+          "status": 301,
+          "location": "/il-quartiere-della-citta-nuova-di-praga/"
+        },
+        {
+          "path": "/il-quartiere-della-citta-nuova-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/le-prigioni-della-gestapo/",
+      "final": "/le-prigioni-della-gestapo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/le-prigioni-della-gestapo/",
+          "status": 301,
+          "location": "/le-prigioni-della-gestapo/"
+        },
+        {
+          "path": "/le-prigioni-della-gestapo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/lo-sapevate-che/",
+      "final": "/lo-sapevate-che/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/lo-sapevate-che/",
+          "status": 301,
+          "location": "/lo-sapevate-che/"
+        },
+        {
+          "path": "/lo-sapevate-che/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/mala-strana/",
+      "final": "/mala-strana/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/mala-strana/",
+          "status": 301,
+          "location": "/mala-strana/"
+        },
+        {
+          "path": "/mala-strana/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/mappa-di-praga/",
+      "final": "/mappa-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/mappa-di-praga/",
+          "status": 301,
+          "location": "/mappa-di-praga/"
+        },
+        {
+          "path": "/mappa-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/museo-nazionale-di-praga/",
+      "final": "/museo-nazionale-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/museo-nazionale-di-praga/",
+          "status": 301,
+          "location": "/museo-nazionale-di-praga/"
+        },
+        {
+          "path": "/museo-nazionale-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/metropolitana-di-praga/",
+      "final": "/metropolitana-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/metropolitana-di-praga/",
+          "status": 301,
+          "location": "/metropolitana-di-praga/"
+        },
+        {
+          "path": "/metropolitana-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/musei-di-praga/",
+      "final": "/musei-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/musei-di-praga/",
+          "status": 301,
+          "location": "/musei-di-praga/"
+        },
+        {
+          "path": "/musei-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/orologio-astronomico-di-praga/",
+      "final": "/orologio-astronomico-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/orologio-astronomico-di-praga/",
+          "status": 301,
+          "location": "/orologio-astronomico-di-praga/"
+        },
+        {
+          "path": "/orologio-astronomico-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/praga-a-natale/",
+      "final": "/praga-a-natale/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/praga-a-natale/",
+          "status": 301,
+          "location": "/praga-a-natale/"
+        },
+        {
+          "path": "/praga-a-natale/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/ponte-carlo/",
+      "final": "/ponte-carlo/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/ponte-carlo/",
+          "status": 301,
+          "location": "/ponte-carlo/"
+        },
+        {
+          "path": "/ponte-carlo/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/quartiere-ebraico-di-praga/",
+      "final": "/quartiere-ebraico-di-praga/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/quartiere-ebraico-di-praga/",
+          "status": 301,
+          "location": "/quartiere-ebraico-di-praga/"
+        },
+        {
+          "path": "/quartiere-ebraico-di-praga/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/post-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/post-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/page-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/page-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/category-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/category-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/post_tag-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/post_tag-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/author-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/author-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/attachment-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/attachment-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/wp-sitemap.xml/",
+      "final": "/sitemap.xml",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/wp-sitemap.xml/",
+          "status": 301,
+          "location": "/sitemap.xml"
+        },
+        {
+          "path": "/sitemap.xml",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/partner-europa",
+      "final": "/partner-europa",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/partner-europa",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog-de-praga/page/3/",
+      "final": "/blog-de-praga/page/3/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog-de-praga/page/3/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/chi-siamo",
+      "final": "/chi-siamo",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/chi-siamo",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog-de-praga/page/2/",
+      "final": "/blog-de-praga/page/2/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog-de-praga/page/2/",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/faq",
+      "final": "/faq",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/faq",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/privacy",
+      "final": "/privacy",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/privacy",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/termini",
+      "final": "/termini",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/termini",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog",
+      "final": "/blog",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/citta-vecchia-e-ponte-carlo",
+      "final": "/blog/citta-vecchia-e-ponte-carlo",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/citta-vecchia-e-ponte-carlo",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/citta-vecchia-ponte-carlo",
+      "final": "/tour/citta-vecchia-ponte-carlo",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/citta-vecchia-ponte-carlo",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/birra-ceca-storie-locali",
+      "final": "/tour/birra-ceca-storie-locali",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/birra-ceca-storie-locali",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/tour/free-tour-praga",
+      "final": "/tour/free-tour-praga",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/tour/free-tour-praga",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/castello-e-mala-strana",
+      "final": "/blog/castello-e-mala-strana",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/castello-e-mala-strana",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/blog/cambio-pagamenti-e-assistenza",
+      "final": "/blog/cambio-pagamenti-e-assistenza",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/blog/cambio-pagamenti-e-assistenza",
+          "status": 200,
+          "location": null
+        }
+      ]
+    },
+    {
+      "path": "/castello-di-praga/?utm_source=seo-check&affiliates=5",
+      "final": "/tour/castello/",
+      "status": 200,
+      "chain": [
+        {
+          "path": "/castello-di-praga/?utm_source=seo-check&affiliates=5",
+          "status": 301,
+          "location": "/tour/castello/?utm_source=seo-check&affiliates=5"
+        },
+        {
+          "path": "/tour/castello/?utm_source=seo-check&affiliates=5",
+          "status": 200,
+          "location": null
+        }
+      ]
+    }
+  ]
+}

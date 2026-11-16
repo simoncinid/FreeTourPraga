@@ -1,0 +1,3584 @@
+{
+  "date_local": "2026-11-16 Europe/Rome",
+  "source_commit": "678a236",
+  "old_origin": "https://it.freetourpraga.com",
+  "preview_origin": "https://web-production-f3beeaff.up.railway.app",
+  "method": "GET pubblico; inventario sitemap; prima risposta senza seguire redirect e verifica destinazione finale; HTML non eseguito in browser; DNS autorevole in sola lettura",
+  "limitations": [
+    "Preview e checkout locale analizzati separatamente; identita del commit distribuito non verificata",
+    "Sitemap non equivale a elenco di URL indicizzate o con traffico",
+    "Nessun accesso Search Console, Analytics, backlink, log o zona DNS completa",
+    "HTTP del sito storico verificato su 61 URL delle sitemap pagine e articoli; non su tutti gli allegati e archivi",
+    "Nessuna misura Core Web Vitals o prova di invio/ricezione email"
+  ],
+  "counts": {
+    "old_sitemap_urls": 147,
+    "old_main_pages": 61,
+    "preview_sitemap_urls": 16,
+    "legacy_final_http": {
+      "404": 144,
+      "200": 3
+    }
+  },
+  "old_sitemaps": [
+    {
+      "url": "https://it.freetourpraga.com/post-sitemap.xml",
+      "count": 26
+    },
+    {
+      "url": "https://it.freetourpraga.com/page-sitemap.xml",
+      "count": 35
+    },
+    {
+      "url": "https://it.freetourpraga.com/category-sitemap.xml",
+      "count": 4
+    },
+    {
+      "url": "https://it.freetourpraga.com/post_tag-sitemap.xml",
+      "count": 4
+    },
+    {
+      "url": "https://it.freetourpraga.com/author-sitemap.xml",
+      "count": 2
+    },
+    {
+      "url": "https://it.freetourpraga.com/attachment-sitemap.xml",
+      "count": 76
+    }
+  ],
+  "legacy_checks": [
+    {
+      "old_path": "/blog-de-praga/",
+      "initial_status": 308,
+      "initial_location": "/blog-de-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/blog-de-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/metropolitana-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/metropolitana-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/metropolitana-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cattedrale-di-san-vito/",
+      "initial_status": 308,
+      "initial_location": "/cattedrale-di-san-vito",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cattedrale-di-san-vito",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/bambino-gesu-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/bambino-gesu-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/bambino-gesu-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/clementinum/",
+      "initial_status": 308,
+      "initial_location": "/clementinum",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/clementinum",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/mappa-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/mappa-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/mappa-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/musei-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/musei-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/musei-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-mangiare-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/cosa-mangiare-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-mangiare-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/praga-a-natale/",
+      "initial_status": 308,
+      "initial_location": "/praga-a-natale",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/praga-a-natale",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/orologio-astronomico-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/orologio-astronomico-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/orologio-astronomico-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/museo-nazionale-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/museo-nazionale-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/museo-nazionale-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/le-prigioni-della-gestapo/",
+      "initial_status": 308,
+      "initial_location": "/le-prigioni-della-gestapo",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/le-prigioni-della-gestapo",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/lo-sapevate-che/",
+      "initial_status": 308,
+      "initial_location": "/lo-sapevate-che",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/lo-sapevate-che",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/ponte-carlo/",
+      "initial_status": 308,
+      "initial_location": "/ponte-carlo",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/ponte-carlo",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/il-monastero-di-strahov/",
+      "initial_status": 308,
+      "initial_location": "/il-monastero-di-strahov",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/il-monastero-di-strahov",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cambio-euro-corona-ceca/",
+      "initial_status": 308,
+      "initial_location": "/cambio-euro-corona-ceca",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cambio-euro-corona-ceca",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/come-raggiungerci-dallaeroporto/",
+      "initial_status": 308,
+      "initial_location": "/come-raggiungerci-dallaeroporto",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/come-raggiungerci-dallaeroporto",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/arte-a-praga-e-in-boemia-parte-1/",
+      "initial_status": 308,
+      "initial_location": "/arte-a-praga-e-in-boemia-parte-1",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/arte-a-praga-e-in-boemia-parte-1",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/quartiere-ebraico-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/quartiere-ebraico-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/quartiere-ebraico-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/citta-vecchia-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/citta-vecchia-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/citta-vecchia-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/mala-strana/",
+      "initial_status": 308,
+      "initial_location": "/mala-strana",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/mala-strana",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/il-quartiere-della-citta-nuova-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/il-quartiere-della-citta-nuova-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/il-quartiere-della-citta-nuova-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "initial_status": 308,
+      "initial_location": "/dove-acquistare-i-biglietti-per-i-mezzi-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/dove-acquistare-i-biglietti-per-i-mezzi-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/dove-mangiare-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/dove-mangiare-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/dove-mangiare-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/",
+      "initial_status": 200,
+      "initial_location": null,
+      "final_url": "https://web-production-f3beeaff.up.railway.app/",
+      "final_status": 200,
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Scopri l'anima autentica di Praga, in totale sicurezza."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/contatto/",
+      "initial_status": 308,
+      "initial_location": "/contatto",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/contatto",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/guias/",
+      "initial_status": 308,
+      "initial_location": "/guias",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/guias",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/teatro-nero-di-praga/sconto/",
+      "initial_status": 308,
+      "initial_location": "/teatro-nero-di-praga/sconto",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/teatro-nero-di-praga/sconto",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prague-card/",
+      "initial_status": 308,
+      "initial_location": "/prague-card",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prague-card",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cookie-policy/",
+      "initial_status": 308,
+      "initial_location": "/cookie-policy",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cookie-policy",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/politica-sulla-privacy/",
+      "initial_status": 308,
+      "initial_location": "/politica-sulla-privacy",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/politica-sulla-privacy",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/gite-in-barca-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/gite-in-barca-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/gite-in-barca-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/castello/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/castello",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/castello",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/tour-del-comunismo/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/tour-del-comunismo",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/tour-del-comunismo",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/terezin/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/terezin",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/terezin",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/citta-nuova/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/citta-nuova",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/citta-nuova",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/concerto-di-musica-classica/",
+      "initial_status": 308,
+      "initial_location": "/concerto-di-musica-classica",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/concerto-di-musica-classica",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/teatro-nero-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/teatro-nero-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/teatro-nero-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/tour-mercatini-natale/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/tour-mercatini-natale",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/tour-mercatini-natale",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/tour-dei-mercatini-di-natale/",
+      "initial_status": 308,
+      "initial_location": "/tour/tour-dei-mercatini-di-natale",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/tour-dei-mercatini-di-natale",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/prenotazioni-tour-degli-interni-del-castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni-tour-degli-interni-del-castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni-tour-degli-interni-del-castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/free-tour/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/free-tour",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/free-tour",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/contatti/",
+      "initial_status": 308,
+      "initial_location": "/contatti",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/contatti",
+      "final_status": 200,
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Praga è più vicina di quanto pensi."
+      ]
+    },
+    {
+      "old_path": "/free-tour-del-castello-di-praga-2/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-del-castello-di-praga-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-del-castello-di-praga-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/free-tour-del-castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-del-castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-del-castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/tour-serale/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni/tour-serale",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni/tour-serale",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour-di-petrin-e-monastero-di-strahov/",
+      "initial_status": 308,
+      "initial_location": "/tour-di-petrin-e-monastero-di-strahov",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour-di-petrin-e-monastero-di-strahov",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/",
+      "initial_status": 308,
+      "initial_location": "/tour",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour",
+      "final_status": 200,
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Tour guidati in italiano a Praga"
+      ]
+    },
+    {
+      "old_path": "/prenotazioni/",
+      "initial_status": 308,
+      "initial_location": "/prenotazioni",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/prenotazioni",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+      "initial_status": 308,
+      "initial_location": "/tour-monastero-di-strahov-e-chiesa-di-san-nicola",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour-monastero-di-strahov-e-chiesa-di-san-nicola",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/terezin/",
+      "initial_status": 308,
+      "initial_location": "/tour/terezin",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/terezin",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour/castello/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour/comunismo/",
+      "initial_status": 308,
+      "initial_location": "/tour/comunismo",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/comunismo",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour/tour-praga-esoterica/",
+      "initial_status": 308,
+      "initial_location": "/tour/tour-praga-esoterica",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/tour-praga-esoterica",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour-degli-interni-del-castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/tour-degli-interni-del-castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour-degli-interni-del-castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/informazioni-utili-per-il-tuo-viaggio-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/informazioni-utili-per-il-tuo-viaggio-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/citta-nuova-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/tour/citta-nuova-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/citta-nuova-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/category/consigli-utili/",
+      "initial_status": 308,
+      "initial_location": "/category/consigli-utili",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/category/consigli-utili",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/category/cosa-vedere-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/category/cosa-vedere-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/category/cosa-vedere-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/category/dove-mangiare-a-praga/",
+      "initial_status": 308,
+      "initial_location": "/category/dove-mangiare-a-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/category/dove-mangiare-a-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/category/sin-categoria/",
+      "initial_status": 308,
+      "initial_location": "/category/sin-categoria",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/category/sin-categoria",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tag/birrerie/",
+      "initial_status": 308,
+      "initial_location": "/tag/birrerie",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tag/birrerie",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tag/castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/tag/castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tag/castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tag/monumenti/",
+      "initial_status": 308,
+      "initial_location": "/tag/monumenti",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tag/monumenti",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tag/ristoranti/",
+      "initial_status": 308,
+      "initial_location": "/tag/ristoranti",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tag/ristoranti",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/author/maxifedpuebla/",
+      "initial_status": 308,
+      "initial_location": "/author/maxifedpuebla",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/author/maxifedpuebla",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/author/webmaster/",
+      "initial_status": 308,
+      "initial_location": "/author/webmaster",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/author/webmaster",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/astronomical-clock/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/astronomical-clock",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/astronomical-clock",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/astronomical-clock-prague-960x600/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/astronomical-clock-prague-960x600",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/astronomical-clock-prague-960x600",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/boats-for-rent/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/boats-for-rent",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/boats-for-rent",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/free-tour-praga/clock-orloj/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-praga/clock-orloj",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-praga/clock-orloj",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/free-tour-praga/clock-orloj-960x600/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-praga/clock-orloj-960x600",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-praga/clock-orloj-960x600",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/dancing-house-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/dancing-house-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/dancing-house-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/david-cerni-sculpture/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/david-cerni-sculpture",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/david-cerni-sculpture",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/charles-bridge/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/charles-bridge",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/charles-bridge",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/charles-bridge-960x600/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/charles-bridge-960x600",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/charles-bridge-960x600",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/charles-bridge-cross/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/charles-bridge-cross",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/charles-bridge-cross",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/charles-bridge-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/charles-bridge-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/charles-bridge-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/charles-university/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/charles-university",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/charles-university",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/christmas-market-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/christmas-market-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/christmas-market-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/jan-palach-sculpture/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/jan-palach-sculpture",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/jan-palach-sculpture",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/jewish-cementery-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/jewish-cementery-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/jewish-cementery-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/jewish-quarter-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/jewish-quarter-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/jewish-quarter-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/john-lennon-wall-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/john-lennon-wall-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/john-lennon-wall-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/kafka-sculpture-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/kafka-sculpture-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/kafka-sculpture-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/municipal-house/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/municipal-house",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/municipal-house",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/new-town-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/new-town-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/new-town-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/old-town-metro-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/old-town-metro-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/old-town-metro-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/old-town-square/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/old-town-square",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/old-town-square",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/old-town-street-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/old-town-street-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/old-town-street-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/powder-tower/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/powder-tower",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/powder-tower",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/powder-tower-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/powder-tower-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/powder-tower-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/saint-nicholas-church/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/saint-nicholas-church",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/saint-nicholas-church",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/saint-nicholas-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/saint-nicholas-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/saint-nicholas-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/saint-savior-church-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/saint-savior-church-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/saint-savior-church-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/spanish-synagogue-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/spanish-synagogue-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/spanish-synagogue-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/statue-smetana/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/statue-smetana",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/statue-smetana",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/town-hall-tower/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/town-hall-tower",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/town-hall-tower",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/tyn-church-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/tyn-church-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/tyn-church-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/vltava-river/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/vltava-river",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/vltava-river",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/fotos-de-praga/wenceslas-square-prague/",
+      "initial_status": 308,
+      "initial_location": "/fotos-de-praga/wenceslas-square-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/fotos-de-praga/wenceslas-square-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/guias/araceli/",
+      "initial_status": 308,
+      "initial_location": "/guias/araceli",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/guias/araceli",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/guias/fran/",
+      "initial_status": 308,
+      "initial_location": "/guias/fran",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/guias/fran",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/guias/nacho/",
+      "initial_status": 308,
+      "initial_location": "/guias/nacho",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/guias/nacho",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/guias/pablo/",
+      "initial_status": 308,
+      "initial_location": "/guias/pablo",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/guias/pablo",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/castillo-2/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/castillo-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/castillo-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/free-tour-praga/freetourpraga-com/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-praga/freetourpraga-com",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-praga/freetourpraga-com",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/free-tour-praga/free-tour-praga-2/",
+      "initial_status": 308,
+      "initial_location": "/free-tour-praga/free-tour-praga-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/free-tour-praga/free-tour-praga-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/tour-cerveza-praga/",
+      "initial_status": 308,
+      "initial_location": "/tour/tour-cerveza-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/tour-cerveza-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour/terezin-campo-de-concentracion/",
+      "initial_status": 308,
+      "initial_location": "/tour/terezin-campo-de-concentracion",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/terezin-campo-de-concentracion",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/tour/karlovy-vary-2-2/",
+      "initial_status": 308,
+      "initial_location": "/tour/karlovy-vary-2-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/karlovy-vary-2-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/hotel-a-praga/apartments-mlynarska-4/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/apartments-mlynarska-4",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/apartments-mlynarska-4",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/bedbooks-art-hotel/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/bedbooks-art-hotel",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/bedbooks-art-hotel",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/arpacay-hackpackers-hostel/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/arpacay-hackpackers-hostel",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/arpacay-hackpackers-hostel",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/bohemia-antique-apartment/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/bohemia-antique-apartment",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/bohemia-antique-apartment",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/eurostars-thalia/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/eurostars-thalia",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/eurostars-thalia",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/grandior-hotel-prague/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/grandior-hotel-prague",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/grandior-hotel-prague",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/hostel-one-home/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/hostel-one-home",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/hostel-one-home",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/hotel-u-krale-karla/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/hotel-u-krale-karla",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/hotel-u-krale-karla",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/little-quarter-hostel/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/little-quarter-hostel",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/little-quarter-hostel",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/prague-inn/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/prague-inn",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/prague-inn",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/prague-1-hostel/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/prague-1-hostel",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/prague-1-hostel",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/rybna-deluxe-apartment/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/rybna-deluxe-apartment",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/rybna-deluxe-apartment",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/hotel-a-praga/wenceslas-square-hotel/",
+      "initial_status": 308,
+      "initial_location": "/hotel-a-praga/wenceslas-square-hotel",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/hotel-a-praga/wenceslas-square-hotel",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/catedral-praga-ico/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/catedral-praga-ico",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/catedral-praga-ico",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/guardia-castillo-ico/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/guardia-castillo-ico",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/guardia-castillo-ico",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/antiguo-palacio-real/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/antiguo-palacio-real",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/antiguo-palacio-real",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/callejon-del-oro/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/callejon-del-oro",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/callejon-del-oro",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/plaza-hradcany/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/plaza-hradcany",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/plaza-hradcany",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/mala-strana/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/mala-strana",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/mala-strana",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/puente-carlos-ico/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/puente-carlos-ico",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/puente-carlos-ico",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/teatro-nero-di-praga/teatro-negro-praga-2/",
+      "initial_status": 308,
+      "initial_location": "/teatro-nero-di-praga/teatro-negro-praga-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/teatro-nero-di-praga/teatro-negro-praga-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/cesky-krumlov-2-2/",
+      "initial_status": 308,
+      "initial_location": "/tour/cesky-krumlov-2-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/cesky-krumlov-2-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": []
+    },
+    {
+      "old_path": "/castello-di-praga/cortile-castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/castello-di-praga/cortile-castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/castello-di-praga/cortile-castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/castello-di-praga/vicolo-d-oro-castello-di-praga/",
+      "initial_status": 308,
+      "initial_location": "/castello-di-praga/vicolo-d-oro-castello-di-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/castello-di-praga/vicolo-d-oro-castello-di-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/terezin/campo-di-concentramento-di-theresienstadt/",
+      "initial_status": 308,
+      "initial_location": "/tour/terezin/campo-di-concentramento-di-theresienstadt",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/terezin/campo-di-concentramento-di-theresienstadt",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni/cosa-vedere-a-praga-in-3-giorni",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni/primo-giorno-free-tour-praga",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni/dancing-house-prague-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/tour/castello/castillo-de-praga-2/",
+      "initial_status": 308,
+      "initial_location": "/tour/castello/castillo-de-praga-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/tour/castello/castillo-de-praga-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/strada-nerudova/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni/strada-nerudova",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni/strada-nerudova",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito/",
+      "initial_status": 308,
+      "initial_location": "/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/cosa-vedere-a-praga-in-3-giorni/catedrale-di-san-vito",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    },
+    {
+      "old_path": "/castello-di-praga/castello-di-praga-2/",
+      "initial_status": 308,
+      "initial_location": "/castello-di-praga/castello-di-praga-2",
+      "final_url": "https://web-production-f3beeaff.up.railway.app/castello-di-praga/castello-di-praga-2",
+      "final_status": 404,
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Ritroviamo la strada."
+      ]
+    }
+  ],
+  "old_main_page_metadata": [
+    {
+      "url": "https://it.freetourpraga.com/blog-de-praga/",
+      "final": "https://it.freetourpraga.com/blog-de-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/blog-de-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [],
+      "words": 688,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/metropolitana-di-praga/",
+      "final": "https://it.freetourpraga.com/metropolitana-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/metropolitana-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Metropolitana di Praga"
+      ],
+      "words": 592,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/cattedrale-di-san-vito/",
+      "final": "https://it.freetourpraga.com/cattedrale-di-san-vito/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/cattedrale-di-san-vito/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Cattedrale di San Vito"
+      ],
+      "words": 444,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/bambino-gesu-di-praga/",
+      "final": "https://it.freetourpraga.com/bambino-gesu-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/bambino-gesu-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Chiesa del Bambino Gesù di Praga"
+      ],
+      "words": 360,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/clementinum/",
+      "final": "https://it.freetourpraga.com/clementinum/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/clementinum/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Clementinum, il complesso che ospita la Biblioteca nazionale ceca"
+      ],
+      "words": 529,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/mappa-di-praga/",
+      "final": "https://it.freetourpraga.com/mappa-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/mappa-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Mappa di Praga da scaricare o stampare"
+      ],
+      "words": 275,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/musei-di-praga/",
+      "final": "https://it.freetourpraga.com/musei-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/musei-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Musei di Praga"
+      ],
+      "words": 1106,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/cosa-vedere-a-praga-in-3-giorni/",
+      "final": "https://it.freetourpraga.com/cosa-vedere-a-praga-in-3-giorni/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/cosa-vedere-a-praga-in-3-giorni/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Cosa vedere a praga in 3 giorni"
+      ],
+      "words": 971,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/cosa-mangiare-a-praga/",
+      "final": "https://it.freetourpraga.com/cosa-mangiare-a-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/cosa-mangiare-a-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Cosa mangiare a Praga"
+      ],
+      "words": 572,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/praga-a-natale/",
+      "final": "https://it.freetourpraga.com/praga-a-natale/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/praga-a-natale/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Natale 2023 a Praga"
+      ],
+      "words": 777,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/orologio-astronomico-di-praga/",
+      "final": "https://it.freetourpraga.com/orologio-astronomico-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/orologio-astronomico-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "L’Orologio astronomico di Praga, più famoso del mondo"
+      ],
+      "words": 414,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/museo-nazionale-di-praga/",
+      "final": "https://it.freetourpraga.com/museo-nazionale-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/museo-nazionale-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Museo Nazionale di Praga"
+      ],
+      "words": 467,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/le-prigioni-della-gestapo/",
+      "final": "https://it.freetourpraga.com/le-prigioni-della-gestapo/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/le-prigioni-della-gestapo/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Le prigioni della Gestapo"
+      ],
+      "words": 691,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/lo-sapevate-che/",
+      "final": "https://it.freetourpraga.com/lo-sapevate-che/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/lo-sapevate-che/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Lo sapevate che…?"
+      ],
+      "words": 661,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/ponte-carlo/",
+      "final": "https://it.freetourpraga.com/ponte-carlo/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/ponte-carlo/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Ponte Carlo"
+      ],
+      "words": 949,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/il-monastero-di-strahov/",
+      "final": "https://it.freetourpraga.com/il-monastero-di-strahov/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/il-monastero-di-strahov/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Il Monastero di Strahov"
+      ],
+      "words": 913,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/cambio-euro-corona-ceca/",
+      "final": "https://it.freetourpraga.com/cambio-euro-corona-ceca/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/cambio-euro-corona-ceca/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Cambio euro corona ceca. Dove cambiare i soldi a Praga."
+      ],
+      "words": 765,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/come-raggiungerci-dallaeroporto/",
+      "final": "https://it.freetourpraga.com/come-raggiungerci-dallaeroporto/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/come-raggiungerci-dallaeroporto/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Come raggiungerci dall’aeroporto"
+      ],
+      "words": 453,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/arte-a-praga-e-in-boemia-parte-1/",
+      "final": "https://it.freetourpraga.com/arte-a-praga-e-in-boemia-parte-1/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/arte-a-praga-e-in-boemia-parte-1/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Arte a Praga e in Boemia – Parte 1"
+      ],
+      "words": 1575,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/quartiere-ebraico-di-praga/",
+      "final": "https://it.freetourpraga.com/quartiere-ebraico-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/quartiere-ebraico-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Josefov, il Quartiere Ebraico di Praga"
+      ],
+      "words": 635,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/citta-vecchia-di-praga/",
+      "final": "https://it.freetourpraga.com/citta-vecchia-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/citta-vecchia-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "La Città Vecchia di Praga (Staré Město)"
+      ],
+      "words": 697,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/mala-strana/",
+      "final": "https://it.freetourpraga.com/mala-strana/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/mala-strana/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Il Quartiere di Malá Strana"
+      ],
+      "words": 462,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/il-quartiere-della-citta-nuova-di-praga/",
+      "final": "https://it.freetourpraga.com/il-quartiere-della-citta-nuova-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/il-quartiere-della-citta-nuova-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Il Quartiere della Cittá Nuova di Praga"
+      ],
+      "words": 495,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/castello-di-praga/",
+      "final": "https://it.freetourpraga.com/tour/castello/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/castello/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour del Castello di Praga e Malá Strana"
+      ],
+      "words": 624,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "final": "https://it.freetourpraga.com/dove-acquistare-i-biglietti-per-i-mezzi-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/dove-acquistare-i-biglietti-per-i-mezzi-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Dove acquistare i biglietti per i mezzi a Praga"
+      ],
+      "words": 749,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/dove-mangiare-a-praga/",
+      "final": "https://it.freetourpraga.com/dove-mangiare-a-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/dove-mangiare-a-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Dove mangiare a Praga? Ristoranti tipici e birrerie"
+      ],
+      "words": 1347,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/",
+      "final": "https://it.freetourpraga.com/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Free Tour Praga"
+      ],
+      "words": 591,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/fotos-de-praga/",
+      "final": "https://it.freetourpraga.com/fotos-de-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/fotos-de-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Fotos de Praga"
+      ],
+      "words": 73,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/contatto/",
+      "final": "https://it.freetourpraga.com/contatto/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/contatto/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Contacto"
+      ],
+      "words": 5,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/guias/",
+      "final": "https://it.freetourpraga.com/guias/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/guias/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Nuestros Guías de Praga"
+      ],
+      "words": 273,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/teatro-nero-di-praga/sconto/",
+      "final": "https://it.freetourpraga.com/teatro-nero-di-praga/sconto/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/teatro-nero-di-praga/sconto/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Sconto Teatro Nero di Praga Ta Fantástika"
+      ],
+      "words": 60,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prague-card/",
+      "final": "https://it.freetourpraga.com/prague-card/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prague-card/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prague Card"
+      ],
+      "words": 247,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/cookie-policy/",
+      "final": "https://it.freetourpraga.com/cookie-policy/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/cookie-policy/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Cookie Policy"
+      ],
+      "words": 115,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/politica-sulla-privacy/",
+      "final": "https://it.freetourpraga.com/politica-sulla-privacy/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/politica-sulla-privacy/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Politica sulla Privacy"
+      ],
+      "words": 842,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/gite-in-barca-a-praga/",
+      "final": "https://it.freetourpraga.com/gite-in-barca-a-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/gite-in-barca-a-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Gite in barca a Praga"
+      ],
+      "words": 211,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/castello/",
+      "final": "https://it.freetourpraga.com/prenotazioni/castello/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/castello/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour del Castello di Praga"
+      ],
+      "words": 147,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/tour-del-comunismo/",
+      "final": "https://it.freetourpraga.com/prenotazioni/tour-del-comunismo/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/tour-del-comunismo/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour del Comunismo e della Seconda Guerra Mondiale"
+      ],
+      "words": 151,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/terezin/",
+      "final": "https://it.freetourpraga.com/prenotazioni/terezin/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/terezin/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour del Campo di Concentramento di Terezín"
+      ],
+      "words": 149,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/citta-nuova/",
+      "final": "https://it.freetourpraga.com/prenotazioni/citta-nuova/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/citta-nuova/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour della Città Nuova di Praga"
+      ],
+      "words": 157,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/hotel-a-praga/",
+      "final": "https://it.freetourpraga.com/hotel-a-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/hotel-a-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Dove alloggiare a Praga centro"
+      ],
+      "words": 366,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/concerto-di-musica-classica/",
+      "final": "https://it.freetourpraga.com/concerto-di-musica-classica/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/concerto-di-musica-classica/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Concerto di musica classica a Praga"
+      ],
+      "words": 296,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/teatro-nero-di-praga/",
+      "final": "https://it.freetourpraga.com/teatro-nero-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/teatro-nero-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Teatro nero di Praga"
+      ],
+      "words": 309,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/tour-mercatini-natale/",
+      "final": "https://it.freetourpraga.com/prenotazioni/tour-mercatini-natale/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/tour-mercatini-natale/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour dei Mercatini di Natale"
+      ],
+      "words": 94,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/tour-dei-mercatini-di-natale/",
+      "final": "https://it.freetourpraga.com/tour/tour-dei-mercatini-di-natale/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/tour-dei-mercatini-di-natale/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour dei Mercatini di Natale di Praga"
+      ],
+      "words": 339,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni-tour-degli-interni-del-castello-di-praga/",
+      "final": "https://it.freetourpraga.com/prenotazioni-tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni-tour-degli-interni-del-castello-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour degli interni del Castello di Praga"
+      ],
+      "words": 166,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/free-tour/",
+      "final": "https://it.freetourpraga.com/prenotazioni/free-tour/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/free-tour/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Free Tour di Praga"
+      ],
+      "words": 116,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/contatti/",
+      "final": "https://it.freetourpraga.com/contatti/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/contatti/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Contatti"
+      ],
+      "words": 54,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/free-tour-del-castello-di-praga-2/",
+      "final": "https://it.freetourpraga.com/free-tour-del-castello-di-praga-2/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/free-tour-del-castello-di-praga-2/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Free Tour del Castello di Praga"
+      ],
+      "words": 118,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/free-tour-del-castello-di-praga/",
+      "final": "https://it.freetourpraga.com/free-tour-del-castello-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/free-tour-del-castello-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Free Tour del Castello di Praga"
+      ],
+      "words": 594,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/tour-serale/",
+      "final": "https://it.freetourpraga.com/prenotazioni/tour-serale/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/tour-serale/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour serale della Praga esoterica"
+      ],
+      "words": 114,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour-di-petrin-e-monastero-di-strahov/",
+      "final": "https://it.freetourpraga.com/tour-di-petrin-e-monastero-di-strahov/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour-di-petrin-e-monastero-di-strahov/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour di Petřín e Monastero di Strahov"
+      ],
+      "words": 606,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/",
+      "final": "https://it.freetourpraga.com/tour/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "I nostri tour e le nostre escursioni a Praga"
+      ],
+      "words": 795,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/prenotazioni/",
+      "final": "https://it.freetourpraga.com/prenotazioni/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/prenotazioni/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenota il tuo tour a Praga"
+      ],
+      "words": 278,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+      "final": "https://it.freetourpraga.com/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour-monastero-di-strahov-e-chiesa-di-san-nicola/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Prenotare Tour di Petřín e Monastero di Strahov"
+      ],
+      "words": 175,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/terezin/",
+      "final": "https://it.freetourpraga.com/tour/terezin/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/terezin/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour al Campo di Concentramento di Terezín"
+      ],
+      "words": 418,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/castello/",
+      "final": "https://it.freetourpraga.com/tour/castello/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/castello/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour del Castello di Praga e Malá Strana"
+      ],
+      "words": 624,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/comunismo/",
+      "final": "https://it.freetourpraga.com/tour/comunismo/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/comunismo/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour del Comunismo e del Bunker Antiatomico"
+      ],
+      "words": 706,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/tour-praga-esoterica/",
+      "final": "https://it.freetourpraga.com/tour/tour-praga-esoterica/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/tour-praga-esoterica/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour serale della Praga esoterica"
+      ],
+      "words": 480,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour-degli-interni-del-castello-di-praga/",
+      "final": "https://it.freetourpraga.com/tour-degli-interni-del-castello-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour-degli-interni-del-castello-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour degli interni del Castello di Praga"
+      ],
+      "words": 511,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+      "final": "https://it.freetourpraga.com/informazioni-utili-per-il-tuo-viaggio-a-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/informazioni-utili-per-il-tuo-viaggio-a-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Informazioni utili per il tuo viaggio a Praga"
+      ],
+      "words": 178,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://it.freetourpraga.com/tour/citta-nuova-di-praga/",
+      "final": "https://it.freetourpraga.com/tour/citta-nuova-di-praga/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://it.freetourpraga.com/tour/citta-nuova-di-praga/"
+      ],
+      "robots": [
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      ],
+      "h1": [
+        "Tour della Città Nuova di Praga"
+      ],
+      "words": 524,
+      "hreflang": [],
+      "verification": []
+    }
+  ],
+  "preview_page_metadata": [
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/",
+      "final": "https://web-production-f3beeaff.up.railway.app/",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Scopri l'anima autentica di Praga, in totale sicurezza."
+      ],
+      "words": 836,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/tour",
+      "final": "https://web-production-f3beeaff.up.railway.app/tour",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/tour"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Tour guidati in italiano a Praga"
+      ],
+      "words": 147,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/partner-europa",
+      "final": "https://web-production-f3beeaff.up.railway.app/partner-europa",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/partner-europa"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Grandi esperienze. Organizzate insieme."
+      ],
+      "words": 99,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/contatti",
+      "final": "https://web-production-f3beeaff.up.railway.app/contatti",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/contatti"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Praga è più vicina di quanto pensi."
+      ],
+      "words": 83,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/chi-siamo",
+      "final": "https://web-production-f3beeaff.up.railway.app/chi-siamo",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/chi-siamo"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Non sei un semplice turista. Sei nostro ospite."
+      ],
+      "words": 126,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/blog",
+      "final": "https://web-production-f3beeaff.up.railway.app/blog",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/blog"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Tutto quello che c'è da sapere prima di partire."
+      ],
+      "words": 127,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/faq",
+      "final": "https://web-production-f3beeaff.up.railway.app/faq",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/faq"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Domande frequenti"
+      ],
+      "words": 137,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/privacy",
+      "final": "https://web-production-f3beeaff.up.railway.app/privacy",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/privacy"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Privacy e cookie"
+      ],
+      "words": 287,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/termini",
+      "final": "https://web-production-f3beeaff.up.railway.app/termini",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/termini"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Termini di prenotazione"
+      ],
+      "words": 260,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/tour/citta-vecchia-ponte-carlo",
+      "final": "https://web-production-f3beeaff.up.railway.app/tour/citta-vecchia-ponte-carlo",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/tour/citta-vecchia-ponte-carlo"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Citta Vecchia e Ponte Carlo senza stress"
+      ],
+      "words": 289,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/tour/castello-praga-mala-strana",
+      "final": "https://web-production-f3beeaff.up.railway.app/tour/castello-praga-mala-strana",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/tour/castello-praga-mala-strana"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Castello di Praga e Mala Strana"
+      ],
+      "words": 277,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/tour/birra-ceca-storie-locali",
+      "final": "https://web-production-f3beeaff.up.railway.app/tour/birra-ceca-storie-locali",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/tour/birra-ceca-storie-locali"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Birra ceca e storie locali"
+      ],
+      "words": 266,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/blog/citta-vecchia-e-ponte-carlo",
+      "final": "https://web-production-f3beeaff.up.railway.app/blog/citta-vecchia-e-ponte-carlo",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/blog/citta-vecchia-e-ponte-carlo"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Città Vecchia e Ponte Carlo"
+      ],
+      "words": 31,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/blog/castello-e-mala-strana",
+      "final": "https://web-production-f3beeaff.up.railway.app/blog/castello-e-mala-strana",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/blog/castello-e-mala-strana"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Castello e Malá Strana"
+      ],
+      "words": 27,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/blog/cambio-pagamenti-e-assistenza",
+      "final": "https://web-production-f3beeaff.up.railway.app/blog/cambio-pagamenti-e-assistenza",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/blog/cambio-pagamenti-e-assistenza"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Cambio, pagamenti e assistenza"
+      ],
+      "words": 32,
+      "hreflang": [],
+      "verification": []
+    },
+    {
+      "url": "https://web-production-f3beeaff.up.railway.app/blog/praga-senza-fretta-una-giornata-a-piedi",
+      "final": "https://web-production-f3beeaff.up.railway.app/blog/praga-senza-fretta-una-giornata-a-piedi",
+      "status": 200,
+      "location": null,
+      "xrobots": null,
+      "canonical": [
+        "https://web-production-f3beeaff.up.railway.app/blog/praga-senza-fretta-una-giornata-a-piedi"
+      ],
+      "robots": [
+        "noindex, nofollow"
+      ],
+      "h1": [
+        "Praga senza fretta: una giornata a piedi"
+      ],
+      "words": 1261,
+      "hreflang": [],
+      "verification": []
+    }
+  ],
+  "unique_old_sitemap_images": 96,
+  "extra_urls_from_old_internal_links": [
+    "https://it.freetourpraga.com/aeroporto-di-praga/",
+    "https://it.freetourpraga.com/blog-de-praga/page/2/",
+    "https://it.freetourpraga.com/blog-de-praga/page/3/",
+    "https://it.freetourpraga.com/prenotazioni-free-tour-del-castello-di-praga/",
+    "https://it.freetourpraga.com/prenotazioni/tour-degli-interni-del-castello-di-praga/",
+    "https://it.freetourpraga.com/prenotazioni/tour-monastero-di-strahov-e-chiesa-di-san-nicola/",
+    "https://it.freetourpraga.com/tour/free-tour-del-castello-di-praga/",
+    "https://it.freetourpraga.com/tour/tour-degli-interni-del-castello-di-praga/",
+    "https://it.freetourpraga.com/tour/tour-di-petrin-e-monastero-di-strahov/",
+    "https://it.freetourpraga.com/wp-content/uploads/2023/07/voucher-stupartska.pdf",
+    "https://it.freetourpraga.com/wp-content/uploads/2024/02/Voucher-Lore.pdf",
+    "https://it.freetourpraga.com/wp-content/uploads/2024/10/Voucher-The-Theatre.pdf",
+    "https://it.freetourpraga.com/wp-content/uploads/2026/10/Scopri-i-nostri-tour-a-Praga-2026.pdf",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fbambino-gesu-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fcambio-euro-corona-ceca%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fcattedrale-di-san-vito%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fcitta-vecchia-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fclementinum%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fcosa-mangiare-a-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fcosa-vedere-a-praga-in-3-giorni%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fdove-mangiare-a-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fguias%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fmala-strana%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fmappa-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fmetropolitana-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fmusei-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Forologio-astronomico-di-praga%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fpraga-a-natale%2F",
+    "https://it.freetourpraga.com/wp-login.php?redirect_to=https%3A%2F%2Fit.freetourpraga.com%2Fquartiere-ebraico-di-praga%2F"
+  ],
+  "dns_authoritative_answers": "freetourpraga.com.\t14400\tIN\tMX\t0 freetourpraga.com.\nfreetourpraga.com.\t14400\tIN\tA\t92.60.33.37\nfreetourpraga.com.\t14400\tIN\tTXT\t\"v=spf1 +a +mx +ip4:92.60.33.37 +include:relay.mailchannels.net +ip4:85.208.102.209 +include:relay.dns-es.com ~all\"\nfreetourpraga.com.\t86400\tIN\tNS\tns3.dns-es.com.\nfreetourpraga.com.\t86400\tIN\tNS\tns1.dns-es.com.\nfreetourpraga.com.\t86400\tIN\tNS\tns4.dns-es.com.\nfreetourpraga.com.\t86400\tIN\tNS\tns2.dns-es.com.\nit.freetourpraga.com.\t14400\tIN\tA\t92.60.33.37\nit.freetourpraga.com.\t14400\tIN\tTXT\t\"v=spf1 +a +mx +ip4:92.60.33.37 +include:relay.mailchannels.net +ip4:85.208.102.209 +include:relay.dns-es.com ~all\"\nen.freetourpraga.com.\t14400\tIN\tA\t92.60.33.37\nmail.freetourpraga.com.\t14400\tIN\tCNAME\tfreetourpraga.com.\n_dmarc.freetourpraga.com. 14400\tIN\tTXT\t\"v=DMARC1; p=none;\"\n"
+}

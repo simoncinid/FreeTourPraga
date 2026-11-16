@@ -1,0 +1,149 @@
+.cta {
+  position: relative;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  overflow: hidden;
+  padding: 8px 14px 8px 16px;
+  color: #ffffff !important;
+  isolation: isolate;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    filter 0.35s ease;
+}
+
+.cta:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow:
+    0 14px 34px #ff481245,
+    0 0 0 1px #ffffff22 inset;
+  filter: saturate(1.08);
+}
+
+.thumbs {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding-left: 4px;
+}
+
+.thumb {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  margin-left: -8px;
+  overflow: hidden;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px #071a3528;
+  transform-origin: center;
+  animation: thumbIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.12s + var(--i) * 0.09s);
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.35s ease,
+    z-index 0s;
+  z-index: calc(10 - var(--i));
+}
+
+.thumbs .thumb:first-child {
+  margin-left: 0;
+}
+
+.cta:hover .thumb {
+  margin-left: -4px;
+  transform: translateY(-4px) rotate(calc((var(--i) - 2) * 3deg)) scale(1.08);
+  z-index: calc(20 + var(--i));
+}
+
+.cta:hover .thumbs .thumb:first-child {
+  margin-left: 0;
+}
+
+.label {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.arrow {
+  display: inline-block;
+  animation: arrowNudge 1.15s ease-in-out infinite;
+}
+
+.shine {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    #ffffff55 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: shineSweep 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+.cta:hover .shine {
+  animation: shineSweep 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes thumbIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.55) rotate(-12deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.08) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes arrowNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes shineSweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .arrow,
+  .shine,
+  .cta,
+  .cta:hover .thumb {
+    animation: none;
+    transition: none;
+  }
+
+  .cta:hover {
+    transform: none;
+  }
+}

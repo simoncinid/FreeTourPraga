@@ -30,6 +30,8 @@ COPY --from=build --chown=app:app /app/prisma ./prisma
 COPY --from=build --chown=app:app /app/package.json ./package.json
 COPY --from=build --chown=app:app /app/scripts/worker.mjs ./scripts/worker.mjs
 COPY --from=build --chown=app:app /app/scripts/sync-preview-content.mjs ./scripts/sync-preview-content.mjs
+COPY --from=build --chown=app:app /app/scripts/seo-content-merge.mjs /app/scripts/seo-editorial-merge.mjs /app/scripts/sync-seo-preview.mjs ./scripts/
+COPY --from=build --chown=app:app /app/src/content/seo-import.json /app/src/content/seo-editorial.json ./src/content/
 USER app
 EXPOSE 3000
 CMD ["node","server.js"]

@@ -1,42 +1,21 @@
 import type { MetadataRoute } from "next";
-import { catalog, publicSiteContent } from "@/lib/platform/public";
-export const dynamic = "force-dynamic";
+import { catalog, publicSiteContent, publicLegacyPages } from "@/lib/platform/public";
 import { absoluteUrl } from "@/lib/site";
-import { guideAnchor } from "@/lib/format";
+import { guidePath, tourPath } from "@/lib/public-paths";
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [tours, content] = await Promise.all([catalog(), publicSiteContent()]);
-  const now = new Date();
-  const routes = [
-    "",
-    "/tour",
-    "/partner-europa",
-    "/contatti",
-    "/chi-siamo",
-    "/blog",
-    "/faq",
-    "/privacy",
-    "/termini",
-  ].map((path) => ({
-    url: absoluteUrl(path || "/"),
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: path === "" ? 1 : 0.8,
-  }));
-
-  const tourRoutes = tours.map((tour) => ({
-    url: absoluteUrl(`/tour/${tour.slug}`),
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: 0.9,
-  }));
-
-  const guideRoutes = content.gallery.map((guide) => ({
-    url: absoluteUrl(`/blog/${guideAnchor(guide.title)}`),
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  return [...routes, ...tourRoutes, ...guideRoutes];
+  if (process.env.SITE_PREVIEW === "true") return [];
+  const [tours, content, pages] = await Promise.all([catalog(), publicSiteContent(), publicLegacyPages()]);
+  const entries: MetadataRoute.Sitemap = [
+    ...pages.map((page) => ({
+      url: absoluteUrl(page.canonicalPath!), ...(page.updatedAt ? { lastModified: page.updatedAt } : {}),
+    })),
+    ...["/", "/tour/", "/partner-europa", "/contatti/", "/chi-siamo", "/blog", "/faq", "/privacy", "/termini"].map((path) => ({ url: absoluteUrl(path) })),
+    ...tours.map((tour) => ({ url: absoluteUrl(tourPath(tour)), ...(tour.sourceUpdatedAt ? { lastModified: tour.sourceUpdatedAt } : {}) })),
+    ...content.gallery.map((guide) => ({
+      url: absoluteUrl(guidePath(guide)), ...(guide.updatedAt ? { lastModified: guide.updatedAt } : {}),
+    })),
+  ];
+  return [...new Map(entries.map((entry) => [entry.url, entry])).values()];
 }

@@ -17,6 +17,13 @@ export type Tour = {
   category: string;
   shortDescription: string;
   description: string;
+  descriptionHtml?: string;
+  canonicalPath?: string;
+  sourceUrl?: string;
+  sourceUpdatedAt?: string;
+  priceLabel?: string;
+  importedFromWordpress?: boolean;
+  operationalReviewRequired?: boolean;
   imageUrl: string;
   galleryImages?: TourPhoto[];
   meetingPoint: string;

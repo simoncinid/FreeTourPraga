@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { sanitizeRichText } from "../rich-text";
+const canonicalPathSchema = z.string().max(500).regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/);
 const text = (max = 200) => z.string().trim().min(1).max(max);
 export const itemSchema = z.object({
   tourSlug: text(),
@@ -50,6 +52,7 @@ export const settingsSchema = z.object({
 });
 export const tourImageUrlSchema = z.string().refine((v) => {
   if (/^\/api\/media\/[-a-f0-9]{36}\.webp$/.test(v)) return true;
+  if (v.startsWith("/wp-content/uploads/") && !/[\\?#\u0000]/.test(v) && !v.includes("..")) return true;
   try {
     const u = new URL(v);
     return (
@@ -69,6 +72,13 @@ export const tourSchema = z.object({
   category: text(),
   shortDescription: text(1000),
   description: text(20000),
+  descriptionHtml: z.string().max(100000).transform(sanitizeRichText).optional(),
+  canonicalPath: canonicalPathSchema.optional(),
+  sourceUrl: z.string().url().optional(),
+  sourceUpdatedAt: z.string().datetime().optional(),
+  priceLabel: z.string().max(250).optional(),
+  importedFromWordpress: z.boolean().optional(),
+  operationalReviewRequired: z.boolean().optional(),
   imageUrl: tourImageUrlSchema,
   galleryImages: z
     .array(
@@ -130,6 +140,10 @@ export const tourSchema = z.object({
     .max(1000),
 });
 export const pageSchema = z.object({
+  canonicalPath: canonicalPathSchema.optional(),
+  bodyHtml: z.string().max(100000).transform(sanitizeRichText).optional(),
+  updatedAt: z.string().datetime().optional(),
+  sourceUrl: z.string().url().optional(),
   title: text(250),
   subtitle: z.string().max(1000),
   body: z.string().max(30000),

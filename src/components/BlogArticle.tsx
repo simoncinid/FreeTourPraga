@@ -5,6 +5,7 @@ import { guideCta, type GuideItem } from "@/lib/guides";
 import { guideImage } from "@/lib/guide-media";
 import type { BlogBlock } from "@/lib/platform/content";
 import styles from "./blog-article.module.css";
+import { RichContent } from "./RichContent";
 
 function Paragraphs({ text }: { text: string }) {
   return (
@@ -78,7 +79,7 @@ export function BlogArticle({ guide }: { guide: GuideItem }) {
                 return (
                   <section key={index} className={styles.prose}>
                     {block.heading && <h2>{block.heading}</h2>}
-                    <Paragraphs text={block.text} />
+                    {block.html ? <RichContent html={block.html} /> : <Paragraphs text={block.text} />}
                   </section>
                 );
               if (block.type === "image")

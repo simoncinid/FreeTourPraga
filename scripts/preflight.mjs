@@ -8,6 +8,10 @@ const strong = name => present(name) && env[name].length >= 32 && !/change.me|pl
 const url = name => { try { return new URL(env[name]); } catch { return null; } };
 const origin = url('NEXT_PUBLIC_SITE_URL'), db = url('DATABASE_URL');
 add('Dominio HTTPS (Railway o dominio personalizzato)', origin?.protocol === 'https:' && !/localhost|\.example$/i.test(origin.hostname));
+if (process.argv.includes('--seo-launch')) {
+ add('Dominio SEO definitivo esatto', origin?.origin === 'https://it.freetourpraga.com' && origin.pathname === '/');
+ add('Indicizzazione di produzione esplicitamente attiva', env.SITE_PREVIEW === 'false');
+}
 add('PostgreSQL su rete privata Railway oppure con TLS', db && ['postgresql:', 'postgres:'].includes(db.protocol) && db.username && (db.hostname.endsWith('.railway.internal') || ['require', 'verify-ca', 'verify-full'].includes(db.searchParams.get('sslmode'))));
 add('Storage PostgreSQL', env.PLATFORM_STORAGE === 'postgres');
 add('SESSION_SECRET robusto', strong('SESSION_SECRET'));

@@ -2,6 +2,7 @@ import { faqs, trustPillars } from "../data";
 import { aiQuestions } from "../ai-content";
 import { site, socialLinks, tripAdvisor } from "../site";
 import type { ContentPage } from "./model";
+import { guideSlug } from "../public-paths";
 
 export const CONTENT_PAGE_KEYS = [
   "homepage",
@@ -17,7 +18,7 @@ export const CONTENT_PAGE_KEYS = [
   "termini",
 ] as const;
 export type BlogBlock =
-  | { type: "text"; heading: string; text: string }
+  | { type: "text"; heading: string; text: string; html?: string }
   | { type: "image"; imageUrl: string; alt: string; caption: string }
   | {
       type: "split";
@@ -82,6 +83,14 @@ export type SiteContent = {
     }[];
   };
   gallery: {
+    id?: string;
+    slug?: string;
+    slugAliases?: string[];
+    updatedAt?: string;
+    canonicalPath?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    sourceUrl?: string;
     title: string;
     caption: string;
     imageUrl: string;
@@ -263,6 +272,8 @@ function normalizeGalleryItem(
 ): SiteContent["gallery"][number] {
   return {
     ...item,
+    id: item.id || `guide:${guideSlug(item)}`,
+    slug: guideSlug(item),
     imageAlt: item.imageAlt?.trim() || "",
     intro: item.intro?.trim() || "",
     blocks: item.blocks ?? [],

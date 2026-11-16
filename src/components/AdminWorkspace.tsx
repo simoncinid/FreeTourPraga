@@ -1555,6 +1555,10 @@ function TourEditor({
           />
           Pubblica sul sito
         </label>
+        {t.importedFromWordpress && <label className="flex gap-3">
+          <input type="checkbox" checked={!t.operationalReviewRequired} onChange={(e) => set("operationalReviewRequired", !e.target.checked)} />
+          Prezzi, fasce di età, capienza e partenze verificati
+        </label>}
       </div>
       <TourGalleryEditor photos={t.galleryImages} disabled={busy || coverUploading} onChange={(photos) => set("galleryImages", photos)} onUploading={setGalleryUploading} />
       <div className="card grid gap-5 p-6">

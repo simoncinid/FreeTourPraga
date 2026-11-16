@@ -1,3 +1,4 @@
+import { tourPath } from "./public-paths";
 import { absoluteUrl, site, socialLinks } from "./site";
 import type { Tour } from "./types";
 import { faqs } from "./data";
@@ -56,11 +57,11 @@ export function tourJsonLd(tour: Tour) {
   return {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
-    "@id": `${absoluteUrl(`/tour/${tour.slug}`)}#tour`,
+    "@id": `${absoluteUrl(tourPath(tour))}#tour`,
     name: tour.title,
     description: tour.seoDescription || tour.shortDescription,
     image: absoluteUrl(tour.imageUrl),
-    url: absoluteUrl(`/tour/${tour.slug}`),
+    url: absoluteUrl(tourPath(tour)),
     inLanguage: "it-IT",
     touristType: "Italian travelers in Prague",
     provider: {
@@ -70,8 +71,8 @@ export function tourJsonLd(tour: Tour) {
       "@type": "Offer",
       price: (tour.basePriceCents / 100).toFixed(2),
       priceCurrency: "EUR",
-      availability: tour.slots.some(slot => slot.capacity > slot.reserved) ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
-      url: absoluteUrl(`/tour/${tour.slug}`),
+      ...(tour.slots.length ? { availability: tour.slots.some(slot => slot.capacity > slot.reserved) ? "https://schema.org/InStock" : "https://schema.org/SoldOut" } : {}),
+      url: absoluteUrl(tourPath(tour)),
     },
     itinerary: {
       "@type": "ItemList",

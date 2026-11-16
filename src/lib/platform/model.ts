@@ -91,6 +91,10 @@ export type Affiliate = {
   wpId?: number;
 };
 export type ContentPage = {
+  canonicalPath?: string;
+  bodyHtml?: string;
+  updatedAt?: string;
+  sourceUrl?: string;
   title: string;
   subtitle: string;
   body: string;
@@ -120,6 +124,7 @@ export type OtaMessage = {
   createdAt: string;
 };
 export type PlatformState = {
+  seoEditorialRevision?: string;
   version: number;
   siteContent?: SiteContent;
   tours: CatalogTour[];

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { guideAnchor } from "@/lib/format";
+import { guidePath } from "@/lib/public-paths";
 import type { BlogBlock, SiteContent } from "@/lib/platform/content";
 
 type Article = SiteContent["gallery"][number];
@@ -72,7 +72,7 @@ export function BlogArticleEditor({
     changeBlocks(
       articleIndex,
       (articles[articleIndex].blocks ?? []).map((block, i) =>
-        i === blockIndex ? ({ ...block, ...patch } as BlogBlock) : block,
+        i === blockIndex ? ({ ...block, ...patch, ...(block.type === "text" && "text" in patch ? { html: undefined } : {}) } as BlogBlock) : block,
       ),
     );
   }
@@ -189,7 +189,7 @@ export function BlogArticleEditor({
             <div className="flex flex-wrap items-center gap-4 text-sm">
               {article.title && (
                 <Link
-                  href={`/blog/${guideAnchor(article.title)}`}
+                  href={guidePath(article)}
                   target="_blank"
                   className="underline"
                 >
@@ -233,6 +233,7 @@ export function BlogArticleEditor({
               onChange={(title) => update(index, { title })}
               required
             />
+            {article.title && <p className="text-sm text-muted">Indirizzo stabile: {guidePath(article)}. Cambiare il titolo conserva questo indirizzo.</p>}
             <TextField
               label="Sintesi sotto il titolo"
               value={article.caption}
@@ -447,7 +448,7 @@ export function BlogArticleEditor({
       <button
         type="button"
         className="button-secondary"
-        disabled={locked || articles.length >= 20}
+        disabled={locked || articles.length >= 100}
         onClick={() =>
           onChange([
             ...articles,

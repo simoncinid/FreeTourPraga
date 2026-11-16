@@ -1,3 +1,4 @@
+import { tourPath } from "@/lib/public-paths";
 import ui from "@/components/public-ui.module.css";
 import { Suspense } from "react";
 import { AddedToCartBanner } from "@/components/AddedToCartBanner";
@@ -18,7 +19,7 @@ const baseMetadata = {
     "tour Praga piccoli gruppi"
   ],
   alternates: {
-    canonical: "/tour"
+    canonical: "/tour/"
   },
   openGraph: {
     title: "Tour guidati in italiano a Praga",
@@ -41,7 +42,7 @@ export default async function TourListingPage() {
           itemListElement: tours.map((tour, index) => ({
             "@type": "ListItem",
             position: index + 1,
-            url: absoluteUrl(`/tour/${tour.slug}`),
+            url: absoluteUrl(tourPath(tour)),
             name: tour.title
           }))
         }}

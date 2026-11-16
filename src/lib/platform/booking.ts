@@ -214,6 +214,7 @@ export function quote(
     const { tour, slot } = slotFor(s, item);
     if (
       !tour.published ||
+      tour.operationalReviewRequired ||
       new Date(slot.startsAt).getTime() <
         Date.now() + tour.bookingCutoffHours * 3600000
     )

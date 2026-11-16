@@ -10,4 +10,5 @@ output
 screenshots
 privato
 *.pdf
+!public/wp-content/uploads/**/*.pdf
 *.docx*

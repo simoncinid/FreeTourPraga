@@ -141,7 +141,7 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
       })
     : "";
 
-  if (!tour.slots.length)
+  if (tour.operationalReviewRequired || !tour.slots.length)
     return (
       <aside className="card self-start lg:sticky lg:top-24 p-6">
         <h2 className="display-md">Nuove partenze in arrivo.</h2>

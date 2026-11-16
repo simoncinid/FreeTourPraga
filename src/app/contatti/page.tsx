@@ -8,7 +8,7 @@ const baseMetadata = {
   title: "Contatti",
   description:
     "Contatta il team FreeTourPraga per informazioni sui tour in italiano.",
-  alternates: { canonical: "/contatti" },
+  alternates: { canonical: "/contatti/" },
 };
 export default async function Page() {
   const c = await publicSiteContent();

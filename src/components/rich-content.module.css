@@ -1,0 +1,10 @@
+.content { overflow-wrap: anywhere; white-space: normal; }
+.content p, .content ul, .content ol, .content figure, .content table { margin: 0 0 1.25em; }
+.content h2, .content h3, .content h4 { font: inherit; font-size: 1.35em; font-weight: 700; margin: 1.5em 0 .75em; }
+.content a { text-decoration: underline; text-underline-offset: 3px; }
+.content img { max-width: 100%; height: auto; border-radius: 8px; }
+.content figure { max-width: 100%; }
+.content ul { list-style: disc; padding-left: 1.5em; }
+.content ol { list-style: decimal; padding-left: 1.5em; }
+.content table { display: block; overflow-x: auto; }
+.content th, .content td { padding: .5em; }

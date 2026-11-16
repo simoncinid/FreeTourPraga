@@ -1,3 +1,4 @@
+import { tourPath } from "@/lib/public-paths";
 import Link from "next/link";
 import { ChevronDown, Menu, MessageCircle } from "lucide-react";
 import { CartBadge } from "@/components/CartBadge";
@@ -49,7 +50,7 @@ export async function Header() {
                 {menuTours.map((tour) => (
                   <Link
                     key={tour.slug}
-                    href={`/tour/${tour.slug}`}
+                    href={tourPath(tour)}
                     className="rounded-sm px-3 py-3 hover:bg-surface-soft"
                   >
                     {tour.title}
@@ -117,7 +118,7 @@ export async function Header() {
                     menuTours.map((tour) => (
                       <Link
                         key={tour.slug}
-                        href={`/tour/${tour.slug}`}
+                        href={tourPath(tour)}
                         className="rounded-sm py-2 pl-6 pr-3 text-sm hover:bg-surface-soft"
                       >
                         {tour.title}

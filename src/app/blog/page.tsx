@@ -6,7 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
-import { guideAnchor } from "@/lib/format";
+import { guidePath } from "@/lib/public-paths";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +25,11 @@ export default async function Page() {
         </p>
         <div className="grid gap-8">
           {c.gallery.map((guide) => {
-            const slug = guideAnchor(guide.title);
+            const path = guidePath(guide);
             return (
               <Link
                 key={guide.title}
-                href={`/blog/${slug}`}
+                href={path}
                 className="card grid overflow-hidden no-underline text-inherit md:grid-cols-[280px_1fr]"
               >
                 <div className="relative min-h-48">

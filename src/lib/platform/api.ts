@@ -42,6 +42,8 @@ import { maintainPrivacy } from "./maintenance";
 import { uploadMedia } from "./media";
 import { mergeContentPages, siteContent } from "./content";
 import { siteContentSchema } from "./content-validation";
+import { prepareArticles } from "../article-urls";
+import wordpressRoutes from "@/content/wordpress-routes.json";
 import { site } from "../site";
 const ok = (data: unknown) =>
   NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
@@ -539,6 +541,11 @@ export async function platformApi(request: Request, path: string[]) {
       if (route === "admin/site-content" && method === "PUT") {
         const content = siteContentSchema.parse(await jsonBody(request));
         await transaction((s) => {
+          try {
+            content.gallery = prepareArticles(siteContent(s.siteContent, s.pages).gallery, content.gallery);
+          } catch (error) {
+            throw new HttpError(409, error instanceof Error ? error.message : "Indirizzi articolo non validi");
+          }
           s.siteContent = content;
           audit(s, user.email, "site-content.publish", "global");
         });
@@ -554,14 +561,21 @@ export async function platformApi(request: Request, path: string[]) {
             if (s.tours.some((t) => t.id !== input.id && t.slug === input.slug))
               throw new HttpError(409, "Slug già in uso");
             const old = s.tours.find((t) => t.id === input.id);
+            if (!old && wordpressRoutes.paths.includes(`/tour/${input.slug}/`) && input.canonicalPath !== `/tour/${input.slug}/`)
+              throw new HttpError(409, "Indirizzo riservato a una pagina storica pubblicata");
+            if (old?.canonicalPath && old.canonicalPath !== input.canonicalPath)
+              throw new HttpError(409, "Conserva l'indirizzo storico del tour pubblicato");
+            if (input.canonicalPath && s.tours.some((tour) => tour.id !== input.id && tour.canonicalPath === input.canonicalPath))
+              throw new HttpError(409, "Indirizzo canonico già assegnato a un altro tour");
+            if (old && input.description !== old.description) input.descriptionHtml = undefined;
             if (
               old &&
               old.slug !== input.slug &&
-              s.bookings.some((b) => b.tourSlug === old.slug)
+              (old.published || s.bookings.some((b) => b.tourSlug === old.slug))
             )
               throw new HttpError(
                 409,
-                "Slug non modificabile con prenotazioni esistenti",
+                "Conserva lo slug del tour pubblicato o con prenotazioni esistenti",
               );
             if (
               new Set(input.slots.map((x) => x.id)).size !== input.slots.length
@@ -629,7 +643,7 @@ export async function platformApi(request: Request, path: string[]) {
       }
       if (section === "page" && method === "PUT") {
         const body = z
-          .object({ key: z.string().regex(/^[a-z0-9-]+$/), page: pageSchema })
+          .object({ key: z.string().regex(/^(?:[a-z0-9-]+|legacy:\/[a-zA-Z0-9/_-]*\/)$/), page: pageSchema })
           .parse(await jsonBody(request));
         await transaction((s) => {
           if (["homepage", "blog", "faq"].includes(body.key)) {
@@ -643,6 +657,10 @@ export async function platformApi(request: Request, path: string[]) {
               published: true,
             };
           } else {
+            const previous = s.pages[body.key];
+            if (previous?.canonicalPath && previous.canonicalPath !== body.page.canonicalPath)
+              throw new HttpError(409, "Conserva l'indirizzo storico della pagina pubblicata");
+            if (previous && previous.body !== body.page.body) body.page.bodyHtml = undefined;
             s.pages[body.key] = body.page;
           }
           audit(s, user.email, "page.save", body.key);

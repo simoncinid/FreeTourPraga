@@ -304,6 +304,8 @@ assert.match(contact, /Invia richiesta/);
   const downloaded = await fetch(base + media.url);
   assert.equal(downloaded.status, 200);
   assert.equal(downloaded.headers.get("content-type"), "image/webp");
+  assert.equal(downloaded.headers.get("x-robots-tag"), null);
+  assert.match(downloaded.headers.get("cache-control") || "", /max-age=31536000/);
   if (process.env.HTTP_TEST_PRODUCTION !== "1") await rm(`.data/media/${media.url.split("/").pop()}`);
 }
 const cms = (await call("/api/platform/admin/state", undefined, "GET"))

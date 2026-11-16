@@ -1,6 +1,8 @@
+import { canonicalPath } from "./public-paths";
+
 export const site = {
   name: "FreeTourPraga",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com").replace(/\/+$/, ""),
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && process.env.NEXT_PUBLIC_WHATSAPP_NUMBER !== "420000000000"
     ? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
     : "393312744277",
@@ -93,5 +95,6 @@ export function whatsappHref(message: string) {
 }
 
 export function absoluteUrl(path = "/") {
-  return new URL(path, site.url).toString();
+  if (/^https?:\/\//.test(path)) return new URL(path).toString();
+  return new URL(canonicalPath(path), site.url).toString();
 }

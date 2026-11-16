@@ -1,3 +1,4 @@
+import { tourPath } from "./public-paths";
 import type { SiteContent } from "./platform/content";
 import { tours, faqs, trustPillars } from "./data";
 import { absoluteUrl, site } from "./site";
@@ -71,7 +72,7 @@ export function llmsTxt(catalog = tours, content?: SiteContent) {
     "## Tour",
     "",
     ...catalog.flatMap((tour) => [
-      `- [${tour.title}](${absoluteUrl(`/tour/${tour.slug}`)})`,
+      `- [${tour.title}](${absoluteUrl(tourPath(tour))})`,
       `  - Categoria: ${tour.category}`,
       `  - Durata: ${minutesToLabel(tour.durationMinutes)}`,
       `  - Prezzo da: ${formatMoney(tour.basePriceCents)}`,
@@ -116,7 +117,7 @@ export function aiContextJson(catalog = tours, content?: SiteContent) {
     aiAnswers: content?.answers || aiQuestions,
     tours: catalog.map((tour) => ({
       title: tour.title,
-      url: absoluteUrl(`/tour/${tour.slug}`),
+      url: absoluteUrl(tourPath(tour)),
       category: tour.category,
       language: tour.language,
       duration: minutesToLabel(tour.durationMinutes),
@@ -148,7 +149,7 @@ export function llmsFullTxt(catalog = tours, content?: SiteContent) {
       "",
       tour.description,
       "",
-      `URL canonico: ${absoluteUrl(`/tour/${tour.slug}`)}`,
+      `URL canonico: ${absoluteUrl(tourPath(tour))}`,
       `Categoria: ${tour.category}`,
       `Lingua: ${tour.language}`,
       `Durata: ${minutesToLabel(tour.durationMinutes)}`,

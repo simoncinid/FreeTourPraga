@@ -19,6 +19,8 @@ const nextConfig = {
   },
   distDir: buildDir,
   output: "standalone",
+  // WordPress pages retain their published trailing slash. Proxy normalizes explicitly.
+  skipTrailingSlashRedirect: true,
   devIndicators: false,
   poweredByHeader: false,
   images: {
@@ -64,7 +66,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/api/:path*",
+        source: "/api/:path((?!media/).*)",
         headers: [
           { key: "Cache-Control", value: "no-store" },
           { key: "X-Robots-Tag", value: "noindex" },
