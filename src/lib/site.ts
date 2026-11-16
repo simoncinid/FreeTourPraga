@@ -54,6 +54,22 @@ export const tripAdvisor = {
       text: "Free tour Praga, visita guidata molto accurata ed interessante, bravissimo Stefano, preparatissimo ed empatico. Fortemente consigliata. Bravi!",
     },
     {
+      author: "Elena M.",
+      place: "Praga",
+      rating: 5,
+      date: "giu 2026",
+      avatarUrl: "/images/reviews/pavel-reviewer.jpg",
+      text: "Tour del Castello chiaro e coinvolgente: la guida ha saputo adattare il ritmo al gruppo e rispondere a ogni domanda. Prenotazione semplice e puntualità impeccabile.",
+    },
+    {
+      author: "Marco R.",
+      place: "Praga",
+      rating: 5,
+      date: "mag 2026",
+      avatarUrl: "/images/reviews/castle-reviewer.jpg",
+      text: "Prima volta a Praga e ci siamo sentiti subito orientati. Spiegazioni in italiano, consigli pratici utili e un gruppo piccolo che rende tutto più piacevole. Consigliatissimo.",
+    },
+    {
       author: "Viaggiatore TripAdvisor",
       place: "Praga",
       rating: 5,

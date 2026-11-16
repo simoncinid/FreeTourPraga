@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { ChevronDown, Menu, MessageCircle } from "lucide-react";
 import { CartBadge } from "@/components/CartBadge";
+import { NavHoverMenu } from "@/components/NavHoverMenu";
 import { catalog, publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
 
 const primaryHrefs = [
   "/tour",
   "/chi-siamo",
-  "/informazioni-utili",
+  "/#informazioni-utili",
   "/contatti",
 ];
 const menuTourLimit = 5;
@@ -32,62 +33,57 @@ export async function Header() {
         >
           {c.globals.brandName}
         </Link>
-        <nav className="hidden items-center gap-5 xl:flex">
+        <nav className="hidden h-full items-center gap-5 self-stretch xl:flex">
           {visible.map((link) =>
             link.href === "/tour" ? (
-              <details
+              <NavHoverMenu
                 key={`${link.href}-${link.label}`}
-                className="nav-more relative"
+                label={
+                  <>
+                    {link.label}
+                    <ChevronDown size={14} aria-hidden />
+                  </>
+                }
+                panelClassName="w-72"
               >
-                <summary className="nav-link flex cursor-pointer items-center gap-1 whitespace-nowrap">
-                  {link.label}
-                  <ChevronDown size={14} aria-hidden />
-                </summary>
-                <div className="absolute left-0 top-9 z-40 grid w-72 gap-1 rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
-                  {menuTours.map((tour) => (
-                    <Link
-                      key={tour.slug}
-                      href={`/tour/${tour.slug}`}
-                      className="rounded-sm px-3 py-3 hover:bg-surface-soft"
-                    >
-                      {tour.title}
-                    </Link>
-                  ))}
+                {menuTours.map((tour) => (
                   <Link
-                    href="/tour"
-                    className="rounded-sm px-3 py-3 font-semibold hover:bg-surface-soft"
+                    key={tour.slug}
+                    href={`/tour/${tour.slug}`}
+                    className="rounded-sm px-3 py-3 hover:bg-surface-soft"
                   >
-                    Tutti i tour
+                    {tour.title}
                   </Link>
-                </div>
-              </details>
+                ))}
+                <Link
+                  href="/tour"
+                  className="rounded-sm px-3 py-3 font-semibold hover:bg-surface-soft"
+                >
+                  Tutti i tour
+                </Link>
+              </NavHoverMenu>
             ) : (
               <Link
                 key={`${link.href}-${link.label}`}
                 href={link.href}
-                className="nav-link whitespace-nowrap"
+                className="nav-link flex h-full items-center whitespace-nowrap"
               >
                 {link.label}
               </Link>
             ),
           )}
           {overflow.length > 0 && (
-            <details className="nav-more relative">
-              <summary className="nav-link cursor-pointer whitespace-nowrap">
-                Altro
-              </summary>
-              <div className="absolute left-0 top-9 z-40 grid w-64 gap-1 rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">
-                {overflow.map((link) => (
-                  <Link
-                    key={`${link.href}-${link.label}`}
-                    href={link.href}
-                    className="rounded-sm px-3 py-3 hover:bg-surface-soft"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </details>
+            <NavHoverMenu label="Altro" panelClassName="w-64">
+              {overflow.map((link) => (
+                <Link
+                  key={`${link.href}-${link.label}`}
+                  href={link.href}
+                  className="rounded-sm px-3 py-3 hover:bg-surface-soft"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </NavHoverMenu>
           )}
         </nav>
         <div className="flex items-center gap-4">
@@ -97,7 +93,7 @@ export async function Header() {
               c,
               "Ciao FreeTourPraga, vorrei un'informazione sui tour.",
             )}
-            className="button-pill-primary max-lg:!hidden lg:inline-flex !border !border-primary/60 !bg-transparent !px-5 !py-2 !text-primary"
+            className="button-pill-primary max-lg:!hidden lg:inline-flex !border-transparent !bg-[#1aad53] !px-5 !py-2 !text-white hover:!bg-[#159648]"
           >
             <MessageCircle size={15} /> WhatsApp
           </a>

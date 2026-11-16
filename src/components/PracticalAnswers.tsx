@@ -9,8 +9,12 @@ export function PracticalAnswers({
     <ol className="grid gap-5 md:grid-cols-2">
       {items.map((item, index) => (
         <li key={item.question} className="card p-6">
-          <p className="font-display text-3xl text-primary">{index + 1}</p>
-          <h3 className="title-md mt-3">{item.question}</h3>
+          <div className="flex items-center gap-3">
+            <p className="font-display shrink-0 text-3xl leading-none text-primary">
+              {index + 1}
+            </p>
+            <h3 className="title-md min-w-0">{item.question}</h3>
+          </div>
           <p className="body-sm mt-3">
             <LinkedPhrase
               text={item.answer}

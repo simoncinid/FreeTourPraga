@@ -29,6 +29,7 @@ COPY --from=build --chown=app:app /app/node_modules ./node_modules
 COPY --from=build --chown=app:app /app/prisma ./prisma
 COPY --from=build --chown=app:app /app/package.json ./package.json
 COPY --from=build --chown=app:app /app/scripts/worker.mjs ./scripts/worker.mjs
+COPY --from=build --chown=app:app /app/scripts/sync-preview-content.mjs ./scripts/sync-preview-content.mjs
 USER app
 EXPOSE 3000
 CMD ["node","server.js"]

@@ -10,8 +10,67 @@ const https = z
   .string()
   .url()
   .max(1000)
-  .refine((v) => new URL(v).protocol === "https:", "È richiesto un URL HTTPS");
+  .refine((v) => {
+    try {
+      return new URL(v).protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "È richiesto un URL HTTPS");
+const optionalText = (max: number) => z.string().trim().max(max).default("");
+const articleHref = z.union([z.literal(""), localPath, https]);
+export const blogBlockSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("text"),
+    heading: optionalText(250),
+    text: z.string().trim().min(1).max(20000),
+  }),
+  z.object({
+    type: z.literal("image"),
+    imageUrl: tourSchema.shape.imageUrl,
+    alt: optionalText(250),
+    caption: optionalText(1000),
+  }),
+  z.object({
+    type: z.literal("split"),
+    heading: optionalText(250),
+    text: z.string().trim().min(1).max(20000),
+    imageUrl: tourSchema.shape.imageUrl,
+    alt: optionalText(250),
+    caption: optionalText(1000),
+    imagePosition: z.enum(["left", "right"]).default("right"),
+  }),
+]);
+export const blogArticleSchema = z
+  .object({
+    title: short,
+    caption: body,
+    imageUrl: tourSchema.shape.imageUrl,
+    imageAlt: optionalText(250),
+    intro: optionalText(20000),
+    blocks: z.array(blogBlockSchema).max(40).default([]),
+    ctaEnabled: z.boolean().default(false),
+    ctaLabel: optionalText(250),
+    ctaHref: articleHref.default(""),
+  })
+  .superRefine((article, ctx) => {
+    if (article.ctaEnabled) {
+      if (!article.ctaLabel)
+        ctx.addIssue({
+          code: "custom",
+          path: ["ctaLabel"],
+          message: "Scrivi il testo del pulsante",
+        });
+      if (!article.ctaHref)
+        ctx.addIssue({
+          code: "custom",
+          path: ["ctaHref"],
+          message: "Indica il link del pulsante",
+        });
+    }
+  });
 export const siteContentSchema = z.object({
+  contentVersion: z.literal(2).default(2),
   globals: z.object({
     brandName: short,
     description: body,
@@ -36,8 +95,8 @@ export const siteContentSchema = z.object({
   home: z.object({
     heroImage: tourSchema.shape.imageUrl,
     heroTitle: short,
-    heroEyebrow: short,
-    heroBody: body,
+    heroEyebrow: z.string().trim().min(1).max(1000),
+    heroBody: z.string().trim().min(1).max(30000),
     primaryLabel: short,
     primaryHref: localPath,
     secondaryLabel: short,
@@ -47,9 +106,9 @@ export const siteContentSchema = z.object({
     trustEyebrow: short,
     trustTitle: short,
     trustBody: body,
-    galleryEyebrow: short,
+    galleryEyebrow: z.string().trim().min(1).max(1000),
     galleryTitle: short,
-    galleryBody: body,
+    galleryBody: z.string().trim().min(1).max(30000),
     answersTitle: short,
     answersBody: body,
     partnerEyebrow: short,
@@ -57,6 +116,20 @@ export const siteContentSchema = z.object({
     partnerBody: body,
     partnerLabel: short,
     faqTitle: short,
+    faqEyebrow: z
+      .string()
+      .trim()
+      .min(1)
+      .max(1000)
+      .default("Prima di prenotare"),
+    faqBody: z
+      .string()
+      .trim()
+      .min(1)
+      .max(30000)
+      .default(
+        "Tutto quello che serve sapere prima di prenotare un tour a Praga.",
+      ),
     stats: z.array(z.object({ value: short, label: short })).max(8),
     pillars: z.array(z.object({ title: short, text: body })).max(12),
     groups: z
@@ -72,15 +145,7 @@ export const siteContentSchema = z.object({
       )
       .max(6),
   }),
-  gallery: z
-    .array(
-      z.object({
-        title: short,
-        caption: body,
-        imageUrl: tourSchema.shape.imageUrl,
-      }),
-    )
-    .max(20),
+  gallery: z.array(blogArticleSchema).max(20),
   faqs: z.array(z.object({ q: short, a: body })).max(50),
   answers: z.array(z.object({ question: short, answer: body })).max(30),
 });

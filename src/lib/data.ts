@@ -38,7 +38,7 @@ export const tours: Tour[] = [
     galleryImages: oldTownGallery,
     slug: "citta-vecchia-ponte-carlo",
     title: "Citta Vecchia e Ponte Carlo senza stress",
-    category: "Classico",
+    category: "Gli essenziali",
     shortDescription:
       "Il primo orientamento protetto a Praga: luoghi iconici, trappole da evitare e punto d'incontro geolocalizzato.",
     description:
@@ -120,7 +120,7 @@ export const tours: Tour[] = [
     id: "castle",
     slug: "castello-praga-mala-strana",
     title: "Castello di Praga e Mala Strana",
-    category: "Premium",
+    category: "Gli essenziali",
     shortDescription:
       "Il percorso panoramico per capire potere, leggende e scorci del Castello senza finire nei flussi di massa.",
     description:
@@ -292,7 +292,7 @@ export const trustPillars = [
     text: "Posizione esatta del punto d'incontro via email e WhatsApp, con percorsi rapidi da aprire sul telefono in un attimo."
   },
   {
-    title: "Assistenza diretta 7 giorni su 7",
+    title: "Assistenza diretta 7 su 7",
     text: "Il nostro servizio clienti ti assiste ogni giorno dalle 9:00 alle 19:00 per informazioni e supporto sui tuoi tour."
   }
 ];

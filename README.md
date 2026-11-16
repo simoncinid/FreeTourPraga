@@ -7,6 +7,7 @@ L’ambiente Railway è un’**anteprima con catalogo dimostrativo**, su richies
 - [Requisiti e manuale Fase 1](docs/FASE-1.md)
 - [Deploy e configurazione Railway](docs/RAILWAY.md)
 - [Collaudo](docs/COLLAUDO.md)
+- [Gestionale, articoli e trasferimento contenuti — aggiornamento 16 novembre](docs/AGGIORNAMENTO-2026-11-16.md)
 
 ```bash
 npm ci

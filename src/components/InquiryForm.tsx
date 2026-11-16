@@ -7,7 +7,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
   return sent ? (
-    <div className={`${ui.inquiry} card grid gap-5 p-8`}>
+    <div className={`${ui.inquiry} ${partner ? ui.partnerForm : ""} card grid gap-5 p-8`}>
       <h2 className="display-md">Richiesta ricevuta.</h2>
       <p>Il team ti risponderà all’indirizzo indicato.</p>
       <button className="button-secondary" onClick={() => setSent(false)}>
@@ -16,7 +16,7 @@ export function InquiryForm({ partner = false }: { partner?: boolean }) {
     </div>
   ) : (
     <form
-      className={`${ui.inquiry} card grid gap-5 p-8`}
+      className={`${ui.inquiry} ${partner ? ui.partnerForm : ""} card grid gap-5 p-8`}
       onSubmit={async (e) => {
         e.preventDefault();
         const f = new FormData(e.currentTarget);

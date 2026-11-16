@@ -1,5 +1,11 @@
 "use client";
 import { useState } from "react";
+import { BlogArticleEditor } from "./BlogArticleEditor";
+import {
+  contentFields,
+  contentSections,
+  type StructuredContentSection,
+} from "@/lib/content-sections";
 import type { SiteContent } from "@/lib/platform/content";
 function Field({
   label,
@@ -17,12 +23,14 @@ function Field({
       {label}
       {multi ? (
         <textarea
+          aria-label={label}
           className="text-input min-h-24"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
         <input
+          aria-label={label}
           className="text-input"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -57,30 +65,35 @@ const labels: Record<string, string> = {
   trustEyebrow: "Sopratitolo fiducia",
   trustTitle: "Titolo fiducia",
   trustBody: "Introduzione fiducia",
-  galleryEyebrow: "Sopratitolo galleria",
-  galleryTitle: "Titolo galleria",
-  galleryBody: "Introduzione galleria",
+  galleryEyebrow: "Sopratitolo blog",
+  galleryTitle: "Titolo elenco articoli",
+  galleryBody: "Introduzione elenco articoli",
   answersTitle: "Titolo risposte rapide",
   answersBody: "Introduzione risposte rapide",
   partnerEyebrow: "Sopratitolo partner",
   partnerTitle: "Titolo partner",
   partnerBody: "Introduzione partner",
   partnerLabel: "Pulsante partner",
-  faqTitle: "Titolo FAQ",
+  faqTitle: "Titolo pagina FAQ",
+  faqEyebrow: "Sopratitolo pagina FAQ",
+  faqBody: "Introduzione pagina FAQ",
 };
 export function SiteContentEditor({
   initial,
+  section,
   busy,
   save,
 }: {
   initial: SiteContent;
+  section: StructuredContentSection;
   busy: boolean;
   save: (content: SiteContent) => Promise<unknown>;
 }) {
   const [c, setC] = useState(initial),
-    [tab, setTab] = useState("globals"),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [articleUploading, setArticleUploading] = useState(false);
   async function image(file: File, done: (url: string) => void) {
+    setArticleUploading(true);
     setNotice("Caricamento foto…");
     try {
       const r = await fetch("/api/platform/admin/media", {
@@ -94,17 +107,13 @@ export function SiteContentEditor({
       setNotice("Foto caricata: pubblica le modifiche per usarla.");
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Caricamento non riuscito");
+    } finally {
+      setArticleUploading(false);
     }
   }
   function rows(
     key:
-      | "gallery"
-      | "faqs"
-      | "answers"
-      | "socialLinks"
-      | "navigation"
-      | "stats"
-      | "pillars",
+      "faqs" | "answers" | "socialLinks" | "navigation" | "stats" | "pillars",
     fields: string[],
     names: string[],
   ) {
@@ -116,7 +125,7 @@ export function SiteContentEditor({
           : null;
     const list = (group
       ? c[group][key as never]
-      : c[key as "gallery"]) as unknown as Record<string, string>[];
+      : c[key as "faqs" | "answers"]) as unknown as Record<string, string>[];
     const update = (next: Record<string, string>[]) =>
       setC((p) =>
         group
@@ -138,26 +147,6 @@ export function SiteContentEditor({
                 }
               />
             ))}
-            {key === "gallery" && (
-              <label>
-                Carica foto
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f)
-                      image(f, (url) =>
-                        update(
-                          list.map((x, k) =>
-                            k === i ? { ...x, imageUrl: url } : x,
-                          ),
-                        ),
-                      );
-                  }}
-                />
-              </label>
-            )}
             <div className="flex flex-wrap gap-4">
               <button
                 type="button"
@@ -198,109 +187,114 @@ export function SiteContentEditor({
       </div>
     );
   }
-  const sectionKey: "globals" | "home" = tab === "globals" ? "globals" : "home";
+  function fields(group: "home" | "globals", keys: readonly string[]) {
+    return keys.map((key) => (
+      <Field
+        key={key}
+        label={labels[key] || key}
+        value={String(
+          (c[group] as unknown as Record<string, unknown>)[key] ?? "",
+        )}
+        multi={/Body|Text|Note|description|trustTitle/i.test(key)}
+        onChange={(value) =>
+          setC((previous) => ({
+            ...previous,
+            [group]: { ...previous[group], [key]: value },
+          }))
+        }
+      />
+    ));
+  }
+  const groups = contentFields[section];
   return (
     <form
       className="grid gap-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        save(c);
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!busy && !articleUploading) save(c);
       }}
     >
-      <nav className="flex flex-wrap gap-2">
-        {[
-          ["globals", "Contatti e identità"],
-          ["home", "Sezioni home"],
-          ["gallery", "Galleria"],
-          ["faqs", "FAQ"],
-          ["answers", "Prima di prenotare"],
-          ["navigation", "Menu"],
-          ["socialLinks", "Social"],
-          ["stats", "Dati in evidenza"],
-          ["pillars", "Punti di forza"],
-        ].map(([key, label]) => (
-          <button
-            type="button"
-            className={tab === key ? "button-primary" : "button-secondary"}
-            key={key}
-            onClick={() => setTab(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      <div className="card grid gap-5 p-6">
-        <h2 className="display-md">Contenuti del sito</h2>
-        <p className="text-sm">
-          Questi contenuti sono condivisi tra pagine, footer, FAQ e dati per i
-          motori di ricerca. Il titolo e l’introduzione home possono essere
-          sostituiti dall’editor della pagina Homepage, se pubblicato.
-        </p>
+      <fieldset
+        disabled={busy || articleUploading}
+        className="card grid min-w-0 gap-5 p-6"
+      >
+        <h2 className="display-md">{contentSections[section].label}</h2>
+        <p className="text-sm">{contentSections[section].description}</p>
         {notice && <p role="status">{notice}</p>}
-        {(tab === "globals" || tab === "home") &&
-          Object.entries(c[sectionKey])
-            .filter(([, v]) => typeof v === "string")
-            .map(([key, value]) => (
-              <Field
-                key={key}
-                label={labels[key] || key}
-                value={value as string}
-                multi={/Body|Text|Note|description|trustTitle/i.test(key)}
-                onChange={(v) =>
-                  setC((p) => ({
-                    ...p,
-                    [sectionKey]: { ...p[sectionKey], [key]: v },
-                  }))
-                }
+        {"globals" in groups && fields("globals", groups.globals)}
+        {"home" in groups && fields("home", groups.home)}
+        {section === "homepage" && (
+          <>
+            <label>
+              Carica immagine principale
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file)
+                    void image(file, (url) =>
+                      setC((previous) => ({
+                        ...previous,
+                        home: { ...previous.home, heroImage: url },
+                      })),
+                    );
+                }}
               />
-            ))}
-        {tab === "home" && (
-          <label>
-            Carica immagine principale
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f)
-                  image(f, (url) =>
-                    setC((p) => ({
-                      ...p,
-                      home: { ...p.home, heroImage: url },
-                    })),
-                  );
-              }}
-            />
-          </label>
+            </label>
+            <h3 className="border-t pt-5 text-lg font-bold">
+              Dati in evidenza della homepage
+            </h3>
+            {rows("stats", ["value", "label"], ["Titolo", "Testo"])}
+            <h3 className="border-t pt-5 text-lg font-bold">Punti di forza</h3>
+            <p className="text-sm text-muted">
+              Usati nella homepage e, finché non viene personalizzata, nella
+              pagina Chi siamo.
+            </p>
+            {rows("pillars", ["title", "text"], ["Titolo", "Testo"])}
+          </>
         )}
-        {tab === "gallery" &&
-          rows(
-            "gallery",
-            ["title", "caption", "imageUrl"],
-            ["Titolo foto", "Didascalia", "URL foto"],
-          )}
-        {tab === "faqs" && rows("faqs", ["q", "a"], ["Domanda", "Risposta"])}
-        {tab === "answers" &&
-          rows("answers", ["question", "answer"], ["Domanda", "Risposta"])}
-        {tab === "socialLinks" &&
-          rows(
-            "socialLinks",
-            ["label", "url"],
-            ["Social", "URL profilo HTTPS"],
-          )}
-        {tab === "navigation" &&
-          rows(
-            "navigation",
-            ["label", "href"],
-            ["Voce menu", "Percorso sul sito"],
-          )}
-        {tab === "stats" &&
-          rows("stats", ["value", "label"], ["Titolo", "Testo"])}
-        {tab === "pillars" &&
-          rows("pillars", ["title", "text"], ["Titolo", "Testo"])}
-      </div>
-      <button className="button-primary" disabled={busy}>
-        Pubblica contenuti
+        {section === "blog" && (
+          <BlogArticleEditor
+            articles={c.gallery}
+            onChange={(gallery) =>
+              setC((previous) => ({ ...previous, gallery }))
+            }
+            busy={busy}
+            onUploading={setArticleUploading}
+          />
+        )}
+        {section === "faq" && (
+          <>
+            <h3 className="border-t pt-5 text-lg font-bold">
+              Domande della pagina FAQ
+            </h3>
+            {rows("faqs", ["q", "a"], ["Domanda", "Risposta"])}
+            <h3 className="border-t pt-5 text-lg font-bold">
+              Risposte rapide nella homepage
+            </h3>
+            {rows("answers", ["question", "answer"], ["Domanda", "Risposta"])}
+          </>
+        )}
+        {section === "navigazione" && (
+          <>
+            <h3 className="text-lg font-bold">Menu del sito</h3>
+            {rows(
+              "navigation",
+              ["label", "href"],
+              ["Voce menu", "Percorso sul sito"],
+            )}
+            <h3 className="border-t pt-5 text-lg font-bold">Profili social</h3>
+            {rows(
+              "socialLinks",
+              ["label", "url"],
+              ["Social", "URL profilo HTTPS"],
+            )}
+          </>
+        )}
+      </fieldset>
+      <button className="button-primary" disabled={busy || articleUploading}>
+        Pubblica {contentSections[section].label.toLowerCase()}
       </button>
     </form>
   );

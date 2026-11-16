@@ -1,2 +1,3 @@
-import {AdminWorkspace} from '@/components/AdminWorkspace';
-export default function Page(){return <AdminWorkspace/>;}
+export default function Page() {
+  return null;
+}

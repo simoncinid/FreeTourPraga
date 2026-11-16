@@ -17,3 +17,8 @@ tmp/
 output/screenshots/
 .DS_Store
 privato/
+
+# Generated visual checks and image-generation working files
+/output/ui-audit/
+/output/imagegen/
+/output/blog-demo/

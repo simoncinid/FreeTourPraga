@@ -40,7 +40,7 @@ import { approveOta, ingestOta, otaSchema, pollMailbox } from "./ota";
 import type { Session } from "./security";
 import { maintainPrivacy } from "./maintenance";
 import { uploadMedia } from "./media";
-import { siteContent } from "./content";
+import { mergeContentPages, siteContent } from "./content";
 import { siteContentSchema } from "./content-validation";
 import { site } from "../site";
 const ok = (data: unknown) =>
@@ -243,6 +243,7 @@ export async function platformApi(request: Request, path: string[]) {
         return ok(await uploadMedia(request));
       if (route === "admin/state" && method === "GET") {
         const s = await readState();
+        const content = siteContent(s.siteContent, s.pages);
         return ok({
           ...s,
           rateLimits: undefined,
@@ -250,7 +251,8 @@ export async function platformApi(request: Request, path: string[]) {
           orders: undefined,
           bookings: s.bookings.map(({ tokenHash, ...b }) => b),
           role: user.role,
-          siteContent: siteContent(s.siteContent),
+          siteContent: content,
+          pages: mergeContentPages(s.pages, content),
           integrations: {
             database: !localMode(),
             stripe: !!process.env.STRIPE_SECRET_KEY,
@@ -630,7 +632,19 @@ export async function platformApi(request: Request, path: string[]) {
           .object({ key: z.string().regex(/^[a-z0-9-]+$/), page: pageSchema })
           .parse(await jsonBody(request));
         await transaction((s) => {
-          s.pages[body.key] = body.page;
+          if (["homepage", "blog", "faq"].includes(body.key)) {
+            // These routes own structured content; this endpoint only edits their SEO.
+            s.siteContent = siteContent(s.siteContent, s.pages);
+            const previous = s.pages[body.key] || body.page;
+            s.pages[body.key] = {
+              ...previous,
+              seoTitle: body.page.seoTitle,
+              seoDescription: body.page.seoDescription,
+              published: true,
+            };
+          } else {
+            s.pages[body.key] = body.page;
+          }
           audit(s, user.email, "page.save", body.key);
         });
         return ok({ ok: true });

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { TourGalleryEditor } from "./TourGalleryEditor";
 import { tourGalleryImages } from "@/lib/tour-gallery";
-import { SiteContentEditor } from "./SiteContentEditor";
+import { ContentWorkspace } from "./ContentWorkspace";
 import type { SiteContent } from "@/lib/platform/content";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -22,7 +22,6 @@ import {
 import type {
   Affiliate,
   CatalogTour,
-  ContentPage,
   PlatformState,
   Reservation,
   Settings,
@@ -43,12 +42,31 @@ const navigation = [
   ["canali", "Canali OTA", RefreshCw],
   ["pre-tour", "Email e reminder", Mail],
   ["contenuti", "Contenuti", FileText],
-  ["sito", "Home, FAQ e contatti", Settings2],
   ["richieste", "Richieste", Users],
   ["impostazioni", "Regole e tariffe", Settings2],
   ["report", "KPI e campagne", LayoutDashboard],
   ["audit", "Registro attività", FileText],
 ] as const;
+
+/**
+ * Nascoste in Fase 1 (codice integro, solo UI). Certe perché esplicite in Fase 2
+ * o assenti dal perimetro Fase 1 del contratto:
+ * - affiliati → F2 STEP 9
+ * - canali → F2 STEP 10 (OTA / parsing email)
+ * - report → F2 STEP 12 (KPI / Google Ads)
+ * - audit → non previsto in Fase 1
+ * NON nascosta: pre-tour (email di conferma = F1 STEP 5; solo WA è F2).
+ */
+const PHASE2_OR_EXTRA_SECTIONS = new Set<string>([
+  "affiliati",
+  "canali",
+  "report",
+  "audit",
+]);
+
+const phase1Navigation = navigation.filter(
+  ([slug]) => !PHASE2_OR_EXTRA_SECTIONS.has(slug),
+);
 const labels: Record<string, string> = {
   confirmed: "Confermata",
   pending: "In attesa",
@@ -155,7 +173,10 @@ export function AdminWorkspace() {
     new Date().toISOString().slice(0, 7),
   );
   const load = useCallback(async () => {
-    const r = await fetch("/api/platform/admin/state");
+    const r = await fetch("/api/platform/admin/state", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
     if (r.status === 401) {
       router.replace("/accesso");
       return;
@@ -166,6 +187,15 @@ export function AdminWorkspace() {
   }, [router]);
   useEffect(() => {
     load().catch((e) => setMessage(e.message));
+  }, [load]);
+  // Aggiorna in background al ritorno sul tab, senza svuotare la UI.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      load().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [load]);
   async function mutate(route: string, body: unknown, method = "POST") {
     setBusy(true);
@@ -327,17 +357,11 @@ export function AdminWorkspace() {
           <small className="mt-2 block text-xs">Spazio di gestione</small>
         </Link>
         <nav className="admin-nav admin-desktop-nav">
-          {navigation
+          {phase1Navigation
             .filter(
               ([slug]) =>
                 data.role === "admin" ||
-                ![
-                  "tour",
-                  "affiliati",
-                  "contenuti",
-                  "impostazioni",
-                  "sito",
-                ].includes(slug),
+                !["tour", "contenuti", "impostazioni", "sito"].includes(slug),
             )
             .map(([slug, label, Icon]) => (
               <Link
@@ -353,17 +377,13 @@ export function AdminWorkspace() {
         <details className="admin-mobile-menu">
           <summary className="button-secondary">Apri menu gestionale</summary>
           <nav className="admin-nav mt-3">
-            {navigation
+            {phase1Navigation
               .filter(
                 ([slug]) =>
                   data.role === "admin" ||
-                  ![
-                    "tour",
-                    "affiliati",
-                    "contenuti",
-                    "impostazioni",
-                    "sito",
-                  ].includes(slug),
+                  !["tour", "contenuti", "impostazioni", "sito"].includes(
+                    slug,
+                  ),
               )
               .map(([slug, label, Icon]) => (
                 <Link key={slug} href={`/admin${slug ? "/" + slug : ""}`}>
@@ -410,6 +430,20 @@ export function AdminWorkspace() {
             {message}
           </p>
         )}
+        {PHASE2_OR_EXTRA_SECTIONS.has(section) ? (
+          <div className="card p-6">
+            <h2 className="display-md mb-3">Disponibile dalla Fase 2</h2>
+            <p className="body-md">
+              Questa area non rientra nel perimetro della Fase 1 (Sito Base
+              Indipendente). Il codice resta nel sistema e potrà essere
+              riattivato con la Fase 2 opzionale.
+            </p>
+            <Link href="/admin" className="button-secondary mt-6">
+              Torna alla panoramica
+            </Link>
+          </div>
+        ) : (
+          <>
         {section === "" && (
           <>
             <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -552,6 +586,13 @@ export function AdminWorkspace() {
                   slots: [],
                 }
               }
+              categories={[
+                ...new Set(
+                  data.tours
+                    .map((t) => t.category.trim())
+                    .filter(Boolean),
+                ),
+              ].sort((a, b) => a.localeCompare(b, "it"))}
               busy={busy}
               save={(t) => mutate("tour", t, "PUT")}
             />
@@ -817,10 +858,8 @@ export function AdminWorkspace() {
             <div className="card mb-6 p-6">
               <h2 className="display-md mb-3">Comunicazioni automatiche</h2>
               <p>
-                Conferme e modifiche via email. Reminder WhatsApp{" "}
-                {data.settings.reminderHours} ore prima, per i clienti che hanno
-                dato il consenso. Gli invii non riusciti vengono ritentati
-                automaticamente.
+                Conferme e modifiche via email. Gli invii non riusciti vengono
+                ritentati automaticamente.
               </p>
               <button
                 className="button-secondary mt-4"
@@ -867,20 +906,14 @@ export function AdminWorkspace() {
             </div>
           </>
         )}
-        {section === "sito" && (
-          <SiteContentEditor
-            initial={data.siteContent}
-            busy={busy}
-            save={(c) => mutate("site-content", c, "PUT")}
-          />
-        )}
         {section === "contenuti" && (
-          <ContentEditor
-            key={detail || "home"}
+          <ContentWorkspace
+            content={data.siteContent}
             pages={data.pages}
-            pageKey={detail || "homepage"}
+            detail={detail}
             busy={busy}
-            save={(b) => mutate("page", b, "PUT")}
+            saveSite={content => mutate("site-content", content, "PUT")}
+            savePage={body => mutate("page", body, "PUT")}
           />
         )}
         {section === "richieste" && (
@@ -991,6 +1024,8 @@ export function AdminWorkspace() {
               </p>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
@@ -1341,10 +1376,12 @@ function BookingDetail({
 }
 function TourEditor({
   tour,
+  categories,
   busy,
   save,
 }: {
   tour: CatalogTour;
+  categories: string[];
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
@@ -1434,15 +1471,36 @@ function TourEditor({
         </label>
         {uploadMessage && <p role="status">{uploadMessage}</p>}
         <div className="form-grid">
-          {fields.map(([key, label, type]) => (
-            <Field
-              key={key}
-              label={label}
-              type={type}
-              value={String(t[key] ?? "")}
-              onChange={(v) => set(key, type === "number" ? Number(v) : v)}
-            />
-          ))}
+          {fields.map(([key, label, type]) =>
+            key === "category" ? (
+              <label key={key} className="grid gap-1 text-sm">
+                {label}
+                <input
+                  className="text-input"
+                  list="tour-category-options"
+                  value={String(t.category ?? "")}
+                  onChange={(e) => set("category", e.target.value)}
+                />
+                <datalist id="tour-category-options">
+                  {categories.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
+                <span className="text-xs text-body">
+                  Comparirà come tab in homepage se almeno un tour pubblicato
+                  usa questa categoria.
+                </span>
+              </label>
+            ) : (
+              <Field
+                key={key}
+                label={label}
+                type={type}
+                value={String(t[key] ?? "")}
+                onChange={(v) => set(key, type === "number" ? Number(v) : v)}
+              />
+            ),
+          )}
         </div>
         <Text
           label="Descrizione completa"
@@ -1629,10 +1687,8 @@ function SettingsEditor({
           "Cancellazione gratuita fino a (ore prima)",
         )}
         {field("lateRefundPercent", "Rimborso dopo il termine (%)")}
-        {field("reminderHours", "Reminder WhatsApp (ore prima)")}
         {field("retentionDays", "Conservazione dati (giorni)")}
-        {field("googleAdsId", "Google Ads ID (AW-…)", "text")}
-        {field("googleAdsLabel", "Etichetta conversione acquisto", "text")}
+        {/* Fase 2 (nascosti, valori conservati): reminderHours, googleAdsId, googleAdsLabel */}
       </div>
       <Text
         label="Firma email"
@@ -1788,103 +1844,6 @@ function OtaImport({
     </form>
   );
 }
-function ContentEditor({
-  pages,
-  pageKey,
-  busy,
-  save,
-}: {
-  pages: Record<string, ContentPage>;
-  pageKey: string;
-  busy: boolean;
-  save: (b: unknown) => Promise<unknown>;
-}) {
-  const [p, setP] = useState<ContentPage>(
-    pages[pageKey] || {
-      title: "",
-      subtitle: "",
-      body: "",
-      seoTitle: "",
-      seoDescription: "",
-      published: false,
-    },
-  );
-  return (
-    <div className="grid gap-6">
-      <nav className="flex flex-wrap gap-2">
-        {[
-          "homepage",
-          "chi-siamo",
-          "informazioni-utili",
-          "blog",
-          "aiuto",
-          "catalogo",
-          "tour-privati",
-          "partner-europa",
-          "faq",
-          "contatti",
-          "privacy",
-          "termini",
-        ].map((k) => (
-          <Link
-            key={k}
-            className="button-secondary !px-3 !py-2"
-            href={`/admin/contenuti/${k}`}
-          >
-            {k}
-          </Link>
-        ))}
-      </nav>
-      <form
-        className="card grid gap-5 p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          save({ key: pageKey, page: p });
-        }}
-      >
-        <h2 className="display-md">{pageKey}</h2>
-        <Field
-          label="Titolo"
-          required
-          value={p.title}
-          onChange={(v) => setP({ ...p, title: v })}
-        />
-        <Field
-          label="Sottotitolo"
-          value={p.subtitle}
-          onChange={(v) => setP({ ...p, subtitle: v })}
-        />
-        <Text
-          label="Testo pagina"
-          value={p.body}
-          onChange={(v) => setP({ ...p, body: v })}
-        />
-        <Field
-          label="Titolo SEO"
-          value={p.seoTitle}
-          onChange={(v) => setP({ ...p, seoTitle: v })}
-        />
-        <Field
-          label="Descrizione SEO"
-          value={p.seoDescription}
-          onChange={(v) => setP({ ...p, seoDescription: v })}
-        />
-        <label className="flex gap-3">
-          <input
-            type="checkbox"
-            checked={p.published}
-            onChange={(e) => setP({ ...p, published: e.target.checked })}
-          />
-          Pubblica contenuto
-        </label>
-        <button className="button-primary" disabled={busy}>
-          Salva contenuto
-        </button>
-      </form>
-    </div>
-  );
-}
-
 function safePrague(v: string, previous: string) {
   try {
     return pragueInstant(v);

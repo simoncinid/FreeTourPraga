@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Minus,
   Plus,
-  Users,
 } from "lucide-react";
 import { addToCart } from "@/lib/cart";
 import { useRouter } from "next/navigation";
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import { availableSeats } from "@/lib/pricing";
 import type { Tour } from "@/lib/types";
+import styles from "./booking-form.module.css";
 
 const italianMonths = [
   "Gennaio",
@@ -295,9 +295,6 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
               </p>
             </div>
             <div>
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink">
-                <Users size={18} /> Persone
-              </div>
               <Counter
                 label={`Adulti (da ${adultMinAge} anni)`}
                 price={tour.basePriceCents}
@@ -335,10 +332,22 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
               type="button"
               onClick={continueToCheckout}
               disabled={!selectedSlot || guests > seats}
-              className="button-primary w-full !rounded-full disabled:cursor-not-allowed disabled:opacity-50"
+              className={`button-primary w-full !rounded-full disabled:cursor-not-allowed disabled:opacity-50 ${styles.addToCart}`}
             >
-              <CalendarDays size={17} /> Aggiungi al carrello
-              <ArrowRight size={17} />
+              <span className={styles.addToCartLabel}>Aggiungi al carrello</span>
+              <ArrowRight
+                size={17}
+                className={styles.addToCartArrow}
+                aria-hidden
+              />
+              <Image
+                src="/images/icons/cart-3d-white.png"
+                alt=""
+                width={22}
+                height={22}
+                className={styles.addToCartIcon}
+                aria-hidden
+              />
             </button>
           </>
         ) : null}

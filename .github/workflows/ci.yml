@@ -38,6 +38,7 @@ jobs:
           TEST_POSTGRES: "1"
       - run: npx playwright install --with-deps chromium
       - run: npm run test:http
+      - run: npm run test:cms
       - run: npm audit --audit-level=moderate
       - run: npm run test:browser
       - uses: actions/upload-artifact@v4

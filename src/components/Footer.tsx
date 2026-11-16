@@ -26,7 +26,7 @@ export async function Footer() {
         </div>
         <div>
           <h2 className="mb-4 font-bold text-white">Informazioni</h2>
-          <div className="mb-5 grid gap-3 text-sm">
+          <div className={`${ui.footerLinks} mb-5 grid gap-x-6 gap-y-3 text-sm`}>
             {g.navigation
               .filter(
                 (n) =>

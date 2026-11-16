@@ -7,6 +7,12 @@ import {
   ensureWpAffiliates,
   wpAffiliatesSeed,
 } from "./affiliates-wp";
+import {
+  defaultContentPages,
+  defaultSiteContent,
+  mergeContentPages,
+  siteContent,
+} from "./content";
 import type { PlatformState } from "./model";
 const runtime = globalThis as unknown as {
   platformPrisma?: PrismaClient;
@@ -29,8 +35,10 @@ export function localMode() {
   );
 }
 export function initialState(): PlatformState {
+  const content = defaultSiteContent();
   return {
     version: 1,
+    siteContent: content,
     tours: structuredClone(tours).map((t) => ({
       ...t,
       published: true,
@@ -44,7 +52,7 @@ export function initialState(): PlatformState {
     orders: [],
     jobs: [],
     affiliates: structuredClone(wpAffiliatesSeed),
-    pages: {},
+    pages: defaultContentPages(content),
     ota: [],
     inquiries: [],
     audit: [],
@@ -67,6 +75,9 @@ const file = () =>
   resolve(process.env.PLATFORM_DATA_FILE || ".data/platform.json");
 function hydrate(state: PlatformState) {
   ensureWpAffiliates(state);
+  const content = siteContent(state.siteContent, state.pages);
+  if (!state.siteContent) state.siteContent = content;
+  state.pages = mergeContentPages(state.pages, content);
   return state;
 }
 async function readLocal() {

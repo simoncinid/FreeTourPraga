@@ -21,7 +21,7 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
           className="object-cover"
         />
         <span className="absolute left-3 top-3 bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[1.3px] text-on-primary">
-          In italiano
+          In italiano 🇮🇹
         </span>
       </div>
       <div className="grid flex-1 gap-3 p-4">
@@ -48,7 +48,7 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
                   size={14}
                   className={
                     index < tour.walkingDifficulty
-                      ? "text-primary"
+                      ? "text-ink/70"
                       : "text-hairline"
                   }
                   fill="currentColor"
@@ -64,8 +64,13 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
               {formatMoney(tour.basePriceCents)}
             </strong>
           </span>
-          <span className="button-secondary !min-h-0 !px-3 !py-2 text-[10px]">
-            Scopri <ArrowUpRight size={13} aria-hidden />
+          <span className={styles.tourCardCta}>
+            Scopri{" "}
+            <ArrowUpRight
+              size={13}
+              className={styles.tourCardCtaArrow}
+              aria-hidden
+            />
           </span>
         </div>
       </div>

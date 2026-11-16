@@ -2,7 +2,7 @@ import ui from "@/components/public-ui.module.css";
 import {publicPage} from "@/lib/platform/public";
 import {ContentBlock} from "@/components/ContentBlock";
 export const dynamic="force-dynamic";
-import { Building2, Users, Handshake } from "lucide-react";
+import Image from "next/image";
 import { InquiryForm } from "@/components/InquiryForm";
 const baseMetadata = {
   title: "Partner Europa",
@@ -27,23 +27,23 @@ export default async function Page() {
           </p>
           {[
             [
-              Users,
+              "/images/partner/group-blue-3d.webp",
               "Scuole e gruppi",
               "Itinerari e ritmi adatti a chi viaggia insieme.",
             ],
             [
-              Building2,
+              "/images/partner/hotel-blue-3d.webp",
               "Hotel e agenzie",
               "Un contatto dedicato per organizzare le visite dei tuoi ospiti.",
             ],
             [
-              Handshake,
+              "/images/partner/handshake-blue-3d.webp",
               "Collabora con noi",
               "Affiliazioni e codici per riconoscere le prenotazioni dei tuoi clienti.",
             ],
-          ].map(([Icon, title, text]) => (
+          ].map(([icon, title, text]) => (
             <div key={String(title)} className={`${ui.partnerBenefit} mb-7 flex gap-4`}>
-              <Icon className="shrink-0" size={24} />
+              <Image src={icon} alt="" width={56} height={56} sizes="56px" className={ui.partnerIcon} />
               <div>
                 <h2 className="title-md mb-2">{String(title)}</h2>
                 <p className="body-sm">{String(text)}</p>

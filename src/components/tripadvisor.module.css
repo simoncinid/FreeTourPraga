@@ -63,6 +63,42 @@
   line-height: 1.2;
 }
 
+.reviewsButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #00aa6c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.reviewsButton:hover {
+  background: #008f5b;
+}
+
+.reviewsButtonArrow {
+  display: inline-block;
+  animation: reviewsButtonNudge 1.15s ease-in-out infinite;
+}
+
+@keyframes reviewsButtonNudge {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(3px, -3px);
+  }
+}
+
 .circles {
   display: flex;
   gap: 4px;
@@ -80,26 +116,29 @@
   background: transparent;
 }
 
+.reviewCarousel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .reviewCard {
   position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: stretch;
-  gap: 6px;
-  height: 280px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: auto;
   border: 1px solid #d7ebe1;
   border-radius: 14px;
   background: #ffffffd9;
-  padding: 12px 8px;
+  padding: 16px 18px;
 }
 
 .reviewInner {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-width: 0;
   min-height: 0;
-  height: 100%;
-  padding: 4px 4px 6px;
 }
 
 .reviewHeader {
@@ -139,13 +178,14 @@
 }
 
 .reviewText {
-  flex: 1 1 auto;
   margin: 10px 0 0;
   color: #2f463c;
   font-size: 15px;
   line-height: 1.65;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
   overflow: hidden;
-  max-height: 7.6em;
 }
 
 .reviewFooter {
@@ -160,19 +200,18 @@
 .navButton {
   display: grid;
   place-items: center;
-  align-self: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #b7d8c8;
-  border-radius: 999px;
-  background: #fff;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: #034b33;
   cursor: pointer;
   flex-shrink: 0;
+  padding: 0;
 }
 
 .navButton:hover {
-  border-color: #00aa6c;
   color: #00aa6c;
 }
 
@@ -216,12 +255,119 @@
 }
 
 @media (max-width: 640px) {
-  .reviewCard {
-    height: 300px;
-  }
-
   .cta {
     font-size: 10px;
     padding: 0 12px;
+  }
+}
+
+.showcase {
+  padding: 90px 0 100px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 74% 50%, #d8f3e5 0, #edf7f0 35%, #f8faf6 70%);
+}
+.showcaseGrid {
+  display: grid;
+  grid-template-columns: .85fr 1.15fr;
+  align-items: center;
+  gap: 36px;
+}
+.showcaseCopy { max-width: 430px; }
+.showcaseBrand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.showcaseBrand > span { color: #216148; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.showcaseTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(46px, 5.5vw, 76px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+  margin-bottom: 24px;
+  color: #0a2c24;
+}
+.showcaseTitle > span { color: #00aa6c; }
+.showcaseRating { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin: 8px 0 22px; }
+.showcaseRating > strong { font-family: var(--font-display), Georgia, serif; color: #005d3e; font-size: 72px; line-height: 1; letter-spacing: -.05em; }
+.showcaseRating > strong > span { font-family: var(--font-body), sans-serif; font-size: 20px; font-weight: 500; letter-spacing: 0; margin-left: 5px; color: #6a8075; }
+.cardRating {
+  margin: 14px 0 18px;
+}
+.cardRating > strong {
+  font-size: clamp(48px, 8vw, 64px);
+}
+.cardRating > strong > span {
+  font-size: 18px;
+}
+.cardRating .reviewsButton {
+  margin-top: 8px;
+}
+.showcaseCopy > :global(.body-md) { color: #456254; }
+.showcaseLink { display: inline-flex; align-items: center; gap: 18px; padding: 10px 0; border-bottom: 1px solid #006944; color: #005d3e; font-size: 14px; font-weight: 800; }
+.showcaseLink:hover { color: #008958; }
+.reviewScene { position: relative; min-width: 0; height: 610px; isolation: isolate; }
+.sceneHalo { position: absolute; width: 510px; height: 510px; left: 50%; top: 50%; transform: translate(-50%, -50%); border: 1px solid #a8d8bb66; border-radius: 50%; }
+.sceneHalo::after { content: ""; position: absolute; inset: 45px; border: 1px solid #a8d8bb66; border-radius: 50%; }
+.destinationPhoto { position: absolute; top: 0; bottom: 16px; width: 57%; left: 23%; border-radius: 150px 150px 28px 28px; overflow: hidden; border: 7px solid #fff; box-shadow: 0 20px 50px #0b493e20; transform: rotate(3deg); }
+.scenePhoto { object-fit: cover; object-position: 45% center; }
+.destinationPhoto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#001e1d10, transparent 55%, #002d2b55); }
+.floatingReview { position: absolute; width: 225px; padding: 22px; background: #ffffffed; border: 1px solid #fff; border-radius: 15px; box-shadow: 0 12px 35px #0b493e16; }
+.floatingReview p { font-size: 12px; color: #4c6358; line-height: 1.6; margin: 14px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.floatingReview > strong { color: #203f30; font-size: 11px; }
+.floatingReview .circle { width: 10px; height: 10px; }
+.backLeft { z-index: 1; left: 0; top: 200px; transform: rotate(-9deg); animation: reviewFloatLeft 7s ease-in-out infinite; }
+.backRight { right: -12px; top: 270px; transform: rotate(9deg); animation: reviewFloatRight 8s ease-in-out infinite; }
+.frontReview { position: absolute; z-index: 3; width: min(390px, 85%); left: 50%; top: 230px; transform: translateX(-50%) rotate(-2deg); padding: 26px 26px 16px; background: #fff; border-radius: 18px; box-shadow: 0 22px 60px #073c3526, 0 1px 4px #073c3510; }
+.quoteMark { position: absolute; top: -45px; right: 15px; color: #00aa6c; font-family: Georgia, serif; font-size: 100px; line-height: 1; }
+.activeReview { animation: reviewReveal .3s ease-out; }
+.activeReview blockquote { margin: 18px 0 20px; font-size: 14px; line-height: 1.7; color: #16372b; }
+.sceneReviewIdentity { display: flex; align-items: center; gap: 10px; border-top: 1px solid #e9eeea; padding-top: 16px; }
+.sceneReviewIdentity > div { min-width: 0; }
+.sceneReviewIdentity strong { display: block; font-size: 13px; color: #173c2c; }
+.sceneReviewIdentity span { display: block; font-size: 10px; color: #667a70; margin-top: 3px; }
+.miniLogo { width: 24px; height: 24px; margin-left: auto; flex-shrink: 0; }
+.sceneControls { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e9eeea; }
+.sceneControls > span { font-size: 11px; font-weight: 800; color: #0b4935; }
+.sceneControls > span > span { color: #82958b; font-weight: 500; }
+.sceneControls > div { display: flex; gap: 8px; }
+.sceneControls button { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #cde2d5; border-radius: 50%; color: #005d3e; transition: background .2s, color .2s; }
+.sceneControls button:hover { background: #005d3e; color: #fff; }
+.sceneControls button:focus-visible,
+.showcaseLink:focus-visible,
+.reviewsButton:focus-visible {
+  outline: 3px solid #00aa6c;
+  outline-offset: 4px;
+}
+.floatingLogo { position: absolute; z-index: 2; width: 66px; height: 66px; border: 7px solid #e9f7ee; border-radius: 50%; box-shadow: 0 6px 20px #004a2c15; }
+.floatingLogo svg { width: 100%; height: 100%; }
+.orbitOne { left: 13%; top: 100px; transform: rotate(-15deg); }
+.orbitTwo { right: -1%; top: 130px; width: 48px; height: 48px; transform: rotate(12deg); }
+@keyframes reviewFloatLeft { 50% { transform: translateY(-10px) rotate(-7deg); } }
+@keyframes reviewFloatRight { 50% { transform: translateY(12px) rotate(7deg); } }
+@keyframes reviewReveal { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1023px) {
+  .showcaseGrid { grid-template-columns: 1fr; gap: 45px; }
+  .showcaseCopy { max-width: 580px; }
+  .reviewScene { width: min(620px, 100%); margin-inline: auto; height: 650px; }
+  .frontReview { top: 240px; }
+  .showcase { padding-block: 64px; }
+}
+@media (max-width: 479px) {
+  .showcaseBrand > span { font-size: 9px; letter-spacing: .08em; }
+  .showcaseTitle { font-size: 48px; }
+  .reviewScene { height: 700px; }
+  .destinationPhoto { width: 78%; left: 11%; bottom: 45px; }
+  .floatingReview { width: 52%; padding: 16px; }
+  .backLeft { left: -8px; top: 195px; }
+  .backRight { right: -8px; top: 230px; }
+  .frontReview { width: 92%; top: 285px; padding: 22px 20px 14px; }
+  .activeReview blockquote { font-size: 13px; line-height: 1.65; }
+  .orbitOne { left: 0; top: 120px; width: 54px; height: 54px; }
+  .orbitTwo { right: 0; top: 150px; }
+  .showcaseRating { gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .backLeft,
+  .backRight,
+  .activeReview,
+  .reviewsButtonArrow {
+    animation: none;
   }
 }

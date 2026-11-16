@@ -192,6 +192,7 @@ export default async function TourDetailPage({ params }: Props) {
               </div>
             </section>
             <GoogleMap tour={tour} />
+            <TripAdvisorSection layout="card" />
             <section
               className={`${panels.panelWhatsapp} rounded-xl p-7 text-on-dark`}
             >
@@ -212,7 +213,7 @@ export default async function TourDetailPage({ params }: Props) {
                 possiamo risponderti più rapidamente.
               </p>
               <a
-                className="button-primary !bg-whatsapp hover:!bg-[#1fb75a]"
+                className="button-primary !bg-[#1aad53] !text-white hover:!bg-[#159648]"
                 href={whatsappHref(
                   `Ciao FreeTourPraga, mi trovo nella pagina del tour ${tour.title} e vorrei un'informazione rapida sulla disponibilita.`,
                 )}
@@ -220,7 +221,6 @@ export default async function TourDetailPage({ params }: Props) {
                 Scrivi su WhatsApp
               </a>
             </section>
-            <TripAdvisorSection layout="card" />
           </div>
           <BookingForm tour={tour} />
         </div>

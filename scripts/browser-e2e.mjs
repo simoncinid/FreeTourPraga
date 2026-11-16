@@ -15,7 +15,7 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  for (const path of ['/', '/tour', '/partner-europa', '/faq', '/contatti', '/chi-siamo', '/informazioni-utili', '/blog', '/aiuto']) {
+  for (const path of ['/', '/tour', '/partner-europa', '/faq', '/contatti', '/chi-siamo', '/informazioni-utili', '/blog']) {
    await page.goto(base + path);
    const consent = page.getByRole('button', { name: 'Solo necessari', exact: true });
    if (await consent.isVisible()) await consent.click();

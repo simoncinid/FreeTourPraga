@@ -3,9 +3,21 @@ import { cache } from "react";
 import { readState } from "./store";
 import { siteContent } from "./content";
 const publicState = cache(readState);
-export const publicSiteContent = cache(async () =>
-  siteContent((await publicState()).siteContent),
-);
+export const publicSiteContent = cache(async () => {
+  const state = await publicState();
+  const content = siteContent(state.siteContent, state.pages);
+  return {
+    ...content,
+    globals: {
+      ...content.globals,
+      // Also suppress saved CMS links while the private-tour page is hidden.
+      navigation: content.globals.navigation.filter(
+        (link) =>
+          link.href.split(/[?#]/)[0].replace(/\/$/, "") !== "/tour-privati",
+      ),
+    },
+  };
+});
 export const catalog = cache(async () => {
   const s = await publicState();
   return s.tours

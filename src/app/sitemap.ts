@@ -1,37 +1,42 @@
 import type { MetadataRoute } from "next";
-import { catalog } from "@/lib/platform/public";
-export const dynamic="force-dynamic";
+import { catalog, publicSiteContent } from "@/lib/platform/public";
+export const dynamic = "force-dynamic";
 import { absoluteUrl } from "@/lib/site";
+import { guideAnchor } from "@/lib/format";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
- const tours=await catalog();
+  const [tours, content] = await Promise.all([catalog(), publicSiteContent()]);
   const now = new Date();
   const routes = [
     "",
     "/tour",
-    "/tour-privati",
     "/partner-europa",
     "/contatti",
     "/chi-siamo",
-    "/informazioni-utili",
     "/blog",
-    "/aiuto",
     "/faq",
     "/privacy",
-    "/termini"
+    "/termini",
   ].map((path) => ({
     url: absoluteUrl(path || "/"),
     lastModified: now,
     changeFrequency: "weekly" as const,
-    priority: path === "" ? 1 : 0.8
+    priority: path === "" ? 1 : 0.8,
   }));
 
   const tourRoutes = tours.map((tour) => ({
     url: absoluteUrl(`/tour/${tour.slug}`),
     lastModified: now,
     changeFrequency: "daily" as const,
-    priority: 0.9
+    priority: 0.9,
   }));
 
-  return [...routes, ...tourRoutes];
+  const guideRoutes = content.gallery.map((guide) => ({
+    url: absoluteUrl(`/blog/${guideAnchor(guide.title)}`),
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  return [...routes, ...tourRoutes, ...guideRoutes];
 }

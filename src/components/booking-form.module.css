@@ -1,0 +1,43 @@
+.addToCart {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff !important;
+  gap: 10px;
+}
+
+.addToCartLabel {
+  order: 1;
+}
+
+.addToCartArrow {
+  order: 2;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: addToCartNudge 1.15s ease-in-out infinite;
+}
+
+.addToCartIcon {
+  order: 3;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+@keyframes addToCartNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addToCartArrow {
+    animation: none;
+  }
+}

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { TourCard } from "@/components/TourCard";
+import styles from "@/app/home.module.css";
 import type { Tour } from "@/lib/types";
 
 export type ExperienceItem =
@@ -49,49 +50,37 @@ export function ExperienceRotator({ groups }: { groups: ExperienceGroup[] }) {
         }
       }}
     >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div
-          className="flex flex-wrap gap-2"
-          role="tablist"
-          aria-label="Gruppi di esperienze"
-        >
-          {groups.map((item, itemIndex) => (
-            <button
-              key={item.title}
-              type="button"
-              role="tab"
-              id={`gruppo-tab-${itemIndex}`}
-              aria-selected={itemIndex === index}
-              aria-controls="gruppo-pannello"
-              className={`rounded-full px-4 py-2 text-left text-sm font-semibold ${
-                itemIndex === index
-                  ? "bg-primary text-on-primary"
-                  : "bg-surface-soft text-ink"
-              }`}
-              onClick={() => go(itemIndex)}
-            >
-              {item.title}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2">
+      <div
+        className="mb-6 flex flex-wrap justify-start gap-2"
+        role="tablist"
+        aria-label="Gruppi di esperienze"
+      >
+        {groups.map((item, itemIndex) => (
           <button
+            key={item.title}
             type="button"
-            className="button-secondary !min-h-0 !px-3 !py-2"
-            aria-label="Gruppo precedente"
-            onClick={() => go(index - 1)}
+            role="tab"
+            id={`gruppo-tab-${itemIndex}`}
+            aria-selected={itemIndex === index}
+            aria-controls="gruppo-pannello"
+            className={`rounded-full px-4 py-2 text-left text-sm font-semibold ${
+              itemIndex === index
+                ? "bg-primary text-on-primary"
+                : "bg-surface-soft text-ink"
+            }`}
+            onClick={() => go(itemIndex)}
           >
-            <ChevronLeft size={18} />
+            {item.title}
           </button>
-          <button
-            type="button"
-            className="button-secondary !min-h-0 !px-3 !py-2"
-            aria-label="Gruppo successivo"
-            onClick={() => go(index + 1)}
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+        ))}
+        <Link href="/tour" className={styles.allToursPill}>
+          Vedi tutti i tour
+          <ArrowRight
+            size={15}
+            className={styles.allToursPillArrow}
+            aria-hidden
+          />
+        </Link>
       </div>
       <div
         key={group.title}
@@ -100,8 +89,7 @@ export function ExperienceRotator({ groups }: { groups: ExperienceGroup[] }) {
         aria-labelledby={`gruppo-tab-${index}`}
         className="experience-panel"
       >
-        <h3 className="display-md">{group.title}</h3>
-        {group.subtitle && <p className="body-md mt-2 mb-6">{group.subtitle}</p>}
+        <h3 className="display-md mb-6">{group.title}</h3>
         <div className="grid items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
           {group.items.map((item) =>
             "tour" in item ? (

@@ -1,9 +1,13 @@
+import { notFound } from "next/navigation";
 import ui from "@/components/public-ui.module.css";
 import {publicPage} from "@/lib/platform/public";
 import {ContentBlock} from "@/components/ContentBlock";
 export const dynamic="force-dynamic";
 import Link from "next/link";
 import { ArrowRight, Clock, ShieldCheck, Users } from "lucide-react";
+
+// Temporarily hidden; keep the layout available for a future relaunch.
+const privateToursEnabled = false;
 
 const baseMetadata = {
   title: "Tour privati a Praga",
@@ -14,6 +18,7 @@ const baseMetadata = {
 };
 
 export default async function PrivateToursPage() {
+ if (!privateToursEnabled) notFound();
  const page=await publicPage("tour-privati"); if(page)return <><ContentBlock page={page}/><div className="container-page mb-16"><Link href="/partner-europa" className="button-primary">Richiedi un tour privato</Link></div></>;
   return (
     <section className={`${ui.page} ${ui.privateTours} section`}>
@@ -46,4 +51,4 @@ export default async function PrivateToursPage() {
   );
 }
 
-export async function generateMetadata(){const p=await publicPage("tour-privati");return {...baseMetadata,...(p?.seoTitle?{title:p.seoTitle}:{}),...(p?.seoDescription?{description:p.seoDescription}:{})};}
+export async function generateMetadata(){if (!privateToursEnabled) return { robots: { index: false, follow: false } };const p=await publicPage("tour-privati");return {...baseMetadata,...(p?.seoTitle?{title:p.seoTitle}:{}),...(p?.seoDescription?{description:p.seoDescription}:{})};}

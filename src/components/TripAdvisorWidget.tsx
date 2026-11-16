@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./tripadvisor.module.css";
 
 export type TripAdvisorReview = {
@@ -13,6 +13,8 @@ export type TripAdvisorReview = {
   text: string;
   avatarUrl: string;
 };
+
+const AUTOPLAY_MS = 3000;
 
 export function TripAdvisorWidget({
   tripAdvisor,
@@ -30,13 +32,28 @@ export function TripAdvisorWidget({
 }) {
   const reviews = tripAdvisor.reviews;
   const [index, setIndex] = useState(0);
+  const [tick, setTick] = useState(0);
   const review = reviews[index] || reviews[0];
-  const filled = Math.round(Math.min(5, Math.max(0, tripAdvisor.rating)));
+  const body =
+    tripAdvisor.body ||
+    "Le parole di chi ha esplorato Praga con FreeTourPraga.";
 
   function go(next: number) {
     if (!reviews.length) return;
     setIndex((next + reviews.length) % reviews.length);
+    setTick((value) => value + 1);
   }
+
+  useEffect(() => {
+    if (reviews.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      setIndex((current) => (current + 1) % reviews.length);
+    }, AUTOPLAY_MS);
+    return () => window.clearInterval(id);
+  }, [reviews.length, tick]);
+
+  const reviewCountLabel = `${tripAdvisor.reviewCount.toLocaleString("it-IT")} recensioni su TripAdvisor`;
 
   const content = (
     <div className={`${styles.card} card p-7`}>
@@ -47,109 +64,84 @@ export function TripAdvisorWidget({
           <p className="micro-label text-muted">Recensioni verificate</p>
         </div>
       </div>
-      <h2 className="display-md mb-2">
-        {tripAdvisor.title || "Dicono di noi"}
-      </h2>
-      <p className="body-sm">
-        {tripAdvisor.body ||
-          "Le parole di chi ha esplorato Praga con noi."}
-      </p>
-      <div className={styles.ratingBlock}>
-        <strong className={styles.score}>
+      <div className={`${styles.showcaseRating} ${styles.cardRating}`}>
+        <strong>
           {tripAdvisor.rating.toFixed(1)}
+          <span>/5</span>
         </strong>
-        <div className={styles.ratingMeta}>
-          <div
-            className={styles.circles}
-            aria-label={`Valutazione ${tripAdvisor.rating} su 5`}
+        <div>
+          <ReviewBubbles rating={tripAdvisor.rating} />
+          <a
+            href={tripAdvisor.profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={styles.reviewsButton}
           >
-            {Array.from({ length: 5 }, (_, i) => (
-              <span
-                key={i}
-                className={`${styles.circle} ${
-                  i < filled ? "" : styles.circleEmpty
-                }`}
-              />
-            ))}
-          </div>
-          <p className={styles.ratingCount}>
-            {tripAdvisor.reviewCount.toLocaleString("it-IT")} recensioni su
-            TripAdvisor
-          </p>
+            {reviewCountLabel}
+            <ArrowUpRight
+              size={13}
+              className={styles.reviewsButtonArrow}
+              aria-hidden
+            />
+          </a>
         </div>
       </div>
       {review && (
-        <div className={styles.reviewCard} aria-live="polite">
-          {reviews.length > 1 && (
+        <div className={styles.reviewCarousel} aria-live="polite">
+          {reviews.length > 1 ? (
             <button
               type="button"
               className={`${styles.navButton} ${styles.navPrev}`}
               aria-label="Recensione precedente"
               onClick={() => go(index - 1)}
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={22} />
             </button>
-          )}
-          <div className={styles.reviewInner}>
-            <div className={styles.reviewHeader}>
-              <div className={styles.reviewIdentity}>
-                <Image
-                  src={review.avatarUrl}
-                  alt=""
-                  width={44}
-                  height={44}
-                  className={styles.avatar}
-                />
-                <div>
-                  <p className={styles.reviewAuthor}>{review.author}</p>
-                  <p className={styles.reviewPlace}>{review.place}</p>
+          ) : null}
+          <div className={styles.reviewCard}>
+            <div className={styles.reviewInner}>
+              <div className={styles.reviewHeader}>
+                <div className={styles.reviewIdentity}>
+                  <Image
+                    src={review.avatarUrl}
+                    alt=""
+                    width={44}
+                    height={44}
+                    className={styles.avatar}
+                  />
+                  <div>
+                    <p className={styles.reviewAuthor}>{review.author}</p>
+                    <p className={styles.reviewPlace}>{review.place}</p>
+                  </div>
                 </div>
+                <p className={styles.reviewDate}>{review.date}</p>
               </div>
-              <p className={styles.reviewDate}>{review.date}</p>
-            </div>
-            <div
-              className={styles.circles}
-              aria-label={`${review.rating} su 5`}
-            >
-              {Array.from({ length: 5 }, (_, i) => (
-                <span
-                  key={i}
-                  className={`${styles.circle} ${
-                    i < review.rating ? "" : styles.circleEmpty
-                  }`}
-                />
-              ))}
-            </div>
-            <p className={styles.reviewText}>{review.text}</p>
-            <div className={styles.reviewFooter}>
-              {reviews.length > 1 ? (
-                <p className={styles.counter}>
-                  {index + 1}/{reviews.length}
-                </p>
-              ) : (
-                <span />
-              )}
-              <a
-                href={tripAdvisor.profileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.cta}
+              <div
+                className={styles.circles}
+                aria-label={`${review.rating} su 5`}
               >
-                Vedi tutte le recensioni
-                <ExternalLink size={14} aria-hidden />
-              </a>
+                {Array.from({ length: 5 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`${styles.circle} ${
+                      i < review.rating ? "" : styles.circleEmpty
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className={styles.reviewText}>{review.text}</p>
             </div>
           </div>
-          {reviews.length > 1 && (
+          {reviews.length > 1 ? (
             <button
               type="button"
               className={`${styles.navButton} ${styles.navNext}`}
               aria-label="Recensione successiva"
               onClick={() => go(index + 1)}
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={22} />
             </button>
-          )}
+          ) : null}
         </div>
       )}
     </div>
@@ -160,19 +152,138 @@ export function TripAdvisorWidget({
   }
 
   return (
-    <section className={`${styles.section} section`}>
-      <div className="container-page grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
-        <div>
-          <p className="micro-label text-primary">TripAdvisor</p>
-          <h2 className="display-lg my-4">
+    <section className={styles.showcase} aria-labelledby="reviews-title">
+      <div className={`container-page ${styles.showcaseGrid}`}>
+        <div className={styles.showcaseCopy}>
+          <div className={styles.showcaseBrand}>
+            <TripAdvisorLogo className={styles.logo} />
+            <span>TripAdvisor / Le vostre storie</span>
+          </div>
+          <h2 id="reviews-title" className={styles.showcaseTitle}>
             {tripAdvisor.title || "Dicono di noi"}
+            <span aria-hidden>.</span>
           </h2>
-          <p className="body-md max-w-xl">
-            {tripAdvisor.body ||
-              "Le parole di chi ha esplorato Praga con noi."}
-          </p>
+          <div className={styles.showcaseRating}>
+            <strong>
+              {tripAdvisor.rating.toFixed(1)}
+              <span>/5</span>
+            </strong>
+            <div>
+              <ReviewBubbles rating={tripAdvisor.rating} />
+              <a
+                href={tripAdvisor.profileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.reviewsButton}
+              >
+                {reviewCountLabel}
+                <ArrowUpRight
+                  size={13}
+                  className={styles.reviewsButtonArrow}
+                  aria-hidden
+                />
+              </a>
+            </div>
+          </div>
+          <p className="body-md">{body}</p>
         </div>
-        {content}
+        <div className={styles.reviewScene}>
+          <div className={styles.sceneHalo} aria-hidden />
+          <div className={styles.destinationPhoto}>
+            <Image
+              src="/images/editorial/prague-reviews.jpg"
+              alt="I ponti e i tetti di Praga al tramonto"
+              fill
+              sizes="(min-width: 1024px) 360px, 70vw"
+              className={styles.scenePhoto}
+            />
+          </div>
+          {reviews.length > 1 &&
+            [1, 2].slice(0, reviews.length - 1).map((offset) => {
+              const other = reviews[(index + offset) % reviews.length];
+              return (
+                <div
+                  key={offset}
+                  className={`${styles.floatingReview} ${
+                    offset === 1 ? styles.backLeft : styles.backRight
+                  }`}
+                  aria-hidden="true"
+                >
+                  <ReviewBubbles rating={other.rating} />
+                  <p>{other.text}</p>
+                  <strong>{other.author}</strong>
+                </div>
+              );
+            })}
+          <span
+            className={`${styles.floatingLogo} ${styles.orbitOne}`}
+            aria-hidden
+          >
+            <TripAdvisorLogo />
+          </span>
+          <span
+            className={`${styles.floatingLogo} ${styles.orbitTwo}`}
+            aria-hidden
+          >
+            <TripAdvisorLogo />
+          </span>
+          {review && (
+            <div className={styles.frontReview}>
+              <div className={styles.quoteMark} aria-hidden>
+                “
+              </div>
+              <div
+                className={styles.activeReview}
+                key={index}
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <ReviewBubbles rating={review.rating} />
+                <blockquote>{review.text}</blockquote>
+                <div className={styles.sceneReviewIdentity}>
+                  <Image
+                    src={review.avatarUrl}
+                    alt=""
+                    width={38}
+                    height={38}
+                    className={styles.avatar}
+                  />
+                  <div>
+                    <strong>{review.author}</strong>
+                    <span>
+                      {review.place} · {review.date}
+                    </span>
+                  </div>
+                  <TripAdvisorLogo className={styles.miniLogo} />
+                </div>
+              </div>
+              {reviews.length > 1 && (
+                <div className={styles.sceneControls}>
+                  <span>
+                    {String(index + 1).padStart(2, "0")}{" "}
+                    <span>/ {String(reviews.length).padStart(2, "0")}</span>
+                  </span>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => go(index - 1)}
+                      aria-label="Recensione precedente"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go(index + 1)}
+                      aria-label="Recensione successiva"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -197,5 +308,24 @@ function TripAdvisorLogo({ className }: { className?: string }) {
         opacity="0.92"
       />
     </svg>
+  );
+}
+
+function ReviewBubbles({ rating }: { rating: number }) {
+  return (
+    <div
+      className={styles.circles}
+      role="img"
+      aria-label={`Valutazione ${rating} su 5`}
+    >
+      {Array.from({ length: 5 }, (_, i) => (
+        <span
+          key={i}
+          className={`${styles.circle} ${
+            i < Math.round(rating) ? "" : styles.circleEmpty
+          }`}
+        />
+      ))}
+    </div>
   );
 }

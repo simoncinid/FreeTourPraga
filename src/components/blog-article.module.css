@@ -1,0 +1,218 @@
+.article {
+  padding: 26px 0 60px;
+  background: #faf9f6;
+}
+.shell {
+  width: min(100% - 32px, 1120px);
+  margin-inline: auto;
+  text-align: left;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #5c6878;
+  font-size: 12px;
+  font-weight: 600;
+  padding-block: 5px;
+  margin-bottom: 18px;
+}
+.back:hover {
+  color: #c34116;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: clamp(24px, 3vw, 36px);
+}
+.heroCopy {
+  padding-block: 22px;
+  min-width: 0;
+}
+.kicker {
+  display: block;
+  color: #c34116;
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(32px, 3.2vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: #0b2038;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.heroCopy > p {
+  color: #536273;
+  font-size: 16px;
+  line-height: 1.7;
+  margin-top: 22px;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.copyRule {
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: #ff571c;
+  margin-top: 26px;
+}
+.cover {
+  position: relative;
+  width: 100%;
+  height: clamp(300px, 52vh, 500px);
+  overflow: hidden;
+  border-radius: 6px 28px 6px 6px;
+}
+.coverImage {
+  object-fit: cover;
+}
+.body {
+  display: grid;
+  gap: clamp(32px, 5vw, 64px);
+  margin-top: clamp(36px, 5vw, 68px);
+}
+.prose {
+  width: 100%;
+  margin: 0;
+}
+.prose h2,
+.split h2 {
+  font-family: var(--font-display), Georgia, serif;
+  color: #0b2038;
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  text-wrap: pretty;
+}
+.prose p,
+.split p {
+  color: #34485b;
+  font-size: 17px;
+  line-height: 1.85;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.prose p + p,
+.split p + p {
+  margin-top: 20px;
+}
+.intro p {
+  font-size: 20px;
+  line-height: 1.75;
+  color: #203950;
+}
+.wide {
+  width: 100%;
+  margin: 0;
+}
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+.bodyImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.figure figcaption {
+  margin-top: 12px;
+  color: #67737e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+  margin: 0;
+}
+.articleCta {
+  width: 100%;
+  margin: 0;
+}
+.articleCta a {
+  color: #fff !important;
+  gap: 14px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.articleCta svg {
+  flex-shrink: 0;
+}
+.articleFooter {
+  border-top: 1px solid #dce0df;
+  padding-top: 24px;
+  margin-top: 48px;
+}
+.articleFooter a {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: #0b2038;
+  font-size: 13px;
+  font-weight: 700;
+}
+.article :where(a):focus-visible {
+  outline: 3px solid #ff571c;
+  outline-offset: 5px;
+}
+@media (max-width: 767px) {
+  .article {
+    padding-top: 16px;
+  }
+  .back {
+    margin-bottom: 16px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .heroCopy {
+    padding: 0;
+  }
+  .kicker {
+    font-size: 9px;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 7.5vw, 44px);
+    line-height: 1.12;
+    text-wrap: pretty;
+  }
+  .heroCopy > p {
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .copyRule {
+    display: none;
+  }
+  .cover {
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px 22px 6px 6px;
+  }
+  .split {
+    grid-template-columns: 1fr;
+  }
+  .prose p,
+  .split p {
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  .intro p {
+    font-size: 18px;
+  }
+}
