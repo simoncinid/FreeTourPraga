@@ -87,21 +87,55 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   min-width: 0;
+  align-items: stretch;
 }
 .article {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  height: 460px;
 }
-.article > div:last-child {
+.articleMedia {
+  position: relative;
+  flex: 0 0 200px;
+  overflow: hidden;
+}
+.articleBody {
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
+  min-height: 0;
+  padding: 18px 18px 20px;
 }
-.article > div:last-child > span {
+.articleTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.articleCaption {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 10px;
+}
+.articleCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 @media (max-width: 767px) {
   .articles {
@@ -109,10 +143,15 @@
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     padding-bottom: 16px;
+    align-items: stretch;
   }
   .article {
     flex: 0 0 86%;
+    height: 440px;
     scroll-snap-align: start;
+  }
+  .articleMedia {
+    flex-basis: 180px;
   }
   .pager {
     gap: 6px;

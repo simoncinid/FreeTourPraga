@@ -66,7 +66,7 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
               href={guidePath(guide)}
               className={`${styles.article} card overflow-hidden no-underline text-inherit`}
             >
-              <div className="relative aspect-[4/3]">
+              <div className={styles.articleMedia}>
                 <Image
                   src={guideImage(guide)}
                   alt={guide.title}
@@ -75,10 +75,10 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
                   className="object-cover"
                 />
               </div>
-              <div>
-                <h2 className="title-md">{guide.title}</h2>
-                <p className="body-sm mt-3">{guide.caption}</p>
-                <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold text-ink underline underline-offset-4">
+              <div className={styles.articleBody}>
+                <h2 className={`title-md ${styles.articleTitle}`}>{guide.title}</h2>
+                <p className={`body-sm ${styles.articleCaption}`}>{guide.caption}</p>
+                <span className={styles.articleCta}>
                   Leggi la guida <ArrowUpRight size={15} />
                 </span>
               </div>
