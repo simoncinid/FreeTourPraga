@@ -55,7 +55,7 @@
 
 .highlightThumb:hover {
   transform: translateY(-1px);
-  border-color: #ff4812aa;
+  border-color: #ffcc00aa;
 }
 
 .lightbox {
@@ -133,7 +133,7 @@
   right: 12px;
 }
 
-.panelOrange,
+.panelYellow,
 .panelBlue {
   position: relative;
   overflow: hidden;
@@ -141,14 +141,14 @@
   border: 1px solid transparent;
 }
 
-.panelOrange {
-  border-color: #ffd0bc;
+.panelYellow {
+  border-color: #ffe680;
   background:
-    radial-gradient(120% 90% at 12% 18%, #fff3eb 0%, transparent 55%),
-    radial-gradient(90% 80% at 88% 12%, #ffd8c4 0%, transparent 50%),
-    linear-gradient(135deg, #fff8f3 0%, #ffe6d8 42%, #fff1e8 72%, #ffdcc8 100%);
+    radial-gradient(120% 90% at 12% 18%, #fff8dc 0%, transparent 55%),
+    radial-gradient(90% 80% at 88% 12%, #ffe680 0%, transparent 50%),
+    linear-gradient(135deg, #fff8dc 0%, #fff8dc 42%, #fff8dc 72%, #ffe680 100%);
   background-size: 140% 140%;
-  animation: waveOrange 14s ease-in-out infinite;
+  animation: waveYellow 14s ease-in-out infinite;
 }
 
 .panelBlue {
@@ -161,7 +161,7 @@
   animation: waveBlue 16s ease-in-out infinite;
 }
 
-.panelOrange::before,
+.panelYellow::before,
 .panelBlue::before {
   content: "";
   position: absolute;
@@ -169,8 +169,8 @@
   z-index: -1;
   opacity: 0.55;
   background:
-    radial-gradient(ellipse at 20% 40%, #ff9a6d55 0%, transparent 42%),
-    radial-gradient(ellipse at 80% 70%, #ff481233 0%, transparent 45%);
+    radial-gradient(ellipse at 20% 40%, #ffcc0055 0%, transparent 42%),
+    radial-gradient(ellipse at 80% 70%, #ffcc0033 0%, transparent 45%);
   animation: drift 18s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -181,7 +181,7 @@
     radial-gradient(ellipse at 82% 72%, #071a3522 0%, transparent 45%);
 }
 
-.panelOrange :global(.body-sm),
+.panelYellow :global(.body-sm),
 .panelBlue :global(.body-sm) {
   color: #243246;
 }
@@ -205,7 +205,7 @@
   width: 18px;
   height: 18px;
   margin-top: 1px;
-  color: #ff4812;
+  color: #ffcc00;
 }
 
 .panelInfo {
@@ -237,7 +237,7 @@
   height: 42px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 6px 12px #ff481226);
+  filter: drop-shadow(0 6px 12px #ffcc0026);
 }
 
 .panelIconWhatsapp {
@@ -282,7 +282,7 @@
   margin: 0;
 }
 
-@keyframes waveOrange {
+@keyframes waveYellow {
   0%,
   100% {
     background-position: 0% 40%;
@@ -312,10 +312,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panelOrange,
+  .panelYellow,
   .panelBlue,
   .panelWhatsapp,
-  .panelOrange::before,
+  .panelYellow::before,
   .panelBlue::before,
   .panelWhatsapp::before,
   .highlightThumb {

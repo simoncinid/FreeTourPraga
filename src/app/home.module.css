@@ -137,11 +137,11 @@
 }
 
 .home :global(.button-primary):hover {
-  box-shadow: 0 5px 18px #ff481226;
+  box-shadow: 0 5px 18px #ffcc0026;
 }
 
 .home :where(a, button):focus-visible {
-  outline: 3px solid #ff916a;
+  outline: 3px solid #ffcc00;
   outline-offset: 5px;
 }
 
@@ -208,7 +208,7 @@
   border-radius: 999px;
   background: #071a35;
   padding: 8px 16px;
-  color: #fff;
+  color: rgb(var(--primary));
   font-size: 14px;
   font-weight: 600;
   line-height: 1.25;
@@ -222,11 +222,12 @@
   background: #0f2c52;
   box-shadow: 0 6px 18px #071a3528;
   transform: translateY(-1px);
+  color: rgb(var(--primary));
 }
 .allToursPillArrow {
   display: inline-block;
   flex-shrink: 0;
-  color: #fff;
+  color: rgb(var(--primary));
   animation: allToursPillNudge 1.15s ease-in-out infinite;
 }
 @keyframes allToursPillNudge {
@@ -270,10 +271,10 @@
   text-wrap: pretty;
 }
 .trustAccent {
-  color: #ff571c;
+  color: #ffcc00;
 }
 .trustCard {
-  --glow-warm: #bd4d2870;
+  --glow-warm: #b58e0070;
   --glow-cool: #247d9870;
   position: relative;
   isolation: isolate;
@@ -286,17 +287,17 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .trustCard:nth-child(2) {
-  --glow-warm: #d8753066;
+  --glow-warm: #ffcc0066;
   --glow-cool: #74549380;
   background: linear-gradient(135deg, #302c43, #172638 75%);
 }
 .trustCard:nth-child(3) {
-  --glow-warm: #c56d3360;
+  --glow-warm: #b58e0060;
   --glow-cool: #1b9e9370;
   background: linear-gradient(135deg, #153d43, #112b38 75%);
 }
 .trustCard:nth-child(4) {
-  --glow-warm: #d9643d80;
+  --glow-warm: #ffcc0080;
   --glow-cool: #734c9070;
   background: linear-gradient(135deg, #3d2d38, #18283e 75%);
 }
@@ -316,7 +317,7 @@
 .trustCard:nth-child(3)::before { animation-delay: -8s; }
 .trustCard:nth-child(4)::before { animation-delay: -6s; }
 .trustCard:hover {
-  border-color: #ff996b80;
+  border-color: #ffcc0080;
   box-shadow: inset 0 1px 0 #ffffff18, 0 16px 40px #00000025;
 }
 .trustCardHeading {
@@ -381,11 +382,11 @@
   flex: 0 0 34px;
   min-width: 34px;
   height: 34px;
-  border: 1px solid #ff481230;
+  border: 1px solid #ffcc0030;
   border-radius: 50%;
   font-size: 21px;
   line-height: 1;
-  background: #fff5ee;
+  background: #fff8dc;
 }
 .answers :global(.body-sm) {
   line-height: 1.7;
@@ -412,9 +413,9 @@
 }
 .partnerCopy { position: relative; z-index: 2; }
 .partnerCopy h2 { color: #fff; margin: 20px 0; font-size: clamp(32px, 3.2vw, 46px); line-height: 1.17; }
-.partnerCopy h2 em { color: #ff642e; font-weight: inherit; }
+.partnerCopy h2 em { color: #ffcc00; font-weight: inherit; }
 .partnerCopy > p:not(:first-child) { color: #d0dbe3; line-height: 1.75; font-size: 15px; }
-.partnerCta { margin-top: 28px; color: #fff !important; gap: 18px; }
+.partnerCta { margin-top: 28px; color: var(--on-primary) !important; gap: 18px; }
 .partnerCtaArrow {
   display: inline-block;
   flex-shrink: 0;
@@ -430,28 +431,28 @@
   }
 }
 .partnerArtwork { position: relative; min-width: 0; padding: 20px 0 8px; }
-.partnerOrbit { position: absolute; z-index: -1; width: 390px; height: 390px; border-radius: 50%; background: #ff571c; top: -10px; left: -10px; }
-.partnerOrbit::after { content: ""; position: absolute; inset: -28px; border: 1px solid #ff78444d; border-radius: 50%; }
+.partnerOrbit { position: absolute; z-index: -1; width: 390px; height: 390px; border-radius: 50%; background: #ffcc00; top: -10px; left: -10px; }
+.partnerOrbit::after { content: ""; position: absolute; inset: -28px; border: 1px solid #ffcc004d; border-radius: 50%; }
 .travelTicket { position: relative; padding: 23px 26px; border-radius: 14px; background: #fff8eb; transform: rotate(7deg); box-shadow: 0 25px 45px #00000035; color: #0a233b; }
 .ticketTop { display: flex; justify-content: space-between; gap: 12px; font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-weight: 800; padding-bottom: 20px; border-bottom: 1px solid #172c3f24; }
 .ticketTop > span:last-child { text-align: right; font-weight: 500; }
 .ticketDestination { padding-top: 22px; }
 .ticketDestination > span { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
 .ticketDestination > strong { display: flex; align-items: center; justify-content: space-between; font-size: clamp(45px, 5vw, 67px); font-weight: 800; letter-spacing: -.07em; line-height: 1.3; }
-.ticketDestination strong span { font-size: 48px; color: #f3511c; }
+.ticketDestination strong span { font-size: 48px; color: #ffcc00; }
 .ticketRoute { display: flex; align-items: center; gap: 10px; margin: 12px 0 24px; font-size: 9px; white-space: nowrap; }
-.routeLine { flex: 1; min-width: 14px; border-top: 1px dashed #f46738; position: relative; }
-.routeLine::before, .routeLine::after { content: ""; width: 5px; height: 5px; background: #f46738; border-radius: 50%; position: absolute; top: -3px; }
+.routeLine { flex: 1; min-width: 14px; border-top: 1px dashed #ffcc00; position: relative; }
+.routeLine::before, .routeLine::after { content: ""; width: 5px; height: 5px; background: #ffcc00; border-radius: 50%; position: absolute; top: -3px; }
 .routeLine::before { left: 0; }
 .routeLine::after { right: 0; }
 .ticketDetails { display: flex; gap: 8px; padding-bottom: 25px; }
-.ticketDetails span { padding: 7px 9px; background: #f1e9dc; border-radius: 5px; font-size: 10px; font-weight: 600; }
+.ticketDetails span { padding: 7px 9px; background: #fff8dc; border-radius: 5px; font-size: 10px; font-weight: 600; }
 .ticketBottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px dashed #24384750; padding-top: 18px; position: relative; }
-.ticketBottom::before, .ticketBottom::after { content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: #e95622; border-radius: 50%; }
+.ticketBottom::before, .ticketBottom::after { content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: #ffcc00; border-radius: 50%; }
 .ticketBottom::before { left: -36px; }
 .ticketBottom::after { right: -36px; background: #142d40; }
 .ticketBottom > span:first-child { font-size: 11px; line-height: 1.8; }
-.ticketStamp { border: 2px solid #ee581e; border-radius: 50%; width: 65px; height: 65px; display: grid; align-content: center; text-align: center; transform: rotate(-19deg); color: #e95019; font-size: 10px; line-height: 1.25; }
+.ticketStamp { border: 2px solid #ffcc00; border-radius: 50%; width: 65px; height: 65px; display: grid; align-content: center; text-align: center; transform: rotate(-19deg); color: #ffcc00; font-size: 10px; line-height: 1.25; }
 .ticketStamp strong { font-size: 20px; }
 @media (max-width: 1100px) {
   .partnerPanel { padding: 36px 40px 28px; gap: 30px; }

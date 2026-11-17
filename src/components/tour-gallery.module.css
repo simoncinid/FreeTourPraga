@@ -40,7 +40,7 @@
   gap: 12px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #ff4b0b #eee9e2;
+  scrollbar-color: #ffcc00 #eee9e2;
 }
 .thumbnail {
   position: relative;
@@ -61,7 +61,7 @@
   transform: scale(1.04);
 }
 .thumbnail[aria-pressed="true"] {
-  border-color: #ff4b0b;
+  border-color: #ffcc00;
 }
 .thumbnail[aria-pressed="true"]::after {
   content: "";
@@ -88,7 +88,7 @@
   transition: background 160ms;
 }
 .arrow:hover {
-  background: #ff4b0b;
+  background: #ffcc00;
 }
 .previous {
   left: 20px;
@@ -111,7 +111,7 @@
 }
 .thumbnail:focus-visible,
 .arrow:focus-visible {
-  outline: 3px solid #ff4b0b;
+  outline: 3px solid #ffcc00;
   outline-offset: -5px;
 }
 @keyframes reveal {

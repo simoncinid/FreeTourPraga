@@ -8,7 +8,7 @@
   gap: 12px;
   overflow: hidden;
   padding: 8px 14px 8px 16px;
-  color: #ffffff !important;
+  color: var(--on-primary) !important;
   isolation: isolate;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
@@ -19,7 +19,7 @@
 .cta:hover {
   transform: translateY(-3px) scale(1.015);
   box-shadow:
-    0 14px 34px #ff481245,
+    0 14px 34px #ffcc0045,
     0 0 0 1px #ffffff22 inset;
   filter: saturate(1.08);
 }

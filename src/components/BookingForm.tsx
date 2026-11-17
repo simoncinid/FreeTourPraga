@@ -341,7 +341,7 @@ export function BookingForm({ tour: initialTour }: { tour: Tour }) {
                 aria-hidden
               />
               <Image
-                src="/images/icons/cart-3d-white.png"
+                src="/images/illustrated/cart.webp"
                 alt=""
                 width={22}
                 height={22}

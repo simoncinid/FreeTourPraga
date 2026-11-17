@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { TourCard } from "@/components/TourCard";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
 import { ExperienceRotator } from "@/components/ExperienceRotator";
-import { PracticalAnswers } from "@/components/PracticalAnswers";
 import { HomeGallery } from "@/components/HomeGallery";
 import { HeroTourCta } from "@/components/HeroTourCta";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
@@ -15,16 +14,16 @@ import type { Tour } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 const featureIcons = [
-  "/images/benefits/italian.webp",
-  "/images/benefits/guaranteed.webp",
-  "/images/benefits/booking.webp",
-  "/images/benefits/support.webp",
+  "/images/illustrated/italian.webp",
+  "/images/illustrated/shield.webp",
+  "/images/illustrated/calendar.webp",
+  "/images/illustrated/support.webp",
 ];
 const pillarIcons = [
-  "/images/trust/shield-3d.webp",
-  "/images/trust/group-3d.webp",
-  "/images/trust/pin-3d.webp",
-  "/images/trust/headset-3d.webp",
+  "/images/illustrated/shield.webp",
+  "/images/illustrated/group.webp",
+  "/images/illustrated/pin.webp",
+  "/images/illustrated/support.webp",
 ];
 
 /** Tab homepage: una categoria admin con almeno un tour pubblicato. */
@@ -205,18 +204,6 @@ export default async function HomePage() {
           <HomeGallery items={c.gallery} />
         </div>
       </section>
-      {c.answers.length > 0 && (
-        <section
-          id="informazioni-utili"
-          className={`${styles.answers} editorial-section bg-surface-soft`}
-        >
-          <div className="container-page">
-            <h2 className="display-lg mb-4">{h.answersTitle}</h2>
-            <p className="body-md mb-8 max-w-3xl">{h.answersBody}</p>
-            <PracticalAnswers items={c.answers} />
-          </div>
-        </section>
-      )}
       <TripAdvisorSection />
       <section className={`${styles.partnerSection} editorial-section`}>
         <div className="container-page">

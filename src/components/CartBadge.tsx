@@ -28,7 +28,7 @@ export function CartBadge() {
       aria-label="Apri carrello"
     >
       <Image
-        src="/images/icons/cart-3d.png"
+        src="/images/illustrated/cart.webp"
         alt=""
         width={28}
         height={28}

@@ -15,7 +15,7 @@
   box-shadow: 0 4px 20px #071a3505;
 }
 .page :where(a, button, summary, input, textarea, select):focus-visible {
-  outline: 3px solid #cc3c10;
+  outline: 3px solid #b58e00;
   outline-offset: 4px;
 }
 .page :global(.button-primary),
@@ -26,7 +26,7 @@
     border-color 0.2s;
 }
 .page :global(.button-primary):hover {
-  box-shadow: 0 5px 18px #ff481226;
+  box-shadow: 0 5px 18px #ffcc0026;
 }
 .page :global(.button-secondary):hover {
   background: var(--surface-soft);
@@ -39,8 +39,8 @@
     box-shadow 0.2s;
 }
 .page :global(.text-input):focus {
-  border-color: #cc3c10;
-  box-shadow: 0 0 0 3px #ff481212;
+  border-color: rgb(var(--primary));
+  box-shadow: 0 0 0 3px #ffcc0012;
 }
 .eyebrow {
   display: flex;
@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #b73512;
+  color: rgb(var(--primary));
   text-transform: uppercase;
   font-size: 10px;
   letter-spacing: 1.6px;
@@ -108,23 +108,41 @@
   left: 12px;
   top: 12px;
   z-index: 1;
-  isolation: isolate;
   overflow: hidden;
   border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.28);
-  background: rgb(var(--primary) / 0.42);
-  -webkit-backdrop-filter: blur(14px) saturate(1.35);
-  backdrop-filter: blur(14px) saturate(1.35);
-  box-shadow:
-    0 6px 18px #071a3528,
-    inset 0 1px 0 rgb(255 255 255 / 0.28);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: transparent;
+  box-shadow: 0 6px 18px #071a3528;
   padding: 7px 12px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 1.1px;
   text-transform: uppercase;
-  color: #fff;
-  text-shadow: 0 1px 2px #071a3566;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
+}
+.tourCardBadge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgb(255 220 80 / 0.92);
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
+  backdrop-filter: blur(14px) saturate(1.35);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+  pointer-events: none;
+}
+.tourCardBadgeText {
+  position: relative;
+  z-index: 1;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
 }
 .tourCardCartCompact {
   display: inline-flex;
@@ -134,9 +152,9 @@
   padding: 8px 14px;
   border: 1px solid #d8d3c8;
   border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 10px;
+  background: rgb(var(--primary));
+  color: var(--on-primary);
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -147,8 +165,8 @@
 }
 .tourCardCartCompact:hover:not(:disabled) {
   border-color: rgb(var(--primary));
-  background: #fff7f2;
-  color: rgb(var(--primary));
+  background: rgb(var(--primary-active));
+  color: var(--on-primary);
 }
 .tourCardCartCompact:disabled {
   cursor: not-allowed;
@@ -163,7 +181,7 @@
   min-height: 40px;
   border-radius: 999px;
   background: rgb(var(--primary));
-  color: #ffffff;
+  color: var(--on-primary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -263,13 +281,13 @@
     box-shadow 0.25s;
 }
 .about :global(.card):hover {
-  border-color: #d8b09b;
+  border-color: #ffe680;
   box-shadow: 0 7px 25px #071a3509;
 }
 .about :global(.card) > svg {
   padding: 10px;
   box-sizing: content-box;
-  background: #fff1e9;
+  background: #fff8dc;
   border-radius: 12px;
 }
 .about :global(.card)::after {
@@ -294,16 +312,16 @@
 }
 .practical :global(.card) {
   border-color: #dedbd2;
-  border-top: 2px solid #e1d4bf;
+  border-top: 2px solid #fff8dc;
 }
 .practical ol > li > p:first-child {
   display: inline-grid;
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid #ff481233;
+  border: 1px solid #ffcc0033;
   border-radius: 50%;
-  background: #fff5ee;
+  background: #fff8dc;
   font-size: 22px;
 }
 .practical ol > li h3 {
@@ -313,7 +331,7 @@
   transition: border-color 0.25s;
 }
 .practical ol > li:hover {
-  border-top-color: #cc3c10;
+  border-top-color: rgb(var(--primary));
 }
 .contact > div {
   align-items: start;
@@ -337,7 +355,7 @@
   overflow-wrap: anywhere;
 }
 .contact a:hover strong {
-  color: #b73512;
+  color: rgb(var(--primary));
 }
 .inquiry {
   border-top: 3px solid rgb(var(--primary));
@@ -368,7 +386,7 @@
 .inquiry input:focus-visible,
 .inquiry textarea:focus-visible,
 .inquiry select:focus-visible {
-  outline: 2px solid #cc3c10;
+  outline: 2px solid #b58e00;
   outline-offset: 3px;
 }
 .partner h1 {
@@ -406,7 +424,7 @@
     box-shadow 0.25s;
 }
 .privateTours :global(.card):hover {
-  border-top-color: #cc3c10;
+  border-top-color: rgb(var(--primary));
   box-shadow: 0 7px 24px #071a3508;
 }
 .privateTours :global(.card) > svg {
@@ -433,21 +451,16 @@
   box-shadow: 0 7px 25px #071a3508;
 }
 .blog :global(.card):hover h2 {
-  color: #b73512;
+  color: rgb(var(--primary));
 }
 .blog :global(.card) > div:last-child {
-  align-self: center;
-  padding: 26px 30px;
+  align-self: stretch;
+  padding: 22px;
 }
 .blog :global(.card) h2 {
-  font-size: 29px;
+  font-size: 24px;
   line-height: 1.25;
   transition: color 0.2s;
-}
-@media (min-width: 768px) {
-  .blog :global(.card) {
-    grid-template-columns: 300px 1fr;
-  }
 }
 .help {
   background-image: radial-gradient(ellipse at top, #eee9df70, transparent 65%);
@@ -472,10 +485,10 @@
   transition: color 0.2s;
 }
 .help > div > div:last-child > a:hover {
-  color: #b73512;
+  color: rgb(var(--primary));
 }
 .help > div > div:last-child > a svg {
-  color: #b73512;
+  color: rgb(var(--primary));
 }
 .faq h1 {
   font-size: clamp(38px, 4vw, 55px);
@@ -503,14 +516,14 @@
 }
 .faq summary > svg {
   flex-shrink: 0;
-  color: #b73512;
+  color: rgb(var(--primary));
   transition: transform 0.2s;
 }
 .faq details:hover {
   border-color: #c7bca9;
 }
 .faq details[open] {
-  border-color: #e4b79e;
+  border-color: #ffe680;
   background: #fffdf9;
 }
 .faq details[open] summary > svg {
@@ -603,7 +616,7 @@
 .reservation article > button {
   align-self: start;
   font-size: 12px;
-  color: #a43b21;
+  color: rgb(var(--primary));
   text-underline-offset: 4px;
 }
 .reservation aside {
@@ -640,8 +653,8 @@
   align-items: center;
 }
 .reservation fieldset label:has(input:checked) {
-  border-color: #d9a083;
-  background: #fff7f0;
+  border-color: #ffe680;
+  background: #fff8dc;
 }
 @media (max-width: 767px) {
   .emptyState h1 {
@@ -661,7 +674,7 @@
 }
 .reservation :global(input[type="radio"]),
 .reservation :global(input[type="checkbox"]) {
-  accent-color: #cc3c10;
+  accent-color: rgb(var(--primary));
   flex-shrink: 0;
 }
 @media (max-width: 767px) {
@@ -685,7 +698,7 @@
   border-top-color: #57916a;
 }
 .confirmation article[data-status="pending"] {
-  border-top-color: #e2a260;
+  border-top-color: #ffcc00;
 }
 .confirmation article p {
   font-size: 14px;
@@ -717,8 +730,8 @@
   justify-self: start;
 }
 .management :global([role="alert"]) {
-  border-left: 3px solid #b45343;
-  background: #fff6f2;
+  border-left: 3px solid #b58e00;
+  background: #fff8dc;
   font-size: 14px;
   line-height: 1.75;
 }
@@ -739,7 +752,7 @@
 }
 .management details summary {
   font-size: 14px;
-  color: #a43b21;
+  color: rgb(var(--primary));
 }
 .notFound {
   min-height: 540px;
@@ -769,10 +782,10 @@
   transition: color 0.2s;
 }
 .footer a:hover {
-  color: #ff916a;
+  color: #ffcc00;
 }
 .footer a:focus-visible {
-  outline: 2px solid #ff916a;
+  outline: 2px solid #ffcc00;
   outline-offset: 4px;
 }
 

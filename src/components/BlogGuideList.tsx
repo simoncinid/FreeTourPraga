@@ -9,7 +9,7 @@ import { guidePath } from "@/lib/public-paths";
 import type { SiteContent } from "@/lib/platform/content";
 import styles from "./blog-guide-list.module.css";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 3;
 
 type Guide = SiteContent["gallery"][number];
 
@@ -59,25 +59,25 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
       </label>
 
       {slice.length ? (
-        <div className="grid gap-8">
+        <div key={`${query}-${safePage}`} className={styles.articles} aria-label="Articoli del blog">
           {slice.map((guide) => (
             <Link
               key={guide.title}
               href={guidePath(guide)}
-              className="card grid overflow-hidden no-underline text-inherit md:grid-cols-[280px_1fr]"
+              className={`${styles.article} card overflow-hidden no-underline text-inherit`}
             >
-              <div className="relative min-h-48">
+              <div className="relative aspect-[4/3]">
                 <Image
                   src={guideImage(guide)}
                   alt={guide.title}
                   fill
-                  sizes="(min-width: 768px) 280px, 100vw"
+                  sizes="(min-width: 768px) 33vw, 86vw"
                   className="object-cover"
                 />
               </div>
               <div>
-                <h2 className="display-md">{guide.title}</h2>
-                <p className="body-md mt-4">{guide.caption}</p>
+                <h2 className="title-md">{guide.title}</h2>
+                <p className="body-sm mt-3">{guide.caption}</p>
                 <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold text-ink underline underline-offset-4">
                   Leggi la guida <ArrowUpRight size={15} />
                 </span>

@@ -46,7 +46,7 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={whatsappHref("Ciao, vorrei informazioni sui tour.")}
             >
-              <Image src="/images/contact/whatsapp-blue-3d.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <Image src="/images/illustrated/chat.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">Scrivici su WhatsApp</strong>
                 <small>
@@ -58,14 +58,14 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={`mailto:${site.email}`}
             >
-              <Image src="/images/contact/email-blue-3d.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <Image src="/images/illustrated/email.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">Email</strong>
                 <small>{site.email}</small>
               </span>
             </a>
             <div className="flex items-center gap-4">
-              <Image src="/images/contact/pin-blue-3d.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <Image src="/images/illustrated/pin.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
               <span>
                 <strong className="block text-ink">
                   Punto d’incontro principale

@@ -1,0 +1,96 @@
+{
+  "generator": "Built-in ImageGen",
+  "style": "Original 2D editorial travel icons; yellow, midnight navy and cream; transparent background",
+  "assets": [
+    {
+      "name": "italian",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-515a791c-1a03-43a6-9f10-97af4ab19e00.png",
+      "original": "output/imagegen/icons/italian.png",
+      "web": "public/images/illustrated/italian.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A charming waving Italian tricolor fabric flag on a short midnight blue stand, with a tiny golden sparkle. Preserve Italian green white red. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "shield",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-f676ee08-e4fd-4cb5-91b6-5ef38ebc6960.png",
+      "original": "output/imagegen/icons/shield.png",
+      "web": "public/images/illustrated/shield.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A rounded midnight blue protective shield, large golden yellow check mark, small cream inset and a tiny four-point sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "calendar",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-1d8a26b6-da31-4e8b-b9c0-d085191ad5e7.png",
+      "original": "output/imagegen/icons/calendar.png",
+      "web": "public/images/illustrated/calendar.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A friendly cream paper booking calendar with golden yellow header, midnight blue binding rings, a large blue checkmark and a tiny yellow sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "support",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-beb9cba5-58b5-4211-b036-c1fbe42a2f48.png",
+      "original": "output/imagegen/icons/support.png",
+      "web": "public/images/illustrated/support.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A charming chunky golden yellow customer support headset with midnight blue ear cushions and little microphone, tiny cream sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "group",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-d9d6db95-07df-478f-a92c-d3f211afe709.png",
+      "original": "output/imagegen/icons/group.png",
+      "web": "public/images/illustrated/group.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: Three friendly rounded traveler busts together, golden yellow clothes and backpacks, midnight blue hair, cream faces, no detailed facial features. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "pin",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-4dbed549-774d-42b1-8313-2bf56ab5a150.png",
+      "original": "output/imagegen/icons/pin.png",
+      "web": "public/images/illustrated/pin.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A plump golden yellow location pin enclosing a little midnight blue Prague castle silhouette, tiny cream sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "cart",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-c8b70e34-f5f4-4d2a-b6f4-4c573da84e39.png",
+      "original": "output/imagegen/icons/cart.png",
+      "web": "public/images/illustrated/cart.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A charming chunky golden yellow shopping basket cart with midnight blue wheels and handle, a little cream ticket tucked inside. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "email",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-33f3a83c-024d-4131-82c2-f1a65382f02f.png",
+      "original": "output/imagegen/icons/email.png",
+      "web": "public/images/illustrated/email.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A golden yellow open envelope holding a cream letter with midnight blue lines and a tiny yellow sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "chat",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-c474e1c1-fc7a-4dec-bbcf-0055d9abdbe3.png",
+      "original": "output/imagegen/icons/chat.png",
+      "web": "public/images/illustrated/chat.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: Two overlapping rounded conversation bubbles, golden yellow foreground, midnight blue behind, cream three dots, little friendly sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "hotel",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-c6f17451-d562-444d-954d-c5c6ed708f66.png",
+      "original": "output/imagegen/icons/hotel.png",
+      "web": "public/images/illustrated/hotel.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A charming miniature Prague townhouse hotel facade, cream walls, golden yellow roof and awning, midnight blue windows and door. Flat front elevation. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "handshake",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-19392857-c671-4612-86de-5e6a88cda432.png",
+      "original": "output/imagegen/icons/handshake.png",
+      "web": "public/images/illustrated/handshake.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: Two friendly rounded hands in a handshake, cream hands, golden yellow and midnight blue sleeves, little four-point sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "clock",
+      "source": "/Users/diegosimoncini/.codex/generated_images/01a1eb45-b107-7ef0-bf20-007160bd83a1/exec-1b7082f1-915c-4eae-bfef-4bacc49edcf0.png",
+      "original": "output/imagegen/icons/clock.png",
+      "web": "public/images/illustrated/clock.webp",
+      "prompt": "Use case: stylized-concept. Asset: one premium bespoke 2D illustrated travel website icon, square transparent PNG cutout. Subject: A charming rounded cream clock face with golden yellow rim, midnight blue hands at 2:00, tiny yellow sparkle. Style: delightful polished editorial sticker illustration, soft rounded organic shapes, playful and sophisticated, charming like a premium 3D app illustration translated into FLAT 2D. Bold filled silhouettes, careful layered flat color areas, subtle paper-like texture, very restrained tonal variations, NO 3D extrusion, NO bevel, NO photorealism, NO standard line icon, NO clipart. Palette golden sunshine yellow #FFCC00, midnight navy #102747, warm cream #FFF6D8; only Italian flag may use green and red. Centered single isolated object filling 85% of canvas, generous safe margin. No text, no letters, no watermark, no background disk, genuinely transparent background. Create a cohesive delightful branded icon with clear silhouette that reads at 56px."
+    },
+    {
+      "name": "info",
+      "original": "output/imagegen/icons/info.png",
+      "web": "public/images/illustrated/info.webp",
+      "prompt": "Use case: stylized-concept. One bespoke premium 2D illustrated travel website information icon. A soft rounded golden yellow information medallion, midnight navy lowercase i, a small cream folded travel note behind it, one tiny yellow sparkle. Delightful polished editorial sticker illustration with rounded organic filled shapes and very subtle paper texture, minimal flat tonal layers. Palette golden yellow #FFCC00, midnight navy #102747 and warm cream #FFF6D8. No 3D bevel or extrusion, no standard line icon, no clipart, no background disk, no watermark. Single isolated centered object fills 85% of square canvas, generous safe margins, truly transparent background. Crisp recognizable silhouette at 56px. The only text is the single lowercase information i."
+    }
+  ]
+}

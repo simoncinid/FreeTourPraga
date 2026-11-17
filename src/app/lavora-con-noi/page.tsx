@@ -1,0 +1,3 @@
+import { CollaborationPage } from "@/components/CollaborationPage";
+export const metadata = {"title": "Lavora con noi", "description": "Ti piace raccontare Praga e accompagnare i viaggiatori alla scoperta della città? Presentati al nostro team.", "alternates": {"canonical": "/lavora-con-noi"}};
+export default function Page() { return <CollaborationPage pageKey="lavora-con-noi" title="Lavora con noi" body="Ti piace raccontare Praga e accompagnare i viaggiatori alla scoperta della città? Presentati al nostro team." points={["Raccontaci la tua esperienza come guida o nel turismo.", "Indica le lingue che parli e la tua disponibilità.", "Aggiungi nel messaggio un collegamento al tuo curriculum o portfolio."]} partner={false} />; }

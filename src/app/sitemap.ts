@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...pages.map((page) => ({
       url: absoluteUrl(page.canonicalPath!), ...(page.updatedAt ? { lastModified: page.updatedAt } : {}),
     })),
-    ...["/", "/tour/", "/partner-europa", "/contatti/", "/chi-siamo", "/blog", "/faq", "/privacy", "/termini"].map((path) => ({ url: absoluteUrl(path) })),
+    ...["/", "/tour/", "/partner-europa", "/informazioni-utili", "/agenzie-b2b", "/social", "/lavora-con-noi", "/diventa-un-partner", "/contatti/", "/chi-siamo", "/blog", "/faq", "/privacy", "/termini"].map((path) => ({ url: absoluteUrl(path) })),
     ...tours.map((tour) => ({ url: absoluteUrl(tourPath(tour)), ...(tour.sourceUpdatedAt ? { lastModified: tour.sourceUpdatedAt } : {}) })),
     ...content.gallery.map((guide) => ({
       url: absoluteUrl(guidePath(guide)), ...(guide.updatedAt ? { lastModified: guide.updatedAt } : {}),

@@ -140,10 +140,10 @@ export default async function TourDetailPage({ params }: Props) {
               />
             </section>
             <section id="incontro" className="grid gap-4 md:grid-cols-2">
-              <div className={`card p-6 ${panels.panelOrange}`}>
+              <div className={`card p-6 ${panels.panelYellow}`}>
                 <div className={panels.panelTitleRow}>
                   <Image
-                    src="/images/icons/shield-3d.png"
+                    src="/images/illustrated/shield.webp"
                     alt=""
                     width={42}
                     height={42}
@@ -169,7 +169,7 @@ export default async function TourDetailPage({ params }: Props) {
               <div className={`card p-6 ${panels.panelBlue}`}>
                 <div className={panels.panelTitleRow}>
                   <Image
-                    src="/images/icons/info-3d.png"
+                    src="/images/illustrated/info.webp"
                     alt=""
                     width={42}
                     height={42}
@@ -200,7 +200,7 @@ export default async function TourDetailPage({ params }: Props) {
             >
               <div className={panels.panelTitleRow}>
                 <Image
-                  src="/images/icons/whatsapp-3d.png"
+                  src="/images/illustrated/chat.webp"
                   alt=""
                   width={42}
                   height={42}

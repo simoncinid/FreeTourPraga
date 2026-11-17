@@ -1,0 +1,3 @@
+import { CollaborationPage } from "@/components/CollaborationPage";
+export const metadata = {"title": "Diventa un partner", "description": "Hai un hotel, un’attività turistica o una community di viaggiatori? Proponi una collaborazione con FreeTourPraga.", "alternates": {"canonical": "/diventa-un-partner"}};
+export default function Page() { return <CollaborationPage pageKey="diventa-un-partner" title="Diventa un partner" body="Hai un hotel, un’attività turistica o una community di viaggiatori? Proponi una collaborazione con FreeTourPraga." points={["Presenta la tua attività e il pubblico a cui ti rivolgi.", "Raccontaci come vorresti proporre i nostri tour.", "Valutiamo insieme modalità e opportunità di collaborazione."]} partner={true} />; }

@@ -11,7 +11,7 @@ export const publicSiteContent = cache(async () => {
     globals: {
       ...content.globals,
       // Also suppress saved CMS links while the private-tour page is hidden.
-      navigation: content.globals.navigation.filter(
+      navigation: content.globals.navigation.map((link) => ({ ...link, href: link.href === "/#informazioni-utili" ? "/informazioni-utili" : link.href })).filter(
         (link) =>
           link.href.split(/[?#]/)[0].replace(/\/$/, "") !== "/tour-privati",
       ),

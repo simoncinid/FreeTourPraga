@@ -126,7 +126,7 @@ export function defaultSiteContent(): SiteContent {
       navigation: [
         { label: "I Nostri Tour", href: "/tour" },
         { label: "Chi siamo", href: "/chi-siamo" },
-        { label: "Informazioni utili", href: "/#informazioni-utili" },
+        { label: "Informazioni utili", href: "/informazioni-utili" },
         { label: "Contatti", href: "/contatti" },
         { label: "Partner tour in Europa", href: "/partner-europa" },
         { label: "Blog", href: "/blog" },

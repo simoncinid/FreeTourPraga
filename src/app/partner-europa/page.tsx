@@ -27,17 +27,17 @@ export default async function Page() {
           </p>
           {[
             [
-              "/images/partner/group-blue-3d.webp",
+              "/images/illustrated/group.webp",
               "Scuole e gruppi",
               "Itinerari e ritmi adatti a chi viaggia insieme.",
             ],
             [
-              "/images/partner/hotel-blue-3d.webp",
+              "/images/illustrated/hotel.webp",
               "Hotel e agenzie",
               "Un contatto dedicato per organizzare le visite dei tuoi ospiti.",
             ],
             [
-              "/images/partner/handshake-blue-3d.webp",
+              "/images/illustrated/handshake.webp",
               "Collabora con noi",
               "Affiliazioni e codici per riconoscere le prenotazioni dei tuoi clienti.",
             ],

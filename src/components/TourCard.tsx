@@ -4,53 +4,20 @@ import { tourPath } from "@/lib/public-paths";
 import styles from "./public-ui.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  ArrowUpRight,
-  Clock,
-  Footprints,
-  MapPin,
-  ShoppingCart,
-} from "lucide-react";
+import { useState } from "react";
+import { QuickBooking } from "@/components/QuickBooking";
+import { ArrowUpRight, Pointer } from "lucide-react";
+import { Clock, Footprints, MapPin } from "@/components/FlatIcons";
 import { formatMoney, minutesToLabel } from "@/lib/format";
-import { addToCart } from "@/lib/cart";
 import type { Tour } from "@/lib/types";
 
 export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
-  const router = useRouter();
+  const [booking, setBooking] = useState(false);
   const name = title || tour.title;
   const href = tourPath(tour);
-  const nextSlot = [...(tour.slots || [])]
-    .filter((slot) => slot.capacity - slot.reserved >= 1)
-    .sort(
-      (a, b) =>
-        new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-    )[0];
-
-  function handleAddToCart(event: React.MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!nextSlot) {
-      router.push(href);
-      return;
-    }
-    addToCart({
-      tourSlug: tour.slug,
-      tourTitle: tour.title,
-      slotId: nextSlot.id,
-      startsAt: nextSlot.startsAt,
-      adults: 1,
-      children: 0,
-      infants: 0,
-      unitInfantCents: tour.infantPriceCents,
-      unitAdultCents: tour.basePriceCents,
-      unitChildCents: tour.childPriceCents,
-      imageUrl: tour.imageUrl,
-    });
-    router.push("/carrello?added=1");
-  }
 
   return (
+    <>
     <article
       className={`${styles.tourCard} card flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card`}
     >
@@ -62,7 +29,9 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
           sizes="(min-width: 1024px) 33vw, 100vw"
           className="object-cover"
         />
-        <span className={styles.tourCardBadge}>In italiano 🇮🇹</span>
+        <span className={styles.tourCardBadge}>
+          <span className={styles.tourCardBadgeText}>In italiano 🇮🇹</span>
+        </span>
       </Link>
       <div className="grid flex-1 gap-3 p-4">
         <Link href={href} className="title-md no-underline text-ink">
@@ -108,20 +77,15 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
             <button
               type="button"
               className={styles.tourCardCartCompact}
-              onClick={handleAddToCart}
-              disabled={tour.operationalReviewRequired}
-              title={
-                nextSlot
-                  ? "Aggiungi la prossima partenza disponibile"
-                  : "Apri il tour per scegliere data e orario"
-              }
+              onClick={() => setBooking(true)}
+
             >
-              <ShoppingCart size={14} aria-hidden />
-              Carrello
+              <Pointer size={15} strokeWidth={2.25} aria-hidden />
+              Prenota
             </button>
           </div>
           <Link href={href} className={styles.tourCardCtaWide}>
-            Scopri
+            Scopri di più
             <ArrowUpRight
               size={15}
               className={styles.tourCardCtaArrow}
@@ -131,5 +95,7 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
         </div>
       </div>
     </article>
+    {booking && <QuickBooking tour={tour} onClose={() => setBooking(false)} />}
+    </>
   );
 }
