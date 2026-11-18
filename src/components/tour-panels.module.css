@@ -55,7 +55,7 @@
 
 .highlightThumb:hover {
   transform: translateY(-1px);
-  border-color: #ffcc00aa;
+  border-color: rgb(var(--primary) / 0.6667);
 }
 
 .lightbox {
@@ -133,7 +133,7 @@
   right: 12px;
 }
 
-.panelYellow,
+.panelOrange,
 .panelBlue {
   position: relative;
   overflow: hidden;
@@ -141,47 +141,53 @@
   border: 1px solid transparent;
 }
 
-.panelYellow {
-  border-color: #ffe680;
+.panelOrange {
+  border-color: color-mix(in srgb, var(--primary-soft-strong) 55%, white);
   background:
-    radial-gradient(120% 90% at 12% 18%, #fff8dc 0%, transparent 55%),
-    radial-gradient(90% 80% at 88% 12%, #ffe680 0%, transparent 50%),
-    linear-gradient(135deg, #fff8dc 0%, #fff8dc 42%, #fff8dc 72%, #ffe680 100%);
+    radial-gradient(120% 90% at 12% 18%, color-mix(in srgb, var(--primary-soft) 55%, white) 0%, transparent 55%),
+    radial-gradient(90% 80% at 88% 12%, color-mix(in srgb, var(--primary-soft-strong) 40%, white) 0%, transparent 50%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--primary-soft) 35%, white) 0%,
+      color-mix(in srgb, var(--primary-soft) 28%, white) 42%,
+      color-mix(in srgb, var(--primary-soft) 22%, white) 72%,
+      color-mix(in srgb, var(--primary-soft-strong) 30%, white) 100%
+    );
   background-size: 140% 140%;
-  animation: waveYellow 14s ease-in-out infinite;
+  animation: waveOrange 14s ease-in-out infinite;
 }
 
 .panelBlue {
-  border-color: #c9d6e6;
+  border-color: #dce5ef;
   background:
-    radial-gradient(120% 90% at 14% 20%, #eef4fb 0%, transparent 55%),
-    radial-gradient(90% 80% at 90% 10%, #c9d8ea 0%, transparent 52%),
-    linear-gradient(135deg, #f4f8fc 0%, #dce7f3 40%, #eaf1f8 70%, #cfdcec 100%);
+    radial-gradient(120% 90% at 14% 20%, #f7fafc 0%, transparent 55%),
+    radial-gradient(90% 80% at 90% 10%, #e8eef6 0%, transparent 52%),
+    linear-gradient(135deg, #fafcfe 0%, #f0f5fa 40%, #f5f8fb 70%, #e8eef5 100%);
   background-size: 140% 140%;
   animation: waveBlue 16s ease-in-out infinite;
 }
 
-.panelYellow::before,
+.panelOrange::before,
 .panelBlue::before {
   content: "";
   position: absolute;
   inset: -35% -20%;
   z-index: -1;
-  opacity: 0.55;
+  opacity: 0.28;
   background:
-    radial-gradient(ellipse at 20% 40%, #ffcc0055 0%, transparent 42%),
-    radial-gradient(ellipse at 80% 70%, #ffcc0033 0%, transparent 45%);
+    radial-gradient(ellipse at 20% 40%, rgb(var(--primary) / 0.16) 0%, transparent 42%),
+    radial-gradient(ellipse at 80% 70%, rgb(var(--primary) / 0.1) 0%, transparent 45%);
   animation: drift 18s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
 .panelBlue::before {
   background:
-    radial-gradient(ellipse at 18% 38%, #7f9ab855 0%, transparent 42%),
-    radial-gradient(ellipse at 82% 72%, #071a3522 0%, transparent 45%);
+    radial-gradient(ellipse at 18% 38%, #7f9ab828 0%, transparent 42%),
+    radial-gradient(ellipse at 82% 72%, #071a3512 0%, transparent 45%);
 }
 
-.panelYellow :global(.body-sm),
+.panelOrange :global(.body-sm),
 .panelBlue :global(.body-sm) {
   color: #243246;
 }
@@ -205,7 +211,7 @@
   width: 18px;
   height: 18px;
   margin-top: 1px;
-  color: #ffcc00;
+  color: rgb(var(--primary));
 }
 
 .panelInfo {
@@ -233,19 +239,18 @@
 }
 
 .panelIcon {
+  color: rgb(var(--primary));
   width: 42px;
   height: 42px;
-  object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 6px 12px #ffcc0026);
 }
 
 .panelIconWhatsapp {
-  filter: drop-shadow(0 6px 12px #25d36640);
+  color: currentColor;
 }
 
 .panelIconBlue {
-  filter: drop-shadow(0 6px 12px #071a3526);
+  color: var(--navy);
 }
 
 .panelWhatsapp {
@@ -282,7 +287,7 @@
   margin: 0;
 }
 
-@keyframes waveYellow {
+@keyframes waveOrange {
   0%,
   100% {
     background-position: 0% 40%;
@@ -312,10 +317,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panelYellow,
+  .panelOrange,
   .panelBlue,
   .panelWhatsapp,
-  .panelYellow::before,
+  .panelOrange::before,
   .panelBlue::before,
   .panelWhatsapp::before,
   .highlightThumb {

@@ -51,7 +51,10 @@ test('Stripe Checkout creates one matching session, queues clickable payment ema
  const booking=state.bookings.find(b=>b.orderId===order.id)!;
  assert.equal(booking.paymentStatus,'paid');
  assert.match(reservationIcs(state,booking),/STATUS:CONFIRMED/);
- assert.equal(state.jobs.filter(j=>j.bookingPnr===booking.pnr && j.to===booking.email).length,2);
+ assert.equal(state.jobs.filter(j=>j.bookingPnr===booking.pnr && j.to===booking.email && !j.key.startsWith('reminder-email:')).length,2);
+ const reminders = state.jobs.filter(j=>j.bookingPnr===booking.pnr && j.key.startsWith('reminder-email:') && j.status==='queued');
+ assert.equal(reminders.length,1);
+ assert.match(reminders[0].text!, /Punto d’incontro/);
  assert.match(reservationIcs(state,booking),/SEQUENCE:1/);
 });
 test('cancelled and expired orders cannot return a stale Stripe payment URL',async()=>{

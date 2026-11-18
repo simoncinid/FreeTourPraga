@@ -15,7 +15,7 @@ export default async function Page() {
   const { home } = await publicSiteContent();
   return (
     <section className={`${ui.page} ${ui.about} section`}>
-      <div className="container-page max-w-4xl">
+      <div className="container-page">
         <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Chi siamo</p>
         <h1 className="display-xl mb-6">
           {home.trustTitle.split("\n").map((line, index) => (

@@ -34,7 +34,7 @@ export function PracticalAnswers({
               <LinkedPhrase text={item.answer} />
             </p>
             {matched && (
-              <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary">
+              <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
                 Leggi articolo <ArrowUpRight size={15} aria-hidden />
               </span>
             )}

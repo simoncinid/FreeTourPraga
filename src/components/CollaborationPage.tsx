@@ -1,12 +1,65 @@
-import Image from "next/image";
-import { InquiryForm } from "@/components/InquiryForm";
-import { ContentBlock } from "@/components/ContentBlock";
-import { publicPage } from "@/lib/platform/public";
+import type { LucideIcon } from "lucide-react";
+import { Handshake, Hotel, Users } from "lucide-react";
+import {
+  InquiryForm,
+  type InquiryVariant,
+} from "@/components/InquiryForm";
+import ui from "@/components/public-ui.module.css";
 
-export async function CollaborationPage({ pageKey, title, body, points, partner = false }: {
-  pageKey: string; title: string; body: string; points: string[]; partner?: boolean;
+const defaultIcons = [Users, Hotel, Handshake] as const;
+
+export function CollaborationPage({
+  eyebrow,
+  title,
+  titleLines,
+  body,
+  benefits,
+  formVariant = "partner",
+}: {
+  eyebrow: string;
+  title: string;
+  titleLines?: string[];
+  body: string;
+  benefits: { title: string; text: string; icon?: LucideIcon }[];
+  formVariant?: InquiryVariant;
 }) {
-  const page = await publicPage(pageKey);
-  if (page) return <><ContentBlock page={page} /><div className="container-page mb-16 max-w-3xl"><InquiryForm partner={partner} /></div></>;
-  return <section className="section"><div className="container-page grid items-start gap-12 lg:grid-cols-2"><div><Image src="/images/illustrated/handshake.webp" alt="" width={72} height={72} /><h1 className="display-xl my-5">{title}</h1><p className="body-md mb-8">{body}</p><ul className="grid list-disc gap-4 pl-5">{points.map((point) => <li key={point}>{point}</li>)}</ul><p className="mt-8">Scrivici indicando il tipo di collaborazione che ti interessa e raccontaci il tuo progetto.</p></div><InquiryForm partner={partner} /></div></section>;
+  const lines = titleLines?.length ? titleLines : [title];
+
+  return (
+    <section className={`${ui.page} ${ui.partner} section`}>
+      <div className="container-page grid items-start gap-16 lg:grid-cols-[.9fr_1.1fr]">
+        <div>
+          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+            {eyebrow}
+          </p>
+          <h1 className="display-xl mb-5">
+            {lines.map((line, index) => (
+              <span key={line}>
+                {index > 0 ? <br /> : null}
+                {line}
+              </span>
+            ))}
+          </h1>
+          <p className="body-md mb-10">{body}</p>
+          {benefits.map((benefit, index) => {
+            const Icon =
+              benefit.icon ?? defaultIcons[index % defaultIcons.length];
+            return (
+              <div
+                key={benefit.title}
+                className={`${ui.partnerBenefit} mb-7 flex gap-4`}
+              >
+                <Icon size={56} className={ui.partnerIcon} aria-hidden />
+                <div>
+                  <h2 className="title-md mb-2">{benefit.title}</h2>
+                  <p className="body-sm">{benefit.text}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <InquiryForm variant={formVariant} />
+      </div>
+    </section>
+  );
 }

@@ -17,6 +17,8 @@ import {
   bookingAdminRecipients,
   resolveAffiliate,
 } from "./affiliates-wp";
+import { isClosed, isTourClosed } from "./scheduling";
+import { cancellationNote, FREE_TOUR_NOTE, isFreeTour, tourPrices } from "../tour-rules";
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export function enqueue(
   s: PlatformState,
@@ -72,6 +74,8 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     `Punto d'incontro: ${tour.meetingPoint}, ${tour.meetingAddress}`,
     tour.mapUrl,
     paymentLine,
+    b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
+    cancellationNote(b.policy ?? tour, s.settings),
     `Gestisci questa prenotazione: ${manageUrl}`,
     `Assistenza: ${contact.email} · ${contact.phone || ""} · riferimento ${b.pnr}.`,
     `Calendario: ${calendarUrl}`,
@@ -94,6 +98,8 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
 <a href="${escapeHtml(tour.mapUrl)}">Mappa »</a></p>
 <p><b>Telefono:</b> ${escapeHtml(contact.phone || "")}</p>
 <p>${escapeHtml(paymentLine)}</p>
+<p>${escapeHtml(b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""))}</p>
+<p>${escapeHtml(cancellationNote(b.policy ?? tour, s.settings))}</p>
 ${order.paymentUrl && b.paymentStatus === "pending" ? `<p><a href="${escapeHtml(order.paymentUrl)}">Completa il pagamento sicuro con Stripe</a></p>` : ""}
 <p><a href="${manageUrl}">Gestisci modifica o cancellazione</a> · <a href="${calendarUrl}">Aggiungi al calendario</a></p>
 <p style="text-align:center;padding-top:20px">${escapeHtml(s.settings.emailFooter)}<br/>
@@ -149,6 +155,7 @@ ${order.paymentUrl && b.paymentStatus === "pending" ? `<p><a href="${escapeHtml(
       runAt: new Date().toISOString(),
     });
   }
+  scheduleEmailReminder(s, b);
   for (const j of s.jobs)
     if (
       j.type === "whatsapp" &&
@@ -170,6 +177,28 @@ ${order.paymentUrl && b.paymentStatus === "pending" ? `<p><a href="${escapeHtml(
         runAt: at.toISOString(),
       });
   }
+}
+export function scheduleEmailReminder(s: PlatformState, b: Reservation) {
+  for (const job of s.jobs) {
+    if (job.bookingPnr === b.pnr && job.key.startsWith("reminder-email:") && job.status === "queued") {
+      job.status = "failed"; job.error = "Promemoria sostituito o prenotazione non attiva";
+    }
+  }
+  if (b.status !== "confirmed" || s.jobs.some((j) => j.bookingPnr === b.pnr && j.key.startsWith(`reminder-email:${b.pnr}:${b.slotId}:`) && j.status === "sent")) return;
+  const { tour, slot } = slotFor(s, b);
+  if (Date.parse(slot.startsAt) <= Date.now()) return;
+  const variables: Record<string, string> = {
+    nome: b.name, tour: tour.title, data: new Date(slot.startsAt).toLocaleString("it-IT", { timeZone: "Europe/Prague" }),
+    incontro: `${tour.meetingPoint}, ${tour.meetingAddress}`, mappa: tour.mapUrl, pnr: b.pnr,
+  };
+  const template = tour.reminderTemplate?.trim() || "Ciao {nome}, ti aspettiamo per {tour} il {data}.\nPunto d’incontro: {incontro}\n{mappa}\nPrenotazione: {pnr}";
+  const text = template.replace(/\{(nome|tour|data|incontro|mappa|pnr)\}/g, (_, key: string) => variables[key])
+    + `\n\nPunto d’incontro: ${variables.incontro}\n${tour.mapUrl}\n${b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : "")}\n${cancellationNote(b.policy ?? tour, s.settings)}\n${s.settings.emailFooter}`;
+  enqueue(s, {
+    key: `reminder-email:${b.pnr}:${b.slotId}:${randomUUID()}`, type: "email", bookingPnr: b.pnr, to: b.email,
+    subject: `Promemoria · ${tour.title} · ${b.pnr}`, text,
+    runAt: new Date(Math.max(Date.now(), Date.parse(slot.startsAt) - (tour.reminderHours ?? s.settings.reminderHours) * 3600000)).toISOString(),
+  });
 }
 function escapeHtml(value: string) {
   return value
@@ -214,6 +243,9 @@ export function quote(
     const { tour, slot } = slotFor(s, item);
     if (
       !tour.published ||
+      slot.closed ||
+      isTourClosed(tour, slot.startsAt) ||
+      isClosed(s, slot.startsAt) ||
       tour.operationalReviewRequired ||
       new Date(slot.startsAt).getTime() <
         Date.now() + tour.bookingCutoffHours * 3600000
@@ -225,19 +257,22 @@ export function quote(
         "Per questo tour i più piccoli rientrano nella fascia bambini",
       );
     const guests = item.adults + item.children + item.infants;
-    if (guests > slot.capacity - slot.reserved)
+    if (guests > Math.min(tour.maxGuests, 25)) throw new HttpError(400, `Massimo ${Math.min(tour.maxGuests, 25)} partecipanti per ${tour.title}`);
+    if (guests > Math.min(slot.capacity, 25) - slot.reserved)
       throw new HttpError(409, `Posti insufficienti per ${tour.title}`);
-    const subtotalCents =
-      item.adults * tour.basePriceCents +
-      item.children * tour.childPriceCents +
-      item.infants * tour.infantPriceCents;
-    const discountCents = Math.round((subtotalCents * discount) / 100);
+    const units = tourPrices(tour, guests);
+    const subtotalCents = item.adults * units.adult + item.children * units.child + item.infants * units.infant;
+    const discountCents = units.fixedGroup ? 0 : Math.round((subtotalCents * discount) / 100);
     return {
       ...item,
       subtotalCents,
       discountCents,
       totalCents: subtotalCents - discountCents,
       totalGuests: guests,
+      unitAdultCents: units.adult, unitChildCents: units.child, unitInfantCents: units.infant,
+      cancellationHours: tour.cancellationHours ?? s.settings.cancellationHours,
+      lateRefundPercent: tour.lateRefundPercent ?? s.settings.lateRefundPercent,
+      bookingNote: isFreeTour(tour) ? FREE_TOUR_NOTE : "",
     };
   });
 }
@@ -312,13 +347,10 @@ export async function createOrder(
         whatsappConsent: input.whatsappConsent,
         consentAt: now,
         policy: {
-          cancellationHours: s.settings.cancellationHours,
-          lateRefundPercent: s.settings.lateRefundPercent,
+          cancellationHours: item.cancellationHours,
+          lateRefundPercent: item.lateRefundPercent,
         },
-        unitAdultCents: slotFor(s, item).tour.basePriceCents,
-        unitChildCents: slotFor(s, item).tour.childPriceCents,
-        unitInfantCents: slotFor(s, item).tour.infantPriceCents,
-        termsVersion: `2026-11-06:${hash(JSON.stringify({ terms: s.pages.termini || null, cancellationHours: s.settings.cancellationHours, lateRefundPercent: s.settings.lateRefundPercent })).slice(0, 16)}`,
+        termsVersion: `2026-11-06:${hash(JSON.stringify({ terms: s.pages.termini || null, cancellationHours: item.cancellationHours, lateRefundPercent: item.lateRefundPercent })).slice(0, 16)}`,
       };
       s.bookings.push(b);
       order.pnrs.push(b.pnr);
@@ -422,12 +454,15 @@ export async function moveReservation(
     const next = tour.slots.find((x) => x.id === slotId);
     if (
       !next ||
+      next.closed ||
+      isTourClosed(tour, next.startsAt) ||
+      isClosed(s, next.startsAt) ||
       new Date(next.startsAt).getTime() <
         Date.now() + tour.bookingCutoffHours * 3600000
     )
       throw new HttpError(409, "Partenza non disponibile");
     if (next.id === old.id) return b;
-    if (next.capacity - next.reserved < b.totalGuests)
+    if (Math.min(next.capacity, 25) - next.reserved < b.totalGuests)
       throw new HttpError(409, "Posti insufficienti");
     old.reserved -= b.totalGuests;
     next.reserved += b.totalGuests;
@@ -473,6 +508,8 @@ export async function orderConfirmation(proof: string) {
         meetingPoint: tour.meetingPoint,
         meetingAddress: tour.meetingAddress,
         mapUrl: tour.mapUrl,
+        bookingNote: b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
+        cancellationNote: cancellationNote(b.policy ?? tour, s.settings),
       };
     }),
     settings: {
@@ -541,14 +578,14 @@ export async function managedBooking(pnr: string, proof: string) {
       .filter(
         (x) =>
           x.id === b.slotId ||
-          (new Date(x.startsAt).getTime() >
+          (!x.closed && !isTourClosed(tour, x.startsAt) && !isClosed(s, x.startsAt) && new Date(x.startsAt).getTime() >
             Date.now() + tour.bookingCutoffHours * 3600000 &&
-            x.capacity - x.reserved >= b.totalGuests),
+            Math.min(x.capacity, 25) - x.reserved >= b.totalGuests),
       )
       .map((x) => ({
         id: x.id,
         startsAt: x.startsAt,
-        available: x.capacity - x.reserved,
+        available: Math.max(0, Math.min(x.capacity, 25) - x.reserved),
       }))
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
   };

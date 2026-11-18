@@ -1,6 +1,12 @@
 .content { overflow-wrap: anywhere; white-space: normal; }
 .content p, .content ul, .content ol, .content figure, .content table { margin: 0 0 1.25em; }
-.content h2, .content h3, .content h4 { font: inherit; font-size: 1.35em; font-weight: 700; margin: 1.5em 0 .75em; }
+.content h2, .content h3, .content h4 {
+  font-family: var(--font-display), Arial, sans-serif;
+  font-size: 1.35em;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  margin: 1.5em 0 .75em;
+}
 .content a { text-decoration: underline; text-underline-offset: 3px; }
 .content img { max-width: 100%; height: auto; border-radius: 8px; }
 .content figure { max-width: 100%; }

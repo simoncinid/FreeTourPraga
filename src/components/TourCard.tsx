@@ -29,18 +29,17 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
           sizes="(min-width: 1024px) 33vw, 100vw"
           className="object-cover"
         />
-        <span className={styles.tourCardBadge}>
-          <span className={styles.tourCardBadgeText}>In italiano 🇮🇹</span>
-        </span>
       </Link>
       <div className="grid flex-1 gap-3 p-4">
-        <Link href={href} className="title-md no-underline text-ink">
+        <Link href={href} className={`title-md no-underline text-ink ${styles.tourCardTitle}`}>
           {name}
         </Link>
-        <p className="body-sm line-clamp-2">{tour.shortDescription}</p>
+        <p className={`body-sm ${styles.tourCardDesc}`}>{tour.shortDescription}</p>
         <div className="grid gap-2 text-sm text-muted">
           <span className="flex items-center gap-2">
             <Clock size={16} /> {minutesToLabel(tour.durationMinutes)}
+            <span aria-hidden>–</span>
+            <span>In italiano 🇮🇹</span>
           </span>
           <span className="flex items-center gap-2">
             <MapPin size={16} /> {tour.meetingPoint}
@@ -49,7 +48,7 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
             className="flex items-center gap-2"
             aria-label={`Difficoltà a piedi: ${tour.walkingDifficulty} su 5`}
           >
-            <Footprints size={16} /> A piedi{" "}
+            <Footprints size={16} /> {tour.walkingLabel || "A piedi"}{" "}
             <span className="ml-1 flex gap-0.5">
               {Array.from({ length: 5 }, (_, index) => (
                 <Footprints

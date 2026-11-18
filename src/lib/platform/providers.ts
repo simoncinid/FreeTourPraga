@@ -168,6 +168,7 @@ export async function runJobs() {
       const s = await readState();
       const b = s.bookings.find((b) => b.pnr === job.bookingPnr);
       if (job.type === "email") {
+        if (job.key.startsWith("reminder-email:") && (!b || b.status !== "confirmed" || !job.key.includes(`:${b.slotId}:`) || Date.parse(slotFor(s, b).slot.startsAt) <= Date.now())) throw new Error("Promemoria non più valido");
         if (!process.env.SMTP_HOST) throw new Error("SMTP non configurato");
         const transport = nodemailer.createTransport({
           host: process.env.SMTP_HOST,

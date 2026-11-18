@@ -3,14 +3,16 @@ import { contentWhatsapp } from "@/lib/platform/content";
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import "@fontsource/poppins/400.css";
-import "@fontsource/unna/400.css";
-import "@fontsource/unna/700.css";
-import "@fontsource/unna/400-italic.css";
+import "@fontsource/poppins/400-italic.css";
+import "@fontsource/poppins/500-italic.css";
+import "@fontsource/poppins/600-italic.css";
+import "@fontsource/poppins/700-italic.css";
 import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
 import { MessageCircle } from "lucide-react";
 import "./globals.css";
+import { BackToTop } from "@/components/BackToTop";
 import { ConsentAndTracking } from "@/components/ConsentAndTracking";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -100,6 +102,7 @@ export default async function RootLayout({
         <main id="contenuto">{children}</main>
         <ConsentAndTracking />
         <Footer />
+        <BackToTop />
         <a
           className="floating-whatsapp"
           href={contentWhatsapp(

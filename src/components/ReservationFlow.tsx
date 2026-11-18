@@ -29,7 +29,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   const [stripeAvailable, setStripeAvailable] = useState(false);
   const [whatsappAvailable, setWhatsappAvailable] = useState(false);
   const [quoteResult, setQuote] = useState<
-    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number }[] }
+    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number; cancellationHours: number; lateRefundPercent: number; bookingNote: string }[] }
     | null
   >(null);
   const [rules, setRules] = useState({
@@ -179,7 +179,8 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   {i.adults} adulti · {i.children} bambini · {i.infants || 0}{" "}
                   infanti
                 </p>
-                <strong>{formatMoney(cartItemTotal(i))}</strong>
+                <strong>{formatMoney(quote?.[items.indexOf(i)]?.totalCents ?? cartItemTotal(i))}</strong>
+                {quote?.[items.indexOf(i)] && <div className="mt-3 grid gap-2 text-sm"><p>{quote[items.indexOf(i)].bookingNote}</p><p>Cancellazione gratuita fino a {quote[items.indexOf(i)].cancellationHours} ore prima. Dopo il termine: rimborso del {quote[items.indexOf(i)].lateRefundPercent}% dell’importo pagato.</p></div>}
               </div>
               <button
                 aria-label={`Rimuovi ${i.tourTitle}`}
@@ -263,9 +264,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 </label>}
               </fieldset>
               <p className="text-sm">
-                Cancellazione gratuita fino a {rules.cancellationHours} ore
-                prima. Per i pagamenti online, i posti restano riservati per 30
-                minuti.
+                Le regole di cancellazione di ciascun tour sono riportate nel riepilogo. Per i pagamenti online, i posti restano riservati per 30 minuti.
               </p>
               {whatsappAvailable && <label className="flex items-start gap-3 text-sm">
                 <input name="whatsapp" type="checkbox" />

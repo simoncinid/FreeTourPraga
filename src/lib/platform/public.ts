@@ -2,6 +2,7 @@ import { tourGalleryImages } from "../tour-gallery";
 import { cache } from "react";
 import { readState } from "./store";
 import { siteContent } from "./content";
+import { publicTour } from "./scheduling";
 const publicState = cache(readState);
 export const publicSiteContent = cache(async () => {
   const state = await publicState();
@@ -23,13 +24,8 @@ export const catalog = cache(async () => {
   return s.tours
     .filter((t) => t.published)
     .map((t) => ({
-      ...t,
+      ...publicTour(s, t),
       galleryImages: tourGalleryImages(t),
-      slots: t.slots.filter(
-        (s) =>
-          new Date(s.startsAt).getTime() >
-          Date.now() + t.bookingCutoffHours * 3600000,
-      ),
     }));
 });
 export const publicPage = cache(async (key: string) => {

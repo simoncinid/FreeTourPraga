@@ -39,6 +39,21 @@ export type Tour = {
   adultMinAge?: number;
   childMinAge?: number;
   maxGuests: number;
+  isFreeTour?: boolean;
+  closures?: { date: string; times: string[] }[];
+  walkingLabel?: string;
+  cancellationHours?: number;
+  lateRefundPercent?: number;
+  reminderHours?: number;
+  reminderTemplate?: string;
+  schedule?: {
+    enabled: boolean;
+    from: string;
+    to: string;
+    weekdays: number[];
+    times: string[];
+    capacity: number;
+  };
   walkingDifficulty: number;
   rating: number;
   reviewCount: number;
@@ -61,6 +76,7 @@ export type TourSlot = {
   endsAt: string;
   capacity: number;
   reserved: number;
+  closed?: boolean;
 };
 
 export type BookingFormInput = {

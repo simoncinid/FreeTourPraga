@@ -1,7 +1,8 @@
 "use client";
 
+import { ShoppingCart } from "lucide-react";
+
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { cartCount } from "@/lib/cart";
 
@@ -27,14 +28,7 @@ export function CartBadge() {
       className="relative inline-flex items-center"
       aria-label="Apri carrello"
     >
-      <Image
-        src="/images/illustrated/cart.webp"
-        alt=""
-        width={28}
-        height={28}
-        className="h-7 w-7 object-contain"
-        aria-hidden
-      />
+      <ShoppingCart size={28} className="h-7 w-7 object-contain" aria-hidden />
       {count > 0 ? (
         <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-on-primary">
           {count}

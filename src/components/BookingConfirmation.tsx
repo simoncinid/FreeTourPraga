@@ -128,6 +128,8 @@ export function BookingConfirmation() {
                   <br />
                   {b.meetingAddress}
                 </p>
+                <p className="text-sm">{b.bookingNote}</p>
+                <p className="text-sm">{b.cancellationNote}</p>
                 <div className="flex flex-wrap gap-3">
                   <a
                     href={b.mapUrl}

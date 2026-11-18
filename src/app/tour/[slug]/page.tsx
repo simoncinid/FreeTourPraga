@@ -1,10 +1,10 @@
+import { cancellationNote, FREE_TOUR_NOTE, isFreeTour } from "@/lib/tour-rules";
 import ui from "@/components/public-ui.module.css";
 import type { Metadata } from "next";
 import { TourGallery } from "@/components/TourGallery";
 import { tourPhotos } from "@/lib/tour-gallery";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import { CheckCircle2, Clock3, Info, Users } from "lucide-react";
+import { CheckCircle2, Clock3, Info, Users, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
@@ -140,19 +140,10 @@ export default async function TourDetailPage({ params }: Props) {
               />
             </section>
             <section id="incontro" className="grid gap-4 md:grid-cols-2">
-              <div className={`card p-6 ${panels.panelYellow}`}>
-                <div className={panels.panelTitleRow}>
-                  <Image
-                    src="/images/illustrated/shield.webp"
-                    alt=""
-                    width={42}
-                    height={42}
-                    className={panels.panelIcon}
-                  />
-                  <h2 className={`display-md !mb-0 ${panels.panelTitleOneLine}`}>
-                    Incluso
-                  </h2>
-                </div>
+              <div className={`card p-6 ${panels.panelOrange}`}>
+                <h2 className={`display-md mb-4 ${panels.panelTitleOneLine}`}>
+                  Incluso
+                </h2>
                 <ul className={panels.panelList}>
                   {tour.inclusions.map((item) => (
                     <li key={item} className={`${panels.panelTickItem} body-sm`}>
@@ -167,18 +158,9 @@ export default async function TourDetailPage({ params }: Props) {
                 </ul>
               </div>
               <div className={`card p-6 ${panels.panelBlue}`}>
-                <div className={panels.panelTitleRow}>
-                  <Image
-                    src="/images/illustrated/info.webp"
-                    alt=""
-                    width={42}
-                    height={42}
-                    className={`${panels.panelIcon} ${panels.panelIconBlue}`}
-                  />
-                  <h2 className={`display-md !mb-0 ${panels.panelTitleOneLine}`}>
-                    Informazioni pratiche
-                  </h2>
-                </div>
+                <h2 className={`display-md mb-4 ${panels.panelTitleOneLine}`}>
+                  Informazioni pratiche
+                </h2>
                 <ul className={panels.panelList}>
                   {tour.safetyNotes.map((note) => (
                     <li key={note} className={`${panels.panelTickItem} body-sm`}>
@@ -193,19 +175,14 @@ export default async function TourDetailPage({ params }: Props) {
                 </ul>
               </div>
             </section>
+            <section className="card grid gap-3 p-6"><h2 className="display-md">Prenotazione e cancellazione</h2>{isFreeTour(tour) && <p>{FREE_TOUR_NOTE}</p>}<p>{cancellationNote(tour)}</p></section>
             <GoogleMap tour={tour} />
             <TripAdvisorSection layout="card" />
             <section
               className={`${panels.panelWhatsapp} rounded-xl p-7 text-on-dark`}
             >
               <div className={panels.panelTitleRow}>
-                <Image
-                  src="/images/illustrated/chat.webp"
-                  alt=""
-                  width={42}
-                  height={42}
-                  className={`${panels.panelIcon} ${panels.panelIconWhatsapp}`}
-                />
+                <MessageCircle size={42} className={`${panels.panelIcon} ${panels.panelIconWhatsapp}`} aria-hidden />
                 <h2 className="display-md !mb-0 !text-on-dark">
                   Hai un dubbio prima di prenotare?
                 </h2>
@@ -225,6 +202,7 @@ export default async function TourDetailPage({ params }: Props) {
             </section>
           </div>
           <BookingForm tour={tour} />
+          <a href="#prenota" className="tour-mobile-booking button-primary">Prenota questo tour</a>
         </div>
       </div>
     </section>

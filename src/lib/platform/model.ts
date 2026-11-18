@@ -21,6 +21,7 @@ export type Reservation = {
   children: number;
   infants: number;
   policy?: { cancellationHours: number; lateRefundPercent: number };
+  bookingNote?: string;
   unitAdultCents?: number;
   unitChildCents?: number;
   unitInfantCents?: number;
@@ -126,6 +127,7 @@ export type OtaMessage = {
 export type PlatformState = {
   seoEditorialRevision?: string;
   version: number;
+  closedDates?: string[];
   siteContent?: SiteContent;
   tours: CatalogTour[];
   bookings: Reservation[];

@@ -1,4 +1,6 @@
 "use client";
+import { CalendarClosures } from "./CalendarClosures";
+import { TourOperationsEditor } from "./TourOperationsEditor";
 import Link from "next/link";
 import { TourGalleryEditor } from "./TourGalleryEditor";
 import { tourGalleryImages } from "@/lib/tour-gallery";
@@ -26,7 +28,7 @@ import type {
   Reservation,
   Settings,
 } from "@/lib/platform/model";
-import { pragueLocal, pragueInstant } from "@/lib/platform/time";
+import { pragueLocal } from "@/lib/platform/time";
 import { formatMoney } from "@/lib/format";
 type Data = Omit<PlatformState, "orders" | "rateLimits" | "events"> & {
   role: string;
@@ -51,14 +53,12 @@ const navigation = [
 /**
  * Nascoste in Fase 1 (codice integro, solo UI). Certe perché esplicite in Fase 2
  * o assenti dal perimetro Fase 1 del contratto:
- * - affiliati → F2 STEP 9
  * - canali → F2 STEP 10 (OTA / parsing email)
  * - report → F2 STEP 12 (KPI / Google Ads)
  * - audit → non previsto in Fase 1
  * NON nascosta: pre-tour (email di conferma = F1 STEP 5; solo WA è F2).
  */
 const PHASE2_OR_EXTRA_SECTIONS = new Set<string>([
-  "affiliati",
   "canali",
   "report",
   "audit",
@@ -91,6 +91,7 @@ function Field({
   type = "text",
   min,
   max,
+  step,
   required = false,
 }: {
   label: string;
@@ -99,6 +100,7 @@ function Field({
   type?: string;
   min?: number;
   max?: number;
+  step?: string;
   required?: boolean;
 }) {
   return (
@@ -110,6 +112,7 @@ function Field({
         value={value}
         min={min}
         max={max}
+        step={step}
         onChange={(e) => onChange(e.target.value)}
         required={required}
       />
@@ -169,9 +172,6 @@ export function AdminWorkspace() {
     [tourFilter, setTourFilter] = useState(""),
     [dateFilter, setDateFilter] = useState(""),
     [slotFilter, setSlotFilter] = useState("");
-  const [month, setMonth] = useState(() =>
-    new Date().toISOString().slice(0, 7),
-  );
   const load = useCallback(async () => {
     const r = await fetch("/api/platform/admin/state", {
       credentials: "same-origin",
@@ -461,6 +461,7 @@ export function AdminWorkspace() {
                 </div>
               ))}
             </div>
+            <div className="card mb-7 grid gap-4 p-6"><h2 className="display-md">Richieste dal sito</h2><p>{data.inquiries.filter((i) => i.status === "new").length} richieste da gestire · {data.inquiries.length} totali</p>{data.inquiries.slice().reverse().slice(0, 5).map((i) => <div key={i.id} className="border-t pt-3"><strong>{i.name}</strong><p className="whitespace-pre-wrap text-sm">{i.message}</p><small>{time(i.createdAt)} · {i.status === "new" ? "Da gestire" : "Gestita"}</small></div>)}<Link href="/admin/richieste" className="underline">Apri richieste e messaggi</Link></div>
             <div className="card mb-7 p-6">
               <h2 className="display-md mb-4">Servizi e automazioni</h2>
               <div className="flex flex-wrap gap-3">
@@ -482,7 +483,7 @@ export function AdminWorkspace() {
                 Inserisci prenotazione
               </Link>
               <Link href="/admin/calendario" className="button-secondary">
-                Prossime partenze
+                Chiusure calendario
               </Link>
             </div>
             {table(data.bookings.slice().reverse().slice(0, 15))}
@@ -582,10 +583,18 @@ export function AdminWorkspace() {
                   id: crypto.randomUUID(),
                   slug: "nuovo-tour",
                   title: "Nuovo tour",
+                  canonicalPath: undefined,
+                  sourceUrl: undefined,
+                  sourceUpdatedAt: undefined,
+                  importedFromWordpress: false,
+                  operationalReviewRequired: false,
+                  schedule: undefined,
+                  closures: [],
                   published: false,
                   slots: [],
                 }
               }
+              defaults={data.settings}
               categories={[
                 ...new Set(
                   data.tours
@@ -626,82 +635,7 @@ export function AdminWorkspace() {
               </div>
             </>
           ))}
-        {section === "calendario" && (
-          <>
-            <div className="mb-6 flex flex-wrap items-end gap-4">
-              <Field
-                label="Mese"
-                type="month"
-                value={month}
-                onChange={setMonth}
-              />
-              <label>
-                Tour
-                <select
-                  className="text-input"
-                  value={tourFilter}
-                  onChange={(e) => setTourFilter(e.target.value)}
-                >
-                  <option value="">Tutti</option>
-                  {data.tours.map((t) => (
-                    <option key={t.id} value={t.slug}>
-                      {t.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="grid gap-4">
-              {data.tours
-                .filter((t) => !tourFilter || t.slug === tourFilter)
-                .flatMap((t) =>
-                  t.slots
-                    .filter((s) => pragueLocal(s.startsAt).startsWith(month))
-                    .map((s) => ({ ...s, tour: t })),
-                )
-                .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-                .map((s) => (
-                  <article className="card grid gap-3 p-5" key={s.id}>
-                    <div className="flex flex-wrap justify-between gap-3">
-                      <h2 className="font-bold text-ink">
-                        {time(s.startsAt)} · {s.tour.title}
-                      </h2>
-                      <span>
-                        {s.reserved}/{s.capacity} posti ·{" "}
-                        {s.tour.guide || "Guida da assegnare"}
-                      </span>
-                    </div>
-                    <meter
-                      min={0}
-                      max={s.capacity}
-                      value={s.reserved}
-                      className="w-full"
-                      aria-label="Posti riservati"
-                    />
-                    {data.bookings
-                      .filter(
-                        (b) => b.slotId === s.id && b.status !== "cancelled",
-                      )
-                      .map((b) => (
-                        <Link
-                          className="text-sm underline"
-                          key={b.id}
-                          href={`/admin/prenotazioni/${b.pnr}`}
-                        >
-                          {b.name} · {b.totalGuests} persone · {b.pnr}
-                        </Link>
-                      ))}
-                    <Link
-                      href={`/admin/tour/${s.tour.slug}`}
-                      className="text-sm underline"
-                    >
-                      Gestisci partenza
-                    </Link>
-                  </article>
-                ))}
-            </div>
-          </>
-        )}
+        {section === "calendario" && <CalendarClosures closedDates={data.closedDates ?? []} busy={busy} save={(body) => mutate("calendar/closure", body)} bookings={active.map((b) => ({ date: slot(b) ? pragueLocal(slot(b)!.startsAt).slice(0, 10) : "", guests: b.totalGuests }))} />}
         {section === "impostazioni" && (
           <SettingsEditor
             key={JSON.stringify(data.settings)}
@@ -855,6 +789,7 @@ export function AdminWorkspace() {
         )}
         {section === "pre-tour" && (
           <>
+            <div className="card mb-6 grid gap-4 p-6"><h2 className="display-md">Modelli di promemoria per tour</h2><p>Personalizza testo e anticipo di invio nella scheda del tour.</p>{data.tours.map((t) => <div key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3"><div><strong>{t.title}</strong><p className="text-sm">{t.meetingPoint} · {t.reminderHours ?? data.settings.reminderHours} ore prima</p></div><Link className="underline" href={`/admin/tour/${t.slug}#promemoria`}>Modifica promemoria</Link></div>)}</div>
             <div className="card mb-6 p-6">
               <h2 className="display-md mb-3">Comunicazioni automatiche</h2>
               <p>
@@ -1377,15 +1312,17 @@ function BookingDetail({
 function TourEditor({
   tour,
   categories,
+  defaults,
   busy,
   save,
 }: {
   tour: CatalogTour;
+  defaults: Settings;
   categories: string[];
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
-  const [t, setT] = useState(() => ({ ...tour, galleryImages: tourGalleryImages(tour) }));
+  const [t, setT] = useState(() => ({ ...tour, cancellationHours: tour.cancellationHours ?? defaults.cancellationHours, lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent, reminderHours: tour.reminderHours ?? defaults.reminderHours, galleryImages: tourGalleryImages(tour) }));
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -1397,18 +1334,14 @@ function TourEditor({
     ["category", "Categoria"],
     ["language", "Lingua"],
     ["durationMinutes", "Durata in minuti", "number"],
-    ["maxGuests", "Dimensione gruppo", "number"],
+    ["maxGuests", "Massimo partecipanti per prenotazione (fino a 25)", "number"],
     ["imageUrl", "URL foto copertina"],
     ["meetingPoint", "Punto d’incontro"],
     ["meetingAddress", "Indirizzo"],
     ["mapUrl", "Link Google Maps"],
-    ["mapEmbedUrl", "Mappa incorporata"],
-    ["latitude", "Latitudine", "number"],
-    ["longitude", "Longitudine", "number"],
-    ["guide", "Guida assegnata"],
-    ["basePriceCents", "Prezzo adulti (centesimi)", "number"],
-    ["childPriceCents", "Prezzo bambini (centesimi)", "number"],
-    ["infantPriceCents", "Prezzo infanti (centesimi)", "number"],
+    ["basePriceCents", "Prezzo adulti (€)", "number"],
+    ["childPriceCents", "Prezzo bambini (€)", "number"],
+    ["infantPriceCents", "Prezzo infanti (€)", "number"],
     ["adultMinAge", "Età minima adulti", "number"],
     ["childMinAge", "Età minima bambini", "number"],
     ["bookingCutoffHours", "Chiusura prenotazioni (ore prima)", "number"],
@@ -1496,12 +1429,16 @@ function TourEditor({
                 key={key}
                 label={label}
                 type={type}
-                value={String(t[key] ?? "")}
-                onChange={(v) => set(key, type === "number" ? Number(v) : v)}
+                value={String(key.endsWith("PriceCents") ? Number(t[key] ?? 0) / 100 : t[key] ?? "")}
+                min={type === "number" ? (key === "maxGuests" ? 1 : 0) : undefined}
+                max={key === "maxGuests" ? 25 : undefined}
+                step={key.endsWith("PriceCents") ? "0.01" : undefined}
+                onChange={(v) => set(key, key.endsWith("PriceCents") ? Math.round(Number(v) * 100) : type === "number" ? Number(v) : v)}
               />
             ),
           )}
         </div>
+        <Text label="Descrizione breve" value={t.shortDescription} onChange={(v) => set("shortDescription", v)} />
         <Text
           label="Descrizione completa"
           value={t.description}
@@ -1560,95 +1497,10 @@ function TourEditor({
           Prezzi, fasce di età, capienza e partenze verificati
         </label>}
       </div>
+      <TourOperationsEditor tour={t} change={set} />
       <TourGalleryEditor photos={t.galleryImages} disabled={busy || coverUploading} onChange={(photos) => set("galleryImages", photos)} onUploading={setGalleryUploading} />
-      <div className="card grid gap-5 p-6">
-        <h2 className="display-md">Partenze e disponibilità</h2>
-        <p className="text-sm">
-          Inserisci gli orari con il fuso corretto. Il calendario mostra sempre
-          l’ora di Praga. I posti riservati sono calcolati dal sistema.
-        </p>
-        {t.slots.map((s, i) => (
-          <div key={s.id} className="grid gap-4 border-b pb-5 sm:grid-cols-2">
-            <Field
-              label="Inizio (ora di Praga)"
-              type="datetime-local"
-              value={pragueLocal(s.startsAt)}
-              onChange={(v) =>
-                set(
-                  "slots",
-                  t.slots.map((x, j) =>
-                    j === i ? { ...x, startsAt: safePrague(v, x.startsAt) } : x,
-                  ),
-                )
-              }
-            />
-            <Field
-              label="Fine (ora di Praga)"
-              type="datetime-local"
-              value={pragueLocal(s.endsAt)}
-              onChange={(v) =>
-                set(
-                  "slots",
-                  t.slots.map((x, j) =>
-                    j === i ? { ...x, endsAt: safePrague(v, x.endsAt) } : x,
-                  ),
-                )
-              }
-            />
-            <Field
-              label={`Capienza · ${s.reserved} posti riservati`}
-              type="number"
-              min={s.reserved || 1}
-              max={500}
-              value={s.capacity}
-              onChange={(v) =>
-                set(
-                  "slots",
-                  t.slots.map((x, j) =>
-                    j === i ? { ...x, capacity: Number(v) } : x,
-                  ),
-                )
-              }
-            />
-            <button
-              type="button"
-              className="text-sm underline"
-              disabled={s.reserved > 0}
-              onClick={() =>
-                set(
-                  "slots",
-                  t.slots.filter((_, j) => j !== i),
-                )
-              }
-            >
-              Rimuovi partenza
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="button-secondary"
-          onClick={() =>
-            set("slots", [
-              ...t.slots,
-              {
-                id: crypto.randomUUID(),
-                tourId: t.id,
-                startsAt: new Date(Date.now() + 86400000).toISOString(),
-                endsAt: new Date(
-                  Date.now() + 86400000 + t.durationMinutes * 60000,
-                ).toISOString(),
-                capacity: t.maxGuests,
-                reserved: 0,
-              },
-            ])
-          }
-        >
-          Aggiungi partenza
-        </button>
-      </div>
       <button className="button-primary" disabled={busy || galleryUploading || coverUploading}>
-        Salva tour e partenze
+        Salva tour e programmazione
       </button>
     </form>
   );
@@ -1722,7 +1574,7 @@ function AffiliateEditor({
     name: "",
     email: "",
     type: "hotel",
-    commissionPercent: 10,
+    commissionPercent: 0,
     active: true,
   });
   return (
@@ -1730,16 +1582,15 @@ function AffiliateEditor({
       className="card grid gap-5 p-6"
       onSubmit={(e) => {
         e.preventDefault();
-        save(a);
+        void save({ ...a, code: a.code || `PARTNER-${crypto.randomUUID().slice(0, 8).toUpperCase()}` });
       }}
     >
       <h2 className="display-md">Crea o aggiorna un affiliato</h2>
       <div className="form-grid">
         <Field
-          label="Codice univoco"
+          label="Codice univoco (opzionale, generato automaticamente)"
           value={a.code}
           onChange={(v) => setA({ ...a, code: v.toUpperCase() })}
-          required
         />
         <Field
           label="Nome"
@@ -1847,11 +1698,4 @@ function OtaImport({
       </button>
     </form>
   );
-}
-function safePrague(v: string, previous: string) {
-  try {
-    return pragueInstant(v);
-  } catch {
-    return previous;
-  }
 }

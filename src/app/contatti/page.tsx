@@ -1,8 +1,8 @@
+import { Mail, MapPin, MessageCircle } from "lucide-react";
 import ui from "@/components/public-ui.module.css";
 import { publicSiteContent, publicPage } from "@/lib/platform/public";
 import { ContentBlock } from "@/components/ContentBlock";
 export const dynamic = "force-dynamic";
-import Image from "next/image";
 import { InquiryForm } from "@/components/InquiryForm";
 const baseMetadata = {
   title: "Contatti",
@@ -46,7 +46,7 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={whatsappHref("Ciao, vorrei informazioni sui tour.")}
             >
-              <Image src="/images/illustrated/chat.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <MessageCircle size={56} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Scrivici su WhatsApp</strong>
                 <small>
@@ -58,14 +58,14 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={`mailto:${site.email}`}
             >
-              <Image src="/images/illustrated/email.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <Mail size={56} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Email</strong>
                 <small>{site.email}</small>
               </span>
             </a>
             <div className="flex items-center gap-4">
-              <Image src="/images/illustrated/pin.webp" alt="" width={56} height={56} sizes="56px" className={ui.contactIcon} />
+              <MapPin size={56} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">
                   Punto d’incontro principale

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import styles from "./home.module.css";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarDays, Headset, Languages, MapPin, ShieldCheck, Users } from "lucide-react";
 import { TourCard } from "@/components/TourCard";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
 import { ExperienceRotator } from "@/components/ExperienceRotator";
@@ -13,18 +13,8 @@ import type { Tour } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const featureIcons = [
-  "/images/illustrated/italian.webp",
-  "/images/illustrated/shield.webp",
-  "/images/illustrated/calendar.webp",
-  "/images/illustrated/support.webp",
-];
-const pillarIcons = [
-  "/images/illustrated/shield.webp",
-  "/images/illustrated/group.webp",
-  "/images/illustrated/pin.webp",
-  "/images/illustrated/support.webp",
-];
+const featureIcons = [Languages, ShieldCheck, CalendarDays, Headset];
+const pillarIcons = [ShieldCheck, Users, MapPin, Headset];
 
 /** Tab homepage: una categoria admin con almeno un tour pubblicato. */
 function groupsFromCatalog(
@@ -112,27 +102,22 @@ export default async function HomePage() {
           </div>
         </section>
         {h.stats.length > 0 && (
-          <section className={`${styles.stats} border-b bg-white py-10`}>
-            <div className="container-page grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {h.stats.map((item, index) => {
-                const icon = featureIcons[index % featureIcons.length];
-                return (
-                  <div key={item.value} className={`${styles.benefit} flex`}>
-                    <Image
-                      src={icon}
-                      alt=""
-                      width={56}
-                      height={56}
-                      sizes="56px"
-                      className={styles.benefitIcon}
-                    />
-                    <div>
-                      <strong className="title-md block">{item.value}</strong>
-                      <p className="body-sm mt-1">{item.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
+          <section className={`${styles.stats} border-b bg-white py-8`}>
+            <div className="container-page">
+              <ul className={styles.benefits} aria-label="I vantaggi di prenotare con noi">
+                {h.stats.map((item, index) => {
+                  const Icon = featureIcons[index % featureIcons.length];
+                  return (
+                    <li key={item.value} className={styles.benefit}>
+                      <Icon size={28} className={styles.benefitIcon} aria-hidden />
+                      <div>
+                        <strong className={styles.benefitTitle}>{item.value}</strong>
+                        <p className={styles.benefitLabel}>{item.label}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </section>
         )}
@@ -143,7 +128,7 @@ export default async function HomePage() {
           <h2 className="display-lg mb-3">{h.toursTitle}</h2>
           <p className={`${styles.toursLead} body-md mb-8`}>{h.toursBody}</p>
           {groups.length > 0 ? (
-            <ExperienceRotator groups={groups} />
+            <ExperienceRotator groups={groups} intervalSeconds={h.carouselIntervalSeconds} />
           ) : (
             <div className="grid gap-5 md:grid-cols-3">
               {tours.map((tour) => (
@@ -172,21 +157,14 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {h.pillars.map((pillar, index) => {
-              const icon = pillarIcons[index % pillarIcons.length];
+              const Icon = pillarIcons[index % pillarIcons.length];
               return (
                 <article
                   key={pillar.title}
                   className={styles.trustCard}
                 >
                   <div className={styles.trustCardHeading}>
-                    <Image
-                      src={icon}
-                      alt=""
-                      width={48}
-                      height={48}
-                      sizes="48px"
-                      className={styles.trustIcon}
-                    />
+                    <Icon size={36} className={styles.trustIcon} aria-hidden />
                     <h3 className="title-md !text-white">{pillar.title}</h3>
                   </div>
                   <p className="body-sm mt-3 !text-white/80">{pillar.text}</p>

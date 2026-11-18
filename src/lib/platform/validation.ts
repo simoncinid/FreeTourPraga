@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { sanitizeRichText } from "../rich-text";
 const canonicalPathSchema = z.string().max(500).regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/);
+export const localDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((v) => {
+  const date = new Date(`${v}T12:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === v;
+}, "Data non valida");
 const text = (max = 200) => z.string().trim().min(1).max(max);
 export const itemSchema = z.object({
   tourSlug: text(),
@@ -91,10 +95,7 @@ export const tourSchema = z.object({
     .optional(),
   meetingPoint: text(),
   meetingAddress: text(),
-  mapUrl: z
-    .string()
-    .url()
-    .refine((v) => new URL(v).hostname === "www.google.com"),
+  mapUrl: z.string().url().refine((v) => { const u = new URL(v); return u.protocol === "https:" && ["www.google.com", "google.com", "maps.google.com", "maps.app.goo.gl", "goo.gl"].includes(u.hostname); }, "Usa un link Google Maps"),
   mapEmbedUrl: z
     .string()
     .url()
@@ -105,7 +106,20 @@ export const tourSchema = z.object({
   basePriceCents: z.number().int().min(0).max(10000000),
   childPriceCents: z.number().int().min(0).max(10000000),
   infantPriceCents: z.number().int().min(0).max(10000000),
-  maxGuests: z.number().int().min(1).max(500),
+  maxGuests: z.number().int().min(1).max(25),
+  isFreeTour: z.boolean().optional(),
+  closures: z.array(z.object({ date: localDateSchema, times: z.array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)).max(10) })).max(500).optional(),
+  walkingLabel: z.string().trim().min(1).max(80).optional(),
+  cancellationHours: z.number().min(0).max(720).optional(),
+  lateRefundPercent: z.number().min(0).max(100).optional(),
+  reminderHours: z.number().min(1).max(168).optional(),
+  reminderTemplate: z.string().max(10000).optional(),
+  schedule: z.object({
+    enabled: z.boolean(), from: localDateSchema, to: localDateSchema,
+    weekdays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+    times: z.array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)).min(1).max(10).refine((v) => new Set(v).size === v.length, "Orari duplicati"),
+    capacity: z.number().int().min(1).max(25),
+  }).refine((v) => v.from <= v.to, "La fine precede l’inizio").optional(),
   walkingDifficulty: z.number().min(1).max(5),
   rating: z.number().min(0).max(5),
   reviewCount: z.number().int().min(0),
@@ -133,11 +147,12 @@ export const tourSchema = z.object({
         tourId: text(),
         startsAt: z.string().datetime(),
         endsAt: z.string().datetime(),
-        capacity: z.number().int().min(1).max(500),
+        capacity: z.number().int().min(1).max(25),
         reserved: z.number().int().min(0),
+        closed: z.boolean().optional(),
       }),
     )
-    .max(1000),
+    .max(5000),
 });
 export const pageSchema = z.object({
   canonicalPath: canonicalPathSchema.optional(),

@@ -2,20 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowUpRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { CardCarousel } from "@/components/CardCarousel";
 import { guideImage } from "@/lib/guide-media";
 import { guidePath } from "@/lib/public-paths";
 import type { SiteContent } from "@/lib/platform/content";
 import styles from "./blog-guide-list.module.css";
 
-const PAGE_SIZE = 3;
-
 type Guide = SiteContent["gallery"][number];
 
 export function BlogGuideList({ items }: { items: Guide[] }) {
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("it");
@@ -33,18 +31,6 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
     });
   }, [items, query]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages - 1);
-  const slice = filtered.slice(
-    safePage * PAGE_SIZE,
-    safePage * PAGE_SIZE + PAGE_SIZE,
-  );
-
-  function onSearch(value: string) {
-    setQuery(value);
-    setPage(0);
-  }
-
   return (
     <div className={styles.wrap}>
       <label className={styles.search}>
@@ -52,15 +38,19 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
         <input
           type="search"
           value={query}
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Cerca una guida o un consiglio…"
           aria-label="Cerca articoli"
         />
       </label>
 
-      {slice.length ? (
-        <div key={`${query}-${safePage}`} className={styles.articles} aria-label="Articoli del blog">
-          {slice.map((guide) => (
+      {filtered.length ? (
+        <CardCarousel
+          key={query}
+          label="Articoli del blog"
+          autoPlay={false}
+        >
+          {filtered.map((guide) => (
             <Link
               key={guide.title}
               href={guidePath(guide)}
@@ -84,50 +74,11 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
               </div>
             </Link>
           ))}
-        </div>
+        </CardCarousel>
       ) : (
         <p className="card body-md p-8 text-center">
           Nessun articolo corrisponde a “{query.trim()}”.
         </p>
-      )}
-
-      {filtered.length > PAGE_SIZE && (
-        <div className={styles.pager}>
-          <button
-            type="button"
-            className="button-secondary !px-3 !py-2"
-            aria-label="Pagina precedente"
-            disabled={safePage === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-          >
-            <ChevronLeft size={18} aria-hidden />
-          </button>
-          <div className={styles.pages} role="tablist" aria-label="Pagine articoli">
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i}
-                type="button"
-                role="tab"
-                aria-selected={i === safePage}
-                aria-label={`Pagina ${i + 1}`}
-                className={`${styles.dot} ${i === safePage ? styles.dotActive : ""}`}
-                onClick={() => setPage(i)}
-              />
-            ))}
-          </div>
-          <span className={styles.meta}>
-            {safePage + 1} / {totalPages}
-          </span>
-          <button
-            type="button"
-            className="button-secondary !px-3 !py-2"
-            aria-label="Pagina successiva"
-            disabled={safePage >= totalPages - 1}
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-          >
-            <ChevronRight size={18} aria-hidden />
-          </button>
-        </div>
       )}
     </div>
   );

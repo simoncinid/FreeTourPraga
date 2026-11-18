@@ -38,9 +38,6 @@ export function GoogleMap({ tour }: { tour: Tour }) {
         )}
       </div>
       <div className="flex flex-wrap justify-between gap-3 p-5">
-        <span className="text-sm">
-          {tour.latitude.toFixed(4)}, {tour.longitude.toFixed(4)}
-        </span>
         <a
           className="underline"
           href={tour.mapUrl}

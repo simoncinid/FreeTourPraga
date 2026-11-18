@@ -115,7 +115,7 @@ try {
     .getByRole("button", { name: "Sposta dopo foto 1", exact: true })
     .click();
   const saveButton = page.getByRole("button", {
-    name: "Salva tour e partenze",
+    name: "Salva tour e programmazione",
     exact: true,
   });
   const savedDescription = page.waitForResponse(
@@ -228,7 +228,7 @@ try {
       await thumbs
         .nth(3)
         .evaluate((button) => getComputedStyle(button).borderTopColor),
-      "rgb(255, 75, 11)",
+      "rgb(255, 72, 18)",
     );
     if (width === 1440)
       await page.screenshot({

@@ -1,10 +1,9 @@
 import { tourPath } from "@/lib/public-paths";
 import Link from "next/link";
-import { Menu, MessageCircle } from "lucide-react";
+import { Menu } from "lucide-react";
 import { CartBadge } from "@/components/CartBadge";
 import { NavHoverMenu } from "@/components/NavHoverMenu";
 import { catalog, publicSiteContent } from "@/lib/platform/public";
-import { contentWhatsapp } from "@/lib/platform/content";
 
 const usefulLinks = [
   { label: "Domande frequenti", href: "/faq" },
@@ -39,7 +38,6 @@ export async function Header() {
       <nav aria-label="Navigazione principale" className="hidden h-full items-center gap-4 xl:flex">{navigation()}</nav>
       <div className="flex items-center gap-4">
         <CartBadge />
-        <a href={contentWhatsapp(c, "Ciao FreeTourPraga, vorrei un'informazione sui tour.")} className="header-whatsapp max-lg:!hidden"><MessageCircle size={15} /> WhatsApp</a>
         <details className="relative xl:hidden">
           <summary className="cursor-pointer list-none rounded-full border border-white/40 p-2" aria-label="Menu"><Menu size={20} /></summary>
           <nav aria-label="Navigazione mobile" className="absolute right-0 top-12 grid max-h-[70vh] w-[min(320px,calc(100vw-32px))] gap-1 overflow-auto rounded-lg border border-hairline bg-white p-3 text-ink shadow-card">{navigation(true)}</nav>

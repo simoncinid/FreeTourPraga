@@ -13,6 +13,7 @@ import {
   mergeContentPages,
   siteContent,
 } from "./content";
+import { generateScheduledSlots } from "./scheduling";
 import type { PlatformState } from "./model";
 const runtime = globalThis as unknown as {
   platformPrisma?: PrismaClient;
@@ -75,6 +76,12 @@ const file = () =>
   resolve(process.env.PLATFORM_DATA_FILE || ".data/platform.json");
 function hydrate(state: PlatformState) {
   ensureWpAffiliates(state);
+  state.closedDates ??= [];
+  for (const tour of state.tours) {
+    // Retain every referenced slot so old confirmations and cancellations still resolve.
+    tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || state.bookings.some((b) => b.slotId === slot.id));
+    generateScheduledSlots(tour);
+  }
   const content = siteContent(state.siteContent, state.pages);
   if (!state.siteContent) state.siteContent = content;
   state.pages = mergeContentPages(state.pages, content);

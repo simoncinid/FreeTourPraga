@@ -225,6 +225,7 @@ export function SiteContentEditor({
         {"home" in groups && fields("home", groups.home)}
         {section === "homepage" && (
           <>
+            <label>Intervallo cambio categorie (secondi)<input className="text-input" type="number" min={3} max={30} value={c.home.carouselIntervalSeconds ?? 5} onChange={(e) => setC((previous) => ({ ...previous, home: { ...previous.home, carouselIntervalSeconds: Number(e.target.value) } }))} /></label>
             <label>
               Carica immagine principale
               <input

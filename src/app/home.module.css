@@ -39,10 +39,20 @@
   max-width: min(100%, 34rem);
 }
 
+/* Prova Poppins solo sull’hero (stesso carattere di “Dicono di noi”). */
+.heroCopy,
+.heroCopy :global(.uppercase-tag),
+.heroCopy :global(.hero-title),
+.heroCopy :global(.body-md) {
+  font-family: "Poppins", Arial, sans-serif;
+}
+
 .hero :global(.hero-title) {
   max-width: 760px;
   font-size: clamp(38px, 4vw, 54px);
-  line-height: 1.15;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
@@ -52,13 +62,17 @@
 }
 
 .hero :global(.body-md) {
+  font-weight: 400;
   line-height: 1.7;
+  letter-spacing: 0;
 }
 
 .hero :global(.uppercase-tag) {
   display: flex;
   align-items: center;
   gap: 12px;
+  font-family: "Poppins", Arial, sans-serif;
+  font-weight: 600;
 }
 
 .hero :global(.uppercase-tag)::before {
@@ -68,18 +82,21 @@
   background: currentColor;
 }
 
-.stats > div > div {
-  min-width: 0;
-}
-
-.stats :global(.body-sm) {
-  font-size: 13px;
-  line-height: 1.6;
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+  align-items: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .benefit {
-  align-items: center;
-  gap: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
 }
 
 .benefit > div {
@@ -87,28 +104,49 @@
 }
 
 .benefitIcon {
-  width: 56px;
-  height: 56px;
+  color: rgb(var(--primary));
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
-  object-fit: contain;
+  margin-top: 1px;
   transition: transform 0.25s ease;
 }
 
 .benefit:hover .benefitIcon {
-  transform: translateY(-2px);
+  color: rgb(var(--primary));
+  transform: translateY(-1px);
+}
+
+.benefitTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.benefitLabel {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
 }
 
 @media (min-width: 1024px) {
   .home .stats {
-    padding-block: 35px;
+    padding-block: 28px;
   }
 
-  .stats > div {
-    column-gap: 16px;
+  .benefits {
+    gap: 12px 18px;
   }
 
-  .home .stats > div > div + div {
-    padding-left: 8px;
+  .benefitTitle {
+    font-size: 15px;
+  }
+
+  .benefitLabel {
+    font-size: 13px;
   }
 }
 
@@ -137,11 +175,11 @@
 }
 
 .home :global(.button-primary):hover {
-  box-shadow: 0 5px 18px #ffcc0026;
+  box-shadow: 0 5px 18px rgb(var(--primary) / 0.1490);
 }
 
 .home :where(a, button):focus-visible {
-  outline: 3px solid #ffcc00;
+  outline: 3px solid rgb(var(--primary));
   outline-offset: 5px;
 }
 
@@ -180,9 +218,9 @@
   }
 }
 
-.stats > div > div + div {
+.benefit + .benefit {
   border-left: 1px solid var(--hairline-soft);
-  padding-left: 20px;
+  padding-left: 12px;
 }
 
 .home :global(.experience-panel) > h3 {
@@ -193,6 +231,8 @@
 }
 .home :global([role="tab"]) {
   border: 1px solid transparent;
+  font-weight: 500 !important;
+  letter-spacing: 0;
   transition:
     background-color 0.2s,
     border-color 0.2s;
@@ -209,8 +249,8 @@
   background: #071a35;
   padding: 8px 16px;
   color: rgb(var(--primary));
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500 !important;
   line-height: 1.25;
   text-decoration: none;
   transition:
@@ -271,7 +311,7 @@
   text-wrap: pretty;
 }
 .trustAccent {
-  color: #ffcc00;
+  color: rgb(var(--primary));
 }
 .trustCard {
   --glow-warm: #b58e0070;
@@ -287,7 +327,7 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .trustCard:nth-child(2) {
-  --glow-warm: #ffcc0066;
+  --glow-warm: rgb(var(--primary) / 0.4000);
   --glow-cool: #74549380;
   background: linear-gradient(135deg, #302c43, #172638 75%);
 }
@@ -297,7 +337,7 @@
   background: linear-gradient(135deg, #153d43, #112b38 75%);
 }
 .trustCard:nth-child(4) {
-  --glow-warm: #ffcc0080;
+  --glow-warm: rgb(var(--primary) / 0.5020);
   --glow-cool: #734c9070;
   background: linear-gradient(135deg, #3d2d38, #18283e 75%);
 }
@@ -317,7 +357,7 @@
 .trustCard:nth-child(3)::before { animation-delay: -8s; }
 .trustCard:nth-child(4)::before { animation-delay: -6s; }
 .trustCard:hover {
-  border-color: #ffcc0080;
+  border-color: rgb(var(--primary) / 0.5020);
   box-shadow: inset 0 1px 0 #ffffff18, 0 16px 40px #00000025;
 }
 .trustCardHeading {
@@ -332,11 +372,10 @@
   text-wrap: pretty;
 }
 .trustIcon {
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 8px #00000025);
+  color: rgb(var(--primary));
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
 }
 .trustCard > p {
   position: relative;
@@ -382,19 +421,40 @@
   flex: 0 0 34px;
   min-width: 34px;
   height: 34px;
-  border: 1px solid #ffcc0030;
+  border: 1px solid rgb(var(--primary) / 0.1882);
   border-radius: 50%;
   font-size: 21px;
   line-height: 1;
-  background: #fff8dc;
+  background: var(--primary-soft);
 }
 .answers :global(.body-sm) {
   line-height: 1.7;
 }
 @media (max-width: 767px) {
-  .stats > div > div + div {
-    border-left: 0;
-    padding-left: 0;
+  .benefits {
+    gap: 6px 8px;
+  }
+
+  .benefit {
+    gap: 6px;
+  }
+
+  .benefit + .benefit {
+    padding-left: 8px;
+  }
+
+  .benefitIcon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .benefitTitle {
+    font-size: 11px;
+  }
+
+  .benefitLabel {
+    font-size: 10px;
+    line-height: 1.3;
   }
 }
 
@@ -413,7 +473,7 @@
 }
 .partnerCopy { position: relative; z-index: 2; }
 .partnerCopy h2 { color: #fff; margin: 20px 0; font-size: clamp(32px, 3.2vw, 46px); line-height: 1.17; }
-.partnerCopy h2 em { color: #ffcc00; font-weight: inherit; }
+.partnerCopy h2 em { color: rgb(var(--primary)); font-weight: inherit; }
 .partnerCopy > p:not(:first-child) { color: #d0dbe3; line-height: 1.75; font-size: 15px; }
 .partnerCta { margin-top: 28px; color: var(--on-primary) !important; gap: 18px; }
 .partnerCtaArrow {
@@ -431,28 +491,28 @@
   }
 }
 .partnerArtwork { position: relative; min-width: 0; padding: 20px 0 8px; }
-.partnerOrbit { position: absolute; z-index: -1; width: 390px; height: 390px; border-radius: 50%; background: #ffcc00; top: -10px; left: -10px; }
-.partnerOrbit::after { content: ""; position: absolute; inset: -28px; border: 1px solid #ffcc004d; border-radius: 50%; }
+.partnerOrbit { position: absolute; z-index: -1; width: 390px; height: 390px; border-radius: 50%; background: rgb(var(--primary)); top: -10px; left: -10px; }
+.partnerOrbit::after { content: ""; position: absolute; inset: -28px; border: 1px solid rgb(var(--primary) / 0.3020); border-radius: 50%; }
 .travelTicket { position: relative; padding: 23px 26px; border-radius: 14px; background: #fff8eb; transform: rotate(7deg); box-shadow: 0 25px 45px #00000035; color: #0a233b; }
 .ticketTop { display: flex; justify-content: space-between; gap: 12px; font-size: 9px; text-transform: uppercase; letter-spacing: .07em; font-weight: 800; padding-bottom: 20px; border-bottom: 1px solid #172c3f24; }
 .ticketTop > span:last-child { text-align: right; font-weight: 500; }
 .ticketDestination { padding-top: 22px; }
 .ticketDestination > span { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
 .ticketDestination > strong { display: flex; align-items: center; justify-content: space-between; font-size: clamp(45px, 5vw, 67px); font-weight: 800; letter-spacing: -.07em; line-height: 1.3; }
-.ticketDestination strong span { font-size: 48px; color: #ffcc00; }
+.ticketDestination strong span { font-size: 48px; color: rgb(var(--primary)); }
 .ticketRoute { display: flex; align-items: center; gap: 10px; margin: 12px 0 24px; font-size: 9px; white-space: nowrap; }
-.routeLine { flex: 1; min-width: 14px; border-top: 1px dashed #ffcc00; position: relative; }
-.routeLine::before, .routeLine::after { content: ""; width: 5px; height: 5px; background: #ffcc00; border-radius: 50%; position: absolute; top: -3px; }
+.routeLine { flex: 1; min-width: 14px; border-top: 1px dashed rgb(var(--primary)); position: relative; }
+.routeLine::before, .routeLine::after { content: ""; width: 5px; height: 5px; background: rgb(var(--primary)); border-radius: 50%; position: absolute; top: -3px; }
 .routeLine::before { left: 0; }
 .routeLine::after { right: 0; }
 .ticketDetails { display: flex; gap: 8px; padding-bottom: 25px; }
-.ticketDetails span { padding: 7px 9px; background: #fff8dc; border-radius: 5px; font-size: 10px; font-weight: 600; }
+.ticketDetails span { padding: 7px 9px; background: var(--primary-soft); border-radius: 5px; font-size: 10px; font-weight: 600; }
 .ticketBottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px dashed #24384750; padding-top: 18px; position: relative; }
-.ticketBottom::before, .ticketBottom::after { content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: #ffcc00; border-radius: 50%; }
+.ticketBottom::before, .ticketBottom::after { content: ""; position: absolute; top: -10px; width: 20px; height: 20px; background: rgb(var(--primary)); border-radius: 50%; }
 .ticketBottom::before { left: -36px; }
 .ticketBottom::after { right: -36px; background: #142d40; }
 .ticketBottom > span:first-child { font-size: 11px; line-height: 1.8; }
-.ticketStamp { border: 2px solid #ffcc00; border-radius: 50%; width: 65px; height: 65px; display: grid; align-content: center; text-align: center; transform: rotate(-19deg); color: #ffcc00; font-size: 10px; line-height: 1.25; }
+.ticketStamp { border: 2px solid rgb(var(--primary)); border-radius: 50%; width: 65px; height: 65px; display: grid; align-content: center; text-align: center; transform: rotate(-19deg); color: rgb(var(--primary)); font-size: 10px; line-height: 1.25; }
 .ticketStamp strong { font-size: 20px; }
 @media (max-width: 1100px) {
   .partnerPanel { padding: 36px 40px 28px; gap: 30px; }

@@ -49,6 +49,7 @@ export type SiteContent = {
     navigation: { label: string; href: string }[];
   };
   home: {
+    carouselIntervalSeconds?: number;
     heroImage: string;
     heroTitle: string;
     heroEyebrow: string;

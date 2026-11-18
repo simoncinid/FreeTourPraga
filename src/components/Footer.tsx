@@ -14,7 +14,7 @@ export async function Footer() {
           <p className="mt-4 text-sm text-white/85">{g.footerText}</p>
         </div>
         <div>
-          <h2 className="mb-4 font-bold text-white">Contatti</h2>
+          <h2 className="mb-4 font-normal text-white">Contatti</h2>
           <div className="grid gap-3 text-sm text-white/85">
             <a href={contentWhatsapp(c, "Ciao, vorrei assistenza sui tour.")}>
               WhatsApp · {g.supportHours}
@@ -25,7 +25,7 @@ export async function Footer() {
           </div>
         </div>
         <div>
-          <h2 className="mb-4 font-bold text-white">Informazioni</h2>
+          <h2 className="mb-4 font-normal text-white">Informazioni</h2>
           <div className={`${ui.footerLinks} mb-5 grid gap-x-6 gap-y-3 text-sm`}>
             {g.navigation
               .filter(

@@ -103,6 +103,7 @@ export const siteContentSchema = z.object({
       .max(12),
   }),
   home: z.object({
+    carouselIntervalSeconds: z.number().int().min(3).max(30).optional(),
     heroImage: tourSchema.shape.imageUrl,
     heroTitle: short,
     heroEyebrow: z.string().trim().min(1).max(1000),

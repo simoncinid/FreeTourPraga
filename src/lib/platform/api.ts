@@ -20,6 +20,7 @@ import {
   pageSchema,
   settingsSchema,
   tourSchema,
+  localDateSchema,
 } from "./validation";
 import { affiliatePublicLink } from "./affiliates-wp";
 import {
@@ -32,6 +33,7 @@ import {
   enqueue,
   moveReservation,
   notification,
+  scheduleEmailReminder,
   quote,
   releaseExpired,
 } from "./booking";
@@ -45,6 +47,8 @@ import { siteContentSchema } from "./content-validation";
 import { prepareArticles } from "../article-urls";
 import wordpressRoutes from "@/content/wordpress-routes.json";
 import { site } from "../site";
+import { generateScheduledSlots, isClosed, isTourClosed, publicTour } from "./scheduling";
+import { isFreeTour, tourPrices } from "../tour-rules";
 const ok = (data: unknown) =>
   NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 export async function platformApi(request: Request, path: string[]) {
@@ -66,13 +70,8 @@ export async function platformApi(request: Request, path: string[]) {
         tours: s.tours
           .filter((t) => t.published)
           .map((t) => ({
-            ...t,
+            ...publicTour(s, t),
             galleryImages: tourGalleryImages(t),
-            slots: t.slots.filter(
-              (x) =>
-                new Date(x.startsAt).getTime() >
-                Date.now() + t.bookingCutoffHours * 3600000,
-            ),
           })),
         settings: {
           multiTourPercent: s.settings.multiTourPercent,
@@ -309,6 +308,23 @@ export async function platformApi(request: Request, path: string[]) {
           },
         );
       }
+      if (route === "admin/calendar/closure" && method === "POST") {
+        const body = z.object({ from: localDateSchema, to: localDateSchema, closed: z.boolean() })
+          .refine((v) => v.from <= v.to && (Date.parse(v.to) - Date.parse(v.from)) <= 366 * 86400000, "Intervallo massimo: un anno")
+          .parse(await jsonBody(request));
+        await transaction((s) => {
+          const dates = new Set(s.closedDates ?? []);
+          const cursor = new Date(`${body.from}T12:00:00Z`);
+          while (cursor.toISOString().slice(0, 10) <= body.to) {
+            const date = cursor.toISOString().slice(0, 10);
+            if (body.closed) dates.add(date); else dates.delete(date);
+            cursor.setUTCDate(cursor.getUTCDate() + 1);
+          }
+          s.closedDates = [...dates].sort();
+          audit(s, user.email, body.closed ? "calendar.close" : "calendar.open", `${body.from}/${body.to}`);
+        });
+        return ok({ ok: true });
+      }
       if (route === "admin/manual" && method === "POST") {
         const input = checkoutSchema.parse(await jsonBody(request));
         return ok(
@@ -401,7 +417,8 @@ export async function platformApi(request: Request, path: string[]) {
               const { tour, slot } = slotFor(s, b);
               const guests = nextAdults + nextChildren + nextInfants;
               const delta = guests - b.totalGuests;
-              if (delta > slot.capacity - slot.reserved)
+              if (guests > Math.min(tour.maxGuests, 25) || (delta > 0 && (slot.closed || isClosed(s, slot.startsAt) || isTourClosed(tour, slot.startsAt)))) throw new HttpError(409, "Limite partecipanti superato o giornata chiusa");
+              if (delta > Math.min(slot.capacity, 25) - slot.reserved)
                 throw new HttpError(409, "Posti insufficienti");
               const rate = b.subtotalCents
                 ? b.discountCents / b.subtotalCents
@@ -409,11 +426,16 @@ export async function platformApi(request: Request, path: string[]) {
               const commission = b.totalCents
                 ? b.commissionCents / b.totalCents
                 : 0;
-              b.subtotalCents =
-                nextAdults * (b.unitAdultCents ?? tour.basePriceCents) +
-                nextChildren * (b.unitChildCents ?? tour.childPriceCents) +
-                nextInfants * (b.unitInfantCents ?? tour.infantPriceCents);
-              b.discountCents = Math.round(b.subtotalCents * rate);
+              const originallyFree = b.bookingNote !== undefined ? Boolean(b.bookingNote) : isFreeTour(tour);
+              const units = originallyFree ? tourPrices({ ...tour, isFreeTour: true }, guests) : {
+                adult: b.unitAdultCents ?? tour.basePriceCents,
+                child: b.unitChildCents ?? tour.childPriceCents,
+                infant: b.unitInfantCents ?? tour.infantPriceCents,
+                fixedGroup: false,
+              };
+              b.unitAdultCents = units.adult; b.unitChildCents = units.child; b.unitInfantCents = units.infant;
+              b.subtotalCents = nextAdults * units.adult + nextChildren * units.child + nextInfants * units.infant;
+              b.discountCents = units.fixedGroup ? 0 : Math.round(b.subtotalCents * rate);
               b.totalCents = b.subtotalCents - b.discountCents;
               b.commissionCents = Math.round(b.totalCents * commission);
               slot.reserved += delta;
@@ -463,6 +485,7 @@ export async function platformApi(request: Request, path: string[]) {
               b.paymentStatus = body.paymentStatus;
             }
             if (body.notify) notification(s, b, "Aggiornata");
+            else scheduleEmailReminder(s, b);
             audit(s, user.email, "booking.update", b.pnr);
             return b;
           }),
@@ -567,6 +590,8 @@ export async function platformApi(request: Request, path: string[]) {
               throw new HttpError(409, "Conserva l'indirizzo storico del tour pubblicato");
             if (input.canonicalPath && s.tours.some((tour) => tour.id !== input.id && tour.canonicalPath === input.canonicalPath))
               throw new HttpError(409, "Indirizzo canonico già assegnato a un altro tour");
+            if (old && (old.meetingAddress !== input.meetingAddress || old.mapUrl !== input.mapUrl)) input.mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(input.meetingAddress)}&output=embed`;
+            if (old && input.basePriceCents !== old.basePriceCents && !input.isFreeTour) input.priceLabel = "";
             if (old && input.description !== old.description) input.descriptionHtml = undefined;
             if (
               old &&
@@ -625,9 +650,17 @@ export async function platformApi(request: Request, path: string[]) {
               old?.highlightGalleries
             )
               input.highlightGalleries = old.highlightGalleries;
+            if (JSON.stringify(old?.schedule) !== JSON.stringify(input.schedule)) {
+              input.slots = input.slots.filter((slot) => (!input.schedule?.enabled && !slot.id.startsWith("schedule:")) || s.bookings.some((b) => b.slotId === slot.id) || Date.parse(slot.startsAt) < Date.now());
+              for (const slot of input.slots) if (Date.parse(slot.startsAt) > Date.now()) slot.closed = true;
+            }
+            generateScheduledSlots(input);
             const index = s.tours.findIndex((t) => t.id === input.id);
             if (index < 0) s.tours.push(input);
             else s.tours[index] = input;
+            if (old && (old.reminderHours !== input.reminderHours || old.reminderTemplate !== input.reminderTemplate || old.meetingPoint !== input.meetingPoint || old.meetingAddress !== input.meetingAddress || old.mapUrl !== input.mapUrl)) {
+              for (const booking of s.bookings.filter((b) => b.tourSlug === input.slug && b.status === "confirmed")) scheduleEmailReminder(s, booking);
+            }
             audit(s, user.email, "tour.save", input.slug);
             return input;
           }),
