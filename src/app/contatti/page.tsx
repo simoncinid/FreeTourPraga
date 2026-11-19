@@ -46,7 +46,7 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={whatsappHref("Ciao, vorrei informazioni sui tour.")}
             >
-              <MessageCircle size={56} className={ui.contactIcon} aria-hidden />
+              <MessageCircle size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Scrivici su WhatsApp</strong>
                 <small>
@@ -58,14 +58,14 @@ export default async function Page() {
               className="flex items-center gap-4"
               href={`mailto:${site.email}`}
             >
-              <Mail size={56} className={ui.contactIcon} aria-hidden />
+              <Mail size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Email</strong>
                 <small>{site.email}</small>
               </span>
             </a>
             <div className="flex items-center gap-4">
-              <MapPin size={56} className={ui.contactIcon} aria-hidden />
+              <MapPin size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">
                   Punto d’incontro principale

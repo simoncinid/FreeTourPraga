@@ -1,16 +1,30 @@
 "use client";
+
+import { useState } from "react";
 import type { CatalogTour } from "@/lib/platform/model";
 import { pragueLocal } from "@/lib/platform/time";
 import { isFreeTour } from "@/lib/tour-rules";
 
+function formatClosureDay(date: string) {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("it-IT", {
+    timeZone: "Europe/Prague",
+    dateStyle: "full",
+  });
+}
+
 export function TourOperationsEditor({
   tour: t,
   change,
+  closedDates = [],
 }: {
   tour: CatalogTour;
   change: (key: keyof CatalogTour, value: unknown) => void;
+  closedDates?: string[];
 }) {
   const today = pragueLocal(new Date().toISOString()).slice(0, 10);
+  const [draftDate, setDraftDate] = useState(today);
+  const [draftTimes, setDraftTimes] = useState("");
+  const [adding, setAdding] = useState(false);
   const schedule = t.schedule ?? {
     enabled: false,
     from: today,
@@ -215,50 +229,38 @@ export function TourOperationsEditor({
         <h2 className="display-md">Chiusure di questo tour</h2>
         <p className="text-sm">
           Chiudi una data intera o solo alcuni orari, ad esempio il pomeriggio
-          di Natale. Salva il tour per applicare le modifiche.
+          di Natale. Per cambiare una chiusura, eliminala e aggiungila di
+          nuovo. Salva il tour per applicare le modifiche specifiche.
         </p>
+        {closedDates.length > 0 && (
+          <div className="grid gap-3">
+            {closedDates.map((date) => (
+              <div
+                key={`global-${date}`}
+                className="flex flex-wrap items-center justify-between gap-3 border-b pb-3"
+              >
+                <div className="grid gap-1">
+                  <span className="font-medium">{formatClosureDay(date)}</span>
+                  <span className="text-sm text-muted">Tutto il giorno</span>
+                </div>
+                <span className="closure-global-pill">Chiusura generale</span>
+              </div>
+            ))}
+          </div>
+        )}
         {(t.closures ?? []).map((closure, index) => (
-          <div key={index} className="grid gap-3 border-b pb-4 sm:grid-cols-2">
-            <label>
-              Giorno
-              <input
-                type="date"
-                className="text-input"
-                required
-                value={closure.date}
-                onChange={(e) =>
-                  change(
-                    "closures",
-                    t.closures!.map((c, i) =>
-                      i === index ? { ...c, date: e.target.value } : c,
-                    ),
-                  )
-                }
-              />
-            </label>
-            <label>
-              Orari da chiudere (vuoto = tutto il giorno)
-              <input
-                className="text-input"
-                placeholder="14:00, 16:00"
-                defaultValue={closure.times.join(", ")}
-                onBlur={(e) =>
-                  change(
-                    "closures",
-                    t.closures!.map((c, i) =>
-                      i === index
-                        ? {
-                            ...c,
-                            times: e.target.value
-                              .split(/[,;\s]+/)
-                              .filter(Boolean),
-                          }
-                        : c,
-                    ),
-                  )
-                }
-              />
-            </label>
+          <div
+            key={`${closure.date}-${closure.times.join("-")}-${index}`}
+            className="flex flex-wrap items-center justify-between gap-3 border-b pb-3"
+          >
+            <div className="grid gap-1">
+              <span className="font-medium">{formatClosureDay(closure.date)}</span>
+              <span className="text-sm text-muted">
+                {closure.times.length
+                  ? closure.times.join(", ")
+                  : "Tutto il giorno"}
+              </span>
+            </div>
             <button
               type="button"
               className="underline"
@@ -269,22 +271,73 @@ export function TourOperationsEditor({
                 )
               }
             >
-              Rimuovi chiusura
+              Rimuovi
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          className="button-secondary"
-          onClick={() =>
-            change("closures", [
-              ...(t.closures ?? []),
-              { date: today, times: [] },
-            ])
-          }
-        >
-          Aggiungi chiusura
-        </button>
+        {adding ? (
+          <div className="grid gap-3 border-t pt-4 sm:grid-cols-2">
+            <label>
+              Giorno
+              <input
+                type="date"
+                className="text-input"
+                required
+                value={draftDate}
+                onChange={(e) => setDraftDate(e.target.value)}
+              />
+            </label>
+            <label>
+              Orari da chiudere (vuoto = tutto il giorno)
+              <input
+                className="text-input"
+                placeholder="14:00, 16:00"
+                value={draftTimes}
+                onChange={(e) => setDraftTimes(e.target.value)}
+              />
+            </label>
+            <div className="flex flex-wrap gap-3 sm:col-span-2">
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => {
+                  if (!draftDate) return;
+                  change("closures", [
+                    ...(t.closures ?? []),
+                    {
+                      date: draftDate,
+                      times: draftTimes.split(/[,;\s]+/).filter(Boolean),
+                    },
+                  ]);
+                  setDraftTimes("");
+                  setDraftDate(today);
+                  setAdding(false);
+                }}
+              >
+                Conferma chiusura
+              </button>
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  setDraftTimes("");
+                  setDraftDate(today);
+                  setAdding(false);
+                }}
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setAdding(true)}
+          >
+            Aggiungi chiusura
+          </button>
+        )}
       </div>
       <div className="card grid gap-5 p-6">
         <h2 id="promemoria" className="display-md">Cancellazioni e promemoria</h2>

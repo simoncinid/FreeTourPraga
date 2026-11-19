@@ -109,7 +109,7 @@ export function BlogArticle({ guide }: { guide: GuideItem }) {
           </div>
         ) : null}
         <footer className={styles.articleFooter}>
-          <Link href="/blog">
+          <Link href="/blog" className={`button-primary ${styles.articleFooterCta}`}>
             <ArrowLeft size={16} aria-hidden />
             Torna a tutte le guide
           </Link>

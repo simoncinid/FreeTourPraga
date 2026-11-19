@@ -79,12 +79,28 @@ export default async function HomePage() {
           />
           <div className="hero-overlay" aria-hidden />
           <div className={`${styles.heroInner} container-page relative z-10 grid items-center py-20`}>
-            <div className={`${styles.heroCopy} max-w-2xl`}>
+            <div className={styles.heroCopy}>
               <p className="uppercase-tag mb-5 text-primary">
                 {h.heroEyebrow}
               </p>
               <h1 className="display-xl hero-title mb-5 !text-white">
-                {(h.heroTitle) === "Scopri l'anima autentica di Praga, in totale sicurezza." ? <>Scopri l&apos;anima autentica <span className={styles.keepTogether}>di Praga,</span> in totale sicurezza.</> : h.heroTitle}
+                {h.heroTitle ===
+                "Free Tour Praga in italiano: scopri la città con noi." ? (
+                  <>
+                    Free Tour Praga in italiano:
+                    <br />
+                    scopri la città con noi.
+                  </>
+                ) : h.heroTitle ===
+                  "Scopri l'anima autentica di Praga, in totale sicurezza." ? (
+                  <>
+                    Scopri l&apos;anima autentica{" "}
+                    <span className={styles.keepTogether}>di Praga,</span> in
+                    totale sicurezza.
+                  </>
+                ) : (
+                  h.heroTitle
+                )}
               </h1>
               <div className={styles.heroCtaBlock}>
                 <p className="body-md mb-8 !text-white/90">{h.heroBody}</p>
@@ -107,11 +123,22 @@ export default async function HomePage() {
               <ul className={styles.benefits} aria-label="I vantaggi di prenotare con noi">
                 {h.stats.map((item, index) => {
                   const Icon = featureIcons[index % featureIcons.length];
+                  const titleWords = item.value.trim().split(/\s+/);
+                  const titleMid = Math.ceil(titleWords.length / 2);
                   return (
                     <li key={item.value} className={styles.benefit}>
                       <Icon size={28} className={styles.benefitIcon} aria-hidden />
                       <div>
-                        <strong className={styles.benefitTitle}>{item.value}</strong>
+                        <strong className={styles.benefitTitle}>
+                          {titleWords.slice(0, titleMid).join(" ")}
+                          {titleWords.length > 1 ? (
+                            <>
+                              {" "}
+                              <br className={styles.benefitTitleBreak} />
+                            </>
+                          ) : null}
+                          {titleWords.slice(titleMid).join(" ")}
+                        </strong>
                         <p className={styles.benefitLabel}>{item.label}</p>
                       </div>
                     </li>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./tripadvisor.module.css";
 
@@ -14,7 +14,41 @@ export type TripAdvisorReview = {
   avatarUrl: string;
 };
 
-const AUTOPLAY_MS = 3000;
+const AUTOPLAY_MS = 5000;
+
+function ReviewCardBody({ review }: { review: TripAdvisorReview }) {
+  return (
+    <div className={styles.reviewInner}>
+      <div className={styles.reviewHeader}>
+        <div className={styles.reviewIdentity}>
+          <Image
+            src={review.avatarUrl}
+            alt=""
+            width={44}
+            height={44}
+            className={styles.avatar}
+          />
+          <div>
+            <p className={styles.reviewAuthor}>{review.author}</p>
+            <p className={styles.reviewPlace}>{review.place}</p>
+          </div>
+        </div>
+        <p className={styles.reviewDate}>{review.date}</p>
+      </div>
+      <div className={styles.circles} aria-label={`${review.rating} su 5`}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <span
+            key={i}
+            className={`${styles.circle} ${
+              i < review.rating ? "" : styles.circleEmpty
+            }`}
+          />
+        ))}
+      </div>
+      <p className={styles.reviewText}>{review.text}</p>
+    </div>
+  );
+}
 
 export function TripAdvisorWidget({
   tripAdvisor,
@@ -33,6 +67,8 @@ export function TripAdvisorWidget({
   const reviews = tripAdvisor.reviews;
   const [index, setIndex] = useState(0);
   const [tick, setTick] = useState(0);
+  const [cardHeight, setCardHeight] = useState<number>();
+  const measureRef = useRef<HTMLDivElement>(null);
   const review = reviews[index] || reviews[0];
   const body =
     tripAdvisor.body ||
@@ -43,6 +79,28 @@ export function TripAdvisorWidget({
     setIndex((next + reviews.length) % reviews.length);
     setTick((value) => value + 1);
   }
+
+  useLayoutEffect(() => {
+    const root = measureRef.current;
+    if (!root || !reviews.length) return;
+
+    const measure = () => {
+      const heights = Array.from(root.children, (child) =>
+        Math.ceil((child as HTMLElement).getBoundingClientRect().height),
+      );
+      const next = Math.max(0, ...heights);
+      setCardHeight((current) => (current === next ? current : next));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(root);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [reviews]);
 
   useEffect(() => {
     if (reviews.length < 2) return;
@@ -65,11 +123,13 @@ export function TripAdvisorWidget({
         </div>
       </div>
       <div className={`${styles.showcaseRating} ${styles.cardRating}`}>
-        <strong>
-          {tripAdvisor.rating.toFixed(1)}
-          <span>/5</span>
-        </strong>
-        <div>
+        <div className={styles.cardRatingScore}>
+          <strong>
+            {tripAdvisor.rating.toFixed(1)}
+            <span>/5</span>
+          </strong>
+        </div>
+        <div className={styles.cardRatingAction}>
           <ReviewBubbles rating={tripAdvisor.rating} />
           <a
             href={tripAdvisor.profileUrl}
@@ -98,38 +158,23 @@ export function TripAdvisorWidget({
               <ChevronLeft size={22} />
             </button>
           ) : null}
-          <div className={styles.reviewCard}>
-            <div className={styles.reviewInner}>
-              <div className={styles.reviewHeader}>
-                <div className={styles.reviewIdentity}>
-                  <Image
-                    src={review.avatarUrl}
-                    alt=""
-                    width={44}
-                    height={44}
-                    className={styles.avatar}
-                  />
-                  <div>
-                    <p className={styles.reviewAuthor}>{review.author}</p>
-                    <p className={styles.reviewPlace}>{review.place}</p>
-                  </div>
+          <div className={styles.reviewStage}>
+            <div
+              ref={measureRef}
+              className={styles.reviewMeasure}
+              aria-hidden
+            >
+              {reviews.map((item) => (
+                <div key={`measure-${item.author}-${item.date}`} className={styles.reviewCard}>
+                  <ReviewCardBody review={item} />
                 </div>
-                <p className={styles.reviewDate}>{review.date}</p>
-              </div>
-              <div
-                className={styles.circles}
-                aria-label={`${review.rating} su 5`}
-              >
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`${styles.circle} ${
-                      i < review.rating ? "" : styles.circleEmpty
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className={styles.reviewText}>{review.text}</p>
+              ))}
+            </div>
+            <div
+              className={styles.reviewCard}
+              style={cardHeight ? { height: cardHeight } : undefined}
+            >
+              <ReviewCardBody review={review} />
             </div>
           </div>
           {reviews.length > 1 ? (

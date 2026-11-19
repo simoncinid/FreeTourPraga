@@ -1,5 +1,4 @@
 import { publicPage } from "@/lib/platform/public";
-import { ContentBlock } from "@/components/ContentBlock";
 import ui from "@/components/public-ui.module.css";
 import Link from "next/link";
 import { ArrowRight, Headset, MapPin, ShieldCheck, Users } from "lucide-react";
@@ -10,22 +9,37 @@ export const dynamic = "force-dynamic";
 const icons = [ShieldCheck, Users, MapPin, Headset];
 
 export default async function Page() {
-  const page = await publicPage("chi-siamo");
-  if (page) return <ContentBlock page={page} />;
   const { home } = await publicSiteContent();
+  const lines = home.trustTitle.split("\n").filter(Boolean);
+
   return (
     <section className={`${ui.page} ${ui.about} section`}>
-      <div className="container-page">
-        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>Chi siamo</p>
-        <h1 className="display-xl mb-6">
-          {home.trustTitle.split("\n").map((line, index) => (
-            <span key={index} className="block">
-              {line}
-            </span>
-          ))}
+      <div className={`container-page ${ui.aboutInner}`}>
+        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+          Chi siamo
+        </p>
+        <h1 className={`display-xl ${ui.aboutTitle}`}>
+          {lines.map((line, index) =>
+            index === lines.length - 1 ? (
+              <span key={line} className={ui.aboutTitleEnd}>
+                <span className={ui.aboutTitleEndLine}>{line}</span>
+                <Link
+                  href="/tour"
+                  className={`button-primary ${ui.aboutTourCta}`}
+                >
+                  Tutti i tour
+                  <ArrowRight size={14} aria-hidden />
+                </Link>
+              </span>
+            ) : (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ),
+          )}
         </h1>
-        <p className="body-md mb-10 max-w-3xl">{home.trustBody}</p>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <p className={`body-md ${ui.aboutLead}`}>{home.trustBody}</p>
+        <div className={ui.aboutGrid}>
           {home.pillars.map((pillar, index) => {
             const Icon = icons[index % icons.length];
             return (
@@ -37,10 +51,6 @@ export default async function Page() {
             );
           })}
         </div>
-        <Link href="/tour" className="button-primary mt-10">
-          I nostri tour
-          <ArrowRight size={18} />
-        </Link>
       </div>
     </section>
   );
@@ -55,5 +65,9 @@ const baseMetadata = {
 
 export async function generateMetadata() {
   const page = await publicPage("chi-siamo");
-  return { ...baseMetadata, ...(page?.seoTitle ? { title: page.seoTitle } : {}), ...(page?.seoDescription ? { description: page.seoDescription } : {}) };
+  return {
+    ...baseMetadata,
+    ...(page?.seoTitle ? { title: page.seoTitle } : {}),
+    ...(page?.seoDescription ? { description: page.seoDescription } : {}),
+  };
 }

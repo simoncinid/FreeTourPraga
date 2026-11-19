@@ -8,7 +8,7 @@
 }
 
 .heroCopy {
-  max-width: 760px;
+  max-width: 840px;
 }
 
 @media (min-width: 1024px) {
@@ -48,12 +48,12 @@
 }
 
 .hero :global(.hero-title) {
-  max-width: 760px;
-  font-size: clamp(38px, 4vw, 54px);
+  max-width: 900px;
+  font-size: clamp(42px, 4.8vw, 64px);
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: -0.035em;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .heroCtaBlock :global(.body-md) {
@@ -125,6 +125,10 @@
   color: var(--ink);
 }
 
+.benefitTitleBreak {
+  display: none;
+}
+
 .benefitLabel {
   margin: 2px 0 0;
   font-size: 12px;
@@ -187,6 +191,25 @@
   .home > :global(.editorial-section) {
     padding-block: 64px;
   }
+
+  .hero :global(.hero-overlay) {
+    background:
+      linear-gradient(
+        0deg,
+        rgba(4, 28, 54, 0.94) 0%,
+        rgba(4, 28, 54, 0.72) 22%,
+        rgba(4, 28, 54, 0.4) 45%,
+        rgba(4, 28, 54, 0.12) 68%,
+        rgba(4, 28, 54, 0) 88%
+      ),
+      linear-gradient(
+        90deg,
+        rgba(4, 28, 54, 0.88) 0%,
+        rgba(4, 28, 54, 0.55) 42%,
+        rgba(4, 28, 54, 0.22) 72%,
+        rgba(4, 28, 54, 0) 100%
+      );
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -212,9 +235,41 @@
   white-space: nowrap;
 }
 
+.galleryCarousel {
+  min-width: 0;
+}
+
+.galleryAllArticles {
+  display: none;
+}
+
 @media (max-width: 899px) {
   .galleryLead {
     white-space: normal;
+  }
+}
+
+@media (max-width: 767px) {
+  .galleryAllArticles {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 4px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: rgb(var(--primary));
+    color: var(--on-primary);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.25;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .galleryAllArticles:hover {
+    filter: brightness(0.96);
   }
 }
 
@@ -431,12 +486,25 @@
   line-height: 1.7;
 }
 @media (max-width: 767px) {
+  .stats {
+    padding-block: 16px;
+  }
+
   .benefits {
     gap: 6px 8px;
   }
 
   .benefit {
+    flex-direction: column;
+    align-items: center;
     gap: 6px;
+    text-align: center;
+  }
+
+  .benefit > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .benefit + .benefit {
@@ -446,15 +514,21 @@
   .benefitIcon {
     width: 22px;
     height: 22px;
+    margin-top: 0;
   }
 
   .benefitTitle {
     font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .benefitTitleBreak {
+    display: block;
   }
 
   .benefitLabel {
-    font-size: 10px;
-    line-height: 1.3;
+    display: none;
   }
 }
 

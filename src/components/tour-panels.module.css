@@ -1,3 +1,22 @@
+.highlightPanel {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .highlightPanel {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    background: #fff;
+    padding: 16px 14px 4px;
+  }
+  .highlightPanel :global(.display-md) {
+    margin-bottom: 8px;
+  }
+  .highlightRow:last-child {
+    border-bottom: 0;
+  }
+}
+
 .highlightList {
   display: grid;
   gap: 0;
@@ -5,10 +24,10 @@
 
 .highlightRow {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
   border-bottom: 1px solid var(--hairline-soft);
-  padding: 18px 0;
+  padding: 10px 0;
 }
 
 @media (min-width: 768px) {
@@ -18,11 +37,16 @@
   }
 }
 
+
 .highlightCopy {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   min-width: 0;
+}
+
+.highlightCopy :global(.body-md) {
+  color: var(--ink);
 }
 
 .highlightThumbs {
@@ -189,7 +213,7 @@
 
 .panelOrange :global(.body-sm),
 .panelBlue :global(.body-sm) {
-  color: #243246;
+  color: var(--ink);
 }
 
 .panelList {
@@ -247,6 +271,12 @@
 
 .panelIconWhatsapp {
   color: currentColor;
+}
+
+@media (max-width: 767px) {
+  .panelIconWhatsapp {
+    display: none;
+  }
 }
 
 .panelIconBlue {

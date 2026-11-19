@@ -74,22 +74,22 @@ export function initialState(): PlatformState {
 }
 const file = () =>
   resolve(process.env.PLATFORM_DATA_FILE || ".data/platform.json");
-function hydrate(state: PlatformState) {
+function hydrate(state: PlatformState, generateSlots = true) {
   ensureWpAffiliates(state);
   state.closedDates ??= [];
   for (const tour of state.tours) {
     // Retain every referenced slot so old confirmations and cancellations still resolve.
     tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || state.bookings.some((b) => b.slotId === slot.id));
-    generateScheduledSlots(tour);
+    if (generateSlots) generateScheduledSlots(tour);
   }
   const content = siteContent(state.siteContent, state.pages);
   if (!state.siteContent) state.siteContent = content;
   state.pages = mergeContentPages(state.pages, content);
   return state;
 }
-async function readLocal() {
+async function readLocal(generateSlots = true) {
   try {
-    return hydrate(JSON.parse(await readFile(file(), "utf8")) as PlatformState);
+    return hydrate(JSON.parse(await readFile(file(), "utf8")) as PlatformState, generateSlots);
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
     return initialState();
@@ -144,18 +144,18 @@ export async function transaction<T>(
     { maxWait: 15000, timeout: 15000 },
   );
 }
-export async function readState(): Promise<PlatformState> {
+export async function readState({ generateSlots = true } = {}): Promise<PlatformState> {
   if (localMode()) {
     if (process.env.NODE_ENV === "production")
       throw new Error("Archivio locale vietato in produzione");
-    return readLocal();
+    return readLocal(generateSlots);
   }
   if (!hasProductionDatabase()) throw new Error("DATABASE_URL PostgreSQL richiesta");
   const row = await database().platformState.findUnique({
     where: { id: "main" },
   });
   return row
-    ? hydrate(row.data as unknown as PlatformState)
+    ? hydrate(row.data as unknown as PlatformState, generateSlots)
     : initialState();
 }
 export function audit(

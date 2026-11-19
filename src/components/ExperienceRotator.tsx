@@ -3,7 +3,7 @@
 import { CardCarousel } from "./CardCarousel";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { TourCard } from "@/components/TourCard";
 import styles from "@/app/home.module.css";
@@ -44,14 +44,14 @@ export function ExperienceRotator({
   }
 
   /** Pausa il cambio categoria; riparte dopo 3s senza interazione. */
-  function pauseForInteraction() {
+  const pauseForInteraction = useCallback(() => {
     setPaused(true);
     clearResumeTimer();
     resumeTimer.current = window.setTimeout(() => {
       resumeTimer.current = null;
       setPaused(false);
     }, IDLE_RESUME_MS);
-  }
+  }, []);
 
   useEffect(() => () => clearResumeTimer(), []);
 
@@ -73,7 +73,7 @@ export function ExperienceRotator({
       root.removeEventListener("wheel", onInteract);
       root.removeEventListener("pointerdown", onInteract);
     };
-  }, []);
+  }, [pauseForInteraction]);
 
   useEffect(() => {
     if (
@@ -105,7 +105,7 @@ export function ExperienceRotator({
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="mb-6 flex flex-wrap justify-start gap-2"
+        className="mb-6 flex flex-wrap justify-center gap-2 md:justify-start"
         role="tablist"
         aria-label="Gruppi di esperienze"
       >

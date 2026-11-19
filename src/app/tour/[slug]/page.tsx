@@ -6,6 +6,7 @@ import { tourPhotos } from "@/lib/tour-gallery";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Clock3, Info, Users, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
+import { TourMobileBooking } from "@/components/TourMobileBooking";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
 import { TourHighlights } from "@/components/TourHighlights";
@@ -88,24 +89,26 @@ export default async function TourDetailPage({ params }: Props) {
           <p className="micro-label mb-3 text-primary">
             Praga · {tour.category}
           </p>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className={`grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end ${ui.detailTitleRow}`}>
             <h1 className="display-xl tour-detail-title mb-0 min-w-0">
               {tour.title}
             </h1>
-            <div className="shrink-0 text-left lg:text-right">
-              <span className="block text-sm text-muted">{tour.priceLabel ? "Free Tour" : "A partire da soli"}</span>
-              <strong className="font-display text-4xl text-primary leading-none">
-                {tour.priceLabel || formatMoney(tour.basePriceCents)}
-              </strong>
+            <div className={ui.detailOffer}>
+              <div className={ui.detailPrice}>
+                <span>{tour.priceLabel ? "Free Tour" : "A partire da soli"}</span>
+                <strong>
+                  {tour.priceLabel || formatMoney(tour.basePriceCents)}
+                </strong>
+              </div>
+              <div className={ui.detailMeta}>
+                <span>
+                  <Clock3 size={15} aria-hidden /> {minutesToLabel(tour.durationMinutes)}
+                </span>
+                <span>
+                  <Users size={15} aria-hidden /> Guida in {tour.language}
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-            <span className="flex items-center gap-1">
-              <Clock3 size={15} /> {minutesToLabel(tour.durationMinutes)}
-            </span>
-            <span className="flex items-center gap-1">
-              <Users size={15} /> Guida in {tour.language}
-            </span>
           </div>
         </div>
 
@@ -130,7 +133,7 @@ export default async function TourDetailPage({ params }: Props) {
               <h2 className="display-md mb-4">L&apos;esperienza</h2>
               <div className="body-md">{tour.descriptionHtml ? <RichContent html={tour.descriptionHtml} /> : <p>{tour.description}</p>}</div>
             </section>
-            <section id="dettagli">
+            <section id="dettagli" className={panels.highlightPanel}>
               <h2 className="display-md mb-4">Cosa vedrai</h2>
               <TourHighlights
                 items={tour.highlights.map((text, index) => ({
@@ -175,7 +178,7 @@ export default async function TourDetailPage({ params }: Props) {
                 </ul>
               </div>
             </section>
-            <section className="card grid gap-3 p-6"><h2 className="display-md">Prenotazione e cancellazione</h2>{isFreeTour(tour) && <p>{FREE_TOUR_NOTE}</p>}<p>{cancellationNote(tour)}</p></section>
+            <section id="cancellazione" className="card grid gap-3 p-6"><h2 className="display-md">Prenotazione e cancellazione</h2>{isFreeTour(tour) && <p>{FREE_TOUR_NOTE}</p>}<p>{cancellationNote(tour)}</p></section>
             <GoogleMap tour={tour} />
             <TripAdvisorSection layout="card" />
             <section
@@ -202,7 +205,7 @@ export default async function TourDetailPage({ params }: Props) {
             </section>
           </div>
           <BookingForm tour={tour} />
-          <a href="#prenota" className="tour-mobile-booking button-primary">Prenota questo tour</a>
+          <TourMobileBooking tour={tour} />
         </div>
       </div>
     </section>

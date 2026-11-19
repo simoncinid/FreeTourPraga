@@ -1,5 +1,6 @@
 import ui from "./public-ui.module.css";
 import Link from "next/link";
+import { canonicalPath } from "@/lib/public-paths";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
 import { SocialLinks } from "./SocialLinks";
@@ -35,7 +36,7 @@ export async function Footer() {
                   n.href !== "/faq",
               )
               .map((n) => (
-                <Link key={`${n.href}-${n.label}`} href={n.href}>
+                <Link key={`${n.href}-${n.label}`} href={n.href.startsWith("/") ? canonicalPath(n.href) : n.href}>
                   {n.label}
                 </Link>
               ))}

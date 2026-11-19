@@ -1,6 +1,7 @@
 .wrap {
   display: grid;
   gap: 28px;
+  min-height: 0;
 }
 
 .search {
@@ -47,6 +48,47 @@
   position: relative;
   flex: 0 0 200px;
   overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .wrap {
+    gap: 28px;
+  }
+  .wrap :global(.card-carousel) {
+    min-width: 0;
+    width: 100%;
+  }
+  .wrap :global(.card-carousel-stage) {
+    min-width: 0;
+    width: 100%;
+    align-items: center;
+  }
+  .wrap :global(.card-carousel-track) {
+    width: 100%;
+    min-width: 0;
+    padding: 2px 0 8px;
+  }
+  .wrap :global(.card-carousel-dots) {
+    margin-top: 4px;
+  }
+  .search {
+    min-height: 44px;
+  }
+  .article {
+    height: 360px;
+  }
+  .articleMedia {
+    flex: 0 0 150px;
+  }
+  .articleBody {
+    padding: 14px 16px 16px;
+  }
+  .articleCaption {
+    -webkit-line-clamp: 2;
+    margin-top: 8px;
+  }
+  .articleCta {
+    padding-top: 12px;
+  }
 }
 .articleBody {
   display: flex;

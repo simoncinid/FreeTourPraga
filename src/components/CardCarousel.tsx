@@ -1,30 +1,59 @@
 "use client";
 
-import { Children, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const IDLE_RESUME_MS = 3000;
+/** Larghezza CSS del bottone pallino (globals.css). */
+const DOT_BUTTON_WIDTH = 24;
 
 export function CardCarousel({
   children,
   label,
   autoPlay = true,
   intervalMs = 5000,
+  limitToDotRowMobile = false,
 }: {
   children: ReactNode;
   label: string;
   autoPlay?: boolean;
   /** Intervallo scorrimento automatico in ms (blog = 3000). */
   intervalMs?: number;
+  /**
+   * Solo mobile: mostra al massimo N slide, con N = pallini che stanno in una riga.
+   * I pallini restano sempre visibili. Desktop invariato.
+   */
+  limitToDotRowMobile?: boolean;
 }) {
+  const root = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const resumeTimer = useRef<number | null>(null);
-  const count = Children.count(children);
+  const allChildren = Children.toArray(children);
   const [perPage, setPerPage] = useState(1);
   const [page, setPage] = useState(0);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const pages = Math.ceil(count / perPage);
+  /**
+   * Solo mobile: max slide = quanti pallini stanno in una riga.
+   * Infinity su desktop / prima della misura.
+   */
+  const [mobileSlideCap, setMobileSlideCap] = useState(Number.POSITIVE_INFINITY);
+  const visibleChildren =
+    limitToDotRowMobile &&
+    Number.isFinite(mobileSlideCap) &&
+    mobileSlideCap < allChildren.length
+      ? allChildren.slice(0, Math.max(1, mobileSlideCap))
+      : allChildren;
+  const count = visibleChildren.length;
+  const pages = Math.max(1, Math.ceil(count / perPage));
   const rotateMs = Math.max(2000, Math.min(intervalMs, 30000));
 
   function clearResumeTimer() {
@@ -56,6 +85,41 @@ export function CardCarousel({
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
+
+  useLayoutEffect(() => {
+    if (!limitToDotRowMobile) {
+      setMobileSlideCap(Number.POSITIVE_INFINITY);
+      return;
+    }
+    const el = root.current;
+    if (!el) return;
+
+    const check = () => {
+      if (window.matchMedia("(min-width: 768px)").matches) {
+        setMobileSlideCap(Number.POSITIVE_INFINITY);
+        return;
+      }
+      const width = el.clientWidth;
+      const fit = Math.max(1, Math.floor(width / DOT_BUTTON_WIDTH));
+      setMobileSlideCap(fit);
+    };
+
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    window.addEventListener("resize", check);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", check);
+    };
+  }, [limitToDotRowMobile]);
+
+  useEffect(() => {
+    if (page > pages - 1) {
+      setPage(0);
+      track.current?.scrollTo({ left: 0 });
+    }
+  }, [page, pages]);
 
   function go(next: number) {
     const el = track.current;
@@ -96,10 +160,11 @@ export function CardCarousel({
     return () => window.clearInterval(id);
   }, [paused, hovered, pages, autoPlay, rotateMs]);
 
-  if (!count) return null;
+  if (!allChildren.length) return null;
 
   return (
     <div
+      ref={root}
       className="card-carousel"
       role="region"
       aria-roledescription="carosello"
@@ -141,8 +206,13 @@ export function CardCarousel({
           onTouchMove={pauseForInteraction}
           onWheel={pauseForInteraction}
         >
-          {Children.map(children, (child, index) => (
+          {visibleChildren.map((child, index) => (
             <div
+              key={
+                isValidElement(child) && child.key != null
+                  ? String(child.key)
+                  : index
+              }
               className="card-carousel-slide"
               role="group"
               aria-label={`${index + 1} di ${count}`}

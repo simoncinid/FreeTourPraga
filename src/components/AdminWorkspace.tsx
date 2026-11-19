@@ -407,7 +407,9 @@ export function AdminWorkspace() {
           Esci
         </button>
       </aside>
-      <div className="admin-main min-w-0">
+      <div
+        className={`admin-main min-w-0${section === "calendario" ? " admin-calendar-page" : ""}`}
+      >
         <header className="mb-7 flex flex-wrap justify-between gap-4">
           <div>
             <p className="micro-label text-primary">
@@ -426,7 +428,10 @@ export function AdminWorkspace() {
           </button>
         </header>
         {message && (
-          <p role="status" className="card mb-6 border-l-4 border-primary p-4">
+          <p
+            role="status"
+            className={`card border-l-4 border-primary p-4${section === "calendario" ? " mb-3" : " mb-6"}`}
+          >
             {message}
           </p>
         )}
@@ -478,15 +483,6 @@ export function AdminWorkspace() {
                 </p>
               )}
             </div>
-            <div className="mb-4 flex flex-wrap gap-3">
-              <Link href="/admin/prenotazioni/nuova" className="button-primary">
-                Inserisci prenotazione
-              </Link>
-              <Link href="/admin/calendario" className="button-secondary">
-                Chiusure calendario
-              </Link>
-            </div>
-            {table(data.bookings.slice().reverse().slice(0, 15))}
           </>
         )}
         {section === "prenotazioni" &&
@@ -602,6 +598,7 @@ export function AdminWorkspace() {
                     .filter(Boolean),
                 ),
               ].sort((a, b) => a.localeCompare(b, "it"))}
+              closedDates={data.closedDates ?? []}
               busy={busy}
               save={(t) => mutate("tour", t, "PUT")}
             />
@@ -1313,12 +1310,14 @@ function TourEditor({
   tour,
   categories,
   defaults,
+  closedDates = [],
   busy,
   save,
 }: {
   tour: CatalogTour;
   defaults: Settings;
   categories: string[];
+  closedDates?: string[];
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
@@ -1497,7 +1496,7 @@ function TourEditor({
           Prezzi, fasce di età, capienza e partenze verificati
         </label>}
       </div>
-      <TourOperationsEditor tour={t} change={set} />
+      <TourOperationsEditor tour={t} change={set} closedDates={closedDates} />
       <TourGalleryEditor photos={t.galleryImages} disabled={busy || coverUploading} onChange={(photos) => set("galleryImages", photos)} onUploading={setGalleryUploading} />
       <button className="button-primary" disabled={busy || galleryUploading || coverUploading}>
         Salva tour e programmazione

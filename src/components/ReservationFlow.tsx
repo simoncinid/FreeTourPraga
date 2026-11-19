@@ -1,6 +1,6 @@
 "use client";
 import ui from "./public-ui.module.css";
-import { Compass } from "lucide-react";
+import { ChevronUp, Compass } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBrowserStorage, useHydrated } from "@/lib/browser-storage";
@@ -24,6 +24,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   const ready = useHydrated();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const affiliateCode = useBrowserStorage("ftp-affiliate") || "";
   const [method, setMethod] = useState<"cash" | "stripe">("cash");
   const [stripeAvailable, setStripeAvailable] = useState(false);
@@ -157,9 +158,15 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
           {mode === "cart" ? "1. Esperienze" : "2. Contatti e conferma"}
         </p>
         <h1 className="display-xl mt-3">
-          {mode === "cart"
-            ? "La tua Praga, in programma."
-            : "Manca solo un passo."}
+          {mode === "cart" ? (
+            <>
+              La tua Praga,
+              <br />
+              in programma.
+            </>
+          ) : (
+            "Manca solo un passo."
+          )}
         </h1>
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -288,40 +295,75 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             </form>
           )}
         </div>
-        <aside className="card sticky top-24 grid gap-5 p-7">
-          <h2 className="display-md">Il tuo riepilogo</h2>
-          <div className="flex justify-between">
-            <span>{items.length} {items.length === 1 ? "esperienza" : "esperienze"}</span>
-            <strong>{formatMoney(subtotal)}</strong>
-          </div>
-          <p className="text-sm">
-            Con almeno {rules.minimumTours} tour diversi, sconto automatico del{" "}
-            {rules.multiTourPercent}%.
-          </p>
-          <label className="text-sm">
-            Codice partner
-            <input
-              className="text-input"
-              value={affiliateCode}
-              maxLength={40}
-              readOnly
-              placeholder="Nessun codice partner"
-            />
-          </label>
-          {affiliateCode ? (
-            <p className="text-xs text-muted">
-              Partner associato alla prenotazione.
+        <aside
+          className={`reservation-summary card sticky top-24 grid gap-5 p-7 ${ui.reservationSummary} ${
+            summaryOpen ? ui.reservationSummaryOpen : ""
+          }`}
+        >
+          <button
+            type="button"
+            className={ui.reservationSummaryHandle}
+            aria-expanded={summaryOpen}
+            aria-controls="reservation-summary-details"
+            onClick={() => setSummaryOpen((open) => !open)}
+          >
+            <span className={ui.reservationSummaryGrip} aria-hidden />
+            <span className={ui.reservationSummaryBar}>
+              <span>
+                <small>
+                  {items.length}{" "}
+                  {items.length === 1 ? "esperienza" : "esperienze"}
+                </small>
+                <strong>Totale {formatMoney(subtotal - discount)}</strong>
+              </span>
+              <ChevronUp
+                size={18}
+                aria-hidden
+                className={summaryOpen ? undefined : ui.reservationSummaryChevron}
+              />
+            </span>
+          </button>
+          <div
+            id="reservation-summary-details"
+            className={ui.reservationSummaryDetails}
+          >
+            <h2 className="display-md">Il tuo riepilogo</h2>
+            <div className="flex justify-between">
+              <span>
+                {items.length}{" "}
+                {items.length === 1 ? "esperienza" : "esperienze"}
+              </span>
+              <strong>{formatMoney(subtotal)}</strong>
+            </div>
+            <p className="text-sm">
+              Con almeno {rules.minimumTours} tour diversi, sconto automatico del{" "}
+              {rules.multiTourPercent}%.
             </p>
-          ) : null}
-          {discount > 0 && (
-            <p className="flex justify-between text-success">
-              <span>Sconto multi-tour</span>
-              <strong>−{formatMoney(discount)}</strong>
-            </p>
-          )}
-          <div className="flex justify-between border-t pt-5 text-xl">
-            <strong>Totale</strong>
-            <strong>{formatMoney(subtotal - discount)}</strong>
+            <label className="text-sm">
+              Codice partner
+              <input
+                className="text-input"
+                value={affiliateCode}
+                maxLength={40}
+                readOnly
+                placeholder="Nessun codice partner"
+              />
+            </label>
+            {affiliateCode ? (
+              <p className="text-xs text-muted">
+                Partner associato alla prenotazione.
+              </p>
+            ) : null}
+            {discount > 0 && (
+              <p className="flex justify-between text-success">
+                <span>Sconto multi-tour</span>
+                <strong>−{formatMoney(discount)}</strong>
+              </p>
+            )}
+            <div className="flex justify-between border-t pt-5 text-xl">
+              <strong>Totale</strong>
+              <strong>{formatMoney(subtotal - discount)}</strong>
+            </div>
           </div>
           {error && (
             <p role="alert" className="text-red-700">
@@ -346,7 +388,10 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   : "Conferma prenotazione"}
             </button>
           )}
-          <Link href="/tour" className="text-center text-sm underline">
+          <Link
+            href="/tour"
+            className={`text-center text-sm underline ${ui.reservationSummaryExtra}`}
+          >
             Aggiungi un’altra esperienza
           </Link>
         </aside>

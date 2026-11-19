@@ -8,14 +8,15 @@
   text-align: left;
 }
 .back {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: 8px;
+  margin: 0 0 18px auto;
   color: #5c6878;
   font-size: 12px;
   font-weight: 600;
   padding-block: 5px;
-  margin-bottom: 18px;
 }
 .back:hover {
   color: rgb(var(--primary));
@@ -153,17 +154,16 @@
   flex-shrink: 0;
 }
 .articleFooter {
+  display: flex;
+  justify-content: center;
   border-top: 1px solid #dce0df;
   padding-top: 24px;
   margin-top: 48px;
 }
-.articleFooter a {
-  display: inline-flex;
+.articleFooterCta {
+  width: min(100%, 320px);
+  justify-content: center;
   gap: 10px;
-  align-items: center;
-  color: #0b2038;
-  font-size: 13px;
-  font-weight: 700;
 }
 .article :where(a):focus-visible {
   outline: 3px solid rgb(var(--primary));

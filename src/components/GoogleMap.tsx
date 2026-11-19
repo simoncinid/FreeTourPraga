@@ -5,7 +5,7 @@ import type { Tour } from "@/lib/types";
 export function GoogleMap({ tour }: { tour: Tour }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <section className="card overflow-hidden">
+    <section id="punto-incontro" className="card overflow-hidden">
       <div className="grid gap-3 p-6">
         <h2 className="display-md">Il punto d’incontro</h2>
         <p>
@@ -37,7 +37,7 @@ export function GoogleMap({ tour }: { tour: Tour }) {
           </div>
         )}
       </div>
-      <div className="flex flex-wrap justify-between gap-3 p-5">
+      <div className="map-directions flex flex-wrap justify-between gap-3 p-5">
         <a
           className="underline"
           href={tour.mapUrl}

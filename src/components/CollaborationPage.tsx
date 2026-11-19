@@ -41,22 +41,21 @@ export function CollaborationPage({
             ))}
           </h1>
           <p className="body-md mb-10">{body}</p>
-          {benefits.map((benefit, index) => {
-            const Icon =
-              benefit.icon ?? defaultIcons[index % defaultIcons.length];
-            return (
-              <div
-                key={benefit.title}
-                className={`${ui.partnerBenefit} mb-7 flex gap-4`}
-              >
-                <Icon size={56} className={ui.partnerIcon} aria-hidden />
-                <div>
-                  <h2 className="title-md mb-2">{benefit.title}</h2>
-                  <p className="body-sm">{benefit.text}</p>
+          <div className={ui.partnerBenefits}>
+            {benefits.map((benefit, index) => {
+              const Icon =
+                benefit.icon ?? defaultIcons[index % defaultIcons.length];
+              return (
+                <div key={benefit.title} className={ui.partnerBenefit}>
+                  <Icon size={36} className={ui.partnerIcon} aria-hidden />
+                  <div>
+                    <strong className="block text-ink">{benefit.title}</strong>
+                    <small>{benefit.text}</small>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
         <InquiryForm variant={formVariant} />
       </div>

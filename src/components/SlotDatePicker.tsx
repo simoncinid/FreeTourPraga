@@ -10,7 +10,7 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -54,11 +54,15 @@ export function SlotDatePicker({
   value,
   onChange,
   required = true,
+  placeholder = "Scegli una data",
+  triggerClassName = "slot-date-trigger text-input",
 }: {
   days: string[];
   value: string;
   onChange: (day: string) => void;
   required?: boolean;
+  placeholder?: string;
+  triggerClassName?: string;
 }) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -73,14 +77,10 @@ export function SlotDatePicker({
   const [open, setOpen] = useState(false);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
-  const [month, setMonth] = useState(
-    () => monthKey(value || available[0] || new Date().toISOString()),
-  );
-
-  useEffect(() => {
-    if (value) setMonth(monthKey(value));
-    else if (available[0]) setMonth(monthKey(available[0]));
-  }, [value, available]);
+  const initialMonth = monthKey(value || available[0] || new Date().toISOString());
+  const [browsedMonth, setMonth] = useState({ initialMonth, value: initialMonth });
+  const month = browsedMonth.initialMonth === initialMonth ? browsedMonth.value : initialMonth;
+  const browseMonth = (value: string) => setMonth({ initialMonth, value });
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
@@ -108,10 +108,12 @@ export function SlotDatePicker({
           : hostEl.getBoundingClientRect();
       const width = Math.min(Math.max(rect.width, 280), hostRect.width - 16);
       const gap = 6;
-      const estimatedHeight = 320;
+      // Altezza stimata del calendario compatto (senza scroll interno).
+      const estimatedHeight = 280;
       const spaceBelow = hostRect.top + hostRect.height - rect.bottom - gap;
+      const spaceAbove = rect.top - hostRect.top - gap;
       const openUp =
-        spaceBelow < estimatedHeight && rect.top - hostRect.top > spaceBelow;
+        spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
       const left = Math.min(
         Math.max(hostRect.left + 8, rect.left),
         hostRect.left + hostRect.width - width - 8,
@@ -124,10 +126,7 @@ export function SlotDatePicker({
         width,
         top: openUp ? undefined : rect.bottom + gap,
         bottom: openUp ? window.innerHeight - rect.top + gap : undefined,
-        maxHeight: openUp
-          ? Math.max(180, rect.top - hostRect.top - 12)
-          : Math.max(180, spaceBelow - 8),
-        overflowY: "auto",
+        overflow: "visible",
       });
     }
 
@@ -194,7 +193,7 @@ export function SlotDatePicker({
                 type="button"
                 aria-label="Mese precedente"
                 disabled={!canPrev}
-                onClick={() => canPrev && setMonth(months[monthIndex - 1])}
+                onClick={() => canPrev && browseMonth(months[monthIndex - 1])}
               >
                 <ChevronLeft size={18} aria-hidden />
               </button>
@@ -203,7 +202,7 @@ export function SlotDatePicker({
                 type="button"
                 aria-label="Mese successivo"
                 disabled={!canNext}
-                onClick={() => canNext && setMonth(months[monthIndex + 1])}
+                onClick={() => canNext && browseMonth(months[monthIndex + 1])}
               >
                 <ChevronRight size={18} aria-hidden />
               </button>
@@ -261,7 +260,7 @@ export function SlotDatePicker({
       <button
         ref={triggerRef}
         type="button"
-        className="slot-date-trigger text-input"
+        className={triggerClassName}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={listId}
@@ -272,10 +271,10 @@ export function SlotDatePicker({
         }}
       >
         <span className={value ? "slot-date-value" : "slot-date-placeholder"}>
-          {value ? formatDayShort(value) : "Scegli una data"}
+          {value ? formatDayShort(value) : placeholder}
         </span>
         <span className="slot-date-chevron" aria-hidden>
-          {open ? "▴" : "▾"}
+          {open ? <ChevronUp size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
         </span>
       </button>
       {panel}

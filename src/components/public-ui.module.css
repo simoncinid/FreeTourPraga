@@ -197,11 +197,133 @@
 .detail > div > div:first-of-type {
   gap: 26px;
 }
+.detailOffer {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.detailPrice {
+  display: grid;
+  gap: 4px;
+}
+.detailPrice span {
+  font-size: 14px;
+  color: var(--muted);
+}
+.detailPrice strong {
+  font-family: var(--font-display), Arial, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1;
+  color: rgb(var(--primary));
+  letter-spacing: -0.035em;
+}
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.detailMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+@media (min-width: 1024px) {
+  .detailOffer {
+    justify-items: end;
+    text-align: right;
+  }
+}
+@media (max-width: 767px) {
+  .detailTitleRow {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .detailOffer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 0;
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    background: #fff;
+    justify-items: stretch;
+  }
+  .detailPrice {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+  .detailPrice span {
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: normal;
+  }
+  .detailPrice strong {
+    font-size: 2rem;
+    line-height: 1.05;
+    white-space: normal;
+  }
+  .detailMeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 13px;
+  }
+  .detailMeta span {
+    gap: 6px;
+  }
+  .detailMeta svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+}
 .detail :global(#esperienza) > div:first-child {
   border-radius: 0 8px 8px 0;
 }
 .detail :global(#incontro) > div {
   border-top: 0;
+}
+@media (max-width: 767px) {
+  .detail :global(#incontro) {
+    gap: 0;
+  }
+  .detail :global(#incontro) > :global(.card),
+  .detail :global(#cancellazione),
+  .detail :global(#punto-incontro) {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .detail :global(#cancellazione),
+  .detail :global(#punto-incontro) {
+    color: var(--ink);
+    background: var(--canvas);
+  }
+  .detail :global(#punto-incontro) :global(.border-y) {
+    border-color: var(--hairline-soft);
+  }
+  .detail :global(#punto-incontro) :global(.map-directions) {
+    display: none;
+  }
 }
 .detail aside {
   box-shadow: none;
@@ -236,6 +358,52 @@
     min-height: 260px;
   }
 }
+.usefulHeader {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.usefulTitle {
+  margin: 0;
+  min-width: 0;
+}
+.usefulLead {
+  margin: 0;
+  max-width: 48rem;
+}
+.usefulActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin: 28px auto 0;
+}
+.usefulActions :global(.button-primary) {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  text-align: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+@media (min-width: 1024px) {
+  .usefulActions {
+    width: auto;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 36px;
+  }
+  .usefulActions :global(.button-primary) {
+    width: auto;
+    min-width: 220px;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+}
+
 .about {
   background-image: radial-gradient(
     ellipse at top left,
@@ -243,8 +411,47 @@
     transparent 65%
   );
 }
-.about h1 {
+.aboutInner {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aboutTitle {
   font-size: clamp(38px, 4vw, 55px);
+  margin-bottom: 24px;
+}
+.aboutTitleEnd {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+.aboutTitleEndLine {
+  display: block;
+}
+.aboutTourCta {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  margin-top: 12px;
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 13px;
+  gap: 6px;
+}
+@media (max-width: 767px) {
+  .aboutTourCta {
+    display: none;
+  }
+}
+.aboutLead {
+  max-width: 48rem;
+  margin-bottom: 40px;
+}
+.aboutGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
 }
 .about :global(.card) {
   border-color: #dedbd2;
@@ -283,6 +490,49 @@
 .about :global(.card):nth-child(4)::after {
   content: "04";
 }
+@media (min-width: 640px) {
+  .aboutGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 1024px) {
+  .about {
+    min-height: calc(100svh - var(--header-height, 74px));
+    height: calc(100svh - var(--header-height, 74px));
+    padding-block: clamp(20px, 3.2vh, 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .aboutInner {
+    height: 100%;
+    min-height: 0;
+    justify-content: center;
+  }
+  .aboutTitle {
+    margin-bottom: 16px;
+  }
+  .aboutLead {
+    margin-bottom: 24px;
+  }
+  .aboutGrid {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    gap: 16px;
+    align-content: stretch;
+    grid-auto-rows: 1fr;
+  }
+  .aboutGrid > :global(.card) {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px 24px;
+  }
+}
 .practical :global(.card) {
   border-color: #dedbd2;
   border-top: 2px solid var(--primary-soft);
@@ -315,9 +565,16 @@
 }
 .contactIcon {
   color: rgb(var(--primary));
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+}
+@media (max-width: 767px) {
+  .contactIcon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
 }
 .contact small {
   display: block;
@@ -366,19 +623,56 @@
   line-height: 1.16;
   letter-spacing: -0.02em;
 }
+.partnerBenefits {
+  display: grid;
+  gap: 0;
+}
 .partnerBenefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
   padding-top: 20px;
+  margin-top: 8px;
   border-top: 1px solid var(--hairline);
-  align-items: start;
 }
 .partnerIcon {
   color: rgb(var(--primary));
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
 }
-.partnerBenefit h2 {
-  margin-top: 3px;
+.partnerBenefit strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.partnerBenefit small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--body);
+}
+@media (max-width: 767px) {
+  .partnerBenefits {
+    gap: 24px;
+  }
+  .partnerBenefit {
+    align-items: center;
+    gap: 16px;
+    padding-top: 0;
+    margin-top: 0;
+    border-top: 0;
+  }
+  .partnerIcon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+  .partnerBenefit strong {
+    font-size: 15px;
+  }
 }
 .privateTours h1 {
   font-size: clamp(38px, 4vw, 54px);
@@ -405,10 +699,22 @@
   border: 1px solid #e9e3d8;
   border-radius: 12px;
 }
-.blog h1 {
+.blogInner {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.blogTitle {
   max-width: 950px;
+  margin: 12px 0 14px;
   font-size: clamp(38px, 4vw, 55px);
   text-wrap: balance;
+}
+.blogLead {
+  margin-bottom: 28px;
+}
+.blogList {
+  min-width: 0;
 }
 .blog :global(.card) {
   border-color: #e1dfd8;
@@ -432,6 +738,45 @@
   font-size: 24px;
   line-height: 1.25;
   transition: color 0.2s;
+}
+@media (min-width: 1024px) {
+  .blog {
+    min-height: calc(100svh - var(--header-height, 74px));
+    height: calc(100svh - var(--header-height, 74px));
+    padding-block: clamp(20px, 3vh, 36px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .blogInner {
+    height: auto;
+    min-height: 0;
+    justify-content: center;
+  }
+  .blog :global(.uppercase-tag) {
+    margin-bottom: 0;
+  }
+  .blogTitle {
+    margin: 10px 0 14px;
+    font-size: clamp(32px, 3vw, 46px);
+  }
+  .blogLead {
+    margin-bottom: 28px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .blogList {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+  .blog :global(.card) > div:last-child {
+    padding: 14px 16px 16px;
+  }
+  .blog :global(.card) h2 {
+    font-size: 20px;
+  }
 }
 .help {
   background-image: radial-gradient(ellipse at top, #eee9df70, transparent 65%);
@@ -627,14 +972,6 @@
   border-color: var(--primary-soft-strong);
   background: var(--primary-soft);
 }
-@media (max-width: 767px) {
-  .emptyState h1 {
-    font-size: 30px;
-  }
-  .reservation aside {
-    position: static;
-  }
-}
 .reservation .emptyState h1 {
   font-size: 36px;
 }
@@ -648,9 +985,109 @@
   accent-color: rgb(var(--primary));
   flex-shrink: 0;
 }
+.reservationSummaryHandle {
+  display: none;
+}
+.reservationSummaryDetails {
+  display: grid;
+  gap: 18px;
+}
 @media (max-width: 767px) {
+  .emptyState h1 {
+    font-size: 30px;
+  }
   .reservation .emptyState h1 {
     font-size: 30px;
+  }
+  .reservation:has(:global(.reservation-summary)) {
+    padding-bottom: calc(148px + env(safe-area-inset-bottom, 0px));
+  }
+  .reservation:has(:global(.reservation-summary)):has(.reservationSummaryOpen) {
+    padding-bottom: calc(320px + env(safe-area-inset-bottom, 0px));
+  }
+  .reservationSummary {
+    position: fixed !important;
+    top: auto !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 46;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    gap: 10px !important;
+    margin: 0;
+    padding: 8px 16px max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 18px 18px 0 0;
+    border-top: 3px solid rgb(var(--primary));
+    box-shadow: 0 -12px 36px rgba(7, 26, 53, 0.16);
+    background: #fff;
+  }
+  .reservationSummaryOpen {
+    max-height: min(72vh, 520px);
+    overflow-y: auto;
+    padding-top: 8px !important;
+  }
+  .reservationSummaryHandle {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .reservationSummaryGrip {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 2px auto 0;
+    border-radius: 999px;
+    background: #d5d1c8;
+  }
+  .reservationSummaryBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .reservationSummaryBar small {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.2;
+  }
+  .reservationSummaryBar strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .reservationSummaryChevron {
+    transform: rotate(180deg);
+  }
+  .reservationSummary:not(.reservationSummaryOpen) .reservationSummaryDetails,
+  .reservationSummary:not(.reservationSummaryOpen) .reservationSummaryExtra {
+    display: none;
+  }
+  .reservationSummaryOpen .reservationSummaryDetails {
+    display: grid;
+    gap: 12px;
+    padding-top: 4px;
+  }
+  .reservationSummary h2 {
+    font-size: 18px;
+    margin: 0;
+  }
+  .reservationSummary :global(.text-input) {
+    min-height: 40px;
+  }
+  .reservationSummary :global(.button-primary) {
+    width: 100%;
+    justify-content: center;
   }
 }
 .confirmation h1 {
@@ -770,30 +1207,36 @@
   }
   .partner > div {
     align-items: center;
-    gap: clamp(28px, 4vw, 64px);
+    gap: clamp(36px, 4.5vw, 72px);
   }
   .partner h1 {
     font-size: clamp(34px, 3.1vw, 46px);
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
   .partner :global(.body-md) {
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     font-size: 15px;
     line-height: 1.6;
   }
-  .partnerBenefit {
-    padding-top: 14px;
-    margin-bottom: 16px;
-    gap: 14px;
-    align-items: center;
+  .partnerBenefits {
+    gap: 0;
   }
-  .partnerBenefit:last-child { margin-bottom: 0; }
-  .partnerBenefit h2 { margin: 0 0 4px; font-size: 16px; }
-  .partnerBenefit p { font-size: 13px; }
+  .partnerBenefit {
+    align-items: center;
+    gap: 16px;
+    padding-top: 18px;
+    margin-top: 4px;
+  }
+  .partnerBenefit strong {
+    font-size: 16px;
+  }
+  .partnerBenefit small {
+    font-size: 13px;
+  }
   .partnerForm {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 16px;
-    padding: 22px 24px;
+    gap: 10px 14px;
+    padding: 18px 20px;
     min-width: 0;
     align-content: start;
   }
@@ -807,20 +1250,23 @@
   .partnerForm > label:has(input[name="company"]),
   .partnerForm > label:has(input[name="languages"]),
   .partnerForm > label:has(input[name="portfolio"]) { grid-column: 1 / -1; }
-  .partnerForm h2 { font-size: 28px; margin-bottom: 4px; }
-  .partnerForm :global(.text-input) { min-height: 40px; height: 40px; padding: 8px 12px; margin-top: 5px; }
-  .partnerForm textarea:global(.text-input) { min-height: 76px; height: 76px; resize: vertical; }
-  .partnerForm :global(.form-grid) { gap: 16px; }
-  .partnerForm > button { min-height: 44px; padding-block: 10px; }
+  .partnerForm h2 { font-size: 26px; margin-bottom: 2px; }
+  .partnerForm :global(.text-input) { min-height: 36px; height: 36px; padding: 6px 12px; margin-top: 4px; }
+  .partnerForm textarea:global(.text-input) { min-height: 64px; height: 64px; resize: vertical; }
+  .partnerForm :global(.form-grid) { gap: 12px; }
+  .partnerForm > button { min-height: 40px; padding-block: 8px; }
 }
 @media (min-width: 1024px) and (max-height: 740px) {
   .partner { padding-block: 16px; }
   .partner h1 { font-size: clamp(32px, 2.8vw, 40px); margin-bottom: 14px; }
-  .partner :global(.body-md) { font-size: 14px; margin-bottom: 18px; }
-  .partnerBenefit { padding-top: 10px; margin-bottom: 12px; }
+  .partner :global(.body-md) { font-size: 14px; margin-bottom: 22px; }
+  .partnerBenefits { gap: 20px; }
   .partnerIcon {
-  color: rgb(var(--primary)); width: 48px; height: 48px; flex-basis: 48px; }
-  .partnerForm { padding: 16px 20px; gap: 9px 14px; }
-  .partnerForm h2 { font-size: 25px; margin-bottom: 0; }
-  .partnerForm textarea:global(.text-input) { min-height: 64px; height: 64px; }
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+  .partnerForm { padding: 14px 16px; gap: 8px 12px; }
+  .partnerForm h2 { font-size: 24px; margin-bottom: 0; }
+  .partnerForm textarea:global(.text-input) { min-height: 56px; height: 56px; }
 }

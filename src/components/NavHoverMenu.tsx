@@ -32,7 +32,7 @@ export function NavHoverMenu({ label, href, children, mobile = false }: {
         </button>
       </div>
       {open && <div id={id} onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setOpen(false); }}
-        className={mobile ? "grid gap-1 border-l border-hairline pl-3" : "absolute left-0 top-full z-40 grid max-h-[70vh] w-72 gap-1 overflow-auto rounded-lg border border-hairline bg-white p-3 text-ink shadow-card"}>{children}</div>}
+        className={mobile ? "site-mobile-submenu grid gap-1 border-l border-hairline pl-3" : "absolute left-0 top-full z-40 grid max-h-[70vh] w-72 gap-1 overflow-auto rounded-lg border border-hairline bg-white p-3 text-ink shadow-card"}>{children}</div>}
     </div>
   );
 }

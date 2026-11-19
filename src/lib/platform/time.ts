@@ -1,6 +1,5 @@
-// Store UTC instants; edit and display wall times in Europe/Prague.
-export function pragueLocal(iso: string) {
-  return new Intl.DateTimeFormat("sv-SE", {
+// Creating an Intl formatter loads timezone data. Reuse it across all slots.
+const localFormatter = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Prague",
     year: "numeric",
     month: "2-digit",
@@ -8,8 +7,11 @@ export function pragueLocal(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
-  })
-    .format(new Date(iso))
+  });
+
+// Store UTC instants; edit and display wall times in Europe/Prague.
+export function pragueLocal(iso: string) {
+  return localFormatter.format(new Date(iso))
     .replace(" ", "T");
 }
 export function pragueInstant(local: string) {

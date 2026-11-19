@@ -99,15 +99,15 @@ export function ConsentAndTracking() {
               Informativa privacy
             </Link>
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="consent-banner-actions">
             <button
-              className="button-secondary"
+              className="button-secondary consent-btn-essential"
               onClick={() => choose("essential")}
             >
               Solo necessari
             </button>
             <button
-              className="button-primary"
+              className="button-primary consent-btn-marketing"
               onClick={() => choose("marketing")}
             >
               Accetta marketing

@@ -44,7 +44,9 @@
     ".next-http/types/**/*.ts",
     ".next-http/dev/types/**/*.ts",
     ".next-platform-blu/types/**/*.ts",
-    ".next-platform-blu/dev/types/**/*.ts"
+    ".next-platform-blu/dev/types/**/*.ts",
+    ".next-perf/types/**/*.ts",
+    ".next-perf/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

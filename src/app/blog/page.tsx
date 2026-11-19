@@ -11,15 +11,17 @@ export default async function Page() {
   return (
     <section className={`${ui.page} ${ui.blog} section`}>
       <BlogHashRedirect />
-      <div className="container-page">
-        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+      <div className={`container-page ${ui.blogInner}`}>
+        <p className={`${ui.eyebrow} uppercase-tag text-primary`}>
           {c.home.galleryEyebrow}
         </p>
-        <h1 className="display-xl mb-4">{c.home.galleryTitle}</h1>
-        <p className="body-md mb-10 whitespace-nowrap max-[899px]:whitespace-normal">
+        <h1 className={`display-xl ${ui.blogTitle}`}>{c.home.galleryTitle}</h1>
+        <p className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`}>
           {c.home.galleryBody}
         </p>
-        <BlogGuideList items={c.gallery} />
+        <div className={ui.blogList}>
+          <BlogGuideList items={c.gallery} />
+        </div>
       </div>
     </section>
   );

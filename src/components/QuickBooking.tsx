@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addToCart } from "@/lib/cart";
@@ -12,24 +12,27 @@ import {
   tourPrices,
 } from "@/lib/tour-rules";
 import type { Tour } from "@/lib/types";
+import { FilterSelect } from "@/components/FilterSelect";
 import { SlotDatePicker } from "@/components/SlotDatePicker";
 
-const dayKey = (value: string) =>
-  new Intl.DateTimeFormat("en-CA", {
+const dayFormatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Prague",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date(value));
+  });
+const dayKey = (value: string) => dayFormatter.format(new Date(value));
 
 export function QuickBooking({
   tour,
   onClose,
   inline = false,
+  sheet = false,
 }: {
   tour: Tour;
   onClose: () => void;
   inline?: boolean;
+  sheet?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -43,7 +46,7 @@ export function QuickBooking({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [openedAt] = useState(() => Date.now());
-  const slots = currentTour.operationalReviewRequired
+  const slots = useMemo(() => currentTour.operationalReviewRequired
     ? []
     : currentTour.slots
         .filter(
@@ -51,8 +54,9 @@ export function QuickBooking({
             Date.parse(slot.startsAt) > openedAt &&
             slot.capacity > slot.reserved,
         )
-        .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
-  const days = [...new Set(slots.map((slot) => dayKey(slot.startsAt)))];
+        .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt)),
+    [currentTour, openedAt]);
+  const days = useMemo(() => [...new Set(slots.map((slot) => dayKey(slot.startsAt)))], [slots]);
   const selected = slots.find(
     (slot) => slot.id === slotId && dayKey(slot.startsAt) === day,
   );
@@ -176,27 +180,28 @@ export function QuickBooking({
             </label>
             <label>
               Orario
-              <select
+              <FilterSelect
                 aria-label="Orario"
-                className="text-input"
                 required
                 disabled={!day}
                 value={slotId}
-                onChange={(event) => setSlotId(event.target.value)}
-              >
-                <option value="">Scegli un orario</option>
-                {slots
-                  .filter((slot) => dayKey(slot.startsAt) === day)
-                  .map((slot) => (
-                    <option key={slot.id} value={slot.id}>
-                      {new Date(slot.startsAt).toLocaleTimeString("it-IT", {
+                onChange={setSlotId}
+                triggerClassName="filter-select-trigger text-input"
+                options={[
+                  { value: "", label: "Scegli un orario" },
+                  ...slots
+                    .filter((slot) => dayKey(slot.startsAt) === day)
+                    .map((slot) => ({
+                      value: slot.id,
+                      label: new Date(slot.startsAt).toLocaleTimeString("it-IT", {
                         timeZone: "Europe/Prague",
                         hour: "2-digit",
                         minute: "2-digit",
-                      })}
-                    </option>
-                  ))}
-              </select>
+                      }),
+                    })),
+                ]}
+              />
+              <input type="hidden" name="slotId" value={slotId} required />
             </label>
           </div>
           <fieldset className="quick-booking-guests">
@@ -314,7 +319,7 @@ export function QuickBooking({
   return (
     <dialog
       ref={dialog}
-      className="quick-booking"
+      className={`quick-booking${sheet ? " quick-booking-sheet" : ""}`}
       aria-labelledby={titleId}
       onCancel={onClose}
       onClick={(event) => {
