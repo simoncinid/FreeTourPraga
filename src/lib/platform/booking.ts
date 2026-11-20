@@ -19,6 +19,11 @@ import {
 } from "./affiliates-wp";
 import { isClosed, isTourClosed } from "./scheduling";
 import { cancellationNote, FREE_TOUR_NOTE, isFreeTour, tourPrices } from "../tour-rules";
+import {
+  customerTemplateForKind,
+  normalizeSettings,
+  renderEmailTemplate,
+} from "./email-templates";
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export function enqueue(
   s: PlatformState,
@@ -48,6 +53,8 @@ export function slotFor(
   return { tour, slot };
 }
 export function notification(s: PlatformState, b: Reservation, kind: string) {
+  const settings = normalizeSettings(s.settings);
+  s.settings = settings;
   const { tour, slot } = slotFor(s, b);
   const contact = siteContent(s.siteContent).globals;
   const order = s.orders.find((o) => o.id === b.orderId)!;
@@ -59,146 +66,90 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   const paymentLine =
     order.totalCents === 0
       ? "Nessun pagamento richiesto."
-      : b.paymentMethod === "stripe"
-      ? `Pagamento dell’ordine complessivo (${order.pnrs.length} tour, EUR ${(order.totalCents / 100).toFixed(2)}): ${order.paymentUrl || "link in preparazione"}`
       : b.paymentMethod === "ota"
         ? "Pagamento gestito dal provider esterno."
         : "Pagamento in contanti sul posto.";
   const affiliate = resolveAffiliate(s, b.affiliateCode, false);
-  const text = [
-    `Prenotazione ${b.pnr}: ${kind}`,
-    `Ciao ${b.name},`,
-    tour.title,
-    when,
-    `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants) · EUR ${(b.totalCents / 100).toFixed(2)}`,
-    `Punto d'incontro: ${tour.meetingPoint}, ${tour.meetingAddress}`,
-    tour.mapUrl,
-    paymentLine,
-    b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
-    cancellationNote(b.policy ?? tour, s.settings),
-    `Gestisci questa prenotazione: ${manageUrl}`,
-    `Assistenza: ${contact.email} · ${contact.phone || ""} · riferimento ${b.pnr}.`,
-    `Calendario: ${calendarUrl}`,
-    s.settings.emailFooter,
-  ].join("\n");
-  // Stile conferma cliente WP CF7 (mail 2): HTML + dettagli meeting point.
-  const html = `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
-<p>Grazie per aver prenotato con noi.</p>
-<h3 style="background-color:#167895;color:#ffffff;padding:5px">${kind} · ${b.pnr}</h3>
-<ul>
-<li style="margin-bottom:10px"><b>Nome:</b> ${escapeHtml(b.name)}</li>
-<li style="margin-bottom:10px"><b>Tour:</b> ${escapeHtml(tour.title)}</li>
-<li style="margin-bottom:10px"><b>Data/ora:</b> ${escapeHtml(when)}</li>
-<li style="margin-bottom:10px"><b>Persone:</b> ${b.adults} adulti + ${b.children} minori</li>
-<li style="margin-bottom:10px"><b>Totale:</b> EUR ${(b.totalCents / 100).toFixed(2)}</li>
-<li style="margin-bottom:10px"><b>Lingua:</b> italiano</li>
-</ul>
-<h3 style="background-color:#167895;color:#ffffff;padding:5px">Punto di partenza</h3>
-<p>${escapeHtml(tour.meetingPoint)} · ${escapeHtml(tour.meetingAddress)}<br/>
-<a href="${escapeHtml(tour.mapUrl)}">Mappa »</a></p>
-<p><b>Telefono:</b> ${escapeHtml(contact.phone || "")}</p>
-<p>${escapeHtml(paymentLine)}</p>
-<p>${escapeHtml(b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""))}</p>
-<p>${escapeHtml(cancellationNote(b.policy ?? tour, s.settings))}</p>
-${order.paymentUrl && b.paymentStatus === "pending" ? `<p><a href="${escapeHtml(order.paymentUrl)}">Completa il pagamento sicuro con Stripe</a></p>` : ""}
-<p><a href="${manageUrl}">Gestisci modifica o cancellazione</a> · <a href="${calendarUrl}">Aggiungi al calendario</a></p>
-<p style="text-align:center;padding-top:20px">${escapeHtml(s.settings.emailFooter)}<br/>
-<a href="${site.url}">${escapeHtml(contact.brandName || "freetourpraga.com")}</a></p>
-</div>`;
+  const vars: Record<string, string> = {
+    kind,
+    nome: b.name,
+    pnr: b.pnr,
+    tour: tour.title,
+    data: when,
+    persone: `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants)`,
+    totale: (b.totalCents / 100).toFixed(2),
+    incontro: tour.meetingPoint,
+    indirizzo: tour.meetingAddress,
+    mappa: tour.mapUrl,
+    pagamento: paymentLine,
+    nota: b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
+    cancellazione: cancellationNote(b.policy ?? tour, settings),
+    manageUrl,
+    calendarUrl,
+    assistenza: `${contact.email} · ${contact.phone || ""}`.trim(),
+    telefonoContatto: contact.phone || "",
+    firma: settings.emailFooter,
+    brand: contact.brandName || "freetourpraga.com",
+    siteUrl: site.url,
+    affiliate: affiliate
+      ? `${affiliate.name} (${affiliate.code}${affiliate.wpId != null ? ` / wp#${affiliate.wpId}` : ""})`
+      : b.affiliateCode || "—",
+    email: b.email,
+    telefono: b.phone,
+    note: b.notes || "—",
+    adulti: String(b.adults),
+    minori: String(b.children),
+  };
+  const htmlVars = Object.fromEntries(
+    Object.entries(vars).map(([k, v]) => [
+      k,
+      ["manageUrl", "calendarUrl", "mappa", "siteUrl"].includes(k)
+        ? escapeHtml(v)
+        : escapeHtml(v),
+    ]),
+  );
+  const template = customerTemplateForKind(settings.emailTemplates, kind);
+  const text = renderEmailTemplate(template.text, vars);
+  const html = renderEmailTemplate(template.html, htmlVars);
   b.calendarSequence = (b.calendarSequence ?? -1) + 1;
   enqueue(s, {
     key: `email:${b.pnr}:${kind}:${randomUUID()}`,
     type: "email",
     bookingPnr: b.pnr,
     to: b.email,
-    subject: `${kind} · ${b.pnr} · ${contact.brandName}`,
+    subject: renderEmailTemplate(template.subject, vars),
     text,
     html,
     calendar: reservationIcs(s, b),
     runAt: new Date().toISOString(),
   });
-  // Stile mail admin WP CF7 (mail 1): solo sulle conferme/cancellazioni (non su ogni update).
   const adminKinds = new Set([
     "Confermata",
-    "Pagamento ricevuto",
-    "Confermata dal provider",
     "Cancellata",
     "Cancellata e rimborso richiesto",
   ]);
   const adminTo = bookingAdminRecipients();
   if (adminTo && adminKinds.has(kind)) {
-    const adminText = [
-      `Tour: ${tour.title}`,
-      `Stato: ${kind}`,
-      `PNR: ${b.pnr}`,
-      `De: ${b.name}`,
-      `Email: ${b.email}`,
-      `Telefono: ${b.phone}`,
-      `Fecha: ${when}`,
-      `Adulti: ${b.adults}`,
-      `Minori: ${b.children}`,
-      `Idioma del Tour: italiano`,
-      `Afiliado: ${affiliate ? `${affiliate.name} (${affiliate.code}${affiliate.wpId != null ? ` / wp#${affiliate.wpId}` : ""})` : b.affiliateCode || "—"}`,
-      `Mensaje: ${b.notes || "—"}`,
-      `Totale: EUR ${(b.totalCents / 100).toFixed(2)}`,
-      `Gestione: ${manageUrl}`,
-      `--`,
-      `Email inviata dal sistema prenotazioni Free Tour Praga`,
-    ].join("\n");
     enqueue(s, {
       key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
       type: "email",
       bookingPnr: b.pnr,
       to: adminTo,
-      subject: `Reserva freetourpraga.com italiano · ${b.pnr} · ${kind}`,
-      text: adminText,
+      subject: renderEmailTemplate(settings.emailTemplates.admin.subject, vars),
+      text: renderEmailTemplate(settings.emailTemplates.admin.text, vars),
       runAt: new Date().toISOString(),
     });
   }
-  scheduleEmailReminder(s, b);
-  for (const j of s.jobs)
+  for (const j of s.jobs) {
     if (
-      j.type === "whatsapp" &&
       j.bookingPnr === b.pnr &&
-      j.status === "queued"
-    )
+      j.status === "queued" &&
+      (j.type === "whatsapp" || j.key.startsWith("reminder-email:"))
+    ) {
       j.status = "failed";
-  if (b.whatsappConsent && b.status !== "cancelled") {
-    const at = new Date(
-      new Date(slot.startsAt).getTime() - s.settings.reminderHours * 3600000,
-    );
-    if (new Date(slot.startsAt).getTime() > Date.now())
-      enqueue(s, {
-        key: `wa:${b.pnr}:${b.slotId}:${randomUUID()}`,
-        type: "whatsapp",
-        bookingPnr: b.pnr,
-        to: b.phone,
-        text,
-        runAt: at.toISOString(),
-      });
-  }
-}
-export function scheduleEmailReminder(s: PlatformState, b: Reservation) {
-  for (const job of s.jobs) {
-    if (job.bookingPnr === b.pnr && job.key.startsWith("reminder-email:") && job.status === "queued") {
-      job.status = "failed"; job.error = "Promemoria sostituito o prenotazione non attiva";
+      j.error = "Reminder disattivati in Fase 1";
     }
   }
-  if (b.status !== "confirmed" || s.jobs.some((j) => j.bookingPnr === b.pnr && j.key.startsWith(`reminder-email:${b.pnr}:${b.slotId}:`) && j.status === "sent")) return;
-  const { tour, slot } = slotFor(s, b);
-  if (Date.parse(slot.startsAt) <= Date.now()) return;
-  const variables: Record<string, string> = {
-    nome: b.name, tour: tour.title, data: new Date(slot.startsAt).toLocaleString("it-IT", { timeZone: "Europe/Prague" }),
-    incontro: `${tour.meetingPoint}, ${tour.meetingAddress}`, mappa: tour.mapUrl, pnr: b.pnr,
-  };
-  const template = tour.reminderTemplate?.trim() || "Ciao {nome}, ti aspettiamo per {tour} il {data}.\nPunto d’incontro: {incontro}\n{mappa}\nPrenotazione: {pnr}";
-  const text = template.replace(/\{(nome|tour|data|incontro|mappa|pnr)\}/g, (_, key: string) => variables[key])
-    + `\n\nPunto d’incontro: ${variables.incontro}\n${tour.mapUrl}\n${b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : "")}\n${cancellationNote(b.policy ?? tour, s.settings)}\n${s.settings.emailFooter}`;
-  enqueue(s, {
-    key: `reminder-email:${b.pnr}:${b.slotId}:${randomUUID()}`, type: "email", bookingPnr: b.pnr, to: b.email,
-    subject: `Promemoria · ${tour.title} · ${b.pnr}`, text,
-    runAt: new Date(Math.max(Date.now(), Date.parse(slot.startsAt) - (tour.reminderHours ?? s.settings.reminderHours) * 3600000)).toISOString(),
-  });
 }
 function escapeHtml(value: string) {
   return value
@@ -230,9 +181,10 @@ export function quote(
   s: PlatformState,
   input: Pick<CheckoutInput, "items" | "affiliateCode">,
 ) {
+  const settings = normalizeSettings(s.settings);
   const discount =
-    new Set(input.items.map((x) => x.tourSlug)).size >= s.settings.minimumTours
-      ? s.settings.multiTourPercent
+    new Set(input.items.map((x) => x.tourSlug)).size >= settings.minimumTours
+      ? settings.multiTourPercent
       : 0;
   if (
     input.affiliateCode &&
@@ -241,14 +193,14 @@ export function quote(
     throw new HttpError(400, "Codice affiliato non valido");
   return input.items.map((item) => {
     const { tour, slot } = slotFor(s, item);
+    const startsAt = new Date(slot.startsAt).getTime();
     if (
       !tour.published ||
       slot.closed ||
       isTourClosed(tour, slot.startsAt) ||
       isClosed(s, slot.startsAt) ||
       tour.operationalReviewRequired ||
-      new Date(slot.startsAt).getTime() <
-        Date.now() + tour.bookingCutoffHours * 3600000
+      startsAt < Date.now() + tour.bookingCutoffHours * 3600000
     )
       throw new HttpError(409, "Partenza chiusa alle prenotazioni");
     if (tour.childMinAge === 0 && item.infants > 0)
@@ -261,18 +213,44 @@ export function quote(
     if (guests > Math.min(slot.capacity, 25) - slot.reserved)
       throw new HttpError(409, `Posti insufficienti per ${tour.title}`);
     const units = tourPrices(tour, guests);
-    const subtotalCents = item.adults * units.adult + item.children * units.child + item.infants * units.infant;
-    const discountCents = units.fixedGroup ? 0 : Math.round((subtotalCents * discount) / 100);
+    let unitAdult = units.adult;
+    let unitChild = units.child;
+    let unitInfant = units.infant;
+    const lastMinuteApplied =
+      settings.lastMinuteEnabled &&
+      settings.lastMinuteDiscountPercent > 0 &&
+      !units.fixedGroup &&
+      startsAt - Date.now() <= settings.lastMinuteHours * 3600000;
+    if (lastMinuteApplied) {
+      const factor = 1 - settings.lastMinuteDiscountPercent / 100;
+      unitAdult = Math.round(unitAdult * factor);
+      unitChild = Math.round(unitChild * factor);
+      unitInfant = Math.round(unitInfant * factor);
+    }
+    const subtotalCents =
+      item.adults * unitAdult +
+      item.children * unitChild +
+      item.infants * unitInfant;
+    const multiTourDiscount = units.fixedGroup
+      ? 0
+      : Math.round((subtotalCents * discount) / 100);
     return {
       ...item,
       subtotalCents,
-      discountCents,
-      totalCents: subtotalCents - discountCents,
+      discountCents: multiTourDiscount,
+      totalCents: subtotalCents - multiTourDiscount,
       totalGuests: guests,
-      unitAdultCents: units.adult, unitChildCents: units.child, unitInfantCents: units.infant,
-      cancellationHours: tour.cancellationHours ?? s.settings.cancellationHours,
-      lateRefundPercent: tour.lateRefundPercent ?? s.settings.lateRefundPercent,
-      bookingNote: isFreeTour(tour) ? FREE_TOUR_NOTE : "",
+      unitAdultCents: unitAdult,
+      unitChildCents: unitChild,
+      unitInfantCents: unitInfant,
+      lastMinuteApplied,
+      cancellationHours: tour.cancellationHours ?? settings.cancellationHours,
+      lateRefundPercent: tour.lateRefundPercent ?? settings.lateRefundPercent,
+      bookingNote: isFreeTour(tour)
+        ? FREE_TOUR_NOTE
+        : lastMinuteApplied
+          ? `Tariffa last-minute attiva (−${settings.lastMinuteDiscountPercent}% entro ${settings.lastMinuteHours} ore dalla partenza).`
+          : "",
     };
   });
 }
@@ -281,13 +259,8 @@ export async function createOrder(
   key: string,
   source = "site",
 ) {
-  if (input.paymentMethod === "stripe" && process.env.SITE_PREVIEW === "true" && process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_"))
-    throw new HttpError(503, "L’anteprima accetta solo pagamenti Stripe di prova.");
-  if (input.paymentMethod === "stripe" && !process.env.STRIPE_SECRET_KEY)
-    throw new HttpError(
-      503,
-      "Pagamento online non ancora configurato. Scegli contanti sul posto.",
-    );
+  if (input.paymentMethod !== "cash")
+    throw new HttpError(400, "In Fase 1 è disponibile solo il pagamento in contanti sul posto.");
   return transaction((s) => {
     releaseExpired(s);
     const fingerprint = hash(JSON.stringify(input));
@@ -329,10 +302,9 @@ export async function createOrder(
         email: input.email,
         phone: input.phone,
         notes: input.notes,
-        paymentMethod: input.paymentMethod,
-        paymentStatus:
-          input.paymentMethod === "cash" ? "not_required" : "pending",
-        status: input.paymentMethod === "cash" ? "confirmed" : "pending",
+        paymentMethod: "cash",
+        paymentStatus: "not_required",
+        status: "confirmed",
         source,
         affiliateCode: affiliate?.code || "",
         commissionCents: Math.round(
@@ -344,8 +316,9 @@ export async function createOrder(
           new Date(slot.startsAt).getTime() + 30 * 86400000,
         ).toISOString(),
         createdAt: now,
-        whatsappConsent: input.whatsappConsent,
+        whatsappConsent: false,
         consentAt: now,
+        lastMinuteApplied: item.lastMinuteApplied,
         policy: {
           cancellationHours: item.cancellationHours,
           lateRefundPercent: item.lateRefundPercent,
@@ -354,10 +327,7 @@ export async function createOrder(
       };
       s.bookings.push(b);
       order.pnrs.push(b.pnr);
-      if (
-        input.paymentMethod === "cash" &&
-        !["civitatis", "getyourguide"].includes(source)
-      )
+      if (!["civitatis", "getyourguide"].includes(source))
         notification(s, b, "Confermata");
     }
     audit(s, source, "booking.create", order.id);
@@ -372,19 +342,30 @@ export async function cancelReservation(
 ) {
   return transaction((s) => {
     if (!actor) throw new HttpError(401, "Operatore autorizzato richiesto");
+    const trimmed = reason.trim();
+    if (trimmed.length < 2)
+      throw new HttpError(400, "Indica un motivo di cancellazione");
     const b = s.bookings.find((x) => x.pnr === pnr);
     if (!b) throw new HttpError(404, "Prenotazione non trovata");
     if (proof !== undefined) requireBookingManagement(s, pnr, proof);
     if (b.status === "cancelled") return b;
+    if (["present", "no_show"].includes(b.status))
+      throw new HttpError(
+        409,
+        "La prenotazione è già stata registrata in presenza: contatta lo staff.",
+      );
+    const { slot } = slotFor(s, b);
+    if (proof !== undefined && new Date(slot.startsAt).getTime() <= Date.now())
+      throw new HttpError(409, "Il tour è già iniziato: contatta lo staff.");
     if (
       proof !== undefined &&
-      new Date(slotFor(s, b).slot.startsAt).getTime() <= Date.now()
+      !["confirmed", "pending"].includes(b.status)
     )
-      throw new HttpError(409, "Il tour è già iniziato: contatta lo staff.");
-    const { slot } = slotFor(s, b);
+      throw new HttpError(409, "Questa prenotazione non è più cancellabile.");
+    const settings = normalizeSettings(s.settings);
     const free =
       new Date(slot.startsAt).getTime() - Date.now() >=
-      (b.policy?.cancellationHours ?? s.settings.cancellationHours) * 3600000;
+      (b.policy?.cancellationHours ?? settings.cancellationHours) * 3600000;
     b.refundCents =
       b.paymentStatus === "paid"
         ? Math.round(
@@ -392,34 +373,36 @@ export async function cancelReservation(
               (free
                 ? 1
                 : (b.policy?.lateRefundPercent ??
-                    s.settings.lateRefundPercent) / 100),
+                    settings.lateRefundPercent) / 100),
           )
         : 0;
-    slot.reserved -= b.totalGuests;
+    slot.reserved = Math.max(0, slot.reserved - b.totalGuests);
     b.status = "cancelled";
-    b.cancellationReason = reason;
+    b.cancellationReason = trimmed.slice(0, 1000);
     b.commissionCents = 0;
+    for (const j of s.jobs) {
+      if (
+        j.bookingPnr === b.pnr &&
+        j.status === "queued" &&
+        (j.type !== "email" ||
+          j.key.startsWith("reminder-email:") ||
+          j.key.startsWith("wa:"))
+      ) {
+        j.status = "failed";
+        j.error = "Prenotazione cancellata";
+      }
+    }
     if (b.refundCents) {
-      b.refundStatus = b.paymentMethod !== "stripe" ? "manual" : "queued";
-      if (b.paymentMethod !== "stripe")
-        enqueue(s, {
-          key: `manual-refund:${b.pnr}`,
-          type: "email",
-          to:
-            process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
-          subject: `Rimborso ${b.paymentMethod === "ota" ? "OTA" : "contanti"} da gestire: ${b.pnr}`,
-          text: `Gestire ${b.paymentMethod === "ota" ? "sul provider " + b.source : "manualmente per il pagamento in contanti"} il rimborso di EUR ${(b.refundCents / 100).toFixed(2)} per ${b.pnr}.`,
-          runAt: new Date().toISOString(),
-        });
-      else
-        enqueue(s, {
-          key: `refund:${b.pnr}`,
-          type: "refund",
-          orderId: b.orderId,
-          bookingPnr: b.pnr,
-          amount: b.refundCents,
-          runAt: new Date().toISOString(),
-        });
+      b.refundStatus = "manual";
+      enqueue(s, {
+        key: `manual-refund:${b.pnr}`,
+        type: "email",
+        to:
+          process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
+        subject: `Rimborso da gestire: ${b.pnr}`,
+        text: `Gestire manualmente il rimborso di EUR ${(b.refundCents / 100).toFixed(2)} per ${b.pnr} (${b.paymentMethod}).`,
+        runAt: new Date().toISOString(),
+      });
     }
     notification(s, b, "Cancellata");
     audit(s, actor, "booking.cancel", b.pnr);
@@ -434,18 +417,27 @@ export async function moveReservation(
 ) {
   return transaction((s) => {
     if (!actor) throw new HttpError(401, "Operatore autorizzato richiesto");
+    if (!slotId?.trim())
+      throw new HttpError(400, "Seleziona una partenza");
     const b = s.bookings.find((x) => x.pnr === pnr);
     if (!b) throw new HttpError(404, "Prenotazione non trovata");
     if (proof !== undefined) requireBookingManagement(s, pnr, proof);
     if (b.status !== "confirmed")
       throw new HttpError(409, "La prenotazione non è modificabile");
     const { tour, slot: old } = slotFor(s, b);
+    const settings = normalizeSettings(s.settings);
+    const hours =
+      b.policy?.cancellationHours ?? settings.cancellationHours;
+    if (new Date(old.startsAt).getTime() <= Date.now())
+      throw new HttpError(
+        409,
+        "Il tour è già iniziato: contatta lo staff.",
+      );
     if (
       proof !== undefined &&
       (!tour.published ||
-        new Date(old.startsAt).getTime() - Date.now() <
-          (b.policy?.cancellationHours ?? s.settings.cancellationHours) *
-            3600000)
+        tour.operationalReviewRequired ||
+        new Date(old.startsAt).getTime() - Date.now() < hours * 3600000)
     )
       throw new HttpError(
         409,
@@ -457,6 +449,8 @@ export async function moveReservation(
       next.closed ||
       isTourClosed(tour, next.startsAt) ||
       isClosed(s, next.startsAt) ||
+      tour.operationalReviewRequired ||
+      !tour.published ||
       new Date(next.startsAt).getTime() <
         Date.now() + tour.bookingCutoffHours * 3600000
     )
@@ -464,7 +458,7 @@ export async function moveReservation(
     if (next.id === old.id) return b;
     if (Math.min(next.capacity, 25) - next.reserved < b.totalGuests)
       throw new HttpError(409, "Posti insufficienti");
-    old.reserved -= b.totalGuests;
+    old.reserved = Math.max(0, old.reserved - b.totalGuests);
     next.reserved += b.totalGuests;
     b.slotId = next.id;
     b.expiresAt = new Date(
@@ -489,7 +483,6 @@ export async function orderConfirmation(proof: string) {
       id: o.id,
       pnrs: o.pnrs,
       totalCents: o.totalCents,
-      paymentUrl: o.paymentUrl,
     },
     bookings: o.pnrs.map((p) => {
       const b = getReservation(s, p, proof);
@@ -509,13 +502,13 @@ export async function orderConfirmation(proof: string) {
         meetingAddress: tour.meetingAddress,
         mapUrl: tour.mapUrl,
         bookingNote: b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
-        cancellationNote: cancellationNote(b.policy ?? tour, s.settings),
+        cancellationNote: cancellationNote(
+          b.policy ?? tour,
+          normalizeSettings(s.settings),
+        ),
       };
     }),
-    settings: {
-      googleAdsId: s.settings.googleAdsId,
-      googleAdsLabel: s.settings.googleAdsLabel,
-    },
+    settings: {},
   };
 }
 
@@ -537,12 +530,13 @@ export async function managedBooking(pnr: string, proof: string) {
   const s = await readState();
   const b = requireBookingManagement(s, pnr, proof);
   const { tour, slot } = slotFor(s, b);
-  const hours = b.policy?.cancellationHours ?? s.settings.cancellationHours;
-  const late = b.policy?.lateRefundPercent ?? s.settings.lateRefundPercent;
+  const settings = normalizeSettings(s.settings);
+  const hours = b.policy?.cancellationHours ?? settings.cancellationHours;
+  const late = b.policy?.lateRefundPercent ?? settings.lateRefundPercent;
   const beforeStart = new Date(slot.startsAt).getTime() > Date.now();
   const free =
     new Date(slot.startsAt).getTime() - Date.now() >= hours * 3600000;
-  const order = s.orders.find((o) => o.id === b.orderId)!;
+  const order = s.orders.find((o) => o.id === b.orderId);
   return {
     pnr: b.pnr,
     tourTitle: tour.title,
@@ -557,12 +551,17 @@ export async function managedBooking(pnr: string, proof: string) {
     status: b.status,
     paymentStatus: b.paymentStatus,
     paymentMethod: b.paymentMethod,
-    whatsappConsent: b.whatsappConsent,
     meetingPoint: tour.meetingPoint,
     meetingAddress: tour.meetingAddress,
     mapUrl: tour.mapUrl,
-    canMove: b.status === "confirmed" && free && tour.published,
-    canCancel: ["confirmed", "pending"].includes(b.status) && beforeStart,
+    canMove:
+      b.status === "confirmed" &&
+      free &&
+      beforeStart &&
+      tour.published &&
+      !tour.operationalReviewRequired,
+    canCancel:
+      ["confirmed", "pending"].includes(b.status) && beforeStart,
     cancellationHours: hours,
     refundPreviewCents:
       b.paymentStatus === "paid"
@@ -571,15 +570,19 @@ export async function managedBooking(pnr: string, proof: string) {
     refundCents: b.refundCents,
     refundStatus: b.refundStatus,
     cancellationReason: b.cancellationReason,
-    calendarUrl: `/api/calendar/booking/${b.pnr}?manage=${proof}`,
-    paymentUrl: b.status === "pending" ? order.paymentUrl : undefined,
-    paymentAmountCents: order.totalCents,
+    calendarUrl: `/api/calendar/booking/${b.pnr}?manage=${encodeURIComponent(proof)}`,
+    paymentAmountCents: order?.totalCents ?? b.totalCents,
     slots: tour.slots
       .filter(
         (x) =>
           x.id === b.slotId ||
-          (!x.closed && !isTourClosed(tour, x.startsAt) && !isClosed(s, x.startsAt) && new Date(x.startsAt).getTime() >
-            Date.now() + tour.bookingCutoffHours * 3600000 &&
+          (!x.closed &&
+            !isTourClosed(tour, x.startsAt) &&
+            !isClosed(s, x.startsAt) &&
+            !tour.operationalReviewRequired &&
+            tour.published &&
+            new Date(x.startsAt).getTime() >
+              Date.now() + tour.bookingCutoffHours * 3600000 &&
             Math.min(x.capacity, 25) - x.reserved >= b.totalGuests),
       )
       .map((x) => ({
@@ -587,51 +590,6 @@ export async function managedBooking(pnr: string, proof: string) {
         startsAt: x.startsAt,
         available: Math.max(0, Math.min(x.capacity, 25) - x.reserved),
       }))
-      .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+      .sort((a, c) => a.startsAt.localeCompare(c.startsAt)),
   };
-}
-export async function bookingConsent(
-  pnr: string,
-  proof: string,
-  consent: boolean,
-) {
-  return transaction((s) => {
-    const b = requireBookingManagement(s, pnr, proof);
-    b.whatsappConsent = consent;
-    b.consentAt = new Date().toISOString();
-    for (const j of s.jobs.filter(
-      (j) =>
-        j.type === "whatsapp" && j.bookingPnr === pnr && j.status === "queued",
-    )) {
-      j.status = "failed";
-      j.error = "Preferenze cliente aggiornate";
-    }
-    if (consent && b.status === "confirmed") {
-      const { slot } = slotFor(s, b);
-      if (
-        new Date(slot.startsAt).getTime() > Date.now() &&
-        !s.jobs.some(
-          (j) =>
-            j.bookingPnr === pnr &&
-            j.type === "whatsapp" &&
-            j.key.includes(b.slotId) &&
-            j.status === "sent",
-        )
-      )
-        enqueue(s, {
-          key: `wa:${pnr}:${b.slotId}:consent:${b.consentAt}`,
-          type: "whatsapp",
-          bookingPnr: pnr,
-          to: b.phone,
-          runAt: new Date(
-            Math.max(
-              Date.now(),
-              new Date(slot.startsAt).getTime() -
-                s.settings.reminderHours * 3600000,
-            ),
-          ).toISOString(),
-        });
-    }
-    audit(s, "customer-link", "consent.whatsapp", pnr);
-  });
 }

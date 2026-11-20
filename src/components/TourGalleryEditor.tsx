@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import { ImageSourceField, uploadAdminImage } from "./ImageSourceField";
 import type { TourPhoto } from "@/lib/types";
 
 export function TourGalleryEditor({
@@ -17,6 +17,7 @@ export function TourGalleryEditor({
 }) {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [urlDraft, setUrlDraft] = useState("");
   const locked = disabled || uploading;
 
   function move(index: number, direction: number) {
@@ -28,18 +29,46 @@ export function TourGalleryEditor({
     onChange(next);
   }
 
+  function addPhoto(url: string) {
+    if (!url.trim() || photos.length >= 20) return;
+    onChange([...photos, { url: url.trim(), alt: "" }]);
+    setUrlDraft("");
+    setMessage("Foto aggiunta. Salva il tour per pubblicarla.");
+  }
+
   return (
     <section className="card grid gap-5 p-6" aria-label="Galleria fotografica">
       <div>
         <h2 className="display-md">Galleria fotografica</h2>
         <p className="mt-2 text-sm text-muted">
-          La copertina è la prima foto. Aggiungi fino a 20 foto del percorso:
-          l’ordine qui sotto è quello della galleria pubblica. Salva il tour per
-          pubblicare le modifiche.
+          La copertina è la prima foto. Aggiungi fino a 20 foto del percorso: per
+          URL o caricamento dal computer. L’ordine qui sotto è quello della
+          galleria pubblica. Salva il tour per pubblicare le modifiche.
         </p>
       </div>
-      <label>
-        Aggiungi foto alla galleria (JPEG, PNG o WebP; massimo 5 MB ciascuna)
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <label className="grid gap-2 text-sm">
+          Aggiungi foto da URL
+          <input
+            className="text-input"
+            value={urlDraft}
+            disabled={locked || photos.length >= 20}
+            placeholder="https://… oppure /api/media/…"
+            maxLength={1000}
+            onChange={(event) => setUrlDraft(event.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          className="button-secondary"
+          disabled={locked || photos.length >= 20 || !urlDraft.trim()}
+          onClick={() => addPhoto(urlDraft)}
+        >
+          Aggiungi URL
+        </button>
+      </div>
+      <label className="grid gap-2 text-sm">
+        Oppure carica dal computer (JPEG, PNG o WebP; massimo 5 MB ciascuna)
         <input
           type="file"
           multiple
@@ -55,34 +84,13 @@ export function TourGalleryEditor({
               );
               return;
             }
-            if (
-              files.some(
-                (file) =>
-                  !["image/jpeg", "image/png", "image/webp"].includes(
-                    file.type,
-                  ) || file.size > 5 * 1024 * 1024,
-              )
-            ) {
-              setMessage(
-                "Ogni foto deve essere JPEG, PNG o WebP e pesare al massimo 5 MB.",
-              );
-              return;
-            }
             setUploading(true);
             onUploading(true);
             const next = [...photos];
             try {
               for (const [index, file] of files.entries()) {
                 setMessage(`Caricamento foto ${index + 1} di ${files.length}…`);
-                const response = await fetch("/api/platform/admin/media", {
-                  method: "POST",
-                  headers: { "Content-Type": file.type },
-                  body: file,
-                });
-                const data = await response.json();
-                if (!response.ok)
-                  throw Error(data.error || "Caricamento non riuscito");
-                next.push({ url: data.url, alt: "" });
+                next.push({ url: await uploadAdminImage(file), alt: "" });
                 onChange([...next]);
               }
               setMessage(
@@ -115,31 +123,31 @@ export function TourGalleryEditor({
             key={`${photo.url}-${index}`}
             className="min-w-0 rounded-lg border border-hairline p-3"
           >
-            <div className="relative mb-3 aspect-[4/3] overflow-hidden rounded-md">
-              <Image
-                src={photo.url}
-                alt={photo.alt || `Foto aggiuntiva ${index + 1}`}
-                fill
-                sizes="(min-width: 1280px) 25vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-            <label className="block text-sm">
-              Descrizione foto {index + 1}
-              <input
-                value={photo.alt}
-                maxLength={250}
-                disabled={locked}
-                placeholder="Es. Ponte Carlo al tramonto"
-                onChange={(event) =>
-                  onChange(
-                    photos.map((item, i) =>
-                      i === index ? { ...item, alt: event.target.value } : item,
-                    ),
-                  )
-                }
-              />
-            </label>
+            <ImageSourceField
+              label={`Foto ${index + 1}`}
+              value={photo.url}
+              alt={photo.alt}
+              disabled={locked}
+              onNotice={setMessage}
+              onUploading={(next) => {
+                setUploading(next);
+                onUploading(next);
+              }}
+              onChange={(url) =>
+                onChange(
+                  photos.map((item, i) =>
+                    i === index ? { ...item, url } : item,
+                  ),
+                )
+              }
+              onAltChange={(alt) =>
+                onChange(
+                  photos.map((item, i) =>
+                    i === index ? { ...item, alt } : item,
+                  ),
+                )
+              }
+            />
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
               <button
                 type="button"

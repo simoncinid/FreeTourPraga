@@ -3,15 +3,22 @@ import { CalendarClosures } from "./CalendarClosures";
 import { TourOperationsEditor } from "./TourOperationsEditor";
 import Link from "next/link";
 import { TourGalleryEditor } from "./TourGalleryEditor";
+import { ImageSourceField, uploadAdminImage } from "./ImageSourceField";
 import { tourGalleryImages } from "@/lib/tour-gallery";
 import { ContentWorkspace } from "./ContentWorkspace";
 import type { SiteContent } from "@/lib/platform/content";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   LayoutDashboard,
   CalendarDays,
-  Map,
+  Map as MapIcon,
   Ticket,
   Users,
   Mail,
@@ -38,26 +45,17 @@ type Data = Omit<PlatformState, "orders" | "rateLimits" | "events"> & {
 const navigation = [
   ["", "Panoramica", LayoutDashboard],
   ["prenotazioni", "Prenotazioni", Ticket],
-  ["tour", "Tour e orari", Map],
+  ["tour", "Tour e orari", MapIcon],
   ["calendario", "Calendario", CalendarDays],
   ["affiliati", "Affiliati", Users],
-  ["canali", "Canali OTA", RefreshCw],
-  ["pre-tour", "Email e reminder", Mail],
+  ["pre-tour", "Email", Mail],
+  ["last-minute", "Last minute", Settings2],
   ["contenuti", "Contenuti", FileText],
   ["richieste", "Richieste", Users],
   ["impostazioni", "Regole e tariffe", Settings2],
-  ["report", "KPI e campagne", LayoutDashboard],
-  ["audit", "Registro attività", FileText],
 ] as const;
 
-/**
- * Nascoste in Fase 1 (codice integro, solo UI). Certe perché esplicite in Fase 2
- * o assenti dal perimetro Fase 1 del contratto:
- * - canali → F2 STEP 10 (OTA / parsing email)
- * - report → F2 STEP 12 (KPI / Google Ads)
- * - audit → non previsto in Fase 1
- * NON nascosta: pre-tour (email di conferma = F1 STEP 5; solo WA è F2).
- */
+/** Fuori perimetro Fase 1: OTA, Ads, audit. */
 const PHASE2_OR_EXTRA_SECTIONS = new Set<string>([
   "canali",
   "report",
@@ -93,6 +91,7 @@ function Field({
   max,
   step,
   required = false,
+  disabled = false,
 }: {
   label: string;
   value: string | number;
@@ -102,6 +101,7 @@ function Field({
   max?: number;
   step?: string;
   required?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <label className="grid gap-1 text-sm">
@@ -115,6 +115,8 @@ function Field({
         step={step}
         onChange={(e) => onChange(e.target.value)}
         required={required}
+        disabled={disabled}
+        readOnly={disabled}
       />
     </label>
   );
@@ -148,18 +150,19 @@ function Chip({ value }: { value: string }) {
     </span>
   );
 }
-function time(value: string) {
-  return new Date(value).toLocaleString("it-IT", {
+const adminTimeFormatter = new Intl.DateTimeFormat("it-IT", {
     timeZone: "Europe/Prague",
     dateStyle: "short",
     timeStyle: "short",
-  });
+});
+function time(value: string) {
+  return adminTimeFormatter.format(new Date(value));
 }
 export function AdminWorkspace() {
   const router = useRouter();
   const path = usePathname().split("/").filter(Boolean);
   const raw = path[1] || "";
-  const section = ["prezzi", "sconti", "last-minute"].includes(raw)
+  const section = ["prezzi", "sconti"].includes(raw)
     ? "impostazioni"
     : raw === "email"
       ? "pre-tour"
@@ -172,10 +175,14 @@ export function AdminWorkspace() {
     [tourFilter, setTourFilter] = useState(""),
     [dateFilter, setDateFilter] = useState(""),
     [slotFilter, setSlotFilter] = useState("");
-  const load = useCallback(async () => {
+  const slotsByTour = useMemo(() => new Map(
+    (data?.tours ?? []).map((tour) => [tour.slug, new Map(tour.slots.map((slot) => [slot.id, slot]))]),
+  ), [data]);
+  const load = useCallback(async (signal?: AbortSignal) => {
     const r = await fetch("/api/platform/admin/state", {
       credentials: "same-origin",
       cache: "no-store",
+      signal,
     });
     if (r.status === 401) {
       router.replace("/accesso");
@@ -186,7 +193,11 @@ export function AdminWorkspace() {
     setData(d);
   }, [router]);
   useEffect(() => {
-    load().catch((e) => setMessage(e.message));
+    const controller = new AbortController();
+    load(controller.signal).catch((e) => {
+      if (!controller.signal.aborted) setMessage(e.message);
+    });
+    return () => controller.abort();
   }, [load]);
   // Aggiorna in background al ritorno sul tab, senza svuotare la UI.
   useEffect(() => {
@@ -245,9 +256,7 @@ export function AdminWorkspace() {
       </section>
     );
   const slot = (b: Reservation) =>
-    data.tours
-      .find((t) => t.slug === b.tourSlug)
-      ?.slots.find((s) => s.id === b.slotId);
+    slotsByTour.get(b.tourSlug)?.get(b.slotId);
   const filtered = data.bookings.filter(
     (b) =>
       (!tourFilter || b.tourSlug === tourFilter) &&
@@ -410,7 +419,7 @@ export function AdminWorkspace() {
       <div
         className={`admin-main min-w-0${section === "calendario" ? " admin-calendar-page" : ""}`}
       >
-        <header className="mb-7 flex flex-wrap justify-between gap-4">
+        <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="micro-label text-primary">
               Operatività · Europe/Prague
@@ -460,29 +469,13 @@ export function AdminWorkspace() {
               ].map(([label, value]) => (
                 <div className="card p-6" key={label}>
                   <p className="text-sm">{label}</p>
-                  <strong className="mt-3 block text-3xl text-ink">
+                  <strong className="admin-metric mt-3 block text-ink">
                     {value}
                   </strong>
                 </div>
               ))}
             </div>
             <div className="card mb-7 grid gap-4 p-6"><h2 className="display-md">Richieste dal sito</h2><p>{data.inquiries.filter((i) => i.status === "new").length} richieste da gestire · {data.inquiries.length} totali</p>{data.inquiries.slice().reverse().slice(0, 5).map((i) => <div key={i.id} className="border-t pt-3"><strong>{i.name}</strong><p className="whitespace-pre-wrap text-sm">{i.message}</p><small>{time(i.createdAt)} · {i.status === "new" ? "Da gestire" : "Gestita"}</small></div>)}<Link href="/admin/richieste" className="underline">Apri richieste e messaggi</Link></div>
-            <div className="card mb-7 p-6">
-              <h2 className="display-md mb-4">Servizi e automazioni</h2>
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(data.integrations).map(([k, v]) => (
-                  <span className="status-chip" key={k}>
-                    {k}: {v ? "configurato" : "da collegare"}
-                  </span>
-                ))}
-              </div>
-              {!data.integrations.database && (
-                <p className="mt-4 text-sm">
-                  Ambiente locale: dati persistenti su questo computer. Per la
-                  produzione attivare PostgreSQL.
-                </p>
-              )}
-            </div>
           </>
         )}
         {section === "prenotazioni" &&
@@ -610,7 +603,7 @@ export function AdminWorkspace() {
               <div className="grid gap-5">
                 {data.tours.map((t) => (
                   <article
-                    className="card flex flex-wrap justify-between gap-4 p-6"
+                    className="card flex flex-wrap items-start justify-between gap-4 p-6"
                     key={t.id}
                   >
                     <div>
@@ -641,95 +634,26 @@ export function AdminWorkspace() {
             save={(s) => mutate("settings", s, "PUT")}
           />
         )}
+        {section === "last-minute" && (
+          <LastMinuteEditor
+            key={`lm-${JSON.stringify(data.settings)}`}
+            settings={data.settings}
+            busy={busy}
+            save={(s) => mutate("settings", s, "PUT")}
+          />
+        )}
         {section === "affiliati" && (
-          <>
-            <AffiliateEditor
-              busy={busy}
-              save={(a) => mutate("affiliate", a, "PUT")}
-            />
-            <div className="mt-7 grid gap-5">
-              {data.affiliates.map((a) => {
-                const rows = data.bookings.filter(
-                  (b) => b.affiliateCode === a.code,
-                );
-                const payable = rows.filter(
-                  (b) => b.status === "present" && !b.commissionPaid,
-                );
-                return (
-                  <article className="card p-6" key={a.code}>
-                    <div className="flex flex-wrap justify-between gap-4">
-                      <div>
-                        <h2 className="display-md">{a.name}</h2>
-                        <p>
-                          {a.type} · {a.code}
-                          {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
-                          {a.commissionPercent}% ·{" "}
-                          {a.active ? "Attivo" : "Sospeso"}
-                        </p>
-                        <p>
-                          {rows.length} prenotazioni · maturato da liquidare{" "}
-                          {formatMoney(
-                            payable.reduce((s, b) => s + b.commissionCents, 0),
-                          )}
-                        </p>
-                        <a
-                          className="block break-all text-sm underline"
-                          href={
-                            a.wpId != null
-                              ? `/?affiliates=${a.wpId}`
-                              : `/?ref=${a.code}`
-                          }
-                        >
-                          {typeof window !== "undefined"
-                            ? window.location.origin
-                            : ""}
-                          {a.wpId != null
-                            ? `/?affiliates=${a.wpId}`
-                            : `/?ref=${a.code}`}
-                        </a>
-                      </div>
-                      <a
-                        href={`/api/platform/admin/affiliate/qr?code=${a.code}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="button-secondary"
-                      >
-                        Scarica QR
-                      </a>
-                    </div>
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <button
-                        className="button-secondary"
-                        disabled={busy}
-                        onClick={() =>
-                          mutate(
-                            "affiliate",
-                            { ...a, active: !a.active },
-                            "PUT",
-                          )
-                        }
-                      >
-                        {a.active ? "Sospendi" : "Riattiva"}
-                      </button>
-                      <button
-                        className="button-secondary"
-                        disabled={busy || !payable.length}
-                        onClick={() =>
-                          mutate("commissions/pay", { code: a.code })
-                        }
-                      >
-                        Registra liquidazione
-                      </button>
-                    </div>
-                    <details className="mt-5">
-                      <summary>Report prenotazioni</summary>
-                      {table(rows)}
-                    </details>
-                  </article>
-                );
-              })}
-            </div>
-          </>
+          <AffiliatesSection
+            busy={busy}
+            affiliates={data.affiliates}
+            bookings={data.bookings}
+            save={(a) => mutate("affiliate", a, "PUT")}
+            pay={(code) => mutate("commissions/pay", { code })}
+            toggleActive={(a) =>
+              mutate("affiliate", { ...a, active: !a.active }, "PUT")
+            }
+            renderReport={table}
+          />
         )}
         {section === "canali" && (
           <>
@@ -786,12 +710,17 @@ export function AdminWorkspace() {
         )}
         {section === "pre-tour" && (
           <>
-            <div className="card mb-6 grid gap-4 p-6"><h2 className="display-md">Modelli di promemoria per tour</h2><p>Personalizza testo e anticipo di invio nella scheda del tour.</p>{data.tours.map((t) => <div key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3"><div><strong>{t.title}</strong><p className="text-sm">{t.meetingPoint} · {t.reminderHours ?? data.settings.reminderHours} ore prima</p></div><Link className="underline" href={`/admin/tour/${t.slug}#promemoria`}>Modifica promemoria</Link></div>)}</div>
+            <EmailTemplatesEditor
+              key={`mail-${JSON.stringify(data.settings.emailTemplates)}-${data.settings.emailFooter}`}
+              settings={data.settings}
+              busy={busy}
+              save={(s) => mutate("settings", s, "PUT")}
+            />
             <div className="card mb-6 p-6">
-              <h2 className="display-md mb-3">Comunicazioni automatiche</h2>
+              <h2 className="display-md mb-3">Coda invii</h2>
               <p>
-                Conferme e modifiche via email. Gli invii non riusciti vengono
-                ritentati automaticamente.
+                Conferme, modifiche e cancellazioni via email. Gli invii non
+                riusciti vengono ritentati automaticamente.
               </p>
               <button
                 className="button-secondary mt-4"
@@ -922,21 +851,6 @@ export function AdminWorkspace() {
                   )}
                 </p>
               </div>
-              <div className="card p-6">
-                <h2 className="display-md">Google Ads</h2>
-                <p className="mt-4">
-                  {data.settings.googleAdsId
-                    ? `Account tag: ${data.settings.googleAdsId}`
-                    : "Tag non ancora configurato."}
-                </p>
-                <p className="my-3 text-sm">
-                  Il tracciamento acquisti si attiva con il consenso marketing e
-                  solo sulle prenotazioni confermate.
-                </p>
-                <Link href="/admin/impostazioni" className="underline">
-                  Configura conversioni
-                </Link>
-              </div>
             </div>
             <a
               className="button-secondary mt-6"
@@ -999,7 +913,7 @@ function ManualBooking({
           notes: f.get("notes"),
           affiliateCode: "",
           termsAccepted: true,
-          whatsappConsent: f.get("whatsapp") === "on",
+          whatsappConsent: false,
         });
         if (r) setMessage("Prenotazione registrata.");
       }}
@@ -1058,10 +972,6 @@ function ManualBooking({
       <label>
         Note
         <textarea name="notes" className="text-input" />
-      </label>
-      <label className="flex gap-3 text-sm">
-        <input name="whatsapp" type="checkbox" />
-        Consenso WhatsApp raccolto dal cliente
       </label>
       <label className="flex gap-3 text-sm">
         <input required type="checkbox" />
@@ -1192,7 +1102,6 @@ function BookingDetail({
             Stato pagamento
             <select
               className="text-input"
-              disabled={b.paymentMethod === "stripe"}
               value={payment}
               onChange={(e) =>
                 setPayment(e.target.value as Reservation["paymentStatus"])
@@ -1229,9 +1138,7 @@ function BookingDetail({
               children,
               infants,
               ...(b.status !== "pending" ? { status } : {}),
-              ...(b.paymentMethod !== "stripe"
-                ? { paymentStatus: payment }
-                : {}),
+              paymentStatus: payment,
               notify,
             })
           }
@@ -1321,7 +1228,7 @@ function TourEditor({
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
-  const [t, setT] = useState(() => ({ ...tour, cancellationHours: tour.cancellationHours ?? defaults.cancellationHours, lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent, reminderHours: tour.reminderHours ?? defaults.reminderHours, galleryImages: tourGalleryImages(tour) }));
+  const [t, setT] = useState(() => ({ ...tour, cancellationHours: tour.cancellationHours ?? defaults.cancellationHours, lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent, galleryImages: tourGalleryImages(tour) }));
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -1334,7 +1241,6 @@ function TourEditor({
     ["language", "Lingua"],
     ["durationMinutes", "Durata in minuti", "number"],
     ["maxGuests", "Massimo partecipanti per prenotazione (fino a 25)", "number"],
-    ["imageUrl", "URL foto copertina"],
     ["meetingPoint", "Punto d’incontro"],
     ["meetingAddress", "Indirizzo"],
     ["mapUrl", "Link Google Maps"],
@@ -1368,39 +1274,15 @@ function TourEditor({
       </Link>
       <div className="card grid gap-5 p-6">
         <h2 className="display-md">Informazioni e tariffe</h2>
-        <label>
-          Carica foto copertina (JPEG, PNG o WebP; massimo 5 MB)
-          <input
-            disabled={busy || galleryUploading || coverUploading}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              setCoverUploading(true);
-              setUploadMessage("Caricamento…");
-              try {
-                const r = await fetch("/api/platform/admin/media", {
-                  method: "POST",
-                  headers: { "Content-Type": file.type },
-                  body: file,
-                });
-                const d = await r.json();
-                if (!r.ok) throw Error(d.error);
-                set("imageUrl", d.url);
-                setUploadMessage(
-                  "Foto caricata. Salva il tour per pubblicarla.",
-                );
-              } catch (e) {
-                setUploadMessage(
-                  e instanceof Error ? e.message : "Errore caricamento",
-                );
-              } finally {
-                setCoverUploading(false);
-              }
-            }}
-          />
-        </label>
+        <ImageSourceField
+          label="Foto copertina"
+          value={t.imageUrl}
+          required
+          disabled={busy || galleryUploading || coverUploading}
+          onNotice={setUploadMessage}
+          onUploading={setCoverUploading}
+          onChange={(imageUrl) => set("imageUrl", imageUrl)}
+        />
         {uploadMessage && <p role="status">{uploadMessage}</p>}
         <div className="form-grid">
           {fields.map(([key, label, type]) =>
@@ -1457,27 +1339,84 @@ function TourEditor({
             onChange={(v) => set(key, v.split("\n"))}
           />
         ))}
-        <Text
-          label="Foto punti salienti (gruppi separati da riga vuota, max 4 URL per gruppo)"
-          value={(t.highlightGalleries || [])
-            .map((group) => group.join("\n"))
-            .join("\n\n")}
-          onChange={(v) =>
-            set(
-              "highlightGalleries",
-              v
-                .split(/\n\s*\n/)
-                .map((group) =>
-                  group
-                    .split("\n")
-                    .map((line) => line.trim())
-                    .filter(Boolean)
-                    .slice(0, 4),
-                )
-                .filter((group) => group.length > 0),
-            )
-          }
-        />
+        <div className="grid gap-3">
+          <Text
+            label="Foto punti salienti (gruppi separati da riga vuota, max 4 URL per gruppo)"
+            value={(t.highlightGalleries || [])
+              .map((group) => group.join("\n"))
+              .join("\n\n")}
+            onChange={(v) =>
+              set(
+                "highlightGalleries",
+                v
+                  .split(/\n\s*\n/)
+                  .map((group) =>
+                    group
+                      .split("\n")
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .slice(0, 4),
+                  )
+                  .filter((group) => group.length > 0),
+              )
+            }
+          />
+          <label className="grid gap-2 text-sm">
+            Oppure carica foto e aggiungile all’ultimo gruppo (JPEG, PNG o WebP;
+            massimo 5 MB)
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              disabled={busy || galleryUploading || coverUploading}
+              onChange={async (event) => {
+                const files = Array.from(event.currentTarget.files || []);
+                event.currentTarget.value = "";
+                if (!files.length) return;
+                setCoverUploading(true);
+                setUploadMessage("Caricamento foto punti salienti…");
+                try {
+                  const urls: string[] = [];
+                  for (const file of files) {
+                    urls.push(await uploadAdminImage(file));
+                  }
+                  const groups = [...(t.highlightGalleries || [])];
+                  const last = groups[groups.length - 1] || [];
+                  if (groups.length === 0 || last.length >= 4) {
+                    groups.push(urls.slice(0, 4));
+                    if (urls.length > 4) {
+                      for (let i = 4; i < urls.length; i += 4) {
+                        groups.push(urls.slice(i, i + 4));
+                      }
+                    }
+                  } else {
+                    const room = 4 - last.length;
+                    groups[groups.length - 1] = [
+                      ...last,
+                      ...urls.slice(0, room),
+                    ];
+                    const rest = urls.slice(room);
+                    for (let i = 0; i < rest.length; i += 4) {
+                      groups.push(rest.slice(i, i + 4));
+                    }
+                  }
+                  set("highlightGalleries", groups);
+                  setUploadMessage(
+                    "Foto aggiunte ai punti salienti. Salva il tour per pubblicarle.",
+                  );
+                } catch (error) {
+                  setUploadMessage(
+                    error instanceof Error
+                      ? error.message
+                      : "Errore caricamento",
+                  );
+                } finally {
+                  setCoverUploading(false);
+                }
+              }}
+            />
+          </label>
+        </div>
         <Text
           label="Titoli o ID attività OTA (uno per riga)"
           value={(t.otaAliases || []).join("\n")}
@@ -1514,15 +1453,16 @@ function SettingsEditor({
   save: (s: Settings) => Promise<unknown>;
 }) {
   const [s, setS] = useState(settings);
-  const field = (key: keyof Settings, label: string, type = "number") => (
+  const field = (
+    key: "multiTourPercent" | "minimumTours" | "cancellationHours" | "lateRefundPercent" | "retentionDays",
+    label: string,
+  ) => (
     <Field
       key={key}
       label={label}
-      type={type}
+      type="number"
       value={s[key]}
-      onChange={(v) =>
-        setS((p) => ({ ...p, [key]: type === "number" ? Number(v) : v }))
-      }
+      onChange={(v) => setS((p) => ({ ...p, [key]: Number(v) }))}
     />
   );
   return (
@@ -1533,7 +1473,7 @@ function SettingsEditor({
         save(s);
       }}
     >
-      <h2 className="display-md">Regole commerciali e automazioni</h2>
+      <h2 className="display-md">Regole commerciali</h2>
       <div className="form-grid">
         {field("multiTourPercent", "Sconto multi-tour (%)")}
         {field("minimumTours", "Numero minimo di tour diversi")}
@@ -1543,17 +1483,11 @@ function SettingsEditor({
         )}
         {field("lateRefundPercent", "Rimborso dopo il termine (%)")}
         {field("retentionDays", "Conservazione dati (giorni)")}
-        {/* Fase 2 (nascosti, valori conservati): reminderHours, googleAdsId, googleAdsLabel */}
       </div>
-      <Text
-        label="Firma email"
-        value={s.emailFooter}
-        onChange={(v) => setS((p) => ({ ...p, emailFooter: v }))}
-      />
       <p className="text-sm">
-        Le tariffe e le fasce d’età si gestiscono per ciascun tour. I nuovi
-        valori valgono per le nuove prenotazioni. Le prenotazioni esistenti
-        conservano il prezzo concordato.
+        Le tariffe e le fasce d’età si gestiscono per ciascun tour. Listino
+        last-minute in <Link href="/admin/last-minute">Last minute</Link>.
+        Testi email in <Link href="/admin/pre-tour">Email</Link>.
       </p>
       <button className="button-primary" disabled={busy}>
         Salva regole
@@ -1561,35 +1495,353 @@ function SettingsEditor({
     </form>
   );
 }
-function AffiliateEditor({
+function LastMinuteEditor({
+  settings,
   busy,
   save,
 }: {
+  settings: Settings;
   busy: boolean;
-  save: (a: Affiliate) => Promise<unknown>;
+  save: (s: Settings) => Promise<unknown>;
 }) {
-  const [a, setA] = useState<Affiliate>({
-    code: "",
-    name: "",
-    email: "",
-    type: "hotel",
-    commissionPercent: 0,
-    active: true,
-  });
+  const [s, setS] = useState(settings);
   return (
     <form
+      className="card grid gap-6 p-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save(s);
+      }}
+    >
+      <h2 className="display-md">Listino last-minute</h2>
+      <p className="text-sm">
+        Quando è attivo, nelle ultime ore prima della partenza (dopo la
+        chiusura standard del tour) il listino applicato in checkout riceve lo
+        sconto indicato. Distinto dalla “chiusura prenotazioni” di ogni tour.
+      </p>
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          checked={s.lastMinuteEnabled}
+          onChange={(e) =>
+            setS((p) => ({ ...p, lastMinuteEnabled: e.target.checked }))
+          }
+        />
+        Attiva tariffa last-minute
+      </label>
+      <div className="form-grid">
+        <Field
+          label="Finestra last-minute (ore prima della partenza)"
+          type="number"
+          min={1}
+          max={168}
+          value={s.lastMinuteHours}
+          onChange={(v) => setS((p) => ({ ...p, lastMinuteHours: Number(v) }))}
+        />
+        <Field
+          label="Sconto last-minute (%)"
+          type="number"
+          min={0}
+          max={100}
+          value={s.lastMinuteDiscountPercent}
+          onChange={(v) =>
+            setS((p) => ({ ...p, lastMinuteDiscountPercent: Number(v) }))
+          }
+        />
+      </div>
+      <button className="button-primary" disabled={busy}>
+        Salva last-minute
+      </button>
+    </form>
+  );
+}
+function EmailTemplatesEditor({
+  settings,
+  busy,
+  save,
+}: {
+  settings: Settings;
+  busy: boolean;
+  save: (s: Settings) => Promise<unknown>;
+}) {
+  const [s, setS] = useState(settings);
+  const kinds = [
+    ["confirmed", "Conferma"],
+    ["modified", "Modifica"],
+    ["cancelled", "Cancellazione"],
+  ] as const;
+  return (
+    <form
+      className="card mb-6 grid gap-6 p-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save(s);
+      }}
+    >
+      <h2 className="display-md">Testi email modificabili</h2>
+      <p className="text-sm">
+        Placeholder:{" "}
+        {
+          "{kind} {nome} {pnr} {tour} {data} {persone} {totale} {incontro} {indirizzo} {mappa} {pagamento} {nota} {cancellazione} {manageUrl} {calendarUrl} {assistenza} {firma} {brand}"
+        }
+        . Per la mail operativa anche {"{email} {telefono} {note} {adulti} {minori} {affiliate}"}.
+      </p>
+      <Text
+        label="Firma email"
+        value={s.emailFooter}
+        onChange={(v) => setS((p) => ({ ...p, emailFooter: v }))}
+      />
+      {kinds.map(([key, label]) => (
+        <div key={key} className="grid gap-3 border-t pt-4">
+          <h3 className="font-bold">{label} cliente</h3>
+          <Field
+            label="Oggetto"
+            value={s.emailTemplates[key].subject}
+            onChange={(v) =>
+              setS((p) => ({
+                ...p,
+                emailTemplates: {
+                  ...p.emailTemplates,
+                  [key]: { ...p.emailTemplates[key], subject: v },
+                },
+              }))
+            }
+          />
+          <Text
+            label="Testo"
+            value={s.emailTemplates[key].text}
+            onChange={(v) =>
+              setS((p) => ({
+                ...p,
+                emailTemplates: {
+                  ...p.emailTemplates,
+                  [key]: { ...p.emailTemplates[key], text: v },
+                },
+              }))
+            }
+          />
+          <Text
+            label="HTML"
+            value={s.emailTemplates[key].html}
+            onChange={(v) =>
+              setS((p) => ({
+                ...p,
+                emailTemplates: {
+                  ...p.emailTemplates,
+                  [key]: { ...p.emailTemplates[key], html: v },
+                },
+              }))
+            }
+          />
+        </div>
+      ))}
+      <div className="grid gap-3 border-t pt-4">
+        <h3 className="font-bold">Avviso operativo (staff / portali)</h3>
+        <Field
+          label="Oggetto"
+          value={s.emailTemplates.admin.subject}
+          onChange={(v) =>
+            setS((p) => ({
+              ...p,
+              emailTemplates: {
+                ...p.emailTemplates,
+                admin: { ...p.emailTemplates.admin, subject: v },
+              },
+            }))
+          }
+        />
+        <Text
+          label="Testo (formato parsing)"
+          value={s.emailTemplates.admin.text}
+          onChange={(v) =>
+            setS((p) => ({
+              ...p,
+              emailTemplates: {
+                ...p.emailTemplates,
+                admin: { ...p.emailTemplates.admin, text: v },
+              },
+            }))
+          }
+        />
+      </div>
+      <button className="button-primary" disabled={busy}>
+        Salva testi email
+      </button>
+    </form>
+  );
+}
+const emptyAffiliate = (): Affiliate => ({
+  code: "",
+  name: "",
+  email: "",
+  type: "hotel",
+  commissionPercent: 0,
+  active: true,
+});
+
+function AffiliatesSection({
+  busy,
+  affiliates,
+  bookings,
+  save,
+  pay,
+  toggleActive,
+  renderReport,
+}: {
+  busy: boolean;
+  affiliates: Affiliate[];
+  bookings: Reservation[];
+  save: (a: Affiliate) => Promise<unknown>;
+  pay: (code: string) => Promise<unknown>;
+  toggleActive: (a: Affiliate) => Promise<unknown>;
+  renderReport: (rows: Reservation[]) => ReactNode;
+}) {
+  const [editing, setEditing] = useState<Affiliate | null>(null);
+  return (
+    <>
+      <AffiliateEditor
+        key={editing?.code || "new"}
+        busy={busy}
+        initial={editing}
+        onCancel={() => setEditing(null)}
+        save={async (a) => {
+          const result = await save(a);
+          if (result) setEditing(null);
+          return result;
+        }}
+      />
+      <div className="mt-7 grid gap-5">
+        {affiliates.map((a) => {
+          const rows = bookings.filter((b) => b.affiliateCode === a.code);
+          const payable = rows.filter(
+            (b) => b.status === "present" && !b.commissionPaid,
+          );
+          return (
+            <article className="card p-6" key={a.code}>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="display-md">{a.name}</h2>
+                  <p>
+                    {a.type} · {a.code}
+                    {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
+                    {a.commissionPercent}% ·{" "}
+                    {a.active ? "Attivo" : "Sospeso"}
+                  </p>
+                  <p>
+                    {rows.length} prenotazioni · maturato da liquidare{" "}
+                    {formatMoney(
+                      payable.reduce((s, b) => s + b.commissionCents, 0),
+                    )}
+                  </p>
+                  <a
+                    className="block break-all text-sm underline"
+                    href={
+                      a.wpId != null
+                        ? `/?affiliates=${a.wpId}`
+                        : `/?ref=${a.code}`
+                    }
+                  >
+                    {typeof window !== "undefined"
+                      ? window.location.origin
+                      : ""}
+                    {a.wpId != null
+                      ? `/?affiliates=${a.wpId}`
+                      : `/?ref=${a.code}`}
+                  </a>
+                </div>
+                <a
+                  href={`/api/platform/admin/affiliate/qr?code=${a.code}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="button-secondary"
+                >
+                  Scarica QR
+                </a>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="button-secondary"
+                  disabled={busy}
+                  onClick={() => {
+                    setEditing(a);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                >
+                  Modifica
+                </button>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  disabled={busy}
+                  onClick={() => void toggleActive(a)}
+                >
+                  {a.active ? "Sospendi" : "Riattiva"}
+                </button>
+                <button
+                  type="button"
+                  className="button-secondary"
+                  disabled={busy || !payable.length}
+                  onClick={() => void pay(a.code)}
+                >
+                  Registra liquidazione
+                </button>
+              </div>
+              <details className="mt-5">
+                <summary>Report prenotazioni</summary>
+                {renderReport(rows)}
+              </details>
+            </article>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function AffiliateEditor({
+  busy,
+  save,
+  initial,
+  onCancel,
+}: {
+  busy: boolean;
+  save: (a: Affiliate) => Promise<unknown>;
+  initial?: Affiliate | null;
+  onCancel?: () => void;
+}) {
+  const editing = Boolean(initial?.code);
+  const [a, setA] = useState<Affiliate>(initial ?? emptyAffiliate());
+  return (
+    <form
+      id="affiliate-editor"
       className="card grid gap-5 p-6"
       onSubmit={(e) => {
         e.preventDefault();
-        void save({ ...a, code: a.code || `PARTNER-${crypto.randomUUID().slice(0, 8).toUpperCase()}` });
+        void (async () => {
+          const result = await save({
+            ...a,
+            code:
+              a.code ||
+              `PARTNER-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
+          });
+          if (result && !editing) setA(emptyAffiliate());
+        })();
       }}
     >
-      <h2 className="display-md">Crea o aggiorna un affiliato</h2>
+      <h2 className="display-md">
+        {editing ? `Modifica ${initial!.name}` : "Nuovo affiliato"}
+      </h2>
       <div className="form-grid">
         <Field
-          label="Codice univoco (opzionale, generato automaticamente)"
+          label={
+            editing
+              ? "Codice univoco (non modificabile)"
+              : "Codice univoco (opzionale, generato automaticamente)"
+          }
           value={a.code}
           onChange={(v) => setA({ ...a, code: v.toUpperCase() })}
+          disabled={editing}
         />
         <Field
           label="Nome"
@@ -1641,12 +1893,25 @@ function AffiliateEditor({
       </div>
       <p className="text-sm">
         Link partner WP: <code>/?affiliates=ID</code>. Commissione 0 = solo
-        attribuzione (come free tour su WP). Matura dopo presenza; le cancellate
-        sono escluse.
+        attribuzione. La % e le altre impostazioni valgono solo per le
+        prenotazioni future: quelle già create restano con la commissione di
+        allora. Matura dopo presenza; le cancellate sono escluse.
       </p>
-      <button disabled={busy} className="button-primary">
-        Salva affiliato
-      </button>
+      <div className="flex flex-wrap gap-3">
+        <button disabled={busy} className="button-primary">
+          {editing ? "Salva modifiche" : "Crea affiliato"}
+        </button>
+        {editing && (
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={busy}
+            onClick={onCancel}
+          >
+            Annulla
+          </button>
+        )}
+      </div>
     </form>
   );
 }

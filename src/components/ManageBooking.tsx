@@ -27,16 +27,14 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
         body: JSON.stringify({ proof, action, ...fields }),
       });
       const d = await r.json();
-      if (!r.ok) throw Error(d.error);
+      if (!r.ok) throw Error(d.error || "Operazione non riuscita");
       setBooking(d);
       setSlot(d.slotId);
       if (action !== "view")
         setMessage(
           action === "cancel"
             ? "Prenotazione cancellata. Riceverai la comunicazione aggiornata via email."
-            : action === "move"
-              ? "Partenza aggiornata. Riceverai la nuova conferma via email."
-              : "Preferenze aggiornate.",
+            : "Partenza aggiornata. Riceverai la nuova conferma via email.",
         );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Connessione non disponibile.");
@@ -51,14 +49,16 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ proof, action: "view" }),
       signal: controller.signal,
-    }).then(async (r) => {
-      const data = await r.json();
-      if (!r.ok) throw Error(data.error);
-      setBooking(data);
-      setSlot(data.slotId);
-    }).catch((e) => {
-      if (!controller.signal.aborted) setError(e.message);
-    });
+    })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || "Link non valido");
+        setBooking(data);
+        setSlot(data.slotId);
+      })
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(e.message);
+      });
     return () => controller.abort();
   }, [pnr, proof]);
   return (
@@ -84,11 +84,13 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
         {booking && (
           <>
             <article className="card mb-6 grid gap-4 p-6">
-              <span className={`status-chip ${booking.status === "confirmed" ? "status-success" : booking.status === "pending" ? "status-warning" : "status-muted"}`}>
+              <span
+                className={`status-chip ${booking.status === "confirmed" ? "status-success" : booking.status === "pending" ? "status-warning" : "status-muted"}`}
+              >
                 {
                   {
                     confirmed: "Confermata",
-                    pending: "Pagamento da completare",
+                    pending: "In attesa",
                     cancelled: "Cancellata",
                     present: "Partecipazione registrata",
                     no_show: "Assente",
@@ -104,11 +106,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                   ? "Pagato"
                   : booking.paymentStatus === "refunded"
                     ? "Rimborsato"
-                    : booking.paymentMethod === "cash"
-                      ? "Contanti sul posto"
-                      : booking.paymentMethod === "ota"
-                        ? "Pagamento gestito dal provider"
-                        : "Pagamento online in attesa"}
+                    : "Contanti sul posto"}
               </p>
               <p>
                 {booking.meetingPoint}
@@ -128,11 +126,6 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                   Aggiungi al calendario
                 </a>
               </div>
-              {booking.paymentUrl && (
-                <a className="button-primary" href={booking.paymentUrl}>
-                  Paga l’ordine · {formatMoney(booking.paymentAmountCents)}
-                </a>
-              )}
               {booking.status === "cancelled" && (
                 <p>
                   {booking.cancellationReason}
@@ -141,12 +134,21 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                     : ""}
                 </p>
               )}
+              {!booking.canMove &&
+                !booking.canCancel &&
+                booking.status !== "cancelled" && (
+                  <p className="text-sm">
+                    Non puoi più modificare o cancellare online questa
+                    prenotazione. Contatta il team per assistenza.
+                  </p>
+                )}
             </article>
             {booking.canMove && (
               <form
                 className="card mb-6 grid gap-4 p-6"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  if (busy || slot === booking.slotId) return;
                   send("move", { slotId: slot });
                 }}
               >
@@ -162,6 +164,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                     className="text-input"
                     value={slot}
                     onChange={(e) => setSlot(e.target.value)}
+                    disabled={busy}
                   >
                     {booking.slots.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -174,7 +177,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                   </select>
                 </label>
                 <button
-                  disabled={busy || slot === booking.slotId}
+                  disabled={busy || slot === booking.slotId || !slot}
                   className="button-secondary"
                 >
                   Conferma nuova partenza
@@ -190,6 +193,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                   className="mt-5 grid gap-4"
                   onSubmit={(e) => {
                     e.preventDefault();
+                    if (busy) return;
                     send("cancel", {
                       reason: new FormData(e.currentTarget).get("reason"),
                     });
@@ -209,10 +213,11 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                       minLength={2}
                       maxLength={1000}
                       required
+                      disabled={busy}
                     />
                   </label>
                   <label className="flex items-start gap-3 text-sm">
-                    <input type="checkbox" required />
+                    <input type="checkbox" required disabled={busy} />
                     Confermo di voler cancellare questa prenotazione.
                   </label>
                   <button disabled={busy} className="button-secondary">
@@ -220,19 +225,6 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                   </button>
                 </form>
               </details>
-            )}
-            {booking.status !== "cancelled" && (
-              <label className="card mb-6 flex items-start gap-3 p-6 text-sm">
-                <input
-                  type="checkbox"
-                  disabled={busy}
-                  checked={booking.whatsappConsent}
-                  onChange={(e) =>
-                    send("consent", { consent: e.target.checked })
-                  }
-                />
-                Desidero il promemoria di questo tour su WhatsApp.
-              </label>
             )}
           </>
         )}

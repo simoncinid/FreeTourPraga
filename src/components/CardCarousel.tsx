@@ -54,6 +54,7 @@ export function CardCarousel({
       : allChildren;
   const count = visibleChildren.length;
   const pages = Math.max(1, Math.ceil(count / perPage));
+  const activePage = page < pages ? page : 0;
   const rotateMs = Math.max(2000, Math.min(intervalMs, 30000));
 
   function clearResumeTimer() {
@@ -88,7 +89,6 @@ export function CardCarousel({
 
   useLayoutEffect(() => {
     if (!limitToDotRowMobile) {
-      setMobileSlideCap(Number.POSITIVE_INFINITY);
       return;
     }
     const el = root.current;
@@ -116,7 +116,6 @@ export function CardCarousel({
 
   useEffect(() => {
     if (page > pages - 1) {
-      setPage(0);
       track.current?.scrollTo({ left: 0 });
     }
   }, [page, pages]);
@@ -180,7 +179,7 @@ export function CardCarousel({
             aria-label="Schede precedenti"
             onClick={() => {
               pauseForInteraction();
-              go(page - 1);
+              go(activePage - 1);
             }}
           >
             <ChevronLeft size={20} aria-hidden />
@@ -204,7 +203,11 @@ export function CardCarousel({
           onPointerDown={pauseForInteraction}
           onTouchStart={pauseForInteraction}
           onTouchMove={pauseForInteraction}
-          onWheel={pauseForInteraction}
+          onWheel={(event) => {
+            // Vertical page scroll must never be owned by the track.
+            if (Math.abs(event.deltaY) >= Math.abs(event.deltaX)) return;
+            pauseForInteraction();
+          }}
         >
           {visibleChildren.map((child, index) => (
             <div
@@ -228,7 +231,7 @@ export function CardCarousel({
             aria-label="Schede successive"
             onClick={() => {
               pauseForInteraction();
-              go(page + 1);
+              go(activePage + 1);
             }}
           >
             <ChevronRight size={20} aria-hidden />
@@ -243,7 +246,7 @@ export function CardCarousel({
               type="button"
               role="tab"
               aria-label={`Vai alla pagina ${index + 1} di ${pages}`}
-              aria-current={page === index ? "true" : undefined}
+              aria-current={activePage === index ? "true" : undefined}
               onClick={() => {
                 pauseForInteraction();
                 go(index);

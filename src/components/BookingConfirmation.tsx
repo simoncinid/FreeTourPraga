@@ -4,7 +4,6 @@ import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
-import { trackPurchase } from "./ConsentAndTracking";
 import type { orderConfirmation } from "@/lib/platform/booking";
 type Receipt = Awaited<ReturnType<typeof orderConfirmation>>;
 export function BookingConfirmation() {
@@ -12,9 +11,7 @@ export function BookingConfirmation() {
     [proof, setProof] = useState(""),
     [message, setMessage] = useState("");
   useEffect(() => {
-    let cancelled = false,
-      timer: ReturnType<typeof setTimeout> | undefined;
-    let attempts = 0;
+    let cancelled = false;
     async function load() {
       try {
         const saved = JSON.parse(
@@ -36,19 +33,6 @@ export function BookingConfirmation() {
         if (cancelled) return;
         setReceipt(d);
         setProof(saved.proof);
-        if (
-          d.bookings.every(
-            (b: Receipt["bookings"][number]) => b.status === "confirmed",
-          )
-        )
-          trackPurchase(d.order, d.settings);
-        if (
-          d.bookings.some(
-            (b: Receipt["bookings"][number]) => b.status === "pending",
-          ) &&
-          attempts++ < 120
-        )
-          timer = setTimeout(load, 5000);
       } catch (e) {
         if (!cancelled)
           setMessage(
@@ -61,41 +45,43 @@ export function BookingConfirmation() {
     load();
     return () => {
       cancelled = true;
-      if (timer) clearTimeout(timer);
     };
   }, []);
-  const pending = receipt?.bookings.some((b) => b.status === "pending");
   const cancelled = receipt?.bookings.every((b) => b.status === "cancelled");
   return (
-    <section className={`${ui.page} ${ui.confirmation} section`}>
-      <div className="container-page max-w-3xl">
-        <p className="micro-label text-primary">Il tuo viaggio a Praga</p>
-        {receipt && receipt.bookings.length > 0 && receipt.bookings.every(b => b.status === "confirmed") && <CheckCircle2 size={34} className="mt-5 text-success" aria-hidden />}
-        <h1 className="display-xl my-5">
-          {!receipt
-            ? "La tua prenotazione."
-            : cancelled
-            ? "Prenotazione non attiva."
-            : pending
-              ? "Prenotazione registrata."
-              : "Grazie per aver scelto i nostri tour."}
-        </h1>
-        {message && (
-          <p role="status" className="card mb-6 p-5">
-            {message}
-          </p>
-        )}
-        {!receipt && !message && (
-          <p role="status">Caricamento del riepilogo…</p>
-        )}
-        {receipt && (
-          <>
-            <p className="mb-6">
-              Riceverai via email i dettagli e le informazioni sul pagamento.
-              L’email include il link per modificare o cancellare la singola
-              prenotazione, senza creare un account.
+    <section
+      className={`${ui.page} ${ui.confirmation} section`}
+      data-page="confirmation"
+    >
+      <div className={`container-page ${ui.confirmationGrid}`}>
+        <div className={ui.confirmationIntro}>
+          <p className="micro-label text-primary">Il tuo viaggio a Praga</p>
+          {receipt && receipt.bookings.length > 0 && receipt.bookings.every(b => b.status === "confirmed") && <CheckCircle2 size={34} className={`${ui.confirmationCheck} mt-5 text-success`} aria-hidden />}
+          <h1 className="display-xl my-5">
+            {!receipt
+              ? "La tua prenotazione."
+              : cancelled
+                ? "Prenotazione non attiva."
+                : "Grazie per aver scelto i nostri tour."}
+          </h1>
+          {receipt && (
+            <p className="mb-5">
+              Riceverai via email i dettagli della prenotazione. L’email include
+              il link per modificare o cancellare la singola prenotazione, senza
+              creare un account. Il saldo è in contanti sul posto.
             </p>
-            {receipt.bookings.map((b) => (
+          )}
+        </div>
+        <div className={ui.confirmationReceipt}>
+          {message && (
+            <p role="status" className="card p-5">
+              {message}
+            </p>
+          )}
+          {!receipt && !message && (
+            <p role="status">Caricamento del riepilogo…</p>
+          )}
+          {receipt && receipt.bookings.map((b) => (
               <article key={b.pnr} data-status={b.status} className="card mb-5 grid gap-4 p-6">
                 <div className="flex flex-wrap justify-between gap-3">
                   <strong>{b.pnr}</strong>
@@ -103,7 +89,7 @@ export function BookingConfirmation() {
                     {
                       {
                         confirmed: "Confermata",
-                        pending: "Pagamento da completare",
+                        pending: "In attesa",
                         cancelled: "Cancellata",
                         present: "Partecipazione registrata",
                         no_show: "Assente",
@@ -130,7 +116,7 @@ export function BookingConfirmation() {
                 </p>
                 <p className="text-sm">{b.bookingNote}</p>
                 <p className="text-sm">{b.cancellationNote}</p>
-                <div className="flex flex-wrap gap-3">
+                <div className={ui.confirmationPair}>
                   <a
                     href={b.mapUrl}
                     target="_blank"
@@ -147,18 +133,9 @@ export function BookingConfirmation() {
                   </a>
                 </div>
               </article>
-            ))}
-            {pending && receipt.order.paymentUrl && (
-              <a
-                href={receipt.order.paymentUrl}
-                className="button-primary mb-6"
-              >
-                Completa il pagamento
-              </a>
-            )}
-          </>
-        )}
-        <div className="mt-6 flex flex-wrap gap-3">
+          ))}
+        </div>
+        <div className={ui.confirmationActions}>
           <Link href="/tour" className="button-primary">
             Scopri altre esperienze
           </Link>

@@ -1,0 +1,189 @@
+/* Shared type scale for every management screen and its nested editors. */
+.admin-shell {
+  --admin-font: "Poppins", Arial, sans-serif;
+  --admin-title-size: 28px;
+  --admin-section-size: 20px;
+  --admin-subtitle-size: 16px;
+  --admin-body-size: 14px;
+  --admin-control-size: 13px;
+  --admin-caption-size: 12px;
+  --admin-eyebrow-size: 11px;
+  --admin-button-height: 42px;
+  --admin-regular: 400;
+  --admin-medium: 500;
+  --admin-title-leading: 1.3;
+  font-family: var(--admin-font);
+  font-size: var(--admin-body-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(h1, h2, h3, h4, h5, h6, button, input, select, textarea, summary, table) {
+  font-family: var(--admin-font);
+}
+
+.admin-shell .admin-main h1 {
+  font-size: var(--admin-title-size);
+  font-weight: var(--admin-medium);
+  line-height: var(--admin-title-leading);
+  letter-spacing: -0.025em;
+}
+
+.admin-shell .admin-main h2 {
+  font-size: var(--admin-section-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+}
+
+.admin-shell .admin-main :is(h3, h4, h5, h6, .title-md) {
+  font-size: var(--admin-subtitle-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(p, li, dd, dt, .body-md, .body-sm, .text-base, .text-sm) {
+  font-size: var(--admin-body-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(strong, b, .font-bold, .font-semibold, .font-medium) {
+  font-weight: var(--admin-medium);
+}
+
+.admin-shell :is(small, .text-xs, .caption, .admin-note) {
+  font-size: var(--admin-caption-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(.micro-label, .uppercase-tag) {
+  font-size: var(--admin-eyebrow-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+
+.admin-shell .admin-main :is(label, legend) {
+  font-size: var(--admin-control-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(input, select, textarea, .text-input) {
+  font-size: var(--admin-body-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell input::file-selector-button {
+  font-family: var(--admin-font);
+  font-size: var(--admin-control-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+}
+
+.admin-shell :is(pre, code) {
+  font-family: var(--admin-font);
+  font-size: var(--admin-caption-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.5;
+}
+
+.admin-shell :is(button, summary, .button-primary, .button-secondary, .button-pill-primary, [role="tab"]) {
+  font-size: var(--admin-control-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.admin-shell :is(.status-chip, .closure-global-pill, .closure-tour-pill) {
+  font-size: var(--admin-caption-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell .admin-nav a,
+.admin-shell .admin-nav a:hover,
+.admin-shell .admin-nav a.active {
+  font-size: var(--admin-control-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell .admin-brand {
+  font-size: 25px;
+  font-weight: var(--admin-medium);
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+
+.admin-shell .admin-sidebar small {
+  font-size: var(--admin-eyebrow-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+
+.admin-shell :is(table, .data-table),
+.admin-shell :is(table, .data-table) :is(td, td p, td a, td strong) {
+  font-size: var(--admin-control-size);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.admin-shell :is(table, .data-table) td {
+  font-weight: var(--admin-regular);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-shell :is(table, .data-table) th {
+  font-size: var(--admin-caption-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.admin-shell .admin-metric {
+  font-size: 30px;
+  font-weight: var(--admin-medium);
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-shell .closure-calendar > strong {
+  font-size: var(--admin-caption-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+}
+
+.admin-shell .closure-calendar button strong {
+  font-size: var(--admin-subtitle-size);
+  font-weight: var(--admin-medium);
+  line-height: 1.5;
+}
+
+.admin-shell .closure-calendar small {
+  font-size: var(--admin-eyebrow-size);
+  font-weight: var(--admin-regular);
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .admin-shell {
+    --admin-title-size: 24px;
+    --admin-section-size: 18px;
+  }
+}

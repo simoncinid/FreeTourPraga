@@ -29,10 +29,15 @@ export const checkoutSchema = z.object({
       "Usa il formato internazionale, es. +393331234567",
     ),
   notes: z.string().max(2000).default(""),
-  paymentMethod: z.enum(["cash", "stripe"]),
+  paymentMethod: z.literal("cash"),
   affiliateCode: z.string().max(40).default(""),
   termsAccepted: z.literal(true),
   whatsappConsent: z.boolean().default(false),
+});
+const emailKindTemplateSchema = z.object({
+  subject: text(200),
+  text: z.string().trim().min(1).max(20000),
+  html: z.string().trim().min(1).max(50000),
 });
 export const affiliateSchema = z.object({
   code: z.string().regex(/^[A-Z0-9_-]{3,40}$/),
@@ -50,9 +55,18 @@ export const settingsSchema = z.object({
   lateRefundPercent: z.number().min(0).max(100),
   retentionDays: z.number().int().min(30).max(3650),
   emailFooter: text(1000),
-  reminderHours: z.number().min(1).max(168),
-  googleAdsId: z.string().regex(/^(AW-\d+)?$/),
-  googleAdsLabel: z.string().max(100),
+  emailTemplates: z.object({
+    confirmed: emailKindTemplateSchema,
+    modified: emailKindTemplateSchema,
+    cancelled: emailKindTemplateSchema,
+    admin: z.object({
+      subject: text(200),
+      text: z.string().trim().min(1).max(20000),
+    }),
+  }),
+  lastMinuteEnabled: z.boolean(),
+  lastMinuteHours: z.number().min(1).max(168),
+  lastMinuteDiscountPercent: z.number().min(0).max(100),
 });
 export const tourImageUrlSchema = z.string().refine((v) => {
   if (/^\/api\/media\/[-a-f0-9]{36}\.webp$/.test(v)) return true;

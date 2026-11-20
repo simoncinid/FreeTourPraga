@@ -1,6 +1,5 @@
 import { contentSections, pageLabels } from "@/lib/content-sections";
 import { notFound, redirect } from "next/navigation";
-import { publicPage } from "@/lib/platform/public";
 
 export const metadata = {
   title: "Spazio di gestione",
@@ -42,8 +41,7 @@ export default async function Page({
     section[0] === "contenuti" &&
     section[1] &&
     !Object.hasOwn(contentSections, section[1]) &&
-    !Object.hasOwn(pageLabels, section[1]) &&
-    !(section[1].startsWith("legacy:") && await publicPage(section[1]))
+    !Object.hasOwn(pageLabels, section[1])
   )
     notFound();
   return null;

@@ -136,28 +136,27 @@ test("server enforces 25 seats and the smaller per-tour booking limit", () => {
   tour.maxGuests = 4;
   assert.throws(() => quote(state, input(state, 5)), /Massimo 4/);
 });
-test("per-tour policies are frozen and reminders contain personalized meeting instructions then cancel", async () => {
+test("per-tour policies are frozen and confirmation uses editable templates then cancel", async () => {
   const state = fixture();
   const tour = state.tours[0];
   tour.cancellationHours = 48;
   tour.lateRefundPercent = 35;
-  tour.reminderHours = 12;
-  tour.reminderTemplate =
-    "Ciao {nome}, per {tour} cerca l’ombrello arancione. {incontro} {mappa} {pnr}";
+  state.settings.emailTemplates.confirmed.text =
+    "TEST_TEMPLATE {nome} {tour} {pnr} {mappa}";
   await transaction((s) => Object.assign(s, state));
   const order = await createOrder(input(state), randomUUID());
   let saved = await readState();
   const b = saved.bookings[0];
   assert.deepEqual(b.policy, { cancellationHours: 48, lateRefundPercent: 35 });
-  const reminder = saved.jobs.find(
-    (j) => j.key.startsWith("reminder-email:") && j.status === "queued",
+  const mail = saved.jobs.find(
+    (j) => j.type === "email" && j.bookingPnr === b.pnr && j.to === b.email,
   )!;
-  assert.match(reminder.text!, /ombrello arancione/);
-  assert.ok(reminder.text!.includes(tour.meetingPoint));
-  assert.ok(reminder.text!.includes(tour.mapUrl));
+  assert.match(mail.text!, /TEST_TEMPLATE/);
+  assert.ok(mail.text!.includes(b.name));
+  assert.ok(mail.text!.includes(tour.mapUrl));
   assert.equal(
-    Date.parse(reminder.runAt),
-    Date.parse(tour.slots[0].startsAt) - 12 * 3600000,
+    saved.jobs.filter((j) => j.key.startsWith("reminder-email:")).length,
+    0,
   );
   await transaction((s) => {
     s.tours[0].cancellationHours = 1;
@@ -165,12 +164,7 @@ test("per-tour policies are frozen and reminders contain personalized meeting in
   assert.equal((await readState()).bookings[0].policy!.cancellationHours, 48);
   await cancelReservation(order.pnrs[0], "Non posso partecipare", "staff");
   saved = await readState();
-  assert.equal(
-    saved.jobs.filter(
-      (j) => j.key.startsWith("reminder-email:") && j.status === "queued",
-    ).length,
-    0,
-  );
+  assert.equal(saved.bookings[0].status, "cancelled");
 });
 test("admin validates calendar dates, capacity, scheduling and per-tour policies", () => {
   assert.equal(localDateSchema.safeParse("2026-02-30").success, false);

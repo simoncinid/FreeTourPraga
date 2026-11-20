@@ -26,11 +26,8 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   const [busy, setBusy] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const affiliateCode = useBrowserStorage("ftp-affiliate") || "";
-  const [method, setMethod] = useState<"cash" | "stripe">("cash");
-  const [stripeAvailable, setStripeAvailable] = useState(false);
-  const [whatsappAvailable, setWhatsappAvailable] = useState(false);
   const [quoteResult, setQuote] = useState<
-    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number; cancellationHours: number; lateRefundPercent: number; bookingNote: string }[] }
+    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number; cancellationHours: number; lateRefundPercent: number; bookingNote: string; lastMinuteApplied?: boolean }[] }
     | null
   >(null);
   const [rules, setRules] = useState({
@@ -44,8 +41,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       .then((r) => r.json())
       .then((d) => {
         if (d.settings) setRules(d.settings);
-        setStripeAvailable(Boolean(d.payments?.stripe));
-        setWhatsappAvailable(Boolean(d.features?.whatsapp));
       })
       .catch(() => {});
   }, []);
@@ -94,9 +89,9 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
         email: f.get("email"),
         phone: String(f.get("phone")).replace(/[\s()-]/g, ""),
         notes: f.get("notes"),
-        paymentMethod: method,
+        paymentMethod: "cash" as const,
         termsAccepted: f.get("terms") === "on",
-        whatsappConsent: f.get("whatsapp") === "on",
+        whatsappConsent: false,
       };
       const digest = await crypto.subtle.digest(
         "SHA-256",
@@ -127,8 +122,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       clearCart();
       sessionStorage.removeItem("ftp-checkout-key");
       sessionStorage.removeItem("ftp-checkout-fingerprint");
-      if (d.paymentUrl) window.location.assign(d.paymentUrl);
-      else router.push(d.confirmationUrl);
+      router.push(d.confirmationUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Errore di connessione");
       setBusy(false);
@@ -247,37 +241,10 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   className="text-input"
                 />
               </label>
-              <fieldset className="grid gap-3">
-                <legend className="mb-3 font-bold">
-                  Come preferisci pagare?
-                </legend>
-                <label className="card flex gap-3 p-4">
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={method === "cash"}
-                    onChange={() => setMethod("cash")}
-                  />{" "}
-                  Contanti sul posto
-                </label>
-                {stripeAvailable && <label className="card flex gap-3 p-4">
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={method === "stripe"}
-                    onChange={() => setMethod("stripe")}
-                  />{" "}
-                  Carta con link sicuro Stripe
-                </label>}
-              </fieldset>
               <p className="text-sm">
-                Le regole di cancellazione di ciascun tour sono riportate nel riepilogo. Per i pagamenti online, i posti restano riservati per 30 minuti.
+                Pagamento in contanti sul posto. Le regole di cancellazione di
+                ciascun tour sono riportate nel riepilogo.
               </p>
-              {whatsappAvailable && <label className="flex items-start gap-3 text-sm">
-                <input name="whatsapp" type="checkbox" />
-                Desidero ricevere il promemoria del tour su WhatsApp al numero
-                indicato (facoltativo).
-              </label>}
               <label className="flex items-start gap-3 text-sm">
                 <input name="terms" type="checkbox" required />
                 <span>
@@ -381,11 +348,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
               disabled={busy || !quote}
               className="button-primary"
             >
-              {busy
-                ? "Prenotazione in corso…"
-                : method === "stripe"
-                  ? "Prenota e vai al pagamento"
-                  : "Conferma prenotazione"}
+              {busy ? "Prenotazione in corso…" : "Conferma prenotazione"}
             </button>
           )}
           <Link

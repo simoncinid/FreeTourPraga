@@ -38,34 +38,30 @@ export default async function Page() {
           </p>
           <h2 className="display-md">Servizi esterni</h2>
           <p>
-            I pagamenti sono elaborati da Stripe: il sito non conserva i dati
-            delle carte. Hosting, database e invio email utilizzano fornitori
-            tecnici incaricati per le rispettive attività. Se scegli il
-            promemoria WhatsApp, il numero e i dati essenziali del tour sono
-            trattati tramite Twilio e WhatsApp. Maps e TripAdvisor vengono
+            Hosting, database e invio email utilizzano fornitori tecnici
+            incaricati per le rispettive attività. Maps e TripAdvisor vengono
             caricati solo dopo una tua richiesta esplicita al relativo contenuto
             esterno. I rispettivi fornitori possono trattare dati secondo le
             loro informative.
           </p>
-          <h2 className="display-md">Consenso e pubblicità</h2>
+          <h2 className="display-md">Cookie e preferenze</h2>
           <p>
-            I reminder WhatsApp sono facoltativi. Il tracciamento Google Ads
-            viene caricato solo se accetti i cookie marketing. Puoi cambiare
-            scelta dal pulsante “Preferenze cookie”. Il sito conserva localmente
-            il carrello e l’eventuale codice partner; la sessione dello staff
-            usa un cookie di sicurezza HttpOnly. Non utilizziamo dati di
-            prenotazione per inviare newsletter automatiche.
+            Usiamo solo cookie e dati necessari alla prenotazione e alla
+            sicurezza. Puoi rivedere la scelta dal pulsante “Preferenze cookie”.
+            Il sito conserva localmente il carrello e l’eventuale codice
+            partner; la sessione dello staff usa un cookie di sicurezza
+            HttpOnly. Non utilizziamo dati di prenotazione per newsletter
+            automatiche né tracciamento pubblicitario.
           </p>
           <h2 className="display-md">Conservazione e diritti</h2>
           <p>
             La configurazione iniziale prevede la rimozione dei dati personali
             operativi dopo {settings.retentionDays} giorni dal tour, salvo
             obblighi o necessità di conservazione che il titolare dovrà
-            definire. Le email OTA originali sono ripulite dopo 30 giorni, le
-            richieste dopo 180 giorni. Puoi contattare il titolare per accesso,
-            rettifica, cancellazione, limitazione, opposizione, portabilità o
-            revoca del consenso, ove applicabili. Puoi presentare reclamo
-            all’autorità di controllo competente.
+            definire. Le richieste dopo 180 giorni. Puoi contattare il titolare
+            per accesso, rettifica, cancellazione, limitazione, opposizione,
+            portabilità o revoca del consenso, ove applicabili. Puoi presentare
+            reclamo all’autorità di controllo competente.
           </p>
           <p className="text-sm">Informativa aggiornata al 6 novembre 2026.</p>
         </div>

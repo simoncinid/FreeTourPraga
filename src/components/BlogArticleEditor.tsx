@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { ImageSourceField } from "./ImageSourceField";
 import { guidePath } from "@/lib/public-paths";
 import type { BlogBlock, SiteContent } from "@/lib/platform/content";
 
@@ -84,38 +84,6 @@ export function BlogArticleEditor({
     ];
     onChange(next);
   }
-  async function upload(file: File, done: (url: string) => void) {
-    if (
-      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
-      file.size > 5 * 1024 * 1024
-    ) {
-      setNotice("Usa una foto JPEG, PNG o WebP di massimo 5 MB.");
-      return;
-    }
-    setUploading(true);
-    onUploading(true);
-    setNotice("Caricamento immagine…");
-    try {
-      const response = await fetch("/api/platform/admin/media", {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      const data = await response.json();
-      if (!response.ok) throw Error(data.error || "Caricamento non riuscito");
-      done(data.url);
-      setNotice(
-        "Immagine caricata. Pubblica i contenuti per renderla visibile.",
-      );
-    } catch (error) {
-      setNotice(
-        error instanceof Error ? error.message : "Caricamento non riuscito",
-      );
-    } finally {
-      setUploading(false);
-      onUploading(false);
-    }
-  }
   function imageFields(
     imageUrl: string,
     alt: string,
@@ -124,42 +92,20 @@ export function BlogArticleEditor({
     label: string,
   ) {
     return (
-      <div className="grid gap-3">
-        {/^\/(?!\/)|^https:\/\//.test(imageUrl) && (
-          <Image
-            src={imageUrl}
-            alt={alt || "Anteprima immagine"}
-            width={480}
-            height={270}
-            unoptimized
-            className="max-h-48 w-full rounded-lg object-cover"
-          />
-        )}
-        <TextField
-          label={`URL ${label}`}
-          value={imageUrl}
-          onChange={onUrl}
-          required
-          maxLength={1000}
-        />
-        <label className="grid gap-2 text-sm">
-          Carica {label} (JPEG, PNG o WebP, massimo 5 MB)
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.target.value = "";
-              if (file) void upload(file, onUrl);
-            }}
-          />
-        </label>
-        <TextField
-          label={`Descrizione immagine (testo alternativo) — ${label}`}
-          value={alt}
-          onChange={onAlt}
-        />
-      </div>
+      <ImageSourceField
+        label={label}
+        value={imageUrl}
+        alt={alt}
+        required
+        disabled={locked}
+        onChange={onUrl}
+        onAltChange={onAlt}
+        onNotice={setNotice}
+        onUploading={(next) => {
+          setUploading(next);
+          onUploading(next);
+        }}
+      />
     );
   }
   return (

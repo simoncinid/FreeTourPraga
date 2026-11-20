@@ -29,6 +29,7 @@ export type Reservation = {
   subtotalCents: number;
   discountCents: number;
   totalCents: number;
+  /** Storico: solo "cash" in Fase 1; stripe/ota restano per prenotazioni legacy. */
   paymentMethod: "cash" | "stripe" | "ota";
   paymentStatus: "pending" | "paid" | "refunded" | "not_required" | "failed";
   status: "confirmed" | "pending" | "cancelled" | "present" | "no_show";
@@ -43,10 +44,12 @@ export type Reservation = {
   cancellationReason?: string;
   refundCents?: number;
   refundStatus?: string;
+  /** Legacy; i reminder WhatsApp non sono attivi in Fase 1. */
   whatsappConsent: boolean;
   consentAt: string;
   termsVersion: string;
   calendarSequence?: number;
+  lastMinuteApplied?: boolean;
 };
 export type Order = {
   id: string;
@@ -81,6 +84,17 @@ export type Job = {
   error?: string;
   providerId?: string;
 };
+export type EmailKindTemplate = {
+  subject: string;
+  text: string;
+  html: string;
+};
+export type EmailTemplates = {
+  confirmed: EmailKindTemplate;
+  modified: EmailKindTemplate;
+  cancelled: EmailKindTemplate;
+  admin: { subject: string; text: string };
+};
 export type Affiliate = {
   code: string;
   name: string;
@@ -110,9 +124,11 @@ export type Settings = {
   lateRefundPercent: number;
   retentionDays: number;
   emailFooter: string;
-  reminderHours: number;
-  googleAdsId: string;
-  googleAdsLabel: string;
+  emailTemplates: EmailTemplates;
+  lastMinuteEnabled: boolean;
+  /** Finestra (ore prima della partenza) in cui vale il listino last-minute. */
+  lastMinuteHours: number;
+  lastMinuteDiscountPercent: number;
 };
 export type OtaMessage = {
   id: string;

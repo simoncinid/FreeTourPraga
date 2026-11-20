@@ -420,24 +420,16 @@
   font-size: clamp(38px, 4vw, 55px);
   margin-bottom: 24px;
 }
-.aboutTitleEnd {
-  display: inline-block;
-  max-width: 100%;
-  vertical-align: top;
-}
-.aboutTitleEndLine {
-  display: block;
+.aboutTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
 }
 .aboutTourCta {
-  display: flex;
-  width: 100%;
-  box-sizing: border-box;
-  justify-content: center;
-  margin-top: 12px;
-  min-height: 36px;
-  padding: 7px 12px;
-  font-size: 13px;
-  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 @media (max-width: 767px) {
   .aboutTourCta {
@@ -1115,6 +1107,83 @@
 .confirmation article > div:first-child > strong {
   color: var(--ink);
   letter-spacing: 1px;
+}
+.confirmationPair,
+.confirmationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 743px) {
+  .confirmationCheck {
+    display: none;
+  }
+  .confirmation article {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .confirmationPair,
+  .confirmationActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .confirmationPair :global(a.button-primary),
+  .confirmationPair :global(a.button-secondary),
+  .confirmationActions :global(a.button-primary),
+  .confirmationActions :global(a.button-secondary) {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 4px;
+    font-size: clamp(11px, 3.4vw, 13px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+}
+@media (min-width: 1024px) {
+  .confirmation {
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 100%;
+    padding: 32px 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .confirmationGrid {
+    width: min(100% - 32px, 1240px);
+    margin: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "intro receipt"
+      "actions receipt";
+    column-gap: 56px;
+    row-gap: 28px;
+    align-items: start;
+  }
+  .confirmationIntro,
+  .confirmationReceipt,
+  .confirmationActions {
+    min-width: 0;
+  }
+  .confirmationIntro {
+    grid-area: intro;
+  }
+  .confirmationReceipt {
+    grid-area: receipt;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .confirmationReceipt :global(.card) {
+    margin-bottom: 0;
+  }
+  .confirmationActions {
+    grid-area: actions;
+  }
 }
 .management h1 {
   font-size: clamp(38px, 4vw, 54px);

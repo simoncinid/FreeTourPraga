@@ -15,6 +15,9 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
+  page.on('console', message => {
+   if (message.type() === 'error' && /hydrat|server rendered HTML|didn't match the client/i.test(message.text())) errors.push(message.text());
+  });
   for (const path of ['/', '/tour', '/partner-europa', '/faq', '/contatti', '/chi-siamo', '/informazioni-utili', '/blog']) {
    await page.goto(base + path);
    const consent = page.getByRole('button', { name: 'Solo necessari', exact: true });

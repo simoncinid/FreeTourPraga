@@ -26,10 +26,7 @@ export default async function Page() {
           <h2 className="display-md">Prenotazione e pagamento</h2>
           <p>
             I prezzi sono in euro e il riepilogo mostra il totale prima della
-            conferma. Puoi scegliere contanti sul posto o pagamento online
-            tramite Stripe. Le prenotazioni online in attesa di pagamento
-            riservano i posti per circa 30 minuti. La conferma effettiva del
-            pagamento dipende dalla verifica di Stripe.
+            conferma. Il pagamento avviene in contanti sul posto.
           </p>
           <h2 className="display-md">Sconti e partecipanti</h2>
           <p>
@@ -57,9 +54,8 @@ export default async function Page() {
           <h2 className="display-md">Comunicazioni e assistenza</h2>
           <p>
             Conserva la conferma email e il codice prenotazione. Presentati al
-            punto d’incontro con anticipo. I reminder WhatsApp sono facoltativi
-            e richiedono il consenso. Per esigenze particolari o richieste non
-            gestibili online usa la pagina{" "}
+            punto d’incontro con anticipo. Per esigenze particolari o richieste
+            non gestibili online usa la pagina{" "}
             <Link href="/contatti" className="underline">
               contatti
             </Link>

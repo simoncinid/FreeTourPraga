@@ -20,15 +20,15 @@ export default async function Page() {
         </p>
         <h1 className={`display-xl ${ui.aboutTitle}`}>
           {lines.map((line, index) =>
-            index === lines.length - 1 ? (
-              <span key={line} className={ui.aboutTitleEnd}>
-                <span className={ui.aboutTitleEndLine}>{line}</span>
+            index === 0 ? (
+              <span key={line} className={ui.aboutTitleRow}>
+                <span>{line}</span>
                 <Link
                   href="/tour"
                   className={`button-primary ${ui.aboutTourCta}`}
                 >
                   Tutti i tour
-                  <ArrowRight size={14} aria-hidden />
+                  <ArrowRight size={16} aria-hidden />
                 </Link>
               </span>
             ) : (

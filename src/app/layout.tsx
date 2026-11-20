@@ -13,6 +13,7 @@ import "@fontsource/poppins/700.css";
 import { MessageCircle } from "lucide-react";
 import "./globals.css";
 import { BackToTop } from "@/components/BackToTop";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { ConsentAndTracking } from "@/components/ConsentAndTracking";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -87,7 +88,7 @@ export default async function RootLayout({
 }) {
   const c = await publicSiteContent();
   return (
-    <html lang="it">
+    <html lang="it" data-scroll-behavior="smooth">
       <body
         className="font-sans"
         suppressHydrationWarning
@@ -100,6 +101,7 @@ export default async function RootLayout({
           data={[organizationJsonLd(c.globals), websiteJsonLd(c.globals)]}
         />
         <main id="contenuto">{children}</main>
+        <ScrollReveal />
         <ConsentAndTracking />
         <Footer />
         <BackToTop />

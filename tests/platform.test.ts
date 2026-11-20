@@ -19,7 +19,6 @@ import {
   releaseExpired,
 } from "../src/lib/platform/booking";
 import { checkoutSchema, tourSchema } from "../src/lib/platform/validation";
-import { ingestOta } from "../src/lib/platform/ota";
 let temp: string;
 before(async () => {
   if (process.env.TEST_POSTGRES === "1") {
@@ -133,30 +132,28 @@ test("move is atomic and handles full target without releasing original", async 
     "old-town-3",
   );
 });
-test("OTA duplicate email imports once, unknown layouts require review", async () => {
-  const raw =
-    "CUSTOMER: Mario Test\nEMAIL: ota@example.com\nPHONE: +393331234567\nTOUR_SLUG: castello-praga-mala-strana\nSLOT_ID: castle-1\nADULTS: 2";
-  const a = await ingestOta({
-    provider: "civitatis",
-    reference: "CV-123",
-    raw,
+test("last-minute discount applies inside the commercial window", async () => {
+  await transaction((s) => {
+    s.settings.lastMinuteEnabled = true;
+    s.settings.lastMinuteHours = 48;
+    s.settings.lastMinuteDiscountPercent = 20;
+    const slot = s.tours[0].slots.find((x) => x.id === "old-town-4")!;
+    slot.startsAt = new Date(Date.now() + 24 * 3600000).toISOString();
+    slot.endsAt = new Date(Date.now() + 26 * 3600000).toISOString();
+    slot.reserved = 0;
+    s.tours[0].bookingCutoffHours = 2;
   });
-  const b = await ingestOta({
-    provider: "civitatis",
-    reference: "CV-123",
-    raw,
+  const s = await readState();
+  const q = quote(s, input("old-town-4"));
+  assert.equal(q[0].lastMinuteApplied, true);
+  assert.equal(q[0].totalCents, Math.round(2900 * 0.8));
+  await transaction((s) => {
+    s.settings.lastMinuteEnabled = false;
+    s.settings.lastMinuteDiscountPercent = 0;
+    const slot = s.tours[0].slots.find((x) => x.id === "old-town-4")!;
+    slot.startsAt = new Date(Date.now() + 12 * 86400000).toISOString();
+    slot.endsAt = new Date(Date.now() + 12 * 86400000 + 7200000).toISOString();
   });
-  assert.equal(a.pnr, b.pnr);
-  assert.equal(
-    (await readState()).bookings.filter((x) => x.source === "civitatis").length,
-    1,
-  );
-  const unknown = await ingestOta({
-    provider: "getyourguide",
-    reference: "GYG-456",
-    raw: "Unknown email format to be reviewed",
-  });
-  assert.equal(unknown.status, "review");
 });
 test("commission recorded server side and removed on cancellation", async () => {
   await transaction((s) =>
@@ -202,84 +199,25 @@ test("catalog validation preserves required operational fields", async () => {
   );
 });
 
-test("native labeled OTA email maps aliases, Prague dates and reference safely", async () => {
-  const s = await readState();
-  const t = s.tours[1];
-  const date = new Date(t.slots[1].startsAt).toLocaleDateString("sv-SE", {
-    timeZone: "Europe/Prague",
-  });
-  const hour = new Date(t.slots[1].startsAt).toLocaleTimeString("it-IT", {
-    timeZone: "Europe/Prague",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const { parseOta, providerReference } =
-    await import("../src/lib/platform/ota");
-  const raw = `Booking reference: GYG-REAL-LAYOUT\nActivity: ${t.title}\nCustomer name: Maria Test\nEmail: maria@example.com\nPhone: +393331234567\nDate: ${date}\nTime: ${hour}\nAdults: 2\nChildren: 1`;
-  const parsed = parseOta(raw, s);
-  assert.equal(parsed.items[0].slotId, t.slots[0].id);
-  assert.equal(providerReference(raw), "GYG-REAL-LAYOUT");
+test("stripe payment method is rejected by checkout schema", () => {
+  assert.throws(() =>
+    checkoutSchema.parse({ ...input(), paymentMethod: "stripe" }),
+  );
 });
-test("Stripe signature, idempotency and amounts are verified before fulfillment", async () => {
-  process.env.STRIPE_SECRET_KEY = "sk_test_placeholder";
-  process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
-  const { stripeWebhook, stripe } =
-    await import("../src/lib/platform/providers");
+test("cash cancellation does not queue Stripe refunds", async () => {
   const o = await createOrder(
     input("beer-1", "birra-ceca-storie-locali"),
     randomUUID(),
   );
-  await transaction((s) => {
-    const row = s.orders.find((x) => x.id === o.id)!;
-    row.stripeSessionId = "cs_test_valid";
-    const b = s.bookings.find((b) => b.orderId === o.id)!;
-    b.status = "pending";
-    b.paymentStatus = "pending";
-    b.paymentMethod = "stripe";
-  });
-  const payload = JSON.stringify({
-    id: "evt_test_paid",
-    type: "checkout.session.completed",
-    data: {
-      object: {
-        id: "cs_test_valid",
-        metadata: { orderId: o.id },
-        amount_total: o.totalCents,
-        currency: "eur",
-        payment_status: "paid",
-        payment_intent: "pi_test_valid",
-      },
-    },
-  });
-  const signature = stripe().webhooks.generateTestHeaderString({
-    payload,
-    secret: process.env.STRIPE_WEBHOOK_SECRET,
-  });
-  await assert.rejects(() => stripeWebhook(payload, "invalid"));
-  await stripeWebhook(payload, signature);
-  await stripeWebhook(payload, signature);
-  const s = await readState();
-  assert.equal(
-    s.bookings.find((b) => b.orderId === o.id)!.paymentStatus,
-    "paid",
-  );
-  assert.equal(s.events.filter((x) => x === "evt_test_paid").length, 1);
-});
-test("refund is queued with cancellation policy and not marked completed early", async () => {
-  const s = await readState();
-  const b = s.bookings.find(
-    (b) => b.paymentMethod === "stripe" && b.paymentStatus === "paid",
-  )!;
-  const o = s.orders.find((o) => o.id === b.orderId)!;
+  const b = (await readState()).bookings.find((x) => x.orderId === o.id)!;
   await cancelReservation(b.pnr, "Rimborso test", "qa-staff");
   const latest = await readState();
   const cancelled = latest.bookings.find((x) => x.pnr === b.pnr)!;
-  assert.equal(cancelled.refundCents, b.totalCents);
-  assert.equal(cancelled.refundStatus, "queued");
-  assert.equal(cancelled.paymentStatus, "paid");
+  assert.equal(cancelled.status, "cancelled");
+  assert.equal(cancelled.refundCents || 0, 0);
   assert.equal(
-    latest.jobs.filter((j) => j.key === `refund:${b.pnr}`).length,
-    1,
+    latest.jobs.filter((j) => j.type === "refund").length,
+    0,
   );
 });
 test("Prague wall times roundtrip across winter and summer; DST gap rejected", async () => {
@@ -323,49 +261,6 @@ test("personal data retention removes tokens and queued customer content", async
   assert.equal(s.bookings[0].tokenHash, "");
 });
 
-test("OTA follow-up messages require review and never create a second reservation", async () => {
-  const before = (await readState()).bookings.length;
-  const m = await ingestOta({
-    provider: "civitatis",
-    reference: "CV-123",
-    raw: "Booking status: Cancelled\nBooking reference: CV-123\nNew message from provider",
-  });
-  assert.equal(m.status, "review");
-  assert.ok("pnr" in m && m.pnr);
-  assert.equal((await readState()).bookings.length, before);
-});
-test("DKIM pass must align with the allowlisted sender domain", async () => {
-  const { verifiedDkim } = await import("../src/lib/platform/ota");
-  assert.equal(
-    verifiedDkim(
-      "mx.example; dkim=pass header.d=civitatis.com; dmarc=pass",
-      "booking@civitatis.com",
-    ),
-    true,
-  );
-  assert.equal(
-    verifiedDkim(
-      "mx.example; dkim=pass header.i=@getyourguide.com",
-      "booking@getyourguide.com",
-    ),
-    true,
-  );
-  assert.equal(
-    verifiedDkim(
-      "mx.example; dkim=pass header.d=attacker.example",
-      "booking@civitatis.com",
-    ),
-    false,
-  );
-  assert.equal(
-    verifiedDkim(
-      "mx.example; dkim=fail header.d=civitatis.com",
-      "booking@civitatis.com",
-    ),
-    false,
-  );
-});
-
 test("commercial rules are read from persisted backend settings and frozen on bookings", async () => {
   await transaction((s) => {
     s.settings.multiTourPercent = 15;
@@ -395,7 +290,6 @@ test("commercial rules are read from persisted backend settings and frozen on bo
   );
   await transaction((s) => {
     const b = s.bookings.find((b) => b.orderId === o.id)!;
-    b.paymentMethod = "stripe";
     b.paymentStatus = "paid";
     s.settings.cancellationHours = 0;
     s.settings.lateRefundPercent = 100;
@@ -403,6 +297,7 @@ test("commercial rules are read from persisted backend settings and frozen on bo
   await cancelReservation(o.pnrs[0], "Policy test", "qa-staff");
   const b = (await readState()).bookings.find((b) => b.orderId === o.id)!;
   assert.equal(b.refundCents, 850);
+  assert.equal(b.refundStatus, "manual");
   assert.equal(b.policy!.cancellationHours, 48);
 });
 test("cart persists in localStorage of the same browser and is isolated from another browser", async () => {

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { session } from "@/lib/platform/security";
 import { AdminWorkspace } from "@/components/AdminWorkspace";
+import "./typography.css";
 
 export const dynamic = "force-dynamic";
 

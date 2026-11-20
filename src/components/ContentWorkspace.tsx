@@ -163,15 +163,16 @@ export function ContentWorkspace({
   saveSite: (content: SiteContent) => Promise<unknown>;
   savePage: (body: unknown) => Promise<unknown>;
 }) {
-  const labels = { ...pageLabels, ...Object.fromEntries(Object.entries(pages).filter(([key]) => key.startsWith("legacy:")).map(([key, page]) => [key, page.title])) };
-  const isPage = Boolean(detail && Object.hasOwn(labels, detail));
+  const isPage = Boolean(detail && Object.hasOwn(pageLabels, detail));
   const section: ContentSection =
     isPage || detail === "pagine"
       ? "pagine"
       : detail && Object.hasOwn(contentSections, detail)
         ? (detail as ContentSection)
         : "homepage";
-  const pageKey = isPage ? detail! : "chi-siamo";
+  const pageKey = isPage
+    ? (detail as keyof typeof pageLabels)
+    : "chi-siamo";
   const metadataKey =
     section === "homepage"
       ? "homepage"
@@ -203,15 +204,17 @@ export function ContentWorkspace({
       {section === "pagine" ? (
         <>
           <p className="text-sm">
-            Qui modifichi solo le pagine del sito. Articoli, homepage e FAQ
-            hanno il proprio editor; i recapiti condivisi sono in Dati e
-            contatti.
+            Solo le pagine del sito. Articoli dal Blog, tour dalla sezione Tour;
+            homepage, FAQ e contatti condividono i propri editor.
           </p>
-          <nav aria-label="Pagine del sito" className="flex flex-wrap gap-2">
-            {Object.entries(labels).map(([key, label]) => (
+          <nav
+            aria-label="Pagine del sito"
+            className="flex flex-nowrap gap-2 overflow-x-auto pb-1"
+          >
+            {Object.entries(pageLabels).map(([key, label]) => (
               <Link
                 key={key}
-                href={`/admin/contenuti/${encodeURIComponent(key)}`}
+                href={`/admin/contenuti/${key}`}
                 aria-current={pageKey === key ? "page" : undefined}
                 className={
                   pageKey === key ? "button-primary" : "button-secondary"

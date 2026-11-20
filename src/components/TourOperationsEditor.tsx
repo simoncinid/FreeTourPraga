@@ -340,7 +340,7 @@ export function TourOperationsEditor({
         )}
       </div>
       <div className="card grid gap-5 p-6">
-        <h2 id="promemoria" className="display-md">Cancellazioni e promemoria</h2>
+        <h2 className="display-md">Policy di cancellazione</h2>
         <div className="form-grid">
           {(
             [
@@ -352,13 +352,6 @@ export function TourOperationsEditor({
                 24,
               ],
               ["lateRefundPercent", "Rimborso dopo il termine (%)", 0, 100, 0],
-              [
-                "reminderHours",
-                "Invia promemoria email (ore prima)",
-                1,
-                168,
-                24,
-              ],
             ] as const
           ).map(([key, label, min, max, fallback]) => (
             <label key={key}>
@@ -374,23 +367,6 @@ export function TourOperationsEditor({
             </label>
           ))}
         </div>
-        <label>
-          Testo del promemoria
-          <textarea
-            className="text-input"
-            rows={6}
-            maxLength={10000}
-            value={t.reminderTemplate ?? ""}
-            onChange={(e) => change("reminderTemplate", e.target.value)}
-            placeholder="Ciao {nome}, ti aspettiamo per {tour} il {data}. Punto d’incontro: {incontro}. {mappa}"
-          />
-        </label>
-        <p className="text-sm">
-          Variabili disponibili:{" "}
-          {"{nome}, {tour}, {data}, {incontro}, {mappa}, {pnr}"}. Punto
-          d’incontro, mappa e regole del tour sono sempre inclusi. Lascia vuoto
-          per il modello standard.
-        </p>
       </div>
     </>
   );

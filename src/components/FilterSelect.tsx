@@ -40,9 +40,7 @@ export function FilterSelect({
   const selected = options.find((o) => o.value === value);
   const label = selected?.label ?? options[0]?.label ?? "";
 
-  useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
+  if (disabled && open) setOpen(false);
 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
@@ -139,7 +137,6 @@ export function FilterSelect({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-required={required || undefined}
         disabled={disabled}
         onClick={() => {
           if (!disabled) setOpen((v) => !v);
@@ -157,6 +154,7 @@ export function FilterSelect({
             style={panelStyle}
             role="listbox"
             aria-label={ariaLabel}
+            aria-required={required || undefined}
           >
             {options.map((option) => (
               <button

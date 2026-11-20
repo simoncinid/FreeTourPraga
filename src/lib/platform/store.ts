@@ -15,6 +15,7 @@ import {
 } from "./content";
 import { generateScheduledSlots } from "./scheduling";
 import type { PlatformState } from "./model";
+import { normalizeSettings } from "./email-templates";
 const runtime = globalThis as unknown as {
   platformPrisma?: PrismaClient;
   platformQueue?: Promise<unknown>;
@@ -59,17 +60,7 @@ export function initialState(): PlatformState {
     audit: [],
     events: [],
     rateLimits: {},
-    settings: {
-      multiTourPercent: 10,
-      minimumTours: 2,
-      cancellationHours: 24,
-      lateRefundPercent: 0,
-      retentionDays: 730,
-      emailFooter: "FreeTourPraga · Assistenza tutti i giorni 9:00–19:00",
-      reminderHours: 24,
-      googleAdsId: "",
-      googleAdsLabel: "",
-    },
+    settings: normalizeSettings({}),
   };
 }
 const file = () =>
@@ -77,6 +68,8 @@ const file = () =>
 function hydrate(state: PlatformState, generateSlots = true) {
   ensureWpAffiliates(state);
   state.closedDates ??= [];
+  state.ota ??= [];
+  state.settings = normalizeSettings(state.settings || {});
   for (const tour of state.tours) {
     // Retain every referenced slot so old confirmations and cancellations still resolve.
     tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || state.bookings.some((b) => b.slotId === slot.id));

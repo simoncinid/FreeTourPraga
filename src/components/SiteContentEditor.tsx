@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { BlogArticleEditor } from "./BlogArticleEditor";
+import { ImageSourceField } from "./ImageSourceField";
 import {
   contentFields,
   contentSections,
@@ -92,25 +93,6 @@ export function SiteContentEditor({
   const [c, setC] = useState(initial),
     [notice, setNotice] = useState(""),
     [articleUploading, setArticleUploading] = useState(false);
-  async function image(file: File, done: (url: string) => void) {
-    setArticleUploading(true);
-    setNotice("Caricamento foto…");
-    try {
-      const r = await fetch("/api/platform/admin/media", {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      const d = await r.json();
-      if (!r.ok) throw Error(d.error);
-      done(d.url);
-      setNotice("Foto caricata: pubblica le modifiche per usarla.");
-    } catch (e) {
-      setNotice(e instanceof Error ? e.message : "Caricamento non riuscito");
-    } finally {
-      setArticleUploading(false);
-    }
-  }
   function rows(
     key:
       "faqs" | "answers" | "socialLinks" | "navigation" | "stats" | "pillars",
@@ -188,22 +170,43 @@ export function SiteContentEditor({
     );
   }
   function fields(group: "home" | "globals", keys: readonly string[]) {
-    return keys.map((key) => (
-      <Field
-        key={key}
-        label={labels[key] || key}
-        value={String(
-          (c[group] as unknown as Record<string, unknown>)[key] ?? "",
-        )}
-        multi={/Body|Text|Note|description|trustTitle/i.test(key)}
-        onChange={(value) =>
-          setC((previous) => ({
-            ...previous,
-            [group]: { ...previous[group], [key]: value },
-          }))
-        }
-      />
-    ));
+    return keys.map((key) => {
+      if (key === "heroImage" && group === "home") {
+        return (
+          <ImageSourceField
+            key={key}
+            label={labels.heroImage}
+            value={c.home.heroImage}
+            disabled={busy || articleUploading}
+            required
+            onNotice={setNotice}
+            onUploading={setArticleUploading}
+            onChange={(heroImage) =>
+              setC((previous) => ({
+                ...previous,
+                home: { ...previous.home, heroImage },
+              }))
+            }
+          />
+        );
+      }
+      return (
+        <Field
+          key={key}
+          label={labels[key] || key}
+          value={String(
+            (c[group] as unknown as Record<string, unknown>)[key] ?? "",
+          )}
+          multi={/Body|Text|Note|description|trustTitle/i.test(key)}
+          onChange={(value) =>
+            setC((previous) => ({
+              ...previous,
+              [group]: { ...previous[group], [key]: value },
+            }))
+          }
+        />
+      );
+    });
   }
   const groups = contentFields[section];
   return (
@@ -226,23 +229,6 @@ export function SiteContentEditor({
         {section === "homepage" && (
           <>
             <label>Intervallo cambio categorie (secondi)<input className="text-input" type="number" min={3} max={30} value={c.home.carouselIntervalSeconds ?? 5} onChange={(e) => setC((previous) => ({ ...previous, home: { ...previous.home, carouselIntervalSeconds: Number(e.target.value) } }))} /></label>
-            <label>
-              Carica immagine principale
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file)
-                    void image(file, (url) =>
-                      setC((previous) => ({
-                        ...previous,
-                        home: { ...previous.home, heroImage: url },
-                      })),
-                    );
-                }}
-              />
-            </label>
             <h3 className="border-t pt-5 text-lg font-bold">
               Dati in evidenza della homepage
             </h3>

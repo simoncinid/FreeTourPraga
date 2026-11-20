@@ -29,16 +29,13 @@ import {
   createOrder,
   orderConfirmation,
   managedBooking,
-  bookingConsent,
   enqueue,
   moveReservation,
   notification,
-  scheduleEmailReminder,
   quote,
   releaseExpired,
 } from "./booking";
-import { preparePayment, runJobs } from "./providers";
-import { approveOta, ingestOta, otaSchema, pollMailbox } from "./ota";
+import { runJobs } from "./providers";
 import type { Session } from "./security";
 import { maintainPrivacy } from "./maintenance";
 import { uploadMedia } from "./media";
@@ -49,6 +46,7 @@ import wordpressRoutes from "@/content/wordpress-routes.json";
 import { site } from "../site";
 import { generateScheduledSlots, isClosed, isTourClosed, publicTour } from "./scheduling";
 import { isFreeTour, tourPrices } from "../tour-rules";
+import { normalizeSettings } from "./email-templates";
 const ok = (data: unknown) =>
   NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 export async function platformApi(request: Request, path: string[]) {
@@ -77,11 +75,12 @@ export async function platformApi(request: Request, path: string[]) {
           multiTourPercent: s.settings.multiTourPercent,
           minimumTours: s.settings.minimumTours,
           cancellationHours: s.settings.cancellationHours,
-          googleAdsId: s.settings.googleAdsId,
-          googleAdsLabel: s.settings.googleAdsLabel,
+          lastMinuteEnabled: s.settings.lastMinuteEnabled,
+          lastMinuteHours: s.settings.lastMinuteHours,
+          lastMinuteDiscountPercent: s.settings.lastMinuteDiscountPercent,
         },
-        payments: { cash: true, stripe: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET) },
-        features: { whatsapp: Boolean(process.env.TWILIO_CONTENT_SID) },
+        payments: { cash: true, stripe: false },
+        features: { whatsapp: false },
       });
     }
     if (route === "login" && method === "POST") {
@@ -140,22 +139,11 @@ export async function platformApi(request: Request, path: string[]) {
       const key = request.headers.get("idempotency-key");
       if (!key || key.length > 100)
         throw new HttpError(400, "Idempotency-Key richiesta");
-      let order = await createOrder(body, key);
-      if (body.paymentMethod === "stripe" && order.totalCents > 0)
-        order = await preparePayment(order.id);
-      if (body.paymentMethod === "stripe" && order.totalCents === 0)
-        await transaction((s) => {
-          for (const b of s.bookings.filter((b) => b.orderId === order.id)) {
-            b.status = "confirmed";
-            b.paymentStatus = "not_required";
-            notification(s, b, "Confermata");
-          }
-        });
+      const order = await createOrder(body, key);
       return ok({
         order: { pnrs: order.pnrs, totalCents: order.totalCents },
         confirmationUrl: "/prenotazione/confermata",
         receiptProof: order.token,
-        paymentUrl: order.paymentUrl,
       });
     }
     if (path[0] === "manage" && path.length === 2 && method === "POST") {
@@ -163,13 +151,12 @@ export async function platformApi(request: Request, path: string[]) {
       const body = z
         .object({
           proof: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-          action: z.enum(["view", "move", "cancel", "consent"]).default("view"),
+          action: z.enum(["view", "move", "cancel"]).default("view"),
           slotId: z.string().max(200).optional(),
           reason: z.string().trim().min(2).max(1000).optional(),
-          consent: z.boolean().optional(),
         })
         .parse(await jsonBody(request));
-      const pnr = path[1];
+      const pnr = decodeURIComponent(path[1]);
       if (body.action === "move") {
         if (!body.slotId) throw new HttpError(400, "Seleziona una partenza");
         await moveReservation(pnr, body.slotId, "customer-link", body.proof);
@@ -177,11 +164,6 @@ export async function platformApi(request: Request, path: string[]) {
       if (body.action === "cancel") {
         if (!body.reason) throw new HttpError(400, "Indica il motivo");
         await cancelReservation(pnr, body.reason, "customer-link", body.proof);
-      }
-      if (body.action === "consent") {
-        if (typeof body.consent !== "boolean")
-          throw new HttpError(400, "Preferenza mancante");
-        await bookingConsent(pnr, body.proof, body.consent);
       }
       return ok(await managedBooking(pnr, body.proof));
     }
@@ -229,14 +211,13 @@ export async function platformApi(request: Request, path: string[]) {
     if (route === "cron" && (method === "POST" || method === "GET")) {
       bearer(request, "CRON_SECRET");
       const task = url.searchParams.get("task") || "jobs";
-      if (task === "mailbox") return ok({ mailbox: await pollMailbox() });
+      if (task === "mailbox")
+        throw new HttpError(410, "Canali OTA non attivi in Fase 1");
       if (task === "maintenance") return ok(await maintainPrivacy());
       return ok({ jobs: await runJobs() });
     }
-    if (route === "ota/inbound" && method === "POST") {
-      bearer(request, "OTA_WEBHOOK_SECRET");
-      return ok(await ingestOta(otaSchema.parse(await jsonBody(request))));
-    }
+    if (route === "ota/inbound" && method === "POST")
+      throw new HttpError(410, "Canali OTA non attivi in Fase 1");
     if (path[0] === "admin") {
       const user = await requireStaff();
       const section = path[1];
@@ -256,10 +237,10 @@ export async function platformApi(request: Request, path: string[]) {
           pages: mergeContentPages(s.pages, content),
           integrations: {
             database: !localMode(),
-            stripe: !!process.env.STRIPE_SECRET_KEY,
+            stripe: false,
             smtp: !!process.env.SMTP_HOST,
-            whatsapp: !!process.env.TWILIO_CONTENT_SID,
-            imap: !!process.env.IMAP_HOST,
+            whatsapp: false,
+            imap: false,
           },
         });
       }
@@ -466,52 +447,20 @@ export async function platformApi(request: Request, path: string[]) {
             if (body.email) b.email = body.email.toLowerCase();
             if (body.phone) b.phone = body.phone;
             if (body.notes !== undefined) b.notes = body.notes;
-            if (
-              body.status &&
-              b.paymentMethod === "stripe" &&
-              b.paymentStatus !== "paid"
-            )
-              throw new HttpError(
-                409,
-                "La conferma Stripe richiede il pagamento verificato.",
-              );
             if (body.status) b.status = body.status;
-            if (body.paymentStatus) {
-              if (b.paymentMethod === "stripe")
-                throw new HttpError(
-                  409,
-                  "I pagamenti Stripe sono aggiornati dal webhook",
-                );
-              b.paymentStatus = body.paymentStatus;
-            }
+            if (body.paymentStatus) b.paymentStatus = body.paymentStatus;
             if (body.notify) notification(s, b, "Aggiornata");
-            else scheduleEmailReminder(s, b);
             audit(s, user.email, "booking.update", b.pnr);
             return b;
           }),
         );
       }
-      if (route === "admin/ota/close" && method === "POST") {
-        const body = z
-          .object({ id: z.string() })
-          .parse(await jsonBody(request));
-        await transaction((s) => {
-          const m = s.ota.find((m) => m.id === body.id);
-          if (m && m.status === "review") {
-            m.status = "rejected";
-            audit(s, user.email, "ota.review.close", m.id);
-          }
-        });
-        return ok({ ok: true });
-      }
-      if (route === "admin/ota" && method === "POST")
-        return ok(await ingestOta(otaSchema.parse(await jsonBody(request))));
-      if (route === "admin/ota/approve" && method === "POST") {
-        const body = z
-          .object({ id: z.string(), booking: checkoutSchema })
-          .parse(await jsonBody(request));
-        return ok(await approveOta(body.id, body.booking));
-      }
+      if (
+        route === "admin/ota/close" ||
+        route === "admin/ota" ||
+        route === "admin/ota/approve"
+      )
+        throw new HttpError(410, "Canali OTA non attivi in Fase 1");
       if (route === "admin/jobs/retry" && method === "POST") {
         const { id } = z
           .object({ id: z.string() })
@@ -658,9 +607,6 @@ export async function platformApi(request: Request, path: string[]) {
             const index = s.tours.findIndex((t) => t.id === input.id);
             if (index < 0) s.tours.push(input);
             else s.tours[index] = input;
-            if (old && (old.reminderHours !== input.reminderHours || old.reminderTemplate !== input.reminderTemplate || old.meetingPoint !== input.meetingPoint || old.meetingAddress !== input.meetingAddress || old.mapUrl !== input.mapUrl)) {
-              for (const booking of s.bookings.filter((b) => b.tourSlug === input.slug && b.status === "confirmed")) scheduleEmailReminder(s, booking);
-            }
             audit(s, user.email, "tour.save", input.slug);
             return input;
           }),
@@ -669,7 +615,7 @@ export async function platformApi(request: Request, path: string[]) {
       if (section === "settings" && method === "PUT") {
         const input = settingsSchema.parse(await jsonBody(request));
         await transaction((s) => {
-          s.settings = input;
+          s.settings = normalizeSettings(input);
           audit(s, user.email, "settings.save", "commercial");
         });
         return ok({ ok: true });

@@ -425,7 +425,7 @@ export function defaultContentPages(
     termini: draftPage(
       "Termini di prenotazione",
       "",
-      "Il servizio è organizzato da Domenico Masini (IČO 21191310). Prezzi in euro, pagamento in contanti sul posto o online con Stripe. Le regole di cancellazione e rimborso sono indicate in conferma e nella pagina Termini del sito.",
+      "Il servizio è organizzato da Domenico Masini (IČO 21191310). Prezzi in euro, pagamento in contanti sul posto. Le regole di cancellazione e rimborso sono indicate in conferma e nella pagina Termini del sito.",
       "Termini e cancellazioni",
       "Termini di prenotazione e cancellazione FreeTourPraga.",
     ),

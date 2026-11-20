@@ -1,37 +1,44 @@
-export function formatMoney(cents: number, currency = "EUR") {
-  return new Intl.NumberFormat("it-IT", {
-    style: "currency",
-    currency
-  }).format(cents / 100);
-}
-
-export function formatDateTime(value: string | Date) {
-  return new Intl.DateTimeFormat("it-IT", {
+const moneyFormatters = new Map<string, Intl.NumberFormat>();
+const dateTimeFormatter = new Intl.DateTimeFormat("it-IT", {
     weekday: "short",
     day: "2-digit",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Europe/Prague"
-  }).format(new Date(value));
-}
-
-export function formatDate(value: string | Date) {
-  return new Intl.DateTimeFormat("it-IT", {
+  });
+const dateFormatter = new Intl.DateTimeFormat("it-IT", {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
     timeZone: "Europe/Prague"
-  }).format(new Date(value));
-}
-
-export function formatTime(value: string | Date) {
-  return new Intl.DateTimeFormat("it-IT", {
+  });
+const timeFormatter = new Intl.DateTimeFormat("it-IT", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Europe/Prague"
-  }).format(new Date(value));
+  });
+
+export function formatMoney(cents: number, currency = "EUR") {
+  let formatter = moneyFormatters.get(currency);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("it-IT", { style: "currency", currency });
+    moneyFormatters.set(currency, formatter);
+  }
+  return formatter.format(cents / 100);
+}
+
+export function formatDateTime(value: string | Date) {
+  return dateTimeFormatter.format(new Date(value));
+}
+
+export function formatDate(value: string | Date) {
+  return dateFormatter.format(new Date(value));
+}
+
+export function formatTime(value: string | Date) {
+  return timeFormatter.format(new Date(value));
 }
 
 export function guideAnchor(title: string) {

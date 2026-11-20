@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { stripeWebhook } from "@/lib/platform/providers";
-export async function POST(request: Request) {
-  try {
-    await stripeWebhook(
-      await request.text(),
-      request.headers.get("stripe-signature") || "",
-    );
-    return NextResponse.json({ received: true });
-  } catch {
-    return NextResponse.json({ error: "Webhook rifiutato" }, { status: 400 });
-  }
+
+/** Stripe non è nel perimetro Fase 1 né Fase 2 del preventivo. */
+export async function POST() {
+  return NextResponse.json(
+    { error: "Pagamenti Stripe non attivi" },
+    { status: 410 },
+  );
 }
