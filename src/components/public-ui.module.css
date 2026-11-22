@@ -93,8 +93,17 @@
 .tourCard:hover img {
   transform: scale(1.035);
 }
-.tourCard > div:last-child {
+.tourCardBody {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
   padding: 20px;
+  min-height: 0;
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 .tourCardDesc {
   display: -webkit-box;
@@ -102,8 +111,12 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
-  max-height: 3em; /* 2 righe × 1.5 */
+  margin: 0;
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  max-height: calc(1.45em * 2);
   word-break: break-word;
 }
 .tourCardTitle {
@@ -113,10 +126,103 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+.tourCardMeta {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.tourCardMeta svg {
+  color: inherit;
+  flex-shrink: 0;
+}
+.tourCardItinerary {
+  flex: 0 0 auto;
+}
+.tourCardItinerary summary,
+.tourCardItinerary p {
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.tourCardItinerary summary {
+  font-weight: 500;
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+.tourCardFacts {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.tourCardFacts :global(.tour-facts),
+.tourCardFacts :global(.tour-facts) p,
+.tourCardFacts :global(.tour-facts) li,
+.tourCardFacts :global(.tour-facts) summary {
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.tourCardFacts :global(.tour-facts) {
+  gap: 6px;
+}
+.tourCardFacts :global(.tour-facts) strong {
+  color: var(--ink);
   font-weight: 600;
 }
-.tourCard > div:last-child > a:first-of-type {
-  text-wrap: pretty;
+.tourCardFacts :global(.tour-facts) summary {
+  color: var(--ink);
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+.tourCardFacts :global(.tour-facts) .text-sm {
+  font-size: 13px;
+}
+.tourCardFooter {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline-soft);
+}
+.tourCardPrice {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.tourCardPrice strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .tourCardTitle {
+    min-height: calc(1.3em * 2);
+  }
+
+  .tourCardDesc {
+    min-height: calc(1.45em * 2);
+  }
+
+  .tourCardMeta {
+    min-height: calc((1.4em * 3) + 12px);
+  }
+
+  .tourCardItinerary {
+    min-height: 1.45em;
+  }
 }
 .tourCardCartCompact {
   display: inline-flex;
@@ -193,6 +299,47 @@
 .detail :global(.tour-detail-title) {
   white-space: normal;
   text-wrap: pretty;
+}
+
+/* Scala tipografica pagina tour: titoli / sottotitoli / testi allineati. */
+.detail :global(.display-md) {
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+.detail :global(.body-md),
+.detail :global(.body-md) p,
+.detail :global(.tour-facts),
+.detail :global(.tour-facts) p,
+.detail :global(.tour-facts) li,
+.detail :global(.tour-facts) summary {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.detail :global(.body-sm) {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.detail :global(.quick-booking-header) h2 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+.detail :global(.quick-booking) label,
+.detail :global(.quick-booking-guests) legend,
+.detail :global(.quick-booking-guest-row) > span {
+  font-size: 15px;
+}
+.detail :global(.quick-booking-guests) small,
+.detail :global(.quick-booking-note) {
+  font-size: 13px;
+  line-height: 1.35;
+}
+.detail :global(.quick-booking-total),
+.detail :global(.quick-booking-total) strong {
+  font-size: 16px;
+}
+.detail :global(.quick-booking-total) strong {
+  font-size: 20px;
 }
 .detail > div > div:first-of-type {
   gap: 26px;
@@ -329,11 +476,19 @@
   box-shadow: none;
 }
 .detail aside > h2 {
-  font-size: 29px;
+  font-size: 26px;
 }
 .detail aside > p {
-  font-size: 14px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.6;
+}
+@media (max-width: 767px) {
+  .detail :global(.display-md) {
+    font-size: 22px;
+  }
+  .detail :global(.quick-booking-header) h2 {
+    font-size: 20px;
+  }
 }
 .detail :global(.map-consent) {
   background: radial-gradient(ellipse at center, #eee9df, var(--canvas));
@@ -548,24 +703,59 @@
 .practical ol > li:hover {
   border-top-color: rgb(var(--primary));
 }
-.contact > div {
+.contactGrid {
+  display: grid;
+  gap: 40px;
   align-items: start;
+}
+@media (min-width: 1024px) {
+  .contactGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
 }
 .contact h1 {
   font-size: clamp(38px, 4vw, 56px);
   line-height: 1.16;
 }
+.contactRows {
+  display: grid;
+  gap: 18px;
+}
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  list-style: none;
+}
+a.contactRow,
+summary.contactRow {
+  cursor: pointer;
+}
 .contactIcon {
+  display: inline-grid;
+  place-items: center;
   color: rgb(var(--primary));
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
+}
+.contactIcon svg {
+  width: 28px;
+  height: 28px;
 }
 @media (max-width: 767px) {
   .contactIcon {
     width: 28px;
     height: 28px;
     flex-basis: 28px;
+  }
+  .contactIcon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .contactRow {
+    gap: 12px;
   }
 }
 .contact small {
@@ -577,6 +767,55 @@
 }
 .contact a:hover strong {
   color: rgb(var(--primary));
+}
+.contactOtherPoints {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.contactOtherPoints > summary {
+  list-style: none;
+}
+.contactOtherPoints > summary::-webkit-details-marker {
+  display: none;
+}
+.contactOtherPointsList {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 0 52px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--hairline-soft);
+}
+@media (max-width: 767px) {
+  .contactOtherPointsList {
+    margin-left: 40px;
+  }
+}
+.contactOtherPoint {
+  display: block;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--body);
+}
+.contactOtherPoint strong {
+  color: var(--ink);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.contactAside {
+  min-width: 0;
+  width: 100%;
+}
+.contactSocialRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+  align-items: center;
+}
+@media (max-width: 767px) {
+  .contactSocialRow {
+    gap: 10px 12px;
+  }
 }
 .inquiry {
   border-top: 3px solid rgb(var(--primary));
@@ -775,28 +1014,161 @@
 }
 .help h1 {
   font-size: clamp(38px, 4vw, 54px);
+  line-height: 1.16;
+  margin: 0 0 16px;
+  color: var(--ink);
 }
-.help :global(.button-secondary) {
-  text-transform: none;
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
+.helpGrid {
+  display: grid;
+  gap: 40px;
+  align-items: start;
 }
-.help > div > div:last-child > a {
+@media (min-width: 1024px) {
+  .helpGrid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 56px;
+  }
+}
+.helpIntro {
+  display: grid;
+  gap: 16px;
+  max-width: 40rem;
+}
+.helpIntro :global(.body-md) {
+  margin: 0;
+}
+.helpSteps {
+  display: grid;
+  gap: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: help-step;
+}
+.helpStep {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 18px 0;
+  border-top: 1px solid var(--hairline-soft, #e8e4da);
+  counter-increment: help-step;
+}
+.helpStep:last-child {
+  border-bottom: 1px solid var(--hairline-soft, #e8e4da);
+}
+.helpStep::before {
+  content: counter(help-step);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--primary) / 0.22);
+  background: var(--primary-soft, #fff4e8);
+  color: rgb(var(--primary));
+  font-family: var(--font-display, inherit);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.helpStep:hover::before {
+  border-color: rgb(var(--primary));
+  transform: translateY(-1px);
+}
+.helpStep strong {
+  display: block;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+.helpStep span {
+  display: block;
+  color: var(--body);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.helpPanel {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 28px 26px;
+  border: 1px solid #e1dfd8;
+  background: #fffdf9;
+}
+.helpPanelTitle {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.helpPanelLead {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--body);
+}
+.helpLink {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   border-bottom: 1px solid var(--hairline);
-  padding: 12px 0;
+  padding: 14px 0;
   text-decoration: none;
-  font-weight: 600;
   color: var(--ink);
   transition: color 0.2s;
 }
-.help > div > div:last-child > a:hover {
+.helpLink:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.helpLink:first-of-type {
+  border-top: 1px solid var(--hairline);
+  margin-top: 4px;
+}
+.helpLink:hover {
   color: rgb(var(--primary));
 }
-.help > div > div:last-child > a svg {
+.helpLink strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.helpLink small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--body);
+  font-weight: 400;
+}
+.helpLink svg {
+  flex-shrink: 0;
   color: rgb(var(--primary));
+  transition: transform 0.2s;
+}
+.helpLink:hover svg {
+  transform: translateX(3px);
+}
+@media (max-width: 767px) {
+  .helpPanel {
+    padding: 22px 18px;
+  }
+  .helpStep {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px 0;
+  }
+  .helpStep::before {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
 }
 .faq h1 {
   font-size: clamp(38px, 4vw, 55px);
@@ -913,19 +1285,42 @@
 .reservation h1 {
   font-size: clamp(38px, 4vw, 54px);
 }
-.reservation article h2 {
-  font-size: 27px;
-  line-height: 1.3;
+.reservationItem {
+  min-width: 0;
+  overflow: hidden;
 }
-.reservation article > div > p {
+.reservationItemHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.reservation article h2 {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 22px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reservation article > p {
   font-size: 13px;
   line-height: 1.75;
 }
-.reservation article > button {
-  align-self: start;
+.reservationRemove {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: rgb(var(--primary));
   text-underline-offset: 4px;
+  white-space: nowrap;
+}
+.reservationRemoveLabel {
+  display: inline;
 }
 .reservation aside {
   border-top: 3px solid rgb(var(--primary));
@@ -984,7 +1379,58 @@
   display: grid;
   gap: 18px;
 }
+.reservationSummaryTours {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.reservationSummaryTours li span {
+  min-width: 0;
+  line-height: 1.35;
+}
+.reservationSummaryTours li strong {
+  flex-shrink: 0;
+  text-align: right;
+}
+.reservationFormSubmit {
+  display: none;
+}
 @media (max-width: 767px) {
+  .reservationFormSubmit {
+    display: inline-flex;
+    width: 92%;
+    max-width: 420px;
+    margin: 4px auto 0;
+    justify-content: center;
+    justify-self: center;
+    box-sizing: border-box;
+  }
+  .reservationItem {
+    padding: 16px !important;
+  }
+  .reservationItemHeader {
+    gap: 8px;
+  }
+  .reservation article h2 {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+  .reservationRemove {
+    padding: 4px;
+    text-decoration: none;
+  }
+  .reservationRemoveLabel {
+    display: none;
+  }
+  .reservation :global(#reservation) > label > :global(input.text-input) {
+    min-height: 28px;
+    height: 28px;
+    padding: 4px 10px;
+    font-size: 14px;
+    line-height: 1.2;
+  }
   .emptyState h1 {
     font-size: 30px;
   }
@@ -1045,21 +1491,20 @@
     justify-content: space-between;
     gap: 12px;
   }
-  .reservationSummaryBar small {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.2;
-  }
   .reservationSummaryBar strong {
     display: block;
-    margin-top: 2px;
     font-size: 18px;
     color: var(--ink);
     line-height: 1.15;
   }
   .reservationSummaryChevron {
     transform: rotate(180deg);
+  }
+  .reservationSummaryOpen .reservationSummaryBar > span:first-child {
+    display: none;
+  }
+  .reservationSummaryOpen .reservationSummaryBar {
+    justify-content: flex-end;
   }
   .reservationSummary:not(.reservationSummaryOpen) .reservationSummaryDetails,
   .reservationSummary:not(.reservationSummaryOpen) .reservationSummaryExtra {
@@ -1338,4 +1783,28 @@
   .partnerForm { padding: 14px 16px; gap: 8px 12px; }
   .partnerForm h2 { font-size: 24px; margin-bottom: 0; }
   .partnerForm textarea:global(.text-input) { min-height: 56px; height: 56px; }
+}
+
+.meetingPanel {
+  justify-items: stretch;
+}
+
+.mapDirectionsBtn {
+  display: inline-flex;
+  width: 100%;
+  max-width: 100%;
+  justify-content: center;
+  justify-self: center;
+  margin-top: 4px;
+  box-sizing: border-box;
+  background: rgb(var(--primary)) !important;
+  color: var(--on-primary) !important;
+  border: 0;
+  text-decoration: none;
+  text-align: center;
+}
+
+.mapDirectionsBtn:hover {
+  background: rgb(var(--primary-active)) !important;
+  color: var(--on-primary) !important;
 }

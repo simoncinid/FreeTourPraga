@@ -70,7 +70,9 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   if (!ready) throw Error("Server QA non disponibile");
-  if (process.argv.includes("--meet")) {
+  if (process.argv.includes("--specifications")) {
+    await run("scripts/specifications-e2e.mjs");
+  } else if (process.argv.includes("--meet")) {
     await run("scripts/meet-e2e.mjs");
   } else {
     if (!process.argv.includes("--gallery")) {

@@ -2,10 +2,14 @@ import { canonicalPath } from "./public-paths";
 
 export const site = {
   name: "FreeTourPraga",
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com").replace(/\/+$/, ""),
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && process.env.NEXT_PUBLIC_WHATSAPP_NUMBER !== "420000000000"
-    ? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
-    : "393312744277",
+  url: (
+    process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com"
+  ).replace(/\/+$/, ""),
+  whatsappNumber:
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER &&
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER !== "420000000000"
+      ? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+      : "393312744277",
   phone: "+39 331 274 4277",
   email: "prenotazione@unitedworldtours.eu",
   address: "Teatro degli Stati, Rytířská 22, 110 00 Staré Město, Praga",
@@ -15,7 +19,8 @@ export const site = {
   country: "CZ",
   latitude: 50.0875,
   longitude: 14.4208,
-  tagline: "Goditi Praga con gli occhi, non con lo schermo del telefono. Al resto pensiamo noi.",
+  tagline:
+    "Goditi Praga con gli occhi, non con lo schermo del telefono. Al resto pensiamo noi.",
   description:
     "Scopri l'anima autentica di Praga con guide locali in italiano. Prenotazione semplice, informazioni chiare via email e assistenza su WhatsApp.",
   keywords: [
@@ -26,15 +31,26 @@ export const site = {
     "tour privati Praga",
     "tour Castello di Praga italiano",
     "Ponte Carlo tour italiano",
-    "assistenza WhatsApp Praga"
-  ]
+    "assistenza WhatsApp Praga",
+  ],
 };
 
 export const socialLinks = [
-  { label: "Instagram", url: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "" },
-  { label: "Facebook", url: process.env.NEXT_PUBLIC_FACEBOOK_URL || "" },
+  {
+    label: "Instagram",
+    url:
+      process.env.NEXT_PUBLIC_INSTAGRAM_URL ||
+      "https://www.instagram.com/freetours_praga/",
+  },
+  {
+    label: "Facebook",
+    url:
+      process.env.NEXT_PUBLIC_FACEBOOK_URL ||
+      "https://www.facebook.com/@FreeTourPraga",
+  },
   { label: "TikTok", url: process.env.NEXT_PUBLIC_TIKTOK_URL || "" },
-  { label: "YouTube", url: process.env.NEXT_PUBLIC_YOUTUBE_URL || "" }
+  { label: "YouTube", url: process.env.NEXT_PUBLIC_YOUTUBE_URL || "" },
+  { label: "LinkedIn", url: process.env.NEXT_PUBLIC_LINKEDIN_URL || "" },
 ].filter((link) => Boolean(link.url));
 
 export const tripAdvisor = {

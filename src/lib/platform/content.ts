@@ -1,3 +1,8 @@
+import {
+  collaborationDefaults,
+  partnerBenefits,
+} from "../collaboration-content";
+import { defaultNavigation, type NavigationItem } from "../navigation";
 import { faqs, trustPillars } from "../data";
 import { aiQuestions } from "../ai-content";
 import { site, socialLinks, tripAdvisor } from "../site";
@@ -14,6 +19,7 @@ export const CONTENT_PAGE_KEYS = [
   "partner-europa",
   "faq",
   "contatti",
+  "aiuto",
   "privacy",
   "termini",
 ] as const;
@@ -46,11 +52,22 @@ export type SiteContent = {
     tripAdvisorTitle: string;
     tripAdvisorBody: string;
     socialLinks: { label: string; url: string }[];
-    navigation: { label: string; href: string }[];
+    navigation: NavigationItem[];
+    navigationVersion?: 2;
+    officeAddress?: string;
+    castleMeetingAddress?: string;
+    googleReviewUrl?: string;
+    instagramDirectUrl?: string;
   };
   home: {
+    specialOffers?: { label: string; priceCents: number }[];
+    specialOffersNote?: string;
+    specialOffersCurrency?: "EUR" | "CZK";
+    contentBlocks?: import("../types").ContentSectionBlock[];
     carouselIntervalSeconds?: number;
     heroImage: string;
+    /** Hero verticale dedicata al mobile; se assente si usa heroImage. */
+    heroImageMobile?: string;
     heroTitle: string;
     heroEyebrow: string;
     heroBody: string;
@@ -124,21 +141,18 @@ export function defaultSiteContent(): SiteContent {
       tripAdvisorTitle: "Dicono di noi",
       tripAdvisorBody: "Le parole di chi ha esplorato Praga con FreeTourPraga.",
       socialLinks: structuredClone(socialLinks),
-      navigation: [
-        { label: "I Nostri Tour", href: "/tour" },
-        { label: "Chi siamo", href: "/chi-siamo" },
-        { label: "Informazioni utili", href: "/informazioni-utili" },
-        { label: "Contatti", href: "/contatti" },
-        { label: "Partner tour in Europa", href: "/partner-europa" },
-        { label: "Blog", href: "/blog" },
-        { label: "FAQ", href: "/faq" },
-      ],
+      navigationVersion: 2,
+      navigation: structuredClone(defaultNavigation),
+      officeAddress: "",
+      castleMeetingAddress: "",
+      googleReviewUrl: "",
+      instagramDirectUrl: "",
     },
     home: {
-      heroImage:
-        "https://images.unsplash.com/photo-1519677100203-a0e668c92439?auto=format&fit=crop&w=1800&q=85",
-      heroTitle: "Scopri l'anima autentica di Praga, in totale sicurezza.",
-      heroEyebrow: "Tour guidati in italiano a Praga",
+      heroImage: "/images/hero-prague-dusk.png",
+      heroImageMobile: "/images/hero-prague-mobile.webp",
+      heroTitle: "TOUR GUIDATI IN ITALIANO A PRAGA",
+      heroEyebrow: "Scopri l’anima autentica di Praga, in totale sicurezza.",
       heroBody:
         "Esplora la capitale ceca con guide locali esperte al tuo fianco. Prenotazione semplice, informazioni chiare via email e assistenza dedicata su WhatsApp.",
       primaryLabel: "I nostri tour",
@@ -190,21 +204,21 @@ export function defaultSiteContent(): SiteContent {
           items: [
             {
               title: "Free tour Città Vecchia e quartiere ebraico",
-              href: "/tour/citta-vecchia-ponte-carlo",
+              href: "/tour/free-tour-praga",
             },
             {
               title: "Castello e Malá Strana",
               href: "/tour/castello-praga-mala-strana",
             },
-            { title: "Città Nuova", href: "/contatti" },
+            { title: "Città Nuova", href: "/tour/citta-nuova-di-praga/" },
           ],
         },
         {
           title: "Tuffo nella storia",
           subtitle: "Percorsi per entrare nella storia della città.",
           items: [
-            { title: "Tour del comunismo", href: "/contatti" },
-            { title: "Praga esoterica", href: "/contatti" },
+            { title: "Tour del comunismo", href: "/tour/comunismo/" },
+            { title: "Praga esoterica", href: "/tour/tour-praga-esoterica/" },
           ],
         },
         {
@@ -213,7 +227,7 @@ export function defaultSiteContent(): SiteContent {
           items: [
             {
               title: "Tour di Petřín e Monastero di Strahov",
-              href: "/contatti",
+              href: "/tour-di-petrin-e-monastero-di-strahov/",
             },
             { title: "Tour di Vyšehrad", href: "/contatti" },
           ],
@@ -223,10 +237,10 @@ export function defaultSiteContent(): SiteContent {
           subtitle: "Giornate organizzate fuori dal centro di Praga.",
           items: [
             {
-              title: "Escursione al campo di concentramento di Terezin",
-              href: "/contatti",
+              title: "Escursione al campo di concentramento di Terezín",
+              href: "/tour/terezin/",
             },
-            { title: "Tour al birrificio di Plzen", href: "/contatti" },
+            { title: "Tour al birrificio di Plzeň", href: "/contatti" },
             { title: "Karlovy Vary", href: "/contatti" },
           ],
         },
@@ -314,6 +328,11 @@ export function siteContent(
       }
     }
   }
+  content.home.pillars = content.home.pillars.map((p) =>
+    p.title === "Assistenza diretta 7 su 7"
+      ? { ...p, title: "Assistenza diretta 7 giorni su 7" }
+      : p,
+  );
   content.contentVersion = 2;
   // Discard legacy customer-account links, including navigation already saved in the CMS.
   content.globals.navigation = content.globals.navigation.filter(
@@ -352,6 +371,14 @@ export function defaultContentPages(
     .map((a) => `D: ${a.question}\nR: ${a.answer}`)
     .join("\n\n");
   return {
+    ...collaborationDefaults,
+    social: draftPage(
+      "Praga, anche sui social",
+      "Social",
+      "Scopri scorci della città, racconti dai tour e idee per il tuo prossimo viaggio. Seguici sui canali ufficiali di FreeTourPraga.",
+      "Social",
+      "Canali social ufficiali FreeTourPraga.",
+    ),
     homepage: draftPage(
       h.heroTitle,
       h.heroEyebrow,
@@ -394,13 +421,16 @@ export function defaultContentPages(
       "Tour privati a Praga",
       "Tour privati e di gruppo in italiano a Praga.",
     ),
-    "partner-europa": draftPage(
-      "Grandi esperienze. Organizzate insieme.",
-      "Partner Europa",
-      h.partnerBody,
-      "Partner Europa",
-      "Tour in italiano per scuole, gruppi, hotel e agenzie a Praga.",
-    ),
+    "partner-europa": {
+      ...draftPage(
+        "Grandi esperienze. Organizzate insieme.",
+        "Partner Europa",
+        h.partnerBody,
+        "Partner Europa",
+        "Tour in italiano per scuole, gruppi, hotel e agenzie a Praga.",
+      ),
+      benefits: partnerBenefits,
+    },
     faq: draftPage(
       h.faqTitle,
       "Prima di prenotare",
@@ -414,6 +444,13 @@ export function defaultContentPages(
       `Un dubbio sul tour, sul punto d'incontro o sull'esperienza giusta per te? Parliamone: siamo qui per aiutarti a organizzare la visita.\n\nEmail: ${g.email}\nTelefono: ${g.phone}\nWhatsApp: ${g.supportHours}\n${g.address}`,
       "Contatti",
       "Contatta il team FreeTourPraga per informazioni sui tour in italiano.",
+    ),
+    aiuto: draftPage(
+      "Come possiamo aiutarti?",
+      "Assistenza",
+      "Per consultare, spostare o cancellare una prenotazione apri il link personale nella conferma ricevuta via email. Non serve creare un account. Per altre richieste contatta il nostro team.",
+      "Aiuto e gestione prenotazioni",
+      "Gestisci il tour dal link ricevuto via email oppure contatta il team FreeTourPraga.",
     ),
     privacy: draftPage(
       "Privacy e cookie",
@@ -447,7 +484,11 @@ export function mergeContentPages(
       !page.body.trim() &&
       !page.seoTitle.trim() &&
       !page.seoDescription.trim();
-    if (page.published || !blank) out[key] = page;
+    if (page.published || !blank)
+      out[key] = {
+        ...page,
+        benefits: page.benefits ?? defaults[key]?.benefits,
+      };
   }
   return out;
 }

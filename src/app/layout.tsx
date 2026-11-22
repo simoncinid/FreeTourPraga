@@ -10,7 +10,7 @@ import "@fontsource/poppins/700-italic.css";
 import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
-import { MessageCircle } from "lucide-react";
+import { Instagram, MessageCircle } from "lucide-react";
 import "./globals.css";
 import { BackToTop } from "@/components/BackToTop";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -89,10 +89,7 @@ export default async function RootLayout({
   const c = await publicSiteContent();
   return (
     <html lang="it" data-scroll-behavior="smooth">
-      <body
-        className="font-sans"
-        suppressHydrationWarning
-      >
+      <body className="font-sans" suppressHydrationWarning>
         <a className="skip-link" href="#contenuto">
           Vai al contenuto
         </a>
@@ -105,6 +102,17 @@ export default async function RootLayout({
         <ConsentAndTracking />
         <Footer />
         <BackToTop />
+        {c.globals.instagramDirectUrl && (
+          <a
+            className="floating-instagram"
+            href={c.globals.instagramDirectUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Scrivici su Instagram Direct"
+          >
+            <Instagram size={24} />
+          </a>
+        )}
         <a
           className="floating-whatsapp"
           href={contentWhatsapp(
@@ -124,7 +132,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const { globals: g } = await publicSiteContent();
   return {
     ...baseMetadata,
-    ...(process.env.SITE_PREVIEW === "true" ? { robots: { index: false, follow: false } } : {}),
+    ...(process.env.SITE_PREVIEW === "true"
+      ? { robots: { index: false, follow: false } }
+      : {}),
     title: {
       default: `${g.brandName} - Tour guidati in italiano`,
       template: `%s | ${g.brandName}`,

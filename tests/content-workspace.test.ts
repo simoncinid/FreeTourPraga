@@ -39,14 +39,9 @@ test("every structured content field has exactly one editor owner", () => {
         );
     }
   }
-  for (const key of [
-    "homepage",
-    "blog",
-    "faq",
-    "informazioni-utili",
-    "tour-privati",
-  ])
+  for (const key of ["homepage", "blog", "faq", "tour-privati"])
     assert.equal(key in pageLabels, false);
+  assert.equal("informazioni-utili" in pageLabels, true);
 });
 
 test("published legacy page overrides migrate to their canonical structured fields without losing SEO or source pages", () => {

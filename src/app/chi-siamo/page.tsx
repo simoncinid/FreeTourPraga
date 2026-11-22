@@ -1,3 +1,5 @@
+import { SectionBlocks } from "@/components/SectionBlocks";
+import { RichContent } from "@/components/RichContent";
 import { publicPage } from "@/lib/platform/public";
 import ui from "@/components/public-ui.module.css";
 import Link from "next/link";
@@ -10,13 +12,14 @@ const icons = [ShieldCheck, Users, MapPin, Headset];
 
 export default async function Page() {
   const { home } = await publicSiteContent();
-  const lines = home.trustTitle.split("\n").filter(Boolean);
+  const page = await publicPage("chi-siamo");
+  const lines = (page?.title || home.trustTitle).split("\n").filter(Boolean);
 
   return (
     <section className={`${ui.page} ${ui.about} section`}>
       <div className={`container-page ${ui.aboutInner}`}>
         <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
-          Chi siamo
+          {page?.subtitle || "Chi siamo"}
         </p>
         <h1 className={`display-xl ${ui.aboutTitle}`}>
           {lines.map((line, index) =>
@@ -38,7 +41,14 @@ export default async function Page() {
             ),
           )}
         </h1>
-        <p className={`body-md ${ui.aboutLead}`}>{home.trustBody}</p>
+        <div className={`body-md whitespace-pre-wrap ${ui.aboutLead}`}>
+          {page?.bodyHtml ? (
+            <RichContent html={page.bodyHtml} />
+          ) : (
+            page?.body || home.trustBody
+          )}
+        </div>
+        <SectionBlocks blocks={page?.contentBlocks} />
         <div className={ui.aboutGrid}>
           {home.pillars.map((pillar, index) => {
             const Icon = icons[index % icons.length];

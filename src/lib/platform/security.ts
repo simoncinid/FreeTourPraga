@@ -122,7 +122,7 @@ export function bearer(request: Request, envName: string) {
     throw new HttpError(401, "Credenziale servizio non valida");
 }
 export async function jsonBody(request: Request) {
-  if (Number(request.headers.get("content-length") || 0) > 200000)
+  if (Number(request.headers.get("content-length") || 0) > 2000000)
     throw new HttpError(413, "Richiesta troppo grande");
   const reader = request.body?.getReader();
   if (!reader) throw new HttpError(400, "Corpo richiesta assente");
@@ -132,7 +132,7 @@ export async function jsonBody(request: Request) {
     const { done, value } = await reader.read();
     if (done) break;
     total += value.byteLength;
-    if (total > 200000) {
+    if (total > 2000000) {
       await reader.cancel();
       throw new HttpError(413, "Richiesta troppo grande");
     }

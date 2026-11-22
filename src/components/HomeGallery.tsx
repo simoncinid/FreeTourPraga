@@ -14,6 +14,7 @@ export function HomeGallery({ items }: { items: SiteContent["gallery"] }) {
         label="Ultimi articoli del blog"
         intervalMs={3000}
         limitToDotRowMobile
+        equalHeight={false}
       >
         {items.map((photo) => (
           <Link

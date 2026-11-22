@@ -1,3 +1,4 @@
+import { SectionBlocks } from "./SectionBlocks";
 import type { ContentPage } from "@/lib/platform/model";
 import { RichContent } from "./RichContent";
 export function ContentBlock({ page }: { page: ContentPage }) {
@@ -6,7 +7,12 @@ export function ContentBlock({ page }: { page: ContentPage }) {
       <div className="container-page max-w-4xl">
         <p className="micro-label text-primary">{page.subtitle}</p>
         <h1 className="display-xl my-5">{page.title}</h1>
-        <div className="body-md whitespace-pre-wrap">{page.bodyHtml ? <RichContent html={page.bodyHtml} /> : page.body}</div>
+        <div className="body-md whitespace-pre-wrap">
+          {page.bodyHtml ? <RichContent html={page.bodyHtml} /> : page.body}
+        </div>
+        <div className="mt-8">
+          <SectionBlocks blocks={page.contentBlocks} />
+        </div>
       </div>
     </section>
   );

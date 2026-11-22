@@ -36,10 +36,16 @@ export const contentSections = {
 export type ContentSection = keyof typeof contentSections;
 export type StructuredContentSection = Exclude<ContentSection, "pagine">;
 export const pageLabels = {
+  "informazioni-utili": "Informazioni utili",
+  "agenzie-b2b": "Agenzie e scuole",
+  "diventa-un-partner": "Diventa un partner",
+  "lavora-con-noi": "Lavora con noi",
+  social: "Social",
   "chi-siamo": "Chi siamo",
   catalogo: "Catalogo tour",
   "partner-europa": "Partner Europa",
   contatti: "Pagina contatti",
+  aiuto: "Aiuto",
   privacy: "Privacy e cookie",
   termini: "Termini di prenotazione",
 } as const;
@@ -47,11 +53,13 @@ export const contentFields = {
   homepage: {
     home: [
       "heroImage",
+      "heroImageMobile",
       "heroTitle",
       "heroEyebrow",
       "heroBody",
       "primaryLabel",
       "primaryHref",
+      "secondaryLabel",
       "toursEyebrow",
       "toursTitle",
       "toursBody",
@@ -76,13 +84,20 @@ export const contentFields = {
       "phone",
       "whatsappNumber",
       "address",
+      "officeAddress",
+      "castleMeetingAddress",
       "supportHours",
       "footerText",
       "footerNote",
     ],
   },
-  navigazione: {},
+  navigazione: { globals: ["instagramDirectUrl"] },
   recensioni: {
-    globals: ["tripAdvisorUrl", "tripAdvisorTitle", "tripAdvisorBody"],
+    globals: [
+      "googleReviewUrl",
+      "tripAdvisorUrl",
+      "tripAdvisorTitle",
+      "tripAdvisorBody",
+    ],
   },
 } as const;

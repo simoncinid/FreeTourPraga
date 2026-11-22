@@ -1,5 +1,15 @@
+import type { ParticipantSelection } from "./types";
 export type CartItem = {
   id: string;
+  currency?: "EUR" | "CZK";
+  eligibleForDiscounts?: boolean;
+  participants?: ParticipantSelection[];
+  categorySnapshot?: {
+    id: string;
+    label: string;
+    quantity: number;
+    unitPriceCents: number;
+  }[];
   tourSlug: string;
   tourTitle: string;
   slotId: string;
@@ -37,7 +47,16 @@ export function getCartItems(): CartItem[] {
 }
 
 export function cartItemTotal(item: CartItem) {
-  return item.adults * item.unitAdultCents + item.children * item.unitChildCents + (item.infants||0)*(item.unitInfantCents||0);
+  if (item.categorySnapshot)
+    return item.categorySnapshot.reduce(
+      (n, c) => n + c.quantity * c.unitPriceCents,
+      0,
+    );
+  return (
+    item.adults * item.unitAdultCents +
+    item.children * item.unitChildCents +
+    (item.infants || 0) * (item.unitInfantCents || 0)
+  );
 }
 
 export function cartSubtotal(items: CartItem[] = readRaw()) {
@@ -46,11 +65,14 @@ export function cartSubtotal(items: CartItem[] = readRaw()) {
 
 export function addToCart(item: Omit<CartItem, "id">) {
   const items = readRaw();
+  if (items.some((i) => (i.currency ?? "EUR") !== (item.currency ?? "EUR")))
+    throw Error("Prenota separatamente i tour con valute diverse.");
   const existing = items.find(
-    (entry) => entry.tourSlug === item.tourSlug && entry.slotId === item.slotId
+    (entry) => entry.tourSlug === item.tourSlug && entry.slotId === item.slotId,
   );
 
   if (existing) {
+    Object.assign(existing, item);
     existing.adults = item.adults;
     existing.children = item.children;
     existing.infants = item.infants;
@@ -63,7 +85,7 @@ export function addToCart(item: Omit<CartItem, "id">) {
   } else {
     items.push({
       ...item,
-      id: `${item.tourSlug}-${item.slotId}-${Date.now()}`
+      id: `${item.tourSlug}-${item.slotId}-${Date.now()}`,
     });
   }
 

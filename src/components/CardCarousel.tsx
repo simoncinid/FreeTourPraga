@@ -14,6 +14,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const IDLE_RESUME_MS = 3000;
 /** Larghezza CSS del bottone pallino (globals.css). */
 const DOT_BUTTON_WIDTH = 24;
+const DESKTOP_MQ = "(min-width: 1024px)";
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const pages: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    pages.push(items.slice(i, i + size));
+  }
+  return pages;
+}
 
 export function CardCarousel({
   children,
@@ -21,6 +30,9 @@ export function CardCarousel({
   autoPlay = true,
   intervalMs = 5000,
   limitToDotRowMobile = false,
+  hideNav = false,
+  peekMobile = false,
+  equalHeight = true,
 }: {
   children: ReactNode;
   label: string;
@@ -32,12 +44,18 @@ export function CardCarousel({
    * I pallini restano sempre visibili. Desktop invariato.
    */
   limitToDotRowMobile?: boolean;
+  /** Nasconde le frecce (restano i pallini). */
+  hideNav?: boolean;
+  /** Mobile: slide non a tutta larghezza + leggero nudge per suggerire lo scroll. */
+  peekMobile?: boolean;
+  /** DV: se false le card restano alte quanto il contenuto (niente spazio bianco). */
+  equalHeight?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const resumeTimer = useRef<number | null>(null);
   const allChildren = Children.toArray(children);
-  const [perPage, setPerPage] = useState(1);
+  const [desktop, setDesktop] = useState(false);
   const [page, setPage] = useState(0);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -48,12 +66,14 @@ export function CardCarousel({
   const [mobileSlideCap, setMobileSlideCap] = useState(Number.POSITIVE_INFINITY);
   const visibleChildren =
     limitToDotRowMobile &&
+    !desktop &&
     Number.isFinite(mobileSlideCap) &&
     mobileSlideCap < allChildren.length
       ? allChildren.slice(0, Math.max(1, mobileSlideCap))
       : allChildren;
-  const count = visibleChildren.length;
-  const pages = Math.max(1, Math.ceil(count / perPage));
+  const perPage = desktop ? 3 : 1;
+  const pageGroups = chunk(visibleChildren, perPage);
+  const pages = Math.max(1, pageGroups.length);
   const activePage = page < pages ? page : 0;
   const rotateMs = Math.max(2000, Math.min(intervalMs, 30000));
 
@@ -75,10 +95,10 @@ export function CardCarousel({
 
   useEffect(() => () => clearResumeTimer(), []);
 
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)");
+  useLayoutEffect(() => {
+    const query = window.matchMedia(DESKTOP_MQ);
     const update = () => {
-      setPerPage(query.matches ? 3 : 1);
+      setDesktop(query.matches);
       setPage(0);
       track.current?.scrollTo({ left: 0 });
     };
@@ -120,18 +140,42 @@ export function CardCarousel({
     }
   }, [page, pages]);
 
-  function go(next: number) {
+  // MV peek: breve spostamento a sx per mostrare che si può scrollare a dx.
+  useEffect(() => {
+    if (!peekMobile || desktop) return;
     const el = track.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let backTimer = 0;
+    const startTimer = window.setTimeout(() => {
+      el.scrollTo({ left: 22, behavior: "smooth" });
+      backTimer = window.setTimeout(() => {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      }, 520);
+    }, 700);
+
+    return () => {
+      window.clearTimeout(startTimer);
+      window.clearTimeout(backTimer);
+    };
+  }, [peekMobile, desktop, visibleChildren.length]);
+
+  function go(next: number) {
     const target = (next + pages) % pages;
+    setPage(target);
+    if (desktop) return;
+
+    const el = track.current;
+    if (!el) return;
+    const instant = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches;
     el.scrollTo({
       left:
         pages > 1
           ? ((el.scrollWidth - el.clientWidth) * target) / (pages - 1)
           : 0,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
+      behavior: instant ? "instant" : "smooth",
     });
   }
 
@@ -146,25 +190,46 @@ export function CardCarousel({
       return;
     }
     const id = window.setInterval(() => {
+      const next = (activePage + 1) % pages;
+      setPage(next);
+      if (desktop) return;
       const el = track.current;
       if (!el) return;
       const span = el.scrollWidth - el.clientWidth;
       if (span <= 0) return;
-      const current = Math.round((el.scrollLeft / span) * (pages - 1));
       el.scrollTo({
-        left: (span * ((current + 1) % pages)) / (pages - 1),
+        left: (span * next) / (pages - 1),
         behavior: "smooth",
       });
     }, rotateMs);
     return () => window.clearInterval(id);
-  }, [paused, hovered, pages, autoPlay, rotateMs]);
+  }, [paused, hovered, pages, autoPlay, rotateMs, activePage, desktop]);
 
   if (!allChildren.length) return null;
+
+  function renderSlide(child: ReactNode, index: number, total: number) {
+    return (
+      <div
+        key={
+          isValidElement(child) && child.key != null
+            ? String(child.key)
+            : index
+        }
+        className="card-carousel-slide"
+        role="group"
+        aria-label={`${index + 1} di ${total}`}
+      >
+        {child}
+      </div>
+    );
+  }
 
   return (
     <div
       ref={root}
-      className="card-carousel"
+      className={`card-carousel${peekMobile ? " card-carousel-peek" : ""}${
+        desktop ? " card-carousel-desktop" : ""
+      }${!equalHeight ? " card-carousel-auto-height" : ""}`}
       role="region"
       aria-roledescription="carosello"
       aria-label={label}
@@ -172,7 +237,7 @@ export function CardCarousel({
       onMouseLeave={() => setHovered(false)}
     >
       <div className="card-carousel-stage">
-        {pages > 1 && (
+        {pages > 1 && !hideNav && (
           <button
             type="button"
             className="card-carousel-nav card-carousel-nav-prev"
@@ -185,46 +250,53 @@ export function CardCarousel({
             <ChevronLeft size={20} aria-hidden />
           </button>
         )}
-        <div
-          ref={track}
-          className="card-carousel-track"
-          onScroll={() => {
-            const el = track.current;
-            if (!el) return;
-            setPage(
-              el.scrollWidth > el.clientWidth
-                ? Math.round(
-                    (el.scrollLeft / (el.scrollWidth - el.clientWidth)) *
-                      (pages - 1),
-                  )
-                : 0,
-            );
-          }}
-          onPointerDown={pauseForInteraction}
-          onTouchStart={pauseForInteraction}
-          onTouchMove={pauseForInteraction}
-          onWheel={(event) => {
-            // Vertical page scroll must never be owned by the track.
-            if (Math.abs(event.deltaY) >= Math.abs(event.deltaX)) return;
-            pauseForInteraction();
-          }}
-        >
-          {visibleChildren.map((child, index) => (
+        {desktop ? (
+          <div className="card-carousel-viewport">
             <div
-              key={
-                isValidElement(child) && child.key != null
-                  ? String(child.key)
-                  : index
-              }
-              className="card-carousel-slide"
-              role="group"
-              aria-label={`${index + 1} di ${count}`}
+              className="card-carousel-track card-carousel-track-desktop"
+              style={{
+                transform: `translate3d(-${activePage * 100}%, 0, 0)`,
+              }}
             >
-              {child}
+              {pageGroups.map((group, pageIndex) => (
+                <div key={pageIndex} className="card-carousel-page">
+                  {group.map((child, index) =>
+                    renderSlide(
+                      child,
+                      pageIndex * perPage + index,
+                      visibleChildren.length,
+                    ),
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {pages > 1 && (
+          </div>
+        ) : (
+          <div
+            ref={track}
+            className="card-carousel-track"
+            onScroll={() => {
+              const el = track.current;
+              if (!el) return;
+              setPage(
+                el.scrollWidth > el.clientWidth
+                  ? Math.round(
+                      (el.scrollLeft / (el.scrollWidth - el.clientWidth)) *
+                        (pages - 1),
+                    )
+                  : 0,
+              );
+            }}
+            onPointerDown={pauseForInteraction}
+            onTouchStart={pauseForInteraction}
+            onTouchMove={pauseForInteraction}
+          >
+            {visibleChildren.map((child, index) =>
+              renderSlide(child, index, visibleChildren.length),
+            )}
+          </div>
+        )}
+        {pages > 1 && !hideNav && (
           <button
             type="button"
             className="card-carousel-nav card-carousel-nav-next"

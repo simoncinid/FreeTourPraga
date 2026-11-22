@@ -1,3 +1,4 @@
+import { tourHeadlinePrice } from "./participant-pricing";
 import { tourPath } from "./public-paths";
 import type { SiteContent } from "./platform/content";
 import { tours, faqs, trustPillars } from "./data";
@@ -75,7 +76,7 @@ export function llmsTxt(catalog = tours, content?: SiteContent) {
       `- [${tour.title}](${absoluteUrl(tourPath(tour))})`,
       `  - Categoria: ${tour.category}`,
       `  - Durata: ${minutesToLabel(tour.durationMinutes)}`,
-      `  - Prezzo da: ${formatMoney(tour.basePriceCents)}`,
+      `  - Prezzo da: ${tourHeadlinePrice(tour).text}`,
       `  - Punto d'incontro: ${tour.meetingAddress}`,
       `  - Coordinate: ${tour.latitude}, ${tour.longitude}`,
       `  - Google Maps: ${tour.mapUrl}`,
@@ -121,7 +122,7 @@ export function aiContextJson(catalog = tours, content?: SiteContent) {
       category: tour.category,
       language: tour.language,
       duration: minutesToLabel(tour.durationMinutes),
-      adultPrice: formatMoney(tour.basePriceCents),
+      adultPrice: tourHeadlinePrice(tour).text,
       meetingPoint: tour.meetingPoint,
       meetingAddress: tour.meetingAddress,
       coordinates: {
@@ -153,7 +154,7 @@ export function llmsFullTxt(catalog = tours, content?: SiteContent) {
       `Categoria: ${tour.category}`,
       `Lingua: ${tour.language}`,
       `Durata: ${minutesToLabel(tour.durationMinutes)}`,
-      `Prezzo adulto da: ${formatMoney(tour.basePriceCents)}`,
+      `Prezzo adulto da: ${tourHeadlinePrice(tour).text}`,
       `Prezzo bambino da: ${formatMoney(tour.childPriceCents)}`,
       `Punto d'incontro: ${tour.meetingAddress}`,
       `Coordinate: ${tour.latitude}, ${tour.longitude}`,

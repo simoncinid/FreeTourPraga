@@ -292,7 +292,7 @@ export const trustPillars = [
     text: "Posizione esatta del punto d'incontro via email e WhatsApp, con percorsi rapidi da aprire sul telefono in un attimo."
   },
   {
-    title: "Assistenza diretta 7 su 7",
+    title: "Assistenza diretta 7 giorni su 7",
     text: "Il nostro servizio clienti ti assiste ogni giorno dalle 9:00 alle 19:00 per informazioni e supporto sui tuoi tour."
   }
 ];

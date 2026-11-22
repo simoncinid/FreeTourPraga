@@ -9,32 +9,115 @@ const gone = new Set<string>(routes.gone);
 export function proxy(request: NextRequest) {
   const url = new URL(request.url);
   const preview = process.env.SITE_PREVIEW === "true";
-  const path = url.pathname === "/" ? "/" : `${url.pathname.replace(/\/+$/, "")}/`;
+  const path =
+    url.pathname === "/" ? "/" : `${url.pathname.replace(/\/+$/, "")}/`;
+  if (/^\/(?:account|tour-privati|self-service)(?:\/|$)/.test(url.pathname))
+    return new NextResponse(
+      '<!doctype html><html lang="it"><meta charset="utf-8"><title>Pagina non disponibile</title><h1>Pagina non disponibile</h1><p>Gestisci la prenotazione dal link ricevuto via email.</p><a href="/tour/">Scopri i tour</a></html>',
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Robots-Tag": "noindex",
+        },
+      },
+    );
   if (!["GET", "HEAD"].includes(request.method)) return NextResponse.next();
 
   // Old ?p= / ?page_id= permalinks continue to reach their actual published page.
-  const id = url.pathname === "/" ? url.searchParams.get("p") || url.searchParams.get("page_id") : null;
-  let target = (id && ids[id]) || redirects[path] || canonicalPath(url.pathname);
+  const id =
+    url.pathname === "/"
+      ? url.searchParams.get("p") || url.searchParams.get("page_id")
+      : null;
+  let target =
+    (id && ids[id]) || redirects[path] || canonicalPath(url.pathname);
   if (target in redirects) target = redirects[target];
-  const canonicalOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com";
+  const canonicalOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com";
   const publicHost = (request.headers.get("host") || url.host).split(":")[0];
   const technicalHost = publicHost.endsWith(".up.railway.app");
-  const redirectHost = !preview && technicalHost && new URL(canonicalOrigin).origin === "https://it.freetourpraga.com";
+  const redirectHost =
+    !preview &&
+    technicalHost &&
+    new URL(canonicalOrigin).origin === "https://it.freetourpraga.com";
   if (target !== url.pathname || redirectHost) {
     if (redirectHost) {
-      url.protocol = "https:"; url.host = "it.freetourpraga.com"; url.port = "";
+      url.protocol = "https:";
+      url.host = "it.freetourpraga.com";
+      url.port = "";
     }
     url.pathname = target;
-    if (id && ids[id]) { url.searchParams.delete("p"); url.searchParams.delete("page_id"); }
+    if (id && ids[id]) {
+      url.searchParams.delete("p");
+      url.searchParams.delete("page_id");
+    }
     return NextResponse.redirect(url, 301);
   }
+  // A streamed App Router notFound can otherwise return HTTP 200 after the
+  // shared async layout has started. Reject unknown top-level routes early.
+  const appRoots = new Set([
+    "",
+    "accesso",
+    "admin",
+    "agenzie-b2b",
+    "ai-context.json",
+    "aiuto",
+    "blog",
+    "carrello",
+    "checkout",
+    "chi-siamo",
+    "contatti",
+    "diventa-un-partner",
+    "faq",
+    "gestisci-prenotazione",
+    "informazioni-utili",
+    "lavora-con-noi",
+    "llms-full.txt",
+    "llms.txt",
+    "manifest.webmanifest",
+    "pagamento",
+    "partner-europa",
+    "prenotazione",
+    "privacy",
+    "robots.txt",
+    "sitemap_index.xml",
+    "sitemap.xml",
+    "social",
+    "termini",
+    "tour",
+  ]);
+  if (
+    !appRoots.has(url.pathname.split("/")[1] || "") &&
+    !routes.paths.includes(path) &&
+    !gone.has(path)
+  )
+    return new NextResponse(
+      '<!doctype html><html lang="it"><meta charset="utf-8"><title>Pagina non trovata</title><h1>Pagina non trovata</h1><a href="/">Torna alla home</a></html>',
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Robots-Tag": "noindex",
+        },
+      },
+    );
   // These attachment URLs already return 410 on WordPress: do not revive them as soft 404s.
-  if (gone.has(path)) return new NextResponse("<!doctype html><html lang=\"it\"><meta charset=\"utf-8\"><title>Contenuto rimosso</title><h1>Contenuto rimosso</h1><p>Questa pagina non è più disponibile.</p><a href=\"/tour/\">Scopri i tour a Praga</a></html>", {
-    status: 410, headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex" },
-  });
+  if (gone.has(path))
+    return new NextResponse(
+      '<!doctype html><html lang="it"><meta charset="utf-8"><title>Contenuto rimosso</title><h1>Contenuto rimosso</h1><p>Questa pagina non è più disponibile.</p><a href="/tour/">Scopri i tour a Praga</a></html>',
+      {
+        status: 410,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Robots-Tag": "noindex",
+        },
+      },
+    );
   const response = NextResponse.next();
   if (preview) response.headers.set("X-Robots-Tag", "noindex, nofollow");
   return response;
 }
 
-export const config = { matcher: ["/((?!api/|_next/|wp-content/|images/|icon.svg|favicon.ico).*)"] };
+export const config = {
+  matcher: ["/((?!api/|_next/|wp-content/|images/|icon.svg|favicon.ico).*)"],
+};

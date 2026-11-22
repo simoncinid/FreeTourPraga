@@ -1,4 +1,13 @@
 "use client";
+import {
+  contentEditorSection,
+  contentEditorTarget,
+  pageEditorId,
+  pageEditorKey,
+} from "@/lib/content-routing";
+import type { Tour } from "@/lib/types";
+import { siteNavigation } from "@/lib/navigation";
+import { SectionBlocksEditor } from "./SectionBlocksEditor";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -57,6 +66,7 @@ function PageEditor({
   save: (body: unknown) => Promise<unknown>;
   seoOnly?: boolean;
 }) {
+  const [uploading, setUploading] = useState(false);
   const [page, setPage] = useState<ContentPage>(
     pages[pageKey] || {
       title: "",
@@ -72,6 +82,7 @@ function PageEditor({
       className="card grid gap-5 p-6"
       onSubmit={(event) => {
         event.preventDefault();
+        if (uploading) return;
         void save({
           key: pageKey,
           page: seoOnly ? { ...page, published: true } : page,
@@ -81,7 +92,8 @@ function PageEditor({
       <h2 className="display-md">
         {seoOnly
           ? "Metadati per i motori di ricerca"
-          : pageLabels[pageKey as keyof typeof pageLabels] || pages[pageKey]?.title}
+          : pageLabels[pageKey as keyof typeof pageLabels] ||
+            pages[pageKey]?.title}
       </h2>
       {seoOnly ? (
         <p className="text-sm">
@@ -112,6 +124,73 @@ function PageEditor({
           />
         </>
       )}
+      {!seoOnly && page.benefits && (
+        <fieldset className="grid gap-3">
+          <legend>Punti di forza</legend>
+          {page.benefits.map((b, i) => (
+            <div key={i} className="grid gap-2 rounded border p-3">
+              <Input
+                label={`Titolo punto ${i + 1}`}
+                value={b.title}
+                onChange={(title) =>
+                  setPage((p) => ({
+                    ...p,
+                    benefits: p.benefits?.map((v, j) =>
+                      j === i ? { ...v, title } : v,
+                    ),
+                  }))
+                }
+              />
+              <Input
+                label={`Testo punto ${i + 1}`}
+                value={b.text}
+                multiline
+                onChange={(text) =>
+                  setPage((p) => ({
+                    ...p,
+                    benefits: p.benefits?.map((v, j) =>
+                      j === i ? { ...v, text } : v,
+                    ),
+                  }))
+                }
+              />
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() =>
+                  setPage((p) => ({
+                    ...p,
+                    benefits: p.benefits?.filter((_, j) => j !== i),
+                  }))
+                }
+              >
+                Rimuovi punto
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() =>
+              setPage((p) => ({
+                ...p,
+                benefits: [...(p.benefits ?? []), { title: "", text: "" }],
+              }))
+            }
+          >
+            Aggiungi punto
+          </button>
+        </fieldset>
+      )}
+      {(!seoOnly || pageKey !== "homepage") && (
+        <SectionBlocksEditor
+          blocks={page.contentBlocks}
+          onChange={(contentBlocks) =>
+            setPage((p) => ({ ...p, contentBlocks }))
+          }
+          onUploading={setUploading}
+        />
+      )}
       <Input
         label="Titolo SEO"
         value={page.seoTitle}
@@ -141,7 +220,7 @@ function PageEditor({
           Usa questi testi nella pagina pubblica
         </label>
       )}
-      <button className="button-primary" disabled={busy}>
+      <button className="button-primary" disabled={busy || uploading}>
         {seoOnly ? "Salva SEO" : "Salva pagina"}
       </button>
     </form>
@@ -150,6 +229,7 @@ function PageEditor({
 
 export function ContentWorkspace({
   content,
+  tours,
   pages,
   detail,
   busy,
@@ -157,22 +237,18 @@ export function ContentWorkspace({
   savePage,
 }: {
   content: SiteContent;
+  tours: Pick<Tour, "title" | "slug" | "canonicalPath">[];
   pages: Record<string, ContentPage>;
   detail?: string;
   busy: boolean;
   saveSite: (content: SiteContent) => Promise<unknown>;
   savePage: (body: unknown) => Promise<unknown>;
 }) {
-  const isPage = Boolean(detail && Object.hasOwn(pageLabels, detail));
-  const section: ContentSection =
-    isPage || detail === "pagine"
-      ? "pagine"
-      : detail && Object.hasOwn(contentSections, detail)
-        ? (detail as ContentSection)
-        : "homepage";
-  const pageKey = isPage
-    ? (detail as keyof typeof pageLabels)
-    : "chi-siamo";
+  const section: ContentSection = contentEditorSection(detail, pages);
+  const pageKey =
+    section === "pagine" && detail !== "pagine"
+      ? pageEditorKey(detail || "chi-siamo")
+      : "chi-siamo";
   const metadataKey =
     section === "homepage"
       ? "homepage"
@@ -189,6 +265,33 @@ export function ContentWorkspace({
           tutte le pagine che li utilizzano.
         </p>
       </div>
+      <nav
+        aria-label="Albero pagine come nel menu pubblico"
+        className="card grid gap-3 p-5"
+      >
+        <Link href="/admin/contenuti/homepage">Homepage</Link>
+        {siteNavigation(content, tours).map((n) => {
+          const target = (href: string) =>
+            contentEditorTarget(href, tours, pages, content);
+          return n.children ? (
+            <details key={n.label}>
+              <summary>{n.label}</summary>
+              <div className="grid gap-2 border-l pl-5">
+                <Link href={target(n.href)}>Modifica {n.label}</Link>
+                {n.children.map((c) => (
+                  <Link key={c.href} href={target(c.href)}>
+                    {c.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <Link key={n.href} href={target(n.href)}>
+              {n.label}
+            </Link>
+          );
+        })}
+      </nav>
       <nav aria-label="Aree contenuti" className="flex flex-wrap gap-2">
         {Object.entries(contentSections).map(([key, item]) => (
           <Link
@@ -211,10 +314,17 @@ export function ContentWorkspace({
             aria-label="Pagine del sito"
             className="flex flex-nowrap gap-2 overflow-x-auto pb-1"
           >
-            {Object.entries(pageLabels).map(([key, label]) => (
+            {Object.entries({
+              ...pageLabels,
+              ...Object.fromEntries(
+                Object.entries(pages)
+                  .filter(([k]) => k.startsWith("legacy:"))
+                  .map(([k, p]) => [k, p.title]),
+              ),
+            }).map(([key, label]) => (
               <Link
                 key={key}
-                href={`/admin/contenuti/${key}`}
+                href={`/admin/contenuti/${key.startsWith("legacy:") ? pageEditorId(key) : key}`}
                 aria-current={pageKey === key ? "page" : undefined}
                 className={
                   pageKey === key ? "button-primary" : "button-secondary"

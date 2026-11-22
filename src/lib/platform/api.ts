@@ -1,3 +1,15 @@
+import { jsonEqual } from "../json-equal";
+import {
+  partnerSchema,
+  partnerStats,
+  partnerPeriodSchema,
+  recordPartnerClick,
+  csvCell,
+} from "./partners";
+import { createHash } from "node:crypto";
+import { calendarOperation } from "./calendar-operations";
+import { commissionMatured } from "./commissions";
+import { calendarOperationSchema } from "./validation";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
@@ -44,7 +56,12 @@ import { siteContentSchema } from "./content-validation";
 import { prepareArticles } from "../article-urls";
 import wordpressRoutes from "@/content/wordpress-routes.json";
 import { site } from "../site";
-import { generateScheduledSlots, isClosed, isTourClosed, publicTour } from "./scheduling";
+import {
+  generateScheduledSlots,
+  isClosed,
+  isTourClosed,
+  publicTour,
+} from "./scheduling";
 import { isFreeTour, tourPrices } from "../tour-rules";
 import { normalizeSettings } from "./email-templates";
 const ok = (data: unknown) =>
@@ -82,6 +99,46 @@ export async function platformApi(request: Request, path: string[]) {
         payments: { cash: true, stripe: false },
         features: { whatsapp: false },
       });
+    }
+    if (path[0] === "partner" && path.length === 2 && method === "GET") {
+      const id = path[1];
+      const visitorCookie = request.headers
+        .get("cookie")
+        ?.match(/(?:^|;\s*)ftp_partner_visitor=([a-f0-9-]{36})(?:;|$)/)?.[1];
+      const statisticsAllowed = /(?:^|;\s*)ftp_consent=statistics(?:;|$)/.test(
+        request.headers.get("cookie") || "",
+      );
+      const visitor = statisticsAllowed ? visitorCookie || randomUUID() : "";
+      const destination = await transaction((s) => {
+        const p = s.partners?.find(
+          (p) => p.id === id && p.published && !p.deleted,
+        );
+        if (!p) throw new HttpError(404, "Partner non disponibile");
+        const website = partnerSchema.shape.website.parse(p.website);
+        if (
+          !/bot|crawler|spider|preview/i.test(
+            request.headers.get("user-agent") || "",
+          ) &&
+          request.headers.get("purpose") !== "prefetch"
+        )
+          recordPartnerClick(
+            s,
+            id,
+            visitor ? createHash("sha256").update(visitor).digest("hex") : "",
+          );
+        return website;
+      });
+      const response = NextResponse.redirect(destination, 303);
+      response.headers.set("Cache-Control", "no-store");
+      if (statisticsAllowed)
+        response.cookies.set("ftp_partner_visitor", visitor, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 86400,
+        });
+      return response;
     }
     if (route === "login" && method === "POST") {
       await rateLimit(request, "login", 5);
@@ -182,6 +239,12 @@ export async function platformApi(request: Request, path: string[]) {
         .object({
           name: z.string().trim().min(2).max(120),
           email: z.string().email(),
+          phone: z
+            .string()
+            .trim()
+            .max(40)
+            .regex(/^[+\d\s().-]*$/)
+            .optional(),
           message: z.string().min(10).max(5000),
           type: z.string().max(80),
           privacy: z.literal(true),
@@ -202,7 +265,7 @@ export async function platformApi(request: Request, path: string[]) {
           to:
             process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
           subject: `Richiesta ${body.type}`,
-          text: `${body.name}\n${body.email}\n${body.message}`,
+          text: `${body.name}\n${body.email}\n${body.phone || ""}\n${body.message}`,
           runAt: new Date().toISOString(),
         });
       });
@@ -244,6 +307,40 @@ export async function platformApi(request: Request, path: string[]) {
           },
         });
       }
+      if (route === "admin/partners/stats" && method === "GET") {
+        const period = partnerPeriodSchema.parse({
+          from: url.searchParams.get("from"),
+          to: url.searchParams.get("to"),
+        });
+        const rows = partnerStats(await readState(), period.from, period.to);
+        if (url.searchParams.get("format") !== "csv") return ok({ rows });
+        const data = [
+          [
+            "Partner",
+            "Dal",
+            "Al",
+            "Click totali",
+            "Visitatori unici per giorno",
+          ],
+          ...rows.map((r) => [
+            r.name,
+            period.from,
+            period.to,
+            r.clicks,
+            r.uniqueVisitorDays,
+          ]),
+        ];
+        return new NextResponse(
+          "\uFEFF" + data.map((row) => row.map(csvCell).join(";")).join("\r\n"),
+          {
+            headers: {
+              "Content-Type": "text/csv; charset=utf-8",
+              "Content-Disposition": 'attachment; filename="partner-click.csv"',
+              "Cache-Control": "no-store",
+            },
+          },
+        );
+      }
       if (route === "admin/export" && method === "GET") {
         const s = await readState();
         const cell = (v: unknown) =>
@@ -258,7 +355,8 @@ export async function platformApi(request: Request, path: string[]) {
             "Tour",
             "Partenza",
             "Partecipanti",
-            "Totale EUR",
+            "Totale",
+            "Valuta",
             "Stato",
             "Pagamento",
             "Canale",
@@ -272,6 +370,7 @@ export async function platformApi(request: Request, path: string[]) {
             b.slotId,
             b.totalGuests,
             (b.totalCents / 100).toFixed(2),
+            b.currency ?? "EUR",
             b.status,
             b.paymentStatus,
             b.source,
@@ -289,20 +388,45 @@ export async function platformApi(request: Request, path: string[]) {
           },
         );
       }
+      if (route === "admin/calendar/operation" && method === "POST") {
+        const body = calendarOperationSchema.parse(await jsonBody(request));
+        const tours = await transaction((s) => {
+          calendarOperation(s, body);
+          audit(s, user.email, "calendar.operation", JSON.stringify(body));
+          return s.tours.filter((t) => body.tourIds.includes(t.id));
+        });
+        return ok({ ok: true, tours });
+      }
       if (route === "admin/calendar/closure" && method === "POST") {
-        const body = z.object({ from: localDateSchema, to: localDateSchema, closed: z.boolean() })
-          .refine((v) => v.from <= v.to && (Date.parse(v.to) - Date.parse(v.from)) <= 366 * 86400000, "Intervallo massimo: un anno")
+        const body = z
+          .object({
+            from: localDateSchema,
+            to: localDateSchema,
+            closed: z.boolean(),
+          })
+          .refine(
+            (v) =>
+              v.from <= v.to &&
+              Date.parse(v.to) - Date.parse(v.from) <= 366 * 86400000,
+            "Intervallo massimo: un anno",
+          )
           .parse(await jsonBody(request));
         await transaction((s) => {
           const dates = new Set(s.closedDates ?? []);
           const cursor = new Date(`${body.from}T12:00:00Z`);
           while (cursor.toISOString().slice(0, 10) <= body.to) {
             const date = cursor.toISOString().slice(0, 10);
-            if (body.closed) dates.add(date); else dates.delete(date);
+            if (body.closed) dates.add(date);
+            else dates.delete(date);
             cursor.setUTCDate(cursor.getUTCDate() + 1);
           }
           s.closedDates = [...dates].sort();
-          audit(s, user.email, body.closed ? "calendar.close" : "calendar.open", `${body.from}/${body.to}`);
+          audit(
+            s,
+            user.email,
+            body.closed ? "calendar.close" : "calendar.open",
+            `${body.from}/${body.to}`,
+          );
         });
         return ok({ ok: true });
       }
@@ -382,6 +506,16 @@ export async function platformApi(request: Request, path: string[]) {
             if (!b) throw new HttpError(404, "Prenotazione non trovata");
             if (b.status === "cancelled")
               throw new HttpError(409, "Prenotazione cancellata");
+            if (
+              b.categorySnapshot &&
+              [body.adults, body.children, body.infants].some(
+                (v) => v !== undefined,
+              )
+            )
+              throw new HttpError(
+                409,
+                "Per cambiare categorie di una prenotazione esistente crea una sostituzione concordata con il cliente",
+              );
             const nextAdults = body.adults ?? b.adults,
               nextChildren = body.children ?? b.children,
               nextInfants = body.infants ?? b.infants;
@@ -390,7 +524,10 @@ export async function platformApi(request: Request, path: string[]) {
               nextChildren !== b.children ||
               nextInfants !== b.infants;
             if (changed) {
-              if (b.paymentMethod !== "cash" || b.paymentStatus === "paid")
+              if (
+                !["cash", "bank_transfer"].includes(b.paymentMethod) ||
+                b.paymentStatus === "paid"
+              )
                 throw new HttpError(
                   409,
                   "Per cambiare i partecipanti di prenotazioni già pagate o OTA, gestisci prima l’adeguamento con il cliente e il provider.",
@@ -398,8 +535,18 @@ export async function platformApi(request: Request, path: string[]) {
               const { tour, slot } = slotFor(s, b);
               const guests = nextAdults + nextChildren + nextInfants;
               const delta = guests - b.totalGuests;
-              if (guests > Math.min(tour.maxGuests, 25) || (delta > 0 && (slot.closed || isClosed(s, slot.startsAt) || isTourClosed(tour, slot.startsAt)))) throw new HttpError(409, "Limite partecipanti superato o giornata chiusa");
-              if (delta > Math.min(slot.capacity, 25) - slot.reserved)
+              if (
+                guests > tour.maxGuests ||
+                (delta > 0 &&
+                  (slot.closed ||
+                    isClosed(s, slot.startsAt) ||
+                    isTourClosed(tour, slot.startsAt)))
+              )
+                throw new HttpError(
+                  409,
+                  "Limite partecipanti superato o giornata chiusa",
+                );
+              if (delta > slot.capacity - slot.reserved)
                 throw new HttpError(409, "Posti insufficienti");
               const rate = b.subtotalCents
                 ? b.discountCents / b.subtotalCents
@@ -407,18 +554,36 @@ export async function platformApi(request: Request, path: string[]) {
               const commission = b.totalCents
                 ? b.commissionCents / b.totalCents
                 : 0;
-              const originallyFree = b.bookingNote !== undefined ? Boolean(b.bookingNote) : isFreeTour(tour);
-              const units = originallyFree ? tourPrices({ ...tour, isFreeTour: true }, guests) : {
-                adult: b.unitAdultCents ?? tour.basePriceCents,
-                child: b.unitChildCents ?? tour.childPriceCents,
-                infant: b.unitInfantCents ?? tour.infantPriceCents,
-                fixedGroup: false,
-              };
-              b.unitAdultCents = units.adult; b.unitChildCents = units.child; b.unitInfantCents = units.infant;
-              b.subtotalCents = nextAdults * units.adult + nextChildren * units.child + nextInfants * units.infant;
-              b.discountCents = units.fixedGroup ? 0 : Math.round(b.subtotalCents * rate);
+              const originallyFree =
+                b.bookingNote !== undefined
+                  ? Boolean(b.bookingNote)
+                  : isFreeTour(tour);
+              const units = originallyFree
+                ? tourPrices({ ...tour, isFreeTour: true }, guests)
+                : {
+                    adult: b.unitAdultCents ?? tour.basePriceCents,
+                    child: b.unitChildCents ?? tour.childPriceCents,
+                    infant: b.unitInfantCents ?? tour.infantPriceCents,
+                    fixedGroup: false,
+                  };
+              b.unitAdultCents = units.adult;
+              b.unitChildCents = units.child;
+              b.unitInfantCents = units.infant;
+              b.subtotalCents =
+                nextAdults * units.adult +
+                nextChildren * units.child +
+                nextInfants * units.infant;
+              b.discountCents = units.fixedGroup
+                ? 0
+                : Math.round(b.subtotalCents * rate);
               b.totalCents = b.subtotalCents - b.discountCents;
-              b.commissionCents = Math.round(b.totalCents * commission);
+              b.commissionCents = b.commissionRuleSnapshot
+                ? Math.round(
+                    b.commissionRuleSnapshot.mode === "fixed"
+                      ? b.commissionRuleSnapshot.value * guests
+                      : (b.totalCents * b.commissionRuleSnapshot.value) / 100,
+                  )
+                : Math.round(b.totalCents * commission);
               slot.reserved += delta;
               b.adults = nextAdults;
               b.children = nextChildren;
@@ -510,13 +675,64 @@ export async function platformApi(request: Request, path: string[]) {
       }
       // Commercial configuration and content publishing are restricted to administrators.
       await requireStaff(["admin"]);
+      if (route === "admin/partner" && method === "PUT") {
+        const partner = partnerSchema.parse(await jsonBody(request));
+        await transaction((s) => {
+          s.partners ??= [];
+          const old = s.partners.findIndex((p) => p.id === partner.id);
+          if (old < 0) s.partners.push(partner);
+          else s.partners[old] = partner;
+          audit(s, user.email, "partner.save", partner.id);
+        });
+        return ok({ ok: true });
+      }
+      if (route === "admin/partner" && method === "DELETE") {
+        const { id } = z
+          .object({ id: z.string() })
+          .parse(await jsonBody(request));
+        await transaction((s) => {
+          const p = s.partners?.find((p) => p.id === id);
+          if (p) {
+            p.deleted = true;
+            p.published = false;
+          }
+          audit(s, user.email, "partner.delete", id);
+        });
+        return ok({ ok: true });
+      }
       if (route === "admin/site-content" && method === "PUT") {
         const content = siteContentSchema.parse(await jsonBody(request));
         await transaction((s) => {
           try {
-            content.gallery = prepareArticles(siteContent(s.siteContent, s.pages).gallery, content.gallery);
+            content.gallery = prepareArticles(
+              siteContent(s.siteContent, s.pages).gallery,
+              content.gallery,
+            );
           } catch (error) {
-            throw new HttpError(409, error instanceof Error ? error.message : "Indirizzi articolo non validi");
+            throw new HttpError(
+              409,
+              error instanceof Error
+                ? error.message
+                : "Indirizzi articolo non validi",
+            );
+          }
+          const castle = s.tours.find(
+            (t) => t.slug === "interni-castello-praga",
+          );
+          if (
+            castle &&
+            content.globals.castleMeetingAddress !==
+              siteContent(s.siteContent, s.pages).globals.castleMeetingAddress
+          ) {
+            const address = content.globals.castleMeetingAddress?.trim() || "";
+            castle.meetingAddress = address;
+            castle.mapUrl = address
+              ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+              : "";
+            castle.mapEmbedUrl = address
+              ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`
+              : "";
+            castle.operationalReviewRequired = !address;
           }
           s.siteContent = content;
           audit(s, user.email, "site-content.publish", "global");
@@ -526,6 +742,14 @@ export async function platformApi(request: Request, path: string[]) {
 
       if (section === "tour" && method === "PUT") {
         const input = tourSchema.parse(await jsonBody(request));
+        if (
+          input.paymentMethods?.includes("bank_transfer") &&
+          !input.paymentInstructions?.trim()
+        )
+          throw new HttpError(
+            400,
+            "Inserisci beneficiario, IBAN e istruzioni per attivare il bonifico",
+          );
         return ok(
           await transaction((s) => {
             if (input.childMinAge >= input.adultMinAge)
@@ -533,15 +757,54 @@ export async function platformApi(request: Request, path: string[]) {
             if (s.tours.some((t) => t.id !== input.id && t.slug === input.slug))
               throw new HttpError(409, "Slug già in uso");
             const old = s.tours.find((t) => t.id === input.id);
-            if (!old && wordpressRoutes.paths.includes(`/tour/${input.slug}/`) && input.canonicalPath !== `/tour/${input.slug}/`)
-              throw new HttpError(409, "Indirizzo riservato a una pagina storica pubblicata");
+            if (
+              old &&
+              !jsonEqual(old.calendarRules ?? [], input.calendarRules ?? [])
+            )
+              throw new HttpError(
+                409,
+                "Il calendario è cambiato: ricarica il tour prima di salvare per conservare le nuove regole",
+              );
+            if (
+              !old &&
+              wordpressRoutes.paths.includes(`/tour/${input.slug}/`) &&
+              input.canonicalPath !== `/tour/${input.slug}/`
+            )
+              throw new HttpError(
+                409,
+                "Indirizzo riservato a una pagina storica pubblicata",
+              );
             if (old?.canonicalPath && old.canonicalPath !== input.canonicalPath)
-              throw new HttpError(409, "Conserva l'indirizzo storico del tour pubblicato");
-            if (input.canonicalPath && s.tours.some((tour) => tour.id !== input.id && tour.canonicalPath === input.canonicalPath))
-              throw new HttpError(409, "Indirizzo canonico già assegnato a un altro tour");
-            if (old && (old.meetingAddress !== input.meetingAddress || old.mapUrl !== input.mapUrl)) input.mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(input.meetingAddress)}&output=embed`;
-            if (old && input.basePriceCents !== old.basePriceCents && !input.isFreeTour) input.priceLabel = "";
-            if (old && input.description !== old.description) input.descriptionHtml = undefined;
+              throw new HttpError(
+                409,
+                "Conserva l'indirizzo storico del tour pubblicato",
+              );
+            if (
+              input.canonicalPath &&
+              s.tours.some(
+                (tour) =>
+                  tour.id !== input.id &&
+                  tour.canonicalPath === input.canonicalPath,
+              )
+            )
+              throw new HttpError(
+                409,
+                "Indirizzo canonico già assegnato a un altro tour",
+              );
+            if (
+              old &&
+              (old.meetingAddress !== input.meetingAddress ||
+                old.mapUrl !== input.mapUrl)
+            )
+              input.mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(input.meetingAddress)}&output=embed`;
+            if (
+              old &&
+              input.basePriceCents !== old.basePriceCents &&
+              !input.isFreeTour
+            )
+              input.priceLabel = "";
+            if (old && input.description !== old.description)
+              input.descriptionHtml = undefined;
             if (
               old &&
               old.slug !== input.slug &&
@@ -599,9 +862,21 @@ export async function platformApi(request: Request, path: string[]) {
               old?.highlightGalleries
             )
               input.highlightGalleries = old.highlightGalleries;
-            if (JSON.stringify(old?.schedule) !== JSON.stringify(input.schedule)) {
-              input.slots = input.slots.filter((slot) => (!input.schedule?.enabled && !slot.id.startsWith("schedule:")) || s.bookings.some((b) => b.slotId === slot.id) || Date.parse(slot.startsAt) < Date.now());
-              for (const slot of input.slots) if (Date.parse(slot.startsAt) > Date.now()) slot.closed = true;
+            if (!jsonEqual(old?.schedule, input.schedule)) {
+              input.slots = input.slots.filter(
+                (slot) =>
+                  slot.id.startsWith("extra:") ||
+                  (!input.schedule?.enabled &&
+                    !slot.id.startsWith("schedule:")) ||
+                  s.bookings.some((b) => b.slotId === slot.id) ||
+                  Date.parse(slot.startsAt) < Date.now(),
+              );
+              for (const slot of input.slots)
+                if (
+                  Date.parse(slot.startsAt) > Date.now() &&
+                  !slot.id.startsWith("extra:")
+                )
+                  slot.closed = true;
             }
             generateScheduledSlots(input);
             const index = s.tours.findIndex((t) => t.id === input.id);
@@ -622,7 +897,12 @@ export async function platformApi(request: Request, path: string[]) {
       }
       if (section === "page" && method === "PUT") {
         const body = z
-          .object({ key: z.string().regex(/^(?:[a-z0-9-]+|legacy:\/[a-zA-Z0-9/_-]*\/)$/), page: pageSchema })
+          .object({
+            key: z
+              .string()
+              .regex(/^(?:[a-z0-9-]+|legacy:\/[a-zA-Z0-9/_-]*\/)$/),
+            page: pageSchema,
+          })
           .parse(await jsonBody(request));
         await transaction((s) => {
           if (["homepage", "blog", "faq"].includes(body.key)) {
@@ -631,15 +911,23 @@ export async function platformApi(request: Request, path: string[]) {
             const previous = s.pages[body.key] || body.page;
             s.pages[body.key] = {
               ...previous,
+              contentBlocks: body.page.contentBlocks,
               seoTitle: body.page.seoTitle,
               seoDescription: body.page.seoDescription,
               published: true,
             };
           } else {
             const previous = s.pages[body.key];
-            if (previous?.canonicalPath && previous.canonicalPath !== body.page.canonicalPath)
-              throw new HttpError(409, "Conserva l'indirizzo storico della pagina pubblicata");
-            if (previous && previous.body !== body.page.body) body.page.bodyHtml = undefined;
+            if (
+              previous?.canonicalPath &&
+              previous.canonicalPath !== body.page.canonicalPath
+            )
+              throw new HttpError(
+                409,
+                "Conserva l'indirizzo storico della pagina pubblicata",
+              );
+            if (previous && previous.body !== body.page.body)
+              body.page.bodyHtml = undefined;
             s.pages[body.key] = body.page;
           }
           audit(s, user.email, "page.save", body.key);
@@ -663,7 +951,7 @@ export async function platformApi(request: Request, path: string[]) {
           for (const b of s.bookings.filter(
             (b) =>
               b.affiliateCode === code &&
-              b.status === "present" &&
+              commissionMatured(s, b) &&
               !b.commissionPaid &&
               (b.paymentStatus === "paid" || b.paymentMethod === "cash"),
           ))

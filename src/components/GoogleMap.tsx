@@ -1,45 +1,30 @@
 "use client";
-import { MapPin } from "lucide-react";
-import { useState } from "react";
+
+import styles from "./public-ui.module.css";
 import type { Tour } from "@/lib/types";
+
 export function GoogleMap({ tour }: { tour: Tour }) {
-  const [loaded, setLoaded] = useState(false);
   return (
     <section id="punto-incontro" className="card overflow-hidden">
       <div className="grid gap-3 p-6">
         <h2 className="display-md">Il punto d’incontro</h2>
-        <p>
+        <p className="body-md">
           {tour.meetingPoint} · {tour.meetingAddress}
         </p>
       </div>
       <div className="aspect-[4/3] border-y md:aspect-[16/7]">
-        {loaded ? (
-          <iframe
-            title={`Mappa di ${tour.title}`}
-            src={tour.mapEmbedUrl}
-            className="h-full w-full"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            allowFullScreen
-          />
-        ) : (
-          <div className="map-consent grid h-full place-content-center justify-items-center gap-4 p-6 text-center">
-            <MapPin size={30} className="text-primary" aria-hidden />
-            <p className="text-sm">
-              Caricando la mappa condividi dati di navigazione con Google.
-            </p>
-            <button
-              className="button-secondary"
-              onClick={() => setLoaded(true)}
-            >
-              Mostra Google Maps
-            </button>
-          </div>
-        )}
+        <iframe
+          title={`Mappa di ${tour.title}`}
+          src={tour.mapEmbedUrl}
+          className="h-full w-full"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          allowFullScreen
+        />
       </div>
-      <div className="map-directions flex flex-wrap justify-between gap-3 p-5">
+      <div className={`map-directions p-5 ${styles.meetingPanel}`}>
         <a
-          className="underline"
+          className={`button-primary ${styles.mapDirectionsBtn}`}
           href={tour.mapUrl}
           target="_blank"
           rel="noreferrer"

@@ -8,4 +8,10 @@ async function handle(
 ) {
   return platformApi(request, (await params).path);
 }
-export { handle as GET, handle as POST, handle as PUT, handle as PATCH };
+export {
+  handle as GET,
+  handle as POST,
+  handle as PUT,
+  handle as PATCH,
+  handle as DELETE,
+};

@@ -30,7 +30,7 @@ for (const page of pages) {
 assert.equal((await fetch(base + "/api/platform/admin/state")).status, 401);
 assert.equal((await fetch(base + "/account")).status, 404);
 assert.equal((await fetch(base + "/tour-privati")).status, 404);
-assert.equal((await fetch(base + "/aiuto")).status, 404);
+assert.equal((await fetch(base + "/aiuto")).status, 200);
 assert.equal((await fetch(base + "/self-service/test")).status, 404);
 assert.equal((await fetch(base + "/api/platform/customer/test")).status, 410);
 assert.equal(

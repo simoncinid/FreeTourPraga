@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { tourSchema } from "./validation";
+import { contentSectionSchema, tourSchema } from "./validation";
 import { sanitizeRichText } from "../rich-text";
 const short = z.string().trim().min(1).max(250),
   body = z.string().trim().min(1).max(5000);
@@ -45,13 +45,33 @@ export const blogBlockSchema = z.discriminatedUnion("type", [
 ]);
 export const blogArticleSchema = z
   .object({
-    id: z.string().regex(/^[a-zA-Z0-9:_-]+$/).max(220).optional(),
-    canonicalPath: z.string().max(500).regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/).optional(),
+    id: z
+      .string()
+      .regex(/^[a-zA-Z0-9:_-]+$/)
+      .max(220)
+      .optional(),
+    canonicalPath: z
+      .string()
+      .max(500)
+      .regex(/^\/(?!\/)[a-zA-Z0-9/_-]*$/)
+      .optional(),
     seoTitle: optionalText(250).optional(),
     seoDescription: optionalText(500).optional(),
     sourceUrl: z.string().url().optional(),
-    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(200).optional(),
-    slugAliases: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(200)).max(100).optional(),
+    slug: z
+      .string()
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+      .max(200)
+      .optional(),
+    slugAliases: z
+      .array(
+        z
+          .string()
+          .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+          .max(200),
+      )
+      .max(100)
+      .optional(),
     updatedAt: z.string().datetime().optional(),
     title: short,
     caption: body,
@@ -82,6 +102,19 @@ export const blogArticleSchema = z
 export const siteContentSchema = z.object({
   contentVersion: z.literal(2).default(2),
   globals: z.object({
+    navigationVersion: z.literal(2).optional(),
+    officeAddress: z.string().max(500).optional(),
+    castleMeetingAddress: z.string().max(500).optional(),
+    googleReviewUrl: z.union([z.literal(""), https]).optional(),
+    instagramDirectUrl: z
+      .union([
+        z.literal(""),
+        https.refine(
+          (v) => /(^|\.)(instagram\.com|ig\.me)$/.test(new URL(v).hostname),
+          "Usa un link Instagram",
+        ),
+      ])
+      .optional(),
     brandName: short,
     description: body,
     email: z.string().email().max(254),
@@ -98,13 +131,35 @@ export const siteContentSchema = z.object({
     tripAdvisorBody: body,
     socialLinks: z.array(z.object({ label: short, url: https })).max(10),
     navigation: z
-      .array(z.object({ label: short, href: localPath }))
+      .array(
+        z.object({
+          label: short,
+          href: localPath,
+          children: z
+            .array(z.object({ label: short, href: localPath }))
+            .max(100)
+            .optional(),
+        }),
+      )
       .min(1)
       .max(12),
   }),
   home: z.object({
+    specialOffers: z
+      .array(
+        z.object({
+          label: short,
+          priceCents: z.number().int().min(0).max(10000000),
+        }),
+      )
+      .max(30)
+      .optional(),
+    specialOffersNote: z.string().max(5000).optional(),
+    specialOffersCurrency: z.enum(["EUR", "CZK"]).optional(),
+    contentBlocks: z.array(contentSectionSchema).max(60).optional(),
     carouselIntervalSeconds: z.number().int().min(3).max(30).optional(),
     heroImage: tourSchema.shape.imageUrl,
+    heroImageMobile: tourSchema.shape.imageUrl.optional(),
     heroTitle: short,
     heroEyebrow: z.string().trim().min(1).max(1000),
     heroBody: z.string().trim().min(1).max(30000),

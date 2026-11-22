@@ -1,6 +1,10 @@
 "use client";
+import {
+  paymentMethodLabels,
+  type TourPaymentMethod,
+} from "@/lib/tour-payments";
 import ui from "./public-ui.module.css";
-import { ChevronUp, Compass } from "lucide-react";
+import { ChevronUp, Compass, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useBrowserStorage, useHydrated } from "@/lib/browser-storage";
@@ -19,22 +23,36 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
     try {
       const parsed = JSON.parse(storedCart || "[]");
       return Array.isArray(parsed) ? parsed : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }, [storedCart]);
   const ready = useHydrated();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const affiliateCode = useBrowserStorage("ftp-affiliate") || "";
-  const [quoteResult, setQuote] = useState<
-    | { key: string; items: { subtotalCents: number; discountCents: number; totalCents: number; cancellationHours: number; lateRefundPercent: number; bookingNote: string; lastMinuteApplied?: boolean }[] }
-    | null
-  >(null);
+  const [quoteResult, setQuote] = useState<{
+    key: string;
+    items: {
+      currency?: "EUR" | "CZK";
+      paymentMethods: TourPaymentMethod[];
+      paymentInstructions?: string;
+      subtotalCents: number;
+      discountCents: number;
+      totalCents: number;
+      cancellationHours: number;
+      lateRefundPercent: number;
+      bookingNote: string;
+      lastMinuteApplied?: boolean;
+    }[];
+  } | null>(null);
   const [rules, setRules] = useState({
     minimumTours: 2,
     multiTourPercent: 10,
     cancellationHours: 24,
   });
+  const [chosenPayment, setChosenPayment] = useState<TourPaymentMethod>("cash");
   const key = useRef("");
   useEffect(() => {
     fetch("/api/platform/catalog")
@@ -50,6 +68,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
     adults: i.adults,
     children: i.children,
     infants: i.infants || 0,
+    participants: i.participants,
   }));
   const quoteKey = JSON.stringify({ items: payloadItems, affiliateCode });
   const quote = quoteResult?.key === quoteKey ? quoteResult.items : null;
@@ -74,13 +93,20 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       });
     return () => abort.abort();
   }, [quoteKey]);
+  const availablePayments = (["cash", "bank_transfer"] as const).filter((m) =>
+    quote?.every((i) => i.paymentMethods.includes(m)),
+  );
+  const selectedPayment = availablePayments.includes(chosenPayment)
+    ? chosenPayment
+    : availablePayments[0];
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     setError("");
     const f = new FormData(e.currentTarget);
     try {
-      key.current = sessionStorage.getItem("ftp-checkout-key") || crypto.randomUUID();
+      key.current =
+        sessionStorage.getItem("ftp-checkout-key") || crypto.randomUUID();
       sessionStorage.setItem("ftp-checkout-key", key.current);
       const input = {
         items: payloadItems,
@@ -89,7 +115,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
         email: f.get("email"),
         phone: String(f.get("phone")).replace(/[\s()-]/g, ""),
         notes: f.get("notes"),
-        paymentMethod: "cash" as const,
+        paymentMethod: selectedPayment,
         termsAccepted: f.get("terms") === "on",
         whatsappConsent: false,
       };
@@ -131,7 +157,9 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
   if (!ready) return <p role="status">Caricamento…</p>;
   if (!items.length)
     return (
-      <div className={`${ui.emptyState} card mx-auto max-w-xl p-10 text-center`}>
+      <div
+        className={`${ui.emptyState} card mx-auto max-w-xl p-10 text-center`}
+      >
         <Compass size={34} className="mx-auto mb-5 text-primary" aria-hidden />
         <h1 className="display-lg mb-5">Il tuo viaggio comincia qui.</h1>
         <p className="mb-6">Scegli un tour e aggiungilo al carrello.</p>
@@ -140,6 +168,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
         </Link>
       </div>
     );
+  const currency = quote?.[0]?.currency ?? items[0]?.currency ?? "EUR";
   const subtotal =
     quote?.reduce((s, i) => s + i.subtotalCents, 0) ??
     items.reduce((s, i) => s + cartItemTotal(i), 0);
@@ -166,32 +195,54 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid gap-5">
           {items.map((i) => (
-            <article key={i.id} className="card flex gap-5 p-5">
-              <div className="min-w-0 flex-1">
+            <article key={i.id} className={`card p-5 ${ui.reservationItem}`}>
+              <div className={ui.reservationItemHeader}>
                 <h2 className="display-md">{i.tourTitle}</h2>
-                <p className="my-2">
-                  {new Date(i.startsAt).toLocaleString("it-IT", {
-                    timeZone: "Europe/Prague",
-                    dateStyle: "long",
-                    timeStyle: "short",
-                  })} · ora di Praga
-                </p>
-                <p className="text-sm">
-                  {i.adults} adulti · {i.children} bambini · {i.infants || 0}{" "}
-                  infanti
-                </p>
-                <strong>{formatMoney(quote?.[items.indexOf(i)]?.totalCents ?? cartItemTotal(i))}</strong>
-                {quote?.[items.indexOf(i)] && <div className="mt-3 grid gap-2 text-sm"><p>{quote[items.indexOf(i)].bookingNote}</p><p>Cancellazione gratuita fino a {quote[items.indexOf(i)].cancellationHours} ore prima. Dopo il termine: rimborso del {quote[items.indexOf(i)].lateRefundPercent}% dell’importo pagato.</p></div>}
+                <button
+                  aria-label={`Rimuovi ${i.tourTitle}`}
+                  className={`text-sm underline ${ui.reservationRemove}`}
+                  onClick={() => {
+                    removeFromCart(i.id);
+                  }}
+                >
+                  <Trash2 size={14} aria-hidden />
+                  <span className={ui.reservationRemoveLabel}>Rimuovi</span>
+                </button>
               </div>
-              <button
-                aria-label={`Rimuovi ${i.tourTitle}`}
-                className="text-sm underline"
-                onClick={() => {
-                  removeFromCart(i.id);
-                }}
-              >
-                Rimuovi
-              </button>
+              <p className="my-2">
+                {new Date(i.startsAt).toLocaleString("it-IT", {
+                  timeZone: "Europe/Prague",
+                  dateStyle: "long",
+                  timeStyle: "short",
+                })}{" "}
+                · ora di Praga
+              </p>
+              <p className="text-sm">
+                {i.categorySnapshot
+                  ? i.categorySnapshot
+                      .filter((c) => c.quantity)
+                      .map((c) => `${c.quantity} ${c.label}`)
+                      .join(" · ")
+                  : `${i.adults} adulti · ${i.children} bambini · ${i.infants || 0} infanti`}
+              </p>
+              <strong>
+                {formatMoney(
+                  quote?.[items.indexOf(i)]?.totalCents ?? cartItemTotal(i),
+                  i.currency,
+                )}
+              </strong>
+              {quote?.[items.indexOf(i)] && (
+                <div className="mt-3 grid gap-2 text-sm">
+                  <p>{quote[items.indexOf(i)].bookingNote}</p>
+                  <p>
+                    Cancellazione gratuita fino a{" "}
+                    {quote[items.indexOf(i)].cancellationHours} ore prima. Dopo
+                    il termine: rimborso del{" "}
+                    {quote[items.indexOf(i)].lateRefundPercent}% dell’importo
+                    pagato.
+                  </p>
+                </div>
+              )}
             </article>
           ))}
           {mode === "checkout" && (
@@ -241,10 +292,37 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   className="text-input"
                 />
               </label>
-              <p className="text-sm">
-                Pagamento in contanti sul posto. Le regole di cancellazione di
-                ciascun tour sono riportate nel riepilogo.
-              </p>
+              <fieldset className="grid gap-3">
+                <legend>Metodo di pagamento</legend>
+                {availablePayments.map((m) => (
+                  <label key={m}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={m}
+                      checked={selectedPayment === m}
+                      onChange={() => setChosenPayment(m)}
+                    />{" "}
+                    {paymentMethodLabels[m]}
+                  </label>
+                ))}
+                {quote && !availablePayments.length && (
+                  <p role="alert">
+                    I tour selezionati non hanno metodi di pagamento in comune.
+                    Prenotali separatamente.
+                  </p>
+                )}
+                {selectedPayment === "bank_transfer" &&
+                  quote?.map((i, index) => (
+                    <p key={index} className="whitespace-pre-wrap">
+                      {i.paymentInstructions}
+                    </p>
+                  ))}
+                <p>
+                  Le regole di cancellazione di ciascun tour sono riportate nel
+                  riepilogo.
+                </p>
+              </fieldset>
               <label className="flex items-start gap-3 text-sm">
                 <input name="terms" type="checkbox" required />
                 <span>
@@ -259,6 +337,13 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                   .
                 </span>
               </label>
+              <button
+                type="submit"
+                disabled={busy || !quote || !selectedPayment}
+                className={`button-primary ${ui.reservationFormSubmit}`}
+              >
+                {busy ? "Prenotazione in corso…" : "Conferma prenotazione"}
+              </button>
             </form>
           )}
         </div>
@@ -277,16 +362,16 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             <span className={ui.reservationSummaryGrip} aria-hidden />
             <span className={ui.reservationSummaryBar}>
               <span>
-                <small>
-                  {items.length}{" "}
-                  {items.length === 1 ? "esperienza" : "esperienze"}
-                </small>
-                <strong>Totale {formatMoney(subtotal - discount)}</strong>
+                <strong>
+                  Totale {formatMoney(subtotal - discount, currency)}
+                </strong>
               </span>
               <ChevronUp
                 size={18}
                 aria-hidden
-                className={summaryOpen ? undefined : ui.reservationSummaryChevron}
+                className={
+                  summaryOpen ? undefined : ui.reservationSummaryChevron
+                }
               />
             </span>
           </button>
@@ -295,17 +380,26 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             className={ui.reservationSummaryDetails}
           >
             <h2 className="display-md">Il tuo riepilogo</h2>
-            <div className="flex justify-between">
-              <span>
-                {items.length}{" "}
-                {items.length === 1 ? "esperienza" : "esperienze"}
-              </span>
-              <strong>{formatMoney(subtotal)}</strong>
-            </div>
-            <p className="text-sm">
-              Con almeno {rules.minimumTours} tour diversi, sconto automatico del{" "}
-              {rules.multiTourPercent}%.
-            </p>
+            <ul className={ui.reservationSummaryTours}>
+              {items.map((item, index) => (
+                <li key={item.id} className="flex justify-between gap-3">
+                  <span>{item.tourTitle}</span>
+                  <strong>
+                    {formatMoney(
+                      quote?.[index]?.totalCents ?? cartItemTotal(item),
+                      item.currency,
+                    )}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+            {rules.multiTourPercent > 0 &&
+              items.some((i) => i.eligibleForDiscounts !== false) && (
+                <p className="text-sm">
+                  Dove previsto, con almeno {rules.minimumTours} tour diversi,
+                  sconto automatico del {rules.multiTourPercent}%.
+                </p>
+              )}
             <label className="text-sm">
               Codice partner
               <input
@@ -324,12 +418,12 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             {discount > 0 && (
               <p className="flex justify-between text-success">
                 <span>Sconto multi-tour</span>
-                <strong>−{formatMoney(discount)}</strong>
+                <strong>−{formatMoney(discount, currency)}</strong>
               </p>
             )}
             <div className="flex justify-between border-t pt-5 text-xl">
               <strong>Totale</strong>
-              <strong>{formatMoney(subtotal - discount)}</strong>
+              <strong>{formatMoney(subtotal - discount, currency)}</strong>
             </div>
           </div>
           {error && (
@@ -345,7 +439,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             <button
               type="submit"
               form="reservation"
-              disabled={busy || !quote}
+              disabled={busy || !quote || !selectedPayment}
               className="button-primary"
             >
               {busy ? "Prenotazione in corso…" : "Conferma prenotazione"}

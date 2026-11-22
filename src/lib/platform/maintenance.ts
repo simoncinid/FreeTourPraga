@@ -52,6 +52,7 @@ export async function maintainPrivacy() {
         i.name = "Dati rimossi";
         i.email = "removed@invalid.local";
         i.message = "Dati rimossi";
+        i.phone = "";
       }
     if (cleaned) audit(s, "system", "privacy.clean", String(cleaned));
     return { cleaned };

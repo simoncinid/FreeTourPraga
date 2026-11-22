@@ -1,6 +1,6 @@
 export type AgeBand = "adults" | "children" | "infants";
 
-export type PaymentMethod = "cash" | "stripe";
+export type PaymentMethod = "cash" | "bank_transfer" | "stripe";
 
 export type BookingStatus =
   "pending" | "confirmed" | "cancelled" | "modified" | "no_show" | "present";
@@ -10,7 +10,60 @@ export type PaymentStatus =
 
 export type TourPhoto = { url: string; alt: string };
 
+export type PriceCategory = {
+  id: string;
+  label: string;
+  priceCents: number;
+  minAge?: number;
+  maxAge?: number;
+  description?: string;
+};
+export type ParticipantSelection = { categoryId: string; quantity: number };
+export type CommissionRule = {
+  affiliateType: string;
+  affiliateCode?: string;
+  product: "free" | "paid" | "package";
+  mode: "fixed" | "percent";
+  value: number;
+};
+export type ContentSectionBlock =
+  | { type: "text"; heading: string; text: string }
+  | { type: "image"; imageUrl: string; alt: string; caption: string }
+  | {
+      type: "split";
+      heading: string;
+      text: string;
+      imageUrl: string;
+      alt: string;
+      caption: string;
+      imagePosition: "left" | "right";
+    };
+export type CalendarRule = {
+  id: string;
+  from: string;
+  to: string;
+  weekdays: number[];
+  times: string[];
+  action: "open" | "close" | "capacity";
+  capacity?: number;
+};
 export type Tour = {
+  paymentMethods?: ("cash" | "bank_transfer")[];
+  paymentInstructions?: string;
+  /** Explicit eligible companion tours; multiple rows alone never imply a package. */
+  commissionPackageWith?: string[];
+  currency?: "EUR" | "CZK";
+  priceCategories?: PriceCategory[];
+  contentBlocks?: ContentSectionBlock[];
+  commissionRules?: CommissionRule[];
+  calendarRules?: CalendarRule[];
+  freeGroupLimit?: number;
+  freeGroupMode?: "fixed" | "contact" | "none";
+  freeGroupPriceCents?: number;
+  arrivalMinutes?: number;
+  operatingDays?: string;
+  departureTime?: string;
+  onlineDiscounts?: boolean;
   id: string;
   slug: string;
   title: string;

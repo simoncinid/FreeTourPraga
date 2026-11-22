@@ -1,3 +1,7 @@
+import { paymentMethodsFor } from "../tour-payments";
+import { isCommissionPackage } from "./commissions";
+import { selectedPrices } from "../participant-pricing";
+import { commissionFor } from "./commissions";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { checkoutSchema } from "./validation";
@@ -13,12 +17,14 @@ import type { Job, Order, PlatformState, Reservation } from "./model";
 import { siteContent } from "./content";
 import { site } from "../site";
 import { reservationIcs } from "./calendar";
-import {
-  bookingAdminRecipients,
-  resolveAffiliate,
-} from "./affiliates-wp";
+import { bookingAdminRecipients, resolveAffiliate } from "./affiliates-wp";
 import { isClosed, isTourClosed } from "./scheduling";
-import { cancellationNote, FREE_TOUR_NOTE, isFreeTour, tourPrices } from "../tour-rules";
+import {
+  cancellationNote,
+  freeTourNote,
+  isFreeTour,
+  tourPrices,
+} from "../tour-rules";
 import {
   customerTemplateForKind,
   normalizeSettings,
@@ -57,18 +63,27 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   s.settings = settings;
   const { tour, slot } = slotFor(s, b);
   const contact = siteContent(s.siteContent).globals;
-  const order = s.orders.find((o) => o.id === b.orderId)!;
   const when = new Date(slot.startsAt).toLocaleString("it-IT", {
     timeZone: "Europe/Prague",
   });
   const manageUrl = `${site.url}/gestisci-prenotazione/${b.pnr}/${bookingManagementProof(b.id, b.pnr)}`;
   const calendarUrl = `${site.url}/api/calendar/booking/${b.pnr}?manage=${bookingManagementProof(b.id, b.pnr)}`;
   const paymentLine =
-    order.totalCents === 0
-      ? "Nessun pagamento richiesto."
-      : b.paymentMethod === "ota"
-        ? "Pagamento gestito dal provider esterno."
-        : "Pagamento in contanti sul posto.";
+    b.status === "cancelled"
+      ? b.paymentStatus === "refunded"
+        ? "Rimborso effettuato."
+        : b.refundCents
+          ? "Prenotazione cancellata. Il team gestirà il rimborso previsto."
+          : "Prenotazione cancellata: nessun pagamento da effettuare."
+      : b.paymentStatus === "paid"
+        ? "Pagamento ricevuto."
+        : b.totalCents === 0
+          ? "Nessun pagamento richiesto."
+          : b.paymentMethod === "ota"
+            ? "Pagamento gestito dal provider esterno."
+            : b.paymentMethod === "bank_transfer"
+              ? `Pagamento tramite bonifico. Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
+              : "Pagamento in contanti sul posto.";
   const affiliate = resolveAffiliate(s, b.affiliateCode, false);
   const vars: Record<string, string> = {
     kind,
@@ -76,13 +91,18 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     pnr: b.pnr,
     tour: tour.title,
     data: when,
-    persone: `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants)`,
-    totale: (b.totalCents / 100).toFixed(2),
+    persone: b.categorySnapshot
+      ? b.categorySnapshot
+          .filter((c) => c.quantity)
+          .map((c) => `${c.quantity} ${c.label}`)
+          .join("; ")
+      : `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants)`,
+    totale: `${(b.totalCents / 100).toFixed(2)} ${b.currency ?? "EUR"}`,
     incontro: tour.meetingPoint,
     indirizzo: tour.meetingAddress,
     mappa: tour.mapUrl,
     pagamento: paymentLine,
-    nota: b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
+    nota: b.bookingNote ?? (isFreeTour(tour) ? freeTourNote(tour) : ""),
     cancellazione: cancellationNote(b.policy ?? tour, settings),
     manageUrl,
     calendarUrl,
@@ -109,8 +129,14 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     ]),
   );
   const template = customerTemplateForKind(settings.emailTemplates, kind);
-  const text = renderEmailTemplate(template.text, vars);
-  const html = renderEmailTemplate(template.html, htmlVars);
+  const text = renderEmailTemplate(
+    template.text.replaceAll("EUR {totale}", "{totale}"),
+    vars,
+  );
+  const html = renderEmailTemplate(
+    template.html.replaceAll("EUR {totale}", "{totale}"),
+    htmlVars,
+  );
   b.calendarSequence = (b.calendarSequence ?? -1) + 1;
   enqueue(s, {
     key: `email:${b.pnr}:${kind}:${randomUUID()}`,
@@ -136,7 +162,13 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
       bookingPnr: b.pnr,
       to: adminTo,
       subject: renderEmailTemplate(settings.emailTemplates.admin.subject, vars),
-      text: renderEmailTemplate(settings.emailTemplates.admin.text, vars),
+      text: renderEmailTemplate(
+        settings.emailTemplates.admin.text.replaceAll(
+          "EUR {totale}",
+          "{totale}",
+        ),
+        vars,
+      ),
       runAt: new Date().toISOString(),
     });
   }
@@ -182,14 +214,19 @@ export function quote(
   input: Pick<CheckoutInput, "items" | "affiliateCode">,
 ) {
   const settings = normalizeSettings(s.settings);
+  if (
+    new Set(
+      input.items.map(
+        (i) => s.tours.find((t) => t.slug === i.tourSlug)?.currency ?? "EUR",
+      ),
+    ).size > 1
+  )
+    throw new HttpError(400, "Prenota separatamente i tour con valute diverse");
   const discount =
     new Set(input.items.map((x) => x.tourSlug)).size >= settings.minimumTours
       ? settings.multiTourPercent
       : 0;
-  if (
-    input.affiliateCode &&
-    !resolveAffiliate(s, input.affiliateCode)
-  )
+  if (input.affiliateCode && !resolveAffiliate(s, input.affiliateCode))
     throw new HttpError(400, "Codice affiliato non valido");
   return input.items.map((item) => {
     const { tour, slot } = slotFor(s, item);
@@ -203,20 +240,47 @@ export function quote(
       startsAt < Date.now() + tour.bookingCutoffHours * 3600000
     )
       throw new HttpError(409, "Partenza chiusa alle prenotazioni");
-    if (tour.childMinAge === 0 && item.infants > 0)
+    if (!item.participants && tour.childMinAge === 0 && item.infants > 0)
       throw new HttpError(
         400,
         "Per questo tour i più piccoli rientrano nella fascia bambini",
       );
-    const guests = item.adults + item.children + item.infants;
-    if (guests > Math.min(tour.maxGuests, 25)) throw new HttpError(400, `Massimo ${Math.min(tour.maxGuests, 25)} partecipanti per ${tour.title}`);
-    if (guests > Math.min(slot.capacity, 25) - slot.reserved)
+    let categoryPrices;
+    try {
+      categoryPrices = item.participants
+        ? selectedPrices(tour, item.participants)
+        : undefined;
+    } catch (error) {
+      throw new HttpError(
+        400,
+        error instanceof Error ? error.message : "Categorie non valide",
+      );
+    }
+    if (tour.priceCategories?.length && !item.participants)
+      throw new HttpError(400, "Seleziona le categorie del tour");
+    const guests =
+      categoryPrices?.totalGuests ?? item.adults + item.children + item.infants;
+    if (
+      isFreeTour(tour) &&
+      tour.freeGroupMode === "contact" &&
+      guests > (tour.freeGroupLimit ?? 6)
+    )
+      throw new HttpError(400, freeTourNote(tour));
+    if (guests < 1)
+      throw new HttpError(400, "Seleziona almeno un partecipante");
+    if (guests > tour.maxGuests)
+      throw new HttpError(
+        400,
+        `Massimo ${tour.maxGuests} partecipanti per ${tour.title}`,
+      );
+    if (guests > slot.capacity - slot.reserved)
       throw new HttpError(409, `Posti insufficienti per ${tour.title}`);
     const units = tourPrices(tour, guests);
     let unitAdult = units.adult;
     let unitChild = units.child;
     let unitInfant = units.infant;
     const lastMinuteApplied =
+      tour.onlineDiscounts !== false &&
       settings.lastMinuteEnabled &&
       settings.lastMinuteDiscountPercent > 0 &&
       !units.fixedGroup &&
@@ -227,18 +291,37 @@ export function quote(
       unitChild = Math.round(unitChild * factor);
       unitInfant = Math.round(unitInfant * factor);
     }
-    const subtotalCents =
-      item.adults * unitAdult +
-      item.children * unitChild +
-      item.infants * unitInfant;
-    const multiTourDiscount = units.fixedGroup
-      ? 0
-      : Math.round((subtotalCents * discount) / 100);
+    if (categoryPrices && lastMinuteApplied)
+      for (const c of categoryPrices.snapshot)
+        c.unitPriceCents = Math.round(
+          c.unitPriceCents * (1 - settings.lastMinuteDiscountPercent / 100),
+        );
+    const subtotalCents = categoryPrices
+      ? categoryPrices.snapshot.reduce(
+          (n, c) => n + c.quantity * c.unitPriceCents,
+          0,
+        )
+      : item.adults * unitAdult +
+        item.children * unitChild +
+        item.infants * unitInfant;
+    const multiTourDiscount =
+      units.fixedGroup || tour.onlineDiscounts === false
+        ? 0
+        : Math.round((subtotalCents * discount) / 100);
     return {
       ...item,
+      adults: categoryPrices ? guests : item.adults,
+      children: categoryPrices ? 0 : item.children,
+      infants: categoryPrices ? 0 : item.infants,
+      currency: tour.currency ?? "EUR",
+      categorySnapshot: categoryPrices?.snapshot,
       subtotalCents,
       discountCents: multiTourDiscount,
       totalCents: subtotalCents - multiTourDiscount,
+      paymentMethods: paymentMethodsFor(tour),
+      paymentInstructions: paymentMethodsFor(tour).includes("bank_transfer")
+        ? tour.paymentInstructions
+        : undefined,
       totalGuests: guests,
       unitAdultCents: unitAdult,
       unitChildCents: unitChild,
@@ -247,7 +330,7 @@ export function quote(
       cancellationHours: tour.cancellationHours ?? settings.cancellationHours,
       lateRefundPercent: tour.lateRefundPercent ?? settings.lateRefundPercent,
       bookingNote: isFreeTour(tour)
-        ? FREE_TOUR_NOTE
+        ? freeTourNote(tour)
         : lastMinuteApplied
           ? `Tariffa last-minute attiva (−${settings.lastMinuteDiscountPercent}% entro ${settings.lastMinuteHours} ore dalla partenza).`
           : "",
@@ -259,8 +342,6 @@ export async function createOrder(
   key: string,
   source = "site",
 ) {
-  if (input.paymentMethod !== "cash")
-    throw new HttpError(400, "In Fase 1 è disponibile solo il pagamento in contanti sul posto.");
   return transaction((s) => {
     releaseExpired(s);
     const fingerprint = hash(JSON.stringify(input));
@@ -276,10 +357,24 @@ export async function createOrder(
         "Unisci i partecipanti della stessa partenza in una sola voce",
       );
     const prices = quote(s, input);
+    if (new Set(prices.map((p) => p.currency)).size > 1)
+      throw new HttpError(
+        400,
+        "Prenota separatamente i tour con valute diverse",
+      );
+    for (const item of prices) {
+      const { tour } = slotFor(s, item);
+      if (!paymentMethodsFor(tour).includes(input.paymentMethod))
+        throw new HttpError(
+          400,
+          `Metodo di pagamento non disponibile per ${tour.title}. Prenota separatamente tour senza metodi in comune.`,
+        );
+    }
     const token = secretToken();
     const now = new Date().toISOString();
     const order: Order = {
       id: randomUUID(),
+      currency: prices[0].currency,
       key,
       fingerprint,
       pnrs: [],
@@ -291,7 +386,7 @@ export async function createOrder(
     s.orders.push(order);
     const affiliate = resolveAffiliate(s, input.affiliateCode);
     for (const item of prices) {
-      const { slot } = slotFor(s, item);
+      const { slot, tour } = slotFor(s, item);
       slot.reserved += item.totalGuests;
       const b: Reservation = {
         ...item,
@@ -302,13 +397,24 @@ export async function createOrder(
         email: input.email,
         phone: input.phone,
         notes: input.notes,
-        paymentMethod: "cash",
-        paymentStatus: "not_required",
+        paymentMethod: input.paymentMethod,
+        paymentInstructions:
+          input.paymentMethod === "bank_transfer"
+            ? tour.paymentInstructions
+            : undefined,
+        paymentStatus:
+          input.paymentMethod === "bank_transfer" && item.totalCents > 0
+            ? "pending"
+            : "not_required",
         status: "confirmed",
         source,
         affiliateCode: affiliate?.code || "",
-        commissionCents: Math.round(
-          (item.totalCents * (affiliate?.commissionPercent || 0)) / 100,
+        ...commissionFor(
+          tour,
+          affiliate,
+          item.totalCents,
+          item.totalGuests,
+          isCommissionPackage(tour, input.items),
         ),
         commissionPaid: false,
         tokenHash: hash(token),
@@ -349,7 +455,7 @@ export async function cancelReservation(
     if (!b) throw new HttpError(404, "Prenotazione non trovata");
     if (proof !== undefined) requireBookingManagement(s, pnr, proof);
     if (b.status === "cancelled") return b;
-    if (["present", "no_show"].includes(b.status))
+    if (proof !== undefined && ["present", "no_show"].includes(b.status))
       throw new HttpError(
         409,
         "La prenotazione è già stata registrata in presenza: contatta lo staff.",
@@ -357,23 +463,21 @@ export async function cancelReservation(
     const { slot } = slotFor(s, b);
     if (proof !== undefined && new Date(slot.startsAt).getTime() <= Date.now())
       throw new HttpError(409, "Il tour è già iniziato: contatta lo staff.");
-    if (
-      proof !== undefined &&
-      !["confirmed", "pending"].includes(b.status)
-    )
+    if (proof !== undefined && !["confirmed", "pending"].includes(b.status))
       throw new HttpError(409, "Questa prenotazione non è più cancellabile.");
     const settings = normalizeSettings(s.settings);
     const free =
       new Date(slot.startsAt).getTime() - Date.now() >=
       (b.policy?.cancellationHours ?? settings.cancellationHours) * 3600000;
+    b.commissionCents = 0;
     b.refundCents =
       b.paymentStatus === "paid"
         ? Math.round(
             b.totalCents *
               (free
                 ? 1
-                : (b.policy?.lateRefundPercent ??
-                    settings.lateRefundPercent) / 100),
+                : (b.policy?.lateRefundPercent ?? settings.lateRefundPercent) /
+                  100),
           )
         : 0;
     slot.reserved = Math.max(0, slot.reserved - b.totalGuests);
@@ -397,10 +501,9 @@ export async function cancelReservation(
       enqueue(s, {
         key: `manual-refund:${b.pnr}`,
         type: "email",
-        to:
-          process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
+        to: process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
         subject: `Rimborso da gestire: ${b.pnr}`,
-        text: `Gestire manualmente il rimborso di EUR ${(b.refundCents / 100).toFixed(2)} per ${b.pnr} (${b.paymentMethod}).`,
+        text: `Gestire manualmente il rimborso di ${b.currency ?? "EUR"} ${(b.refundCents / 100).toFixed(2)} per ${b.pnr} (${b.paymentMethod}).`,
         runAt: new Date().toISOString(),
       });
     }
@@ -417,8 +520,7 @@ export async function moveReservation(
 ) {
   return transaction((s) => {
     if (!actor) throw new HttpError(401, "Operatore autorizzato richiesto");
-    if (!slotId?.trim())
-      throw new HttpError(400, "Seleziona una partenza");
+    if (!slotId?.trim()) throw new HttpError(400, "Seleziona una partenza");
     const b = s.bookings.find((x) => x.pnr === pnr);
     if (!b) throw new HttpError(404, "Prenotazione non trovata");
     if (proof !== undefined) requireBookingManagement(s, pnr, proof);
@@ -426,13 +528,9 @@ export async function moveReservation(
       throw new HttpError(409, "La prenotazione non è modificabile");
     const { tour, slot: old } = slotFor(s, b);
     const settings = normalizeSettings(s.settings);
-    const hours =
-      b.policy?.cancellationHours ?? settings.cancellationHours;
+    const hours = b.policy?.cancellationHours ?? settings.cancellationHours;
     if (new Date(old.startsAt).getTime() <= Date.now())
-      throw new HttpError(
-        409,
-        "Il tour è già iniziato: contatta lo staff.",
-      );
+      throw new HttpError(409, "Il tour è già iniziato: contatta lo staff.");
     if (
       proof !== undefined &&
       (!tour.published ||
@@ -456,7 +554,7 @@ export async function moveReservation(
     )
       throw new HttpError(409, "Partenza non disponibile");
     if (next.id === old.id) return b;
-    if (Math.min(next.capacity, 25) - next.reserved < b.totalGuests)
+    if (next.capacity - next.reserved < b.totalGuests)
       throw new HttpError(409, "Posti insufficienti");
     old.reserved = Math.max(0, old.reserved - b.totalGuests);
     next.reserved += b.totalGuests;
@@ -492,16 +590,20 @@ export async function orderConfirmation(proof: string) {
         status: b.status,
         paymentStatus: b.paymentStatus,
         paymentMethod: b.paymentMethod,
+        paymentInstructions: b.paymentInstructions,
         adults: b.adults,
         children: b.children,
         infants: b.infants,
         totalCents: b.totalCents,
+        currency: b.currency ?? "EUR",
+        categorySnapshot: b.categorySnapshot,
         tourTitle: tour.title,
         startsAt: slot.startsAt,
         meetingPoint: tour.meetingPoint,
         meetingAddress: tour.meetingAddress,
         mapUrl: tour.mapUrl,
-        bookingNote: b.bookingNote ?? (isFreeTour(tour) ? FREE_TOUR_NOTE : ""),
+        bookingNote:
+          b.bookingNote ?? (isFreeTour(tour) ? freeTourNote(tour) : ""),
         cancellationNote: cancellationNote(
           b.policy ?? tour,
           normalizeSettings(s.settings),
@@ -548,9 +650,12 @@ export async function managedBooking(pnr: string, proof: string) {
     infants: b.infants,
     totalGuests: b.totalGuests,
     totalCents: b.totalCents,
+    currency: b.currency ?? "EUR",
+    categorySnapshot: b.categorySnapshot,
     status: b.status,
     paymentStatus: b.paymentStatus,
     paymentMethod: b.paymentMethod,
+    paymentInstructions: b.paymentInstructions,
     meetingPoint: tour.meetingPoint,
     meetingAddress: tour.meetingAddress,
     mapUrl: tour.mapUrl,
@@ -560,8 +665,7 @@ export async function managedBooking(pnr: string, proof: string) {
       beforeStart &&
       tour.published &&
       !tour.operationalReviewRequired,
-    canCancel:
-      ["confirmed", "pending"].includes(b.status) && beforeStart,
+    canCancel: ["confirmed", "pending"].includes(b.status) && beforeStart,
     cancellationHours: hours,
     refundPreviewCents:
       b.paymentStatus === "paid"
@@ -583,12 +687,12 @@ export async function managedBooking(pnr: string, proof: string) {
             tour.published &&
             new Date(x.startsAt).getTime() >
               Date.now() + tour.bookingCutoffHours * 3600000 &&
-            Math.min(x.capacity, 25) - x.reserved >= b.totalGuests),
+            x.capacity - x.reserved >= b.totalGuests),
       )
       .map((x) => ({
         id: x.id,
         startsAt: x.startsAt,
-        available: Math.max(0, Math.min(x.capacity, 25) - x.reserved),
+        available: Math.max(0, x.capacity - x.reserved),
       }))
       .sort((a, c) => a.startsAt.localeCompare(c.startsAt)),
   };

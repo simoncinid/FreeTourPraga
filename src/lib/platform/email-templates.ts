@@ -37,7 +37,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "Ciao {nome},",
         "{tour}",
         "{data}",
-        "{persone} · EUR {totale}",
+        "{persone} · {totale}",
         "Punto d'incontro: {incontro}, {indirizzo}",
         "{mappa}",
         "{pagamento}",
@@ -56,7 +56,7 @@ export function defaultEmailTemplates(): EmailTemplates {
 <li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
 <li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
 <li style="margin-bottom:10px"><b>Persone:</b> {persone}</li>
-<li style="margin-bottom:10px"><b>Totale:</b> EUR {totale}</li>
+<li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
 <li style="margin-bottom:10px"><b>Lingua:</b> italiano</li>
 </ul>
 <h3 style="background-color:#167895;color:#ffffff;padding:5px">Punto di partenza</h3>
@@ -79,7 +79,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "La tua prenotazione è stata aggiornata.",
         "{tour}",
         "{data}",
-        "{persone} · EUR {totale}",
+        "{persone} · {totale}",
         "Punto d'incontro: {incontro}, {indirizzo}",
         "{mappa}",
         "{cancellazione}",
@@ -96,7 +96,7 @@ export function defaultEmailTemplates(): EmailTemplates {
 <li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
 <li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
 <li style="margin-bottom:10px"><b>Persone:</b> {persone}</li>
-<li style="margin-bottom:10px"><b>Totale:</b> EUR {totale}</li>
+<li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
 </ul>
 <p>{incontro} · {indirizzo}<br/><a href="{mappa}">Mappa »</a></p>
 <p>{cancellazione}</p>
@@ -110,7 +110,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "Prenotazione {pnr}: {kind}",
         "Ciao {nome},",
         "La prenotazione per {tour} del {data} è stata cancellata.",
-        "{persone} · EUR {totale}",
+        "{persone} · {totale}",
         "{pagamento}",
         "{cancellazione}",
         "Assistenza: {assistenza} · riferimento {pnr}.",
@@ -123,7 +123,7 @@ export function defaultEmailTemplates(): EmailTemplates {
 <li style="margin-bottom:10px"><b>Nome:</b> {nome}</li>
 <li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
 <li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
-<li style="margin-bottom:10px"><b>Totale:</b> EUR {totale}</li>
+<li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
 </ul>
 <p>{pagamento}</p>
 <p>{cancellazione}</p>
@@ -146,7 +146,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "Idioma del Tour: italiano",
         "Afiliado: {affiliate}",
         "Mensaje: {note}",
-        "Totale: EUR {totale}",
+        "Totale: {totale}",
         "Gestione: {manageUrl}",
         "--",
         "Email inviata dal sistema prenotazioni Free Tour Praga",
@@ -164,13 +164,25 @@ export function renderEmailTemplate(
   );
 }
 
-function asTemplate(value: unknown, fallback: EmailKindTemplate): EmailKindTemplate {
+function asTemplate(
+  value: unknown,
+  fallback: EmailKindTemplate,
+): EmailKindTemplate {
   if (!value || typeof value !== "object") return { ...fallback };
   const row = value as Partial<EmailKindTemplate>;
   return {
-    subject: typeof row.subject === "string" && row.subject.trim() ? row.subject : fallback.subject,
-    text: typeof row.text === "string" && row.text.trim() ? row.text : fallback.text,
-    html: typeof row.html === "string" && row.html.trim() ? row.html : fallback.html,
+    subject:
+      typeof row.subject === "string" && row.subject.trim()
+        ? row.subject
+        : fallback.subject,
+    text:
+      typeof row.text === "string" && row.text.trim()
+        ? row.text
+        : fallback.text,
+    html:
+      typeof row.html === "string" && row.html.trim()
+        ? row.html
+        : fallback.html,
   };
 }
 
@@ -199,7 +211,9 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
   };
 }
 
-export function normalizeSettings(settings: Partial<Settings> & Record<string, unknown>): Settings {
+export function normalizeSettings(
+  settings: Partial<Settings> & Record<string, unknown>,
+): Settings {
   const templates = normalizeEmailTemplates(settings.emailTemplates);
   return {
     multiTourPercent: Number(settings.multiTourPercent ?? 10),
@@ -213,7 +227,10 @@ export function normalizeSettings(settings: Partial<Settings> & Record<string, u
         : "FreeTourPraga · Assistenza tutti i giorni 9:00–19:00",
     emailTemplates: templates,
     lastMinuteEnabled: Boolean(settings.lastMinuteEnabled),
-    lastMinuteHours: Math.min(168, Math.max(1, Number(settings.lastMinuteHours ?? 12))),
+    lastMinuteHours: Math.min(
+      168,
+      Math.max(1, Number(settings.lastMinuteHours ?? 12)),
+    ),
     lastMinuteDiscountPercent: Math.min(
       100,
       Math.max(0, Number(settings.lastMinuteDiscountPercent ?? 0)),

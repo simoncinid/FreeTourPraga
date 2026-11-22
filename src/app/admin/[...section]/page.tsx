@@ -1,3 +1,5 @@
+import { pageEditorKey } from "@/lib/content-routing";
+import { readState } from "@/lib/platform/store";
 import { contentSections, pageLabels } from "@/lib/content-sections";
 import { notFound, redirect } from "next/navigation";
 
@@ -16,6 +18,7 @@ const allowed = [
   "sconti",
   "last-minute",
   "affiliati",
+  "partner-europa",
   "email",
   "canali",
   "richieste",
@@ -32,16 +35,16 @@ export default async function Page({
 }) {
   const { section } = await params;
   if (section[0] === "sito") redirect("/admin/contenuti");
-  if (section[0] === "contenuti" && section[1] === "informazioni-utili")
-    redirect("/admin/contenuti/faq");
-  if (section[0] === "contenuti" && section[1] === "tour-privati")
-    redirect("/admin/contenuti/pagine");
   if (!allowed.includes(section[0]) || section.length > 2) notFound();
   if (
     section[0] === "contenuti" &&
     section[1] &&
     !Object.hasOwn(contentSections, section[1]) &&
-    !Object.hasOwn(pageLabels, section[1])
+    !Object.hasOwn(pageLabels, section[1]) &&
+    !Object.hasOwn(
+      (await readState({ generateSlots: false })).pages,
+      pageEditorKey(section[1]),
+    )
   )
     notFound();
   return null;

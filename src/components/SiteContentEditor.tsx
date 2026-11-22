@@ -1,5 +1,10 @@
 "use client";
-import { useState } from "react";
+import { ExperienceGroupsEditor } from "./ExperienceGroupsEditor";
+import { NavigationEditor } from "./NavigationEditor";
+import { SectionBlocksEditor } from "./SectionBlocksEditor";
+import { siteNavigation } from "@/lib/navigation";
+import Link from "next/link";
+import { useState, type ReactNode } from "react";
 import { BlogArticleEditor } from "./BlogArticleEditor";
 import { ImageSourceField } from "./ImageSourceField";
 import {
@@ -41,6 +46,10 @@ function Field({
   );
 }
 const labels: Record<string, string> = {
+  officeAddress: "Sede ufficio (previo appuntamento)",
+  castleMeetingAddress: "Ritrovo Castello con interni",
+  googleReviewUrl: "Link per lasciare una recensione Google",
+  instagramDirectUrl: "Link Instagram Direct",
   brandName: "Nome del marchio",
   description: "Descrizione generale",
   email: "Email di assistenza",
@@ -54,6 +63,7 @@ const labels: Record<string, string> = {
   tripAdvisorTitle: "Titolo sezione TripAdvisor",
   tripAdvisorBody: "Testo TripAdvisor",
   heroImage: "Immagine principale",
+  heroImageMobile: "Immagine hero mobile",
   heroTitle: "Titolo principale",
   heroEyebrow: "Sopratitolo principale",
   heroBody: "Introduzione",
@@ -171,20 +181,30 @@ export function SiteContentEditor({
   }
   function fields(group: "home" | "globals", keys: readonly string[]) {
     return keys.map((key) => {
-      if (key === "heroImage" && group === "home") {
+      if (
+        (key === "heroImage" || key === "heroImageMobile") &&
+        group === "home"
+      ) {
         return (
           <ImageSourceField
             key={key}
-            label={labels.heroImage}
-            value={c.home.heroImage}
+            label={labels[key]}
+            value={
+              key === "heroImage"
+                ? c.home.heroImage
+                : c.home.heroImageMobile || ""
+            }
             disabled={busy || articleUploading}
-            required
+            required={key === "heroImage"}
             onNotice={setNotice}
             onUploading={setArticleUploading}
-            onChange={(heroImage) =>
+            onChange={(value) =>
               setC((previous) => ({
                 ...previous,
-                home: { ...previous.home, heroImage },
+                home: {
+                  ...previous.home,
+                  [key]: value,
+                },
               }))
             }
           />
@@ -208,6 +228,22 @@ export function SiteContentEditor({
       );
     });
   }
+  function homePanel(
+    title: string,
+    keys: readonly string[],
+    extra?: ReactNode,
+    open = false,
+  ) {
+    return (
+      <details open={open}>
+        <summary className="title-md">{title}</summary>
+        <div className="grid gap-4 pt-4">
+          {fields("home", keys)}
+          {extra}
+        </div>
+      </details>
+    );
+  }
   const groups = contentFields[section];
   return (
     <form
@@ -225,20 +261,208 @@ export function SiteContentEditor({
         <p className="text-sm">{contentSections[section].description}</p>
         {notice && <p role="status">{notice}</p>}
         {"globals" in groups && fields("globals", groups.globals)}
-        {"home" in groups && fields("home", groups.home)}
+        {"home" in groups &&
+          section !== "homepage" &&
+          fields("home", groups.home)}
         {section === "homepage" && (
           <>
-            <label>Intervallo cambio categorie (secondi)<input className="text-input" type="number" min={3} max={30} value={c.home.carouselIntervalSeconds ?? 5} onChange={(e) => setC((previous) => ({ ...previous, home: { ...previous.home, carouselIntervalSeconds: Number(e.target.value) } }))} /></label>
-            <h3 className="border-t pt-5 text-lg font-bold">
-              Dati in evidenza della homepage
-            </h3>
-            {rows("stats", ["value", "label"], ["Titolo", "Testo"])}
-            <h3 className="border-t pt-5 text-lg font-bold">Punti di forza</h3>
-            <p className="text-sm text-muted">
-              Usati nella homepage e, finché non viene personalizzata, nella
-              pagina Chi siamo.
-            </p>
-            {rows("pillars", ["title", "text"], ["Titolo", "Testo"])}
+            {homePanel(
+              "Apertura e pulsanti",
+              contentFields.homepage.home.filter((k) =>
+                /^(hero|primary|secondary)/.test(k),
+              ),
+              undefined,
+              true,
+            )}
+            {homePanel(
+              "Dati in evidenza della homepage",
+              [],
+              rows("stats", ["value", "label"], ["Titolo", "Testo"]),
+            )}
+            {homePanel(
+              "Le nostre esperienze",
+              contentFields.homepage.home.filter((k) => k.startsWith("tours")),
+              <>
+                <ExperienceGroupsEditor
+                  groups={c.home.groups}
+                  onChange={(groups) =>
+                    setC((p) => ({ ...p, home: { ...p.home, groups } }))
+                  }
+                />
+                <label>
+                  Intervallo cambio categorie (secondi)
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={3}
+                    max={30}
+                    value={c.home.carouselIntervalSeconds ?? 5}
+                    onChange={(e) =>
+                      setC((previous) => ({
+                        ...previous,
+                        home: {
+                          ...previous.home,
+                          carouselIntervalSeconds: Number(e.target.value),
+                        },
+                      }))
+                    }
+                  />
+                </label>
+              </>,
+            )}
+            {homePanel(
+              "Perché sceglierci",
+              contentFields.homepage.home.filter((k) => k.startsWith("trust")),
+              rows("pillars", ["title", "text"], ["Titolo", "Testo"]),
+            )}
+            <Link className="button-secondary" href="/admin/contenuti/blog">
+              Guide e consigli: modifica introduzione e articoli
+            </Link>
+            <Link className="button-secondary" href="/admin/contenuti/faq">
+              Prima di prenotare: modifica domande e risposte
+            </Link>
+            <Link className="button-secondary" href="/admin/contenuti/identita">
+              Punti d’incontro e recapiti condivisi
+            </Link>
+            <Link
+              className="button-secondary"
+              href="/admin/contenuti/recensioni"
+            >
+              Recensioni e collegamenti ufficiali
+            </Link>
+            {homePanel(
+              "Scuole, gruppi e agenzie",
+              contentFields.homepage.home.filter((k) =>
+                k.startsWith("partner"),
+              ),
+            )}
+            <details>
+              <summary className="title-md">
+                Offerte tramite servizio clienti
+              </summary>
+              <div className="grid gap-4 pt-4">
+                <Field
+                  label="Condizioni offerte"
+                  value={c.home.specialOffersNote ?? ""}
+                  multi
+                  onChange={(specialOffersNote) =>
+                    setC((p) => ({
+                      ...p,
+                      home: { ...p.home, specialOffersNote },
+                    }))
+                  }
+                />
+                <label>
+                  Valuta offerte
+                  <select
+                    className="text-input"
+                    value={c.home.specialOffersCurrency ?? "EUR"}
+                    onChange={(e) =>
+                      setC((p) => ({
+                        ...p,
+                        home: {
+                          ...p.home,
+                          specialOffersCurrency: e.target.value as
+                            "EUR" | "CZK",
+                        },
+                      }))
+                    }
+                  >
+                    <option value="EUR">EUR</option>
+                    <option value="CZK">CZK</option>
+                  </select>
+                </label>
+                {(c.home.specialOffers ?? []).map((o, i) => (
+                  <div className="grid gap-2 rounded border p-3" key={i}>
+                    <Field
+                      label="Tour del pacchetto"
+                      value={o.label}
+                      onChange={(label) =>
+                        setC((p) => ({
+                          ...p,
+                          home: {
+                            ...p.home,
+                            specialOffers: p.home.specialOffers?.map((x, j) =>
+                              i === j ? { ...x, label } : x,
+                            ),
+                          },
+                        }))
+                      }
+                    />
+                    <label>
+                      Prezzo
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        className="text-input"
+                        value={o.priceCents / 100}
+                        onChange={(e) =>
+                          setC((p) => ({
+                            ...p,
+                            home: {
+                              ...p.home,
+                              specialOffers: p.home.specialOffers?.map(
+                                (x, j) =>
+                                  i === j
+                                    ? {
+                                        ...x,
+                                        priceCents: Math.round(
+                                          Number(e.target.value) * 100,
+                                        ),
+                                      }
+                                    : x,
+                              ),
+                            },
+                          }))
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setC((p) => ({
+                          ...p,
+                          home: {
+                            ...p.home,
+                            specialOffers: p.home.specialOffers?.filter(
+                              (_, j) => j !== i,
+                            ),
+                          },
+                        }))
+                      }
+                    >
+                      Rimuovi offerta
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="button-secondary"
+                  onClick={() =>
+                    setC((p) => ({
+                      ...p,
+                      home: {
+                        ...p.home,
+                        specialOffers: [
+                          ...(p.home.specialOffers ?? []),
+                          { label: "Nuova offerta", priceCents: 0 },
+                        ],
+                      },
+                    }))
+                  }
+                >
+                  Aggiungi offerta
+                </button>
+              </div>
+            </details>
+            <SectionBlocksEditor
+              blocks={c.home.contentBlocks}
+              onChange={(contentBlocks) =>
+                setC((p) => ({ ...p, home: { ...p.home, contentBlocks } }))
+              }
+              onUploading={setArticleUploading}
+            />
           </>
         )}
         {section === "blog" && (
@@ -266,11 +490,15 @@ export function SiteContentEditor({
         {section === "navigazione" && (
           <>
             <h3 className="text-lg font-bold">Menu del sito</h3>
-            {rows(
-              "navigation",
-              ["label", "href"],
-              ["Voce menu", "Percorso sul sito"],
-            )}
+            <NavigationEditor
+              items={siteNavigation(c)}
+              onChange={(navigation) =>
+                setC((p) => ({
+                  ...p,
+                  globals: { ...p.globals, navigation, navigationVersion: 2 },
+                }))
+              }
+            />
             <h3 className="border-t pt-5 text-lg font-bold">Profili social</h3>
             {rows(
               "socialLinks",

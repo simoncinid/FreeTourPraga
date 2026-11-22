@@ -31,7 +31,7 @@ export function TourOperationsEditor({
     to: `${Number(today.slice(0, 4)) + 1}${today.slice(4)}`,
     weekdays: [1, 2, 3, 4, 5, 6, 0],
     times: ["10:00"],
-    capacity: Math.min(t.maxGuests, 25),
+    capacity: t.maxGuests,
   };
   const setSchedule = (value: Partial<typeof schedule>) =>
     change("schedule", { ...schedule, ...value });
@@ -56,14 +56,12 @@ export function TourOperationsEditor({
             }}
           >
             <option value="paid">A pagamento</option>
-            <option value="free">
-              Free tour · offerta libera fino a 6 persone
-            </option>
+            <option value="free">Free tour · offerta libera</option>
           </select>
         </label>
         <p className="text-sm">
-          Free tour: oltre 6 partecipanti si applicano 12 € a persona. La
-          capienza massima è 25 persone.
+          Le regole per i gruppi e la capienza sono configurabili nelle tariffe
+          del tour.
         </p>
         <div className="form-grid">
           <label>
@@ -104,7 +102,7 @@ export function TourOperationsEditor({
           Programma le partenze ricorrenti
         </label>
         <p className="text-sm">
-          Scegli giorni e orari di Praga. Le partenze dei prossimi 90 giorni
+          Scegli giorni e orari di Praga. Le partenze del periodo, fino a un anno,
           vengono aggiornate automaticamente. Le chiusure del calendario
           generale valgono per tutti i tour; le prenotazioni esistenti restano
           conservate.
@@ -140,7 +138,7 @@ export function TourOperationsEditor({
                   type="number"
                   required
                   min={1}
-                  max={25}
+                  max={10000}
                   value={schedule.capacity}
                   onChange={(e) =>
                     setSchedule({ capacity: Number(e.target.value) })
@@ -229,8 +227,8 @@ export function TourOperationsEditor({
         <h2 className="display-md">Chiusure di questo tour</h2>
         <p className="text-sm">
           Chiudi una data intera o solo alcuni orari, ad esempio il pomeriggio
-          di Natale. Per cambiare una chiusura, eliminala e aggiungila di
-          nuovo. Salva il tour per applicare le modifiche specifiche.
+          di Natale. Per cambiare una chiusura, eliminala e aggiungila di nuovo.
+          Salva il tour per applicare le modifiche specifiche.
         </p>
         {closedDates.length > 0 && (
           <div className="grid gap-3">
@@ -254,7 +252,9 @@ export function TourOperationsEditor({
             className="flex flex-wrap items-center justify-between gap-3 border-b pb-3"
           >
             <div className="grid gap-1">
-              <span className="font-medium">{formatClosureDay(closure.date)}</span>
+              <span className="font-medium">
+                {formatClosureDay(closure.date)}
+              </span>
               <span className="text-sm text-muted">
                 {closure.times.length
                   ? closure.times.join(", ")

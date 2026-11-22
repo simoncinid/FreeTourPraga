@@ -123,13 +123,14 @@ test("six free-tour participants stay free, seven cost exactly 12 euros each wit
   assert.equal(q.totalCents, 8400);
   assert.equal(q.discountCents, 0);
   assert.equal(q.unitChildCents, 1200);
-  assert.match(q.bookingNote, /10 €/);
+  assert.match(q.bookingNote, /12.00 EUR/);
 });
-test("server enforces 25 seats and the smaller per-tour booking limit", () => {
+test("server enforces configured departure capacity and per-tour booking limit", () => {
   const state = fixture();
   const tour = state.tours[0];
   tour.slots[0].capacity = 100;
   assert.throws(() => quote(state, input(state, 26)), /Massimo/);
+  tour.slots[0].capacity = 25;
   tour.slots[0].reserved = 24;
   assert.throws(() => quote(state, input(state, 2)), /Posti insufficienti/);
   tour.slots[0].reserved = 0;
@@ -169,7 +170,8 @@ test("per-tour policies are frozen and confirmation uses editable templates then
 test("admin validates calendar dates, capacity, scheduling and per-tour policies", () => {
   assert.equal(localDateSchema.safeParse("2026-02-30").success, false);
   const tour = fixture().tours[0];
-  assert.equal(tourSchema.safeParse({ ...tour, maxGuests: 26 }).success, false);
+  assert.equal(tourSchema.safeParse({ ...tour, maxGuests: 26 }).success, true);
+  assert.equal(tourSchema.safeParse({ ...tour, maxGuests: 0 }).success, false);
   assert.equal(
     tourSchema.safeParse({ ...tour, lateRefundPercent: 101 }).success,
     false,

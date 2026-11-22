@@ -1,10 +1,12 @@
+import { publicPage } from "@/lib/platform/public";
+import { SectionBlocks } from "@/components/SectionBlocks";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
-import { PracticalAnswers } from "@/components/PracticalAnswers";
+import { BlogGuideList } from "@/components/BlogGuideList";
 import ui from "@/components/public-ui.module.css";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Informazioni utili per visitare Praga",
   description:
     "Risposte e guide pratiche per organizzare il tuo viaggio a Praga.",
@@ -13,14 +15,20 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const c = await publicSiteContent();
+  const page = await publicPage("informazioni-utili");
   return (
     <section className="section">
       <div className="container-page">
         <div className={ui.usefulHeader}>
-          <h1 className={`display-xl ${ui.usefulTitle}`}>Informazioni utili</h1>
-          <p className={`body-md ${ui.usefulLead}`}>{c.home.answersBody}</p>
+          <h1 className={`display-xl ${ui.usefulTitle}`}>
+            {page?.title || "Informazioni utili"}
+          </h1>
+          <p className={`body-md ${ui.usefulLead}`}>
+            {page?.body || c.home.answersBody}
+          </p>
         </div>
-        <PracticalAnswers items={c.answers} gallery={c.gallery} />
+        <SectionBlocks blocks={page?.contentBlocks} />
+        <BlogGuideList items={c.gallery} />
         <div className={ui.usefulActions}>
           <Link href="/faq" className="button-primary">
             Domande frequenti
@@ -32,4 +40,13 @@ export default async function Page() {
       </div>
     </section>
   );
+}
+
+export async function generateMetadata() {
+  const page = await publicPage("informazioni-utili");
+  return {
+    ...baseMetadata,
+    ...(page?.seoTitle ? { title: page.seoTitle } : {}),
+    ...(page?.seoDescription ? { description: page.seoDescription } : {}),
+  };
 }

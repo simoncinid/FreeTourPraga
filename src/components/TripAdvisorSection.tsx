@@ -11,6 +11,7 @@ export async function TripAdvisorSection({
   return (
     <TripAdvisorWidget
       layout={layout}
+      googleReviewUrl={g.googleReviewUrl}
       tripAdvisor={{
         profileUrl: g.tripAdvisorUrl || tripAdvisor.profileUrl,
         title: g.tripAdvisorTitle,

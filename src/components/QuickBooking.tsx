@@ -1,5 +1,6 @@
 "use client";
 
+import { categoriesFor, selectedPrices } from "@/lib/participant-pricing";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,7 @@ import { addToCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/format";
 import {
   cancellationNote,
-  FREE_TOUR_NOTE,
+  freeTourNote,
   isFreeTour,
   tourPrices,
 } from "@/lib/tour-rules";
@@ -16,11 +17,11 @@ import { FilterSelect } from "@/components/FilterSelect";
 import { SlotDatePicker } from "@/components/SlotDatePicker";
 
 const dayFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Prague",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+  timeZone: "Europe/Prague",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 const dayKey = (value: string) => dayFormatter.format(new Date(value));
 
 export function QuickBooking({
@@ -43,28 +44,52 @@ export function QuickBooking({
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [infants, setInfants] = useState(0);
+  const [quantities, setQuantities] = useState<Record<string, number>>(() =>
+    Object.fromEntries(
+      categoriesFor(tour).map((c, i) => [c.id, i === 0 ? 1 : 0]),
+    ),
+  );
+  const dynamic = !!currentTour.priceCategories?.length;
+  const participants = categoriesFor(currentTour).map((c) => ({
+    categoryId: c.id,
+    quantity: quantities[c.id] ?? 0,
+  }));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [openedAt] = useState(() => Date.now());
-  const slots = useMemo(() => currentTour.operationalReviewRequired
-    ? []
-    : currentTour.slots
-        .filter(
-          (slot) =>
-            Date.parse(slot.startsAt) > openedAt &&
-            slot.capacity > slot.reserved,
-        )
-        .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt)),
-    [currentTour, openedAt]);
-  const days = useMemo(() => [...new Set(slots.map((slot) => dayKey(slot.startsAt)))], [slots]);
+  const slots = useMemo(
+    () =>
+      currentTour.operationalReviewRequired
+        ? []
+        : currentTour.slots
+            .filter(
+              (slot) =>
+                Date.parse(slot.startsAt) > openedAt &&
+                slot.capacity > slot.reserved,
+            )
+            .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt)),
+    [currentTour, openedAt],
+  );
+  const days = useMemo(
+    () => [...new Set(slots.map((slot) => dayKey(slot.startsAt)))],
+    [slots],
+  );
   const selected = slots.find(
     (slot) => slot.id === slotId && dayKey(slot.startsAt) === day,
   );
-  const guests = adults + children + infants;
+  const guests = dynamic
+    ? participants.reduce((n, p) => n + p.quantity, 0)
+    : adults + children + infants;
+  const groupContact =
+    isFreeTour(currentTour) &&
+    currentTour.freeGroupMode === "contact" &&
+    guests > (currentTour.freeGroupLimit ?? 6);
   const valid =
     !!selected &&
+    guests > 0 &&
+    !groupContact &&
     guests <= selected.capacity - selected.reserved &&
-    guests <= Math.min(currentTour.maxGuests, 25);
+    guests <= currentTour.maxGuests;
   const units = tourPrices(currentTour, guests);
   useEffect(() => {
     if (inline) return;
@@ -100,9 +125,9 @@ export function QuickBooking({
         !fresh ||
         fresh.operationalReviewRequired ||
         !freshSlot ||
-        Date.parse(freshSlot.startsAt) <= Date.now() ||
+        Date.parse(freshSlot.startsAt) <= openedAt ||
         guests > freshSlot.capacity - freshSlot.reserved ||
-        guests > Math.min(fresh.maxGuests, 25)
+        guests > fresh.maxGuests
       ) {
         throw new Error(
           "Posti non più disponibili. Cambia data o partecipanti.",
@@ -113,9 +138,15 @@ export function QuickBooking({
         tourTitle: fresh.title,
         slotId,
         startsAt: freshSlot.startsAt,
-        adults,
-        children,
-        infants,
+        adults: dynamic ? guests : adults,
+        children: dynamic ? 0 : children,
+        infants: dynamic ? 0 : infants,
+        participants: dynamic ? participants : undefined,
+        categorySnapshot: dynamic
+          ? selectedPrices(fresh, participants).snapshot
+          : undefined,
+        currency: fresh.currency ?? "EUR",
+        eligibleForDiscounts: fresh.onlineDiscounts !== false,
         unitAdultCents: tourPrices(fresh, guests).adult,
         unitChildCents: tourPrices(fresh, guests).child,
         unitInfantCents: tourPrices(fresh, guests).infant,
@@ -193,11 +224,14 @@ export function QuickBooking({
                     .filter((slot) => dayKey(slot.startsAt) === day)
                     .map((slot) => ({
                       value: slot.id,
-                      label: new Date(slot.startsAt).toLocaleTimeString("it-IT", {
-                        timeZone: "Europe/Prague",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
+                      label: new Date(slot.startsAt).toLocaleTimeString(
+                        "it-IT",
+                        {
+                          timeZone: "Europe/Prague",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      ),
                     })),
                 ]}
               />
@@ -206,59 +240,93 @@ export function QuickBooking({
           </div>
           <fieldset className="quick-booking-guests">
             <legend>Numero di persone</legend>
-            {[
-              {
-                label: "Adulti",
-                age: `Da ${tour.adultMinAge ?? 12} anni`,
-                value: adults,
-                change: setAdults,
-                min: 1,
-              },
-              {
-                label: "Bambini",
-                age: `${tour.childMinAge ?? 4}–${(tour.adultMinAge ?? 12) - 1} anni`,
-                value: children,
-                change: setChildren,
-                min: 0,
-              },
-              ...((tour.childMinAge ?? 4) > 0
-                ? [
-                    {
-                      label: "Infanti",
-                      age: `0–${(tour.childMinAge ?? 4) - 1} anni`,
-                      value: infants,
-                      change: setInfants,
-                      min: 0,
-                    },
-                  ]
-                : []),
-            ].map((band) => (
-              <label key={band.label}>
+            {(dynamic
+              ? categoriesFor(currentTour).map((c) => ({
+                  label: c.label,
+                  age:
+                    c.description ||
+                    [
+                      c.minAge !== undefined ? `da ${c.minAge} anni` : "",
+                      c.maxAge !== undefined ? `fino a ${c.maxAge} anni` : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" · "),
+                  value: quantities[c.id] ?? 0,
+                  change: (value: number) =>
+                    setQuantities((p) => ({ ...p, [c.id]: value })),
+                  min: 0,
+                  price: isFreeTour(currentTour) ? units.adult : c.priceCents,
+                }))
+              : [
+                  {
+                    label: "Adulti",
+                    age: `Da ${tour.adultMinAge ?? 12} anni`,
+                    value: adults,
+                    change: setAdults,
+                    min: 1,
+                    price: units.adult,
+                  },
+                  {
+                    label: "Bambini",
+                    age: `${tour.childMinAge ?? 4}–${(tour.adultMinAge ?? 12) - 1} anni`,
+                    value: children,
+                    change: setChildren,
+                    min: 0,
+                    price: units.child,
+                  },
+                  ...((tour.childMinAge ?? 4) > 0
+                    ? [
+                        {
+                          label: "Infanti",
+                          age: `Minori di ${tour.childMinAge ?? 4} anni`,
+                          value: infants,
+                          change: setInfants,
+                          min: 0,
+                          price: units.infant,
+                        },
+                      ]
+                    : []),
+                ]
+            ).map((band) => (
+              <div className="quick-booking-guest-row" key={band.label}>
                 <span>
                   {band.label}
-                  <small>{band.age}</small>
+                  <small className="block">{band.age}</small>
+                  <strong className="block text-sm">
+                    {band.price === 0
+                      ? isFreeTour(currentTour)
+                        ? "Offerta libera"
+                        : "Gratis"
+                      : formatMoney(band.price, currentTour.currency)}
+                  </strong>
                 </span>
-                <input
-                  type="number"
-                  className="text-input"
-                  required
-                  min={band.min}
-                  max={Math.min(tour.maxGuests, 25)}
-                  value={band.value}
-                  onChange={(event) =>
-                    band.change(
-                      Math.max(
-                        band.min,
-                        Math.min(
-                          tour.maxGuests,
-                          25,
-                          Math.trunc(Number(event.target.value)),
-                        ),
-                      ),
-                    )
-                  }
-                />
-              </label>
+                <div className="quantity-control">
+                  <button
+                    type="button"
+                    className="quantity-button"
+                    aria-label={`Diminuisci ${band.label}`}
+                    disabled={band.value <= band.min}
+                    onClick={() => band.change(band.value - 1)}
+                  >
+                    −
+                  </button>
+                  <output
+                    className="quantity-value"
+                    aria-label={`Quantità ${band.label}`}
+                  >
+                    {band.value}
+                  </output>
+                  <button
+                    type="button"
+                    className="quantity-button"
+                    aria-label={`Aumenta ${band.label}`}
+                    disabled={guests >= tour.maxGuests}
+                    onClick={() => band.change(band.value + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             ))}
           </fieldset>
           <p className="quick-booking-total">
@@ -267,13 +335,29 @@ export function QuickBooking({
             </span>
             <strong>
               {formatMoney(
-                adults * units.adult +
-                  children * units.child +
-                  infants * units.infant,
+                dynamic
+                  ? categoriesFor(currentTour).reduce(
+                      (n, c) =>
+                        n +
+                        (quantities[c.id] ?? 0) *
+                          (isFreeTour(currentTour)
+                            ? units.adult
+                            : c.priceCents),
+                      0,
+                    )
+                  : adults * units.adult +
+                      children * units.child +
+                      infants * units.infant,
+                currentTour.currency,
               )}
             </strong>
           </p>
-          {selected && !valid && (
+          {groupContact && (
+            <Link href="/contatti" className="button-secondary">
+              Contattaci per il tuo gruppo
+            </Link>
+          )}
+          {selected && !valid && !groupContact && (
             <p role="alert" className="quick-booking-error">
               Posti insufficienti per le persone selezionate.
             </p>
@@ -287,7 +371,7 @@ export function QuickBooking({
             I posti saranno confermati al completamento della prenotazione.
           </p>
           {isFreeTour(currentTour) && (
-            <p className="quick-booking-note">{FREE_TOUR_NOTE}</p>
+            <p className="quick-booking-note">{freeTourNote(currentTour)}</p>
           )}
           <p className="quick-booking-note">{cancellationNote(currentTour)}</p>
           <div className="quick-booking-actions">

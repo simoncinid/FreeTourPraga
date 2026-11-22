@@ -1,3 +1,4 @@
+import { SectionBlocks } from "@/components/SectionBlocks";
 import { publicPage } from "@/lib/platform/public";
 import { BlogHashRedirect } from "@/components/BlogHashRedirect";
 import { BlogGuideList } from "@/components/BlogGuideList";
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const c = await publicSiteContent();
+  const editorial = await publicPage("blog");
   return (
     <section className={`${ui.page} ${ui.blog} section`}>
       <BlogHashRedirect />
@@ -16,12 +18,15 @@ export default async function Page() {
           {c.home.galleryEyebrow}
         </p>
         <h1 className={`display-xl ${ui.blogTitle}`}>{c.home.galleryTitle}</h1>
-        <p className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`}>
+        <p
+          className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`}
+        >
           {c.home.galleryBody}
         </p>
         <div className={ui.blogList}>
           <BlogGuideList items={c.gallery} />
         </div>
+        <SectionBlocks blocks={editorial?.contentBlocks} />
       </div>
     </section>
   );

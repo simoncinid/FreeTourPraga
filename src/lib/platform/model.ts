@@ -1,5 +1,5 @@
 import type { SiteContent } from "./content";
-import type { Tour } from "../types";
+import type { ContentSectionBlock, CommissionRule, Tour } from "../types";
 export type CatalogTour = Tour & {
   published: boolean;
   adultMinAge: number;
@@ -9,6 +9,14 @@ export type CatalogTour = Tour & {
   otaAliases?: string[];
 };
 export type Reservation = {
+  currency?: "EUR" | "CZK";
+  categorySnapshot?: {
+    id: string;
+    label: string;
+    quantity: number;
+    unitPriceCents: number;
+  }[];
+  commissionRuleSnapshot?: CommissionRule;
   id: string;
   pnr: string;
   orderId: string;
@@ -29,8 +37,8 @@ export type Reservation = {
   subtotalCents: number;
   discountCents: number;
   totalCents: number;
-  /** Storico: solo "cash" in Fase 1; stripe/ota restano per prenotazioni legacy. */
-  paymentMethod: "cash" | "stripe" | "ota";
+  paymentInstructions?: string;
+  paymentMethod: "cash" | "bank_transfer" | "stripe" | "ota";
   paymentStatus: "pending" | "paid" | "refunded" | "not_required" | "failed";
   status: "confirmed" | "pending" | "cancelled" | "present" | "no_show";
   source: string;
@@ -52,6 +60,7 @@ export type Reservation = {
   lastMinuteApplied?: boolean;
 };
 export type Order = {
+  currency?: "EUR" | "CZK";
   id: string;
   key: string;
   fingerprint: string;
@@ -99,13 +108,15 @@ export type Affiliate = {
   code: string;
   name: string;
   email: string;
-  type: "hotel" | "guide" | "promoter" | "agency";
+  type: string;
   commissionPercent: number;
   active: boolean;
   /** ID numerico legacy WordPress Affiliates (`?affiliates=ID`). */
   wpId?: number;
 };
 export type ContentPage = {
+  benefits?: { title: string; text: string }[];
+  contentBlocks?: ContentSectionBlock[];
   canonicalPath?: string;
   bodyHtml?: string;
   updatedAt?: string;
@@ -140,7 +151,26 @@ export type OtaMessage = {
   pnr?: string;
   createdAt: string;
 };
+export type EuropeanPartner = {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  email: string;
+  phone: string;
+  website: string;
+  published: boolean;
+  deleted?: boolean;
+};
+export type PartnerClick = {
+  partnerId: string;
+  day: string;
+  visitor: string;
+  count: number;
+};
 export type PlatformState = {
+  partners?: EuropeanPartner[];
+  partnerClicks?: PartnerClick[];
   seoEditorialRevision?: string;
   version: number;
   closedDates?: string[];
@@ -157,6 +187,7 @@ export type PlatformState = {
     id: string;
     name: string;
     email: string;
+    phone?: string;
     message: string;
     type: string;
     createdAt: string;

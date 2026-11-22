@@ -174,7 +174,10 @@ assert.equal(
   401,
 );
 cookie = adminCookie;
-assert.equal((await fetch(base+"/admin/sito",{headers:{Cookie:cookie}})).status,200);
+assert.equal(
+  (await fetch(base + "/admin/sito", { headers: { Cookie: cookie } })).status,
+  200,
+);
 const managementState = await call(
   "/api/platform/admin/state",
   undefined,
@@ -206,11 +209,17 @@ const denied = await fetch(
   },
 );
 assert.equal(denied.status, 404);
-await call("/api/platform/manage/" + b.pnr, {
-  proof: managementProof,
-  action: "consent",
-  consent: false,
+const retiredConsent = await fetch(base + "/api/platform/manage/" + b.pnr, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    proof: managementProof,
+    action: "consent",
+    consent: false,
+  }),
 });
+assert.equal(retiredConsent.status, 400);
+
 managed = await call("/api/platform/manage/" + b.pnr, {
   proof: managementProof,
   action: "move",
@@ -267,7 +276,7 @@ await call("/api/platform/admin/commissions/pay", { code: "QAHOTEL" });
 const final = await call("/api/platform/admin/state", undefined, "GET");
 assert.equal(
   final.bookings.find((b) => b.pnr === other.pnr).commissionPaid,
-  true,
+  false, // A future departure cannot mature a commission, even if staff mark attendance early.
 );
 await call(
   "/api/platform/admin/page",
@@ -305,8 +314,12 @@ assert.match(contact, /Invia richiesta/);
   assert.equal(downloaded.status, 200);
   assert.equal(downloaded.headers.get("content-type"), "image/webp");
   assert.equal(downloaded.headers.get("x-robots-tag"), null);
-  assert.match(downloaded.headers.get("cache-control") || "", /max-age=31536000/);
-  if (process.env.HTTP_TEST_PRODUCTION !== "1") await rm(`.data/media/${media.url.split("/").pop()}`);
+  assert.match(
+    downloaded.headers.get("cache-control") || "",
+    /max-age=31536000/,
+  );
+  if (process.env.HTTP_TEST_PRODUCTION !== "1")
+    await rm(`.data/media/${media.url.split("/").pop()}`);
 }
 const cms = (await call("/api/platform/admin/state", undefined, "GET"))
   .siteContent;
@@ -327,11 +340,29 @@ assert.match(faq, /Domanda QA pubblicata/);
 assert.match(faq, /Risposta QA dal backend/);
 const ai = await (await fetch(base + "/ai-context.json")).json();
 assert.equal(ai.faq[0].a, "Risposta QA dal backend.");
-if(process.env.HTTP_TEST_PRODUCTION==='1'){
- assert.doesNotMatch(home,/fonts\.googleapis\.com/);
- const styles=[...home.matchAll(/href="([^" ]+\.css[^" ]*)"/g)].map(m=>m[1]);assert.ok(styles.length);
- let fontFiles=[];for(const style of styles){const r=await fetch(new URL(style,base));assert.equal(r.status,200);const css=await r.text();fontFiles.push(...[...css.matchAll(/url\(["']?([^"')]+\.woff2)["']?\)/g)].map(m=>new URL(m[1],new URL(style,base)).toString()));}
- assert.ok(fontFiles.length,'Bundled fonts must be present');for(const url of [...new Set(fontFiles)].slice(0,2)){const r=await fetch(url);assert.equal(r.status,200);assert.ok((await r.arrayBuffer()).byteLength>1000);}
+if (process.env.HTTP_TEST_PRODUCTION === "1") {
+  assert.doesNotMatch(home, /fonts\.googleapis\.com/);
+  const styles = [...home.matchAll(/href="([^" ]+\.css[^" ]*)"/g)].map(
+    (m) => m[1],
+  );
+  assert.ok(styles.length);
+  let fontFiles = [];
+  for (const style of styles) {
+    const r = await fetch(new URL(style, base));
+    assert.equal(r.status, 200);
+    const css = await r.text();
+    fontFiles.push(
+      ...[...css.matchAll(/url\(["']?([^"')]+\.woff2)["']?\)/g)].map((m) =>
+        new URL(m[1], new URL(style, base)).toString(),
+      ),
+    );
+  }
+  assert.ok(fontFiles.length, "Bundled fonts must be present");
+  for (const url of [...new Set(fontFiles)].slice(0, 2)) {
+    const r = await fetch(url);
+    assert.equal(r.status, 200);
+    assert.ok((await r.arrayBuffer()).byteLength > 1000);
+  }
 }
 const operatorLogin = await fetch(base + "/api/platform/login", {
   method: "POST",

@@ -5,11 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 export type InquiryVariant =
-  | "contact"
-  | "partner"
-  | "agency"
-  | "jobs"
-  | "affiliate";
+  "contact" | "partner" | "agency" | "jobs" | "affiliate";
 
 const VARIANT = {
   contact: {
@@ -69,7 +65,8 @@ const VARIANT = {
     showLanguages: true,
     showPortfolio: true,
     messageLabel: "Messaggio di presentazione",
-    messageHint: "Esperienza, disponibilità e perché vorresti lavorare con noi.",
+    messageHint:
+      "Esperienza, disponibilità e perché vorresti lavorare con noi.",
   },
   affiliate: {
     title: "Proponi una collaborazione.",
@@ -131,7 +128,9 @@ export function InquiryForm({
             f.get("date") ? `Data: ${f.get("date")}` : "",
             f.get("guests") ? `Partecipanti: ${f.get("guests")}` : "",
             f.get("languages") ? `Lingue: ${f.get("languages")}` : "",
-            f.get("portfolio") ? `Curriculum/portfolio: ${f.get("portfolio")}` : "",
+            f.get("portfolio")
+              ? `Curriculum/portfolio: ${f.get("portfolio")}`
+              : "",
           ]
             .filter(Boolean)
             .join("\n");
@@ -141,11 +140,11 @@ export function InquiryForm({
             body: JSON.stringify({
               name: f.get("name"),
               email: f.get("email"),
+              phone: f.get("phone"),
               type: config.showTypeSelect
                 ? f.get("type")
                 : config.typeFixed || "Contatto",
-              message:
-                String(f.get("message")) + (extras ? `\n${extras}` : ""),
+              message: String(f.get("message")) + (extras ? `\n${extras}` : ""),
               privacy: f.get("privacy") === "on",
               website: f.get("website"),
             }),
@@ -186,6 +185,17 @@ export function InquiryForm({
           className="text-input"
         />
       </label>
+      <label>
+        Telefono
+        <input
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          maxLength={40}
+          placeholder="+39 333 1234567"
+          className="text-input"
+        />
+      </label>
       {config.showCompany && (
         <label>
           Azienda o attività
@@ -202,7 +212,11 @@ export function InquiryForm({
       {config.showTypeSelect && (
         <label>
           Tipo di richiesta
-          <select name="type" className="text-input" defaultValue={config.typeOptions[0]}>
+          <select
+            name="type"
+            className="text-input"
+            defaultValue={config.typeOptions[0]}
+          >
             {config.typeOptions.map((x) => (
               <option key={x}>{x}</option>
             ))}
@@ -217,12 +231,7 @@ export function InquiryForm({
           </label>
           <label>
             Partecipanti
-            <input
-              type="number"
-              name="guests"
-              min={1}
-              className="text-input"
-            />
+            <input type="number" name="guests" min={1} className="text-input" />
           </label>
         </div>
       )}

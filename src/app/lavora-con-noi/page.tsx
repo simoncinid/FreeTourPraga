@@ -1,38 +1,43 @@
+import { publicPage } from "@/lib/platform/public";
+import { collaborationDefaults } from "@/lib/collaboration-content";
+import { SectionBlocks } from "@/components/SectionBlocks";
 import { CollaborationPage } from "@/components/CollaborationPage";
-import { Languages, Link2, UserRound } from "lucide-react";
 
-export const metadata = {
+const baseMetadata = {
   title: "Lavora con noi",
   description:
     "Ti piace raccontare Praga e accompagnare i viaggiatori alla scoperta della città? Presentati al nostro team.",
   alternates: { canonical: "/lavora-con-noi" },
 };
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default async function Page() {
+  const page = await publicPage("lavora-con-noi");
+  const data = page || collaborationDefaults["lavora-con-noi"];
   return (
-    <CollaborationPage
-      eyebrow="Lavora con noi"
-      title="Lavora con noi"
-      titleLines={["Racconta Praga.", "Unisciti al team."]}
-      body="Ti piace raccontare Praga e accompagnare i viaggiatori alla scoperta della città? Presentati al nostro team."
-      formVariant="jobs"
-      benefits={[
-        {
-          icon: UserRound,
-          title: "La tua esperienza",
-          text: "Raccontaci la tua esperienza come guida o nel turismo.",
-        },
-        {
-          icon: Languages,
-          title: "Lingue e disponibilità",
-          text: "Indica le lingue che parli e la tua disponibilità.",
-        },
-        {
-          icon: Link2,
-          title: "Curriculum",
-          text: "Aggiungi nel messaggio un collegamento al tuo curriculum o portfolio.",
-        },
-      ]}
-    />
+    <>
+      <CollaborationPage
+        eyebrow={data.subtitle}
+        title={data.title}
+        titleLines={
+          page ? [page.title] : ["Racconta Praga.", "Unisciti al team."]
+        }
+        body={data.body}
+        formVariant="jobs"
+        benefits={data.benefits ?? []}
+      />
+      <div className="container-page mb-12">
+        <SectionBlocks blocks={page?.contentBlocks} />
+      </div>
+    </>
   );
+}
+
+export async function generateMetadata() {
+  const page = await publicPage("lavora-con-noi");
+  return {
+    ...baseMetadata,
+    ...(page?.seoTitle ? { title: page.seoTitle } : {}),
+    ...(page?.seoDescription ? { description: page.seoDescription } : {}),
+  };
 }

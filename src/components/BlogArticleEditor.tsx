@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ImageSourceField } from "./ImageSourceField";
-import { guidePath } from "@/lib/public-paths";
+import { guidePath, guideSlug } from "@/lib/public-paths";
 import type { BlogBlock, SiteContent } from "@/lib/platform/content";
 
 type Article = SiteContent["gallery"][number];
@@ -54,6 +54,20 @@ export function BlogArticleEditor({
   const [uploading, setUploading] = useState(false);
   const [notice, setNotice] = useState("");
   const locked = busy || uploading;
+  useEffect(() => {
+    const open = () => {
+      const element = document.getElementById(
+        decodeURIComponent(location.hash.slice(1)),
+      );
+      if (element instanceof HTMLDetailsElement) {
+        element.open = true;
+        element.scrollIntoView({ block: "start" });
+      }
+    };
+    open();
+    window.addEventListener("hashchange", open);
+    return () => window.removeEventListener("hashchange", open);
+  }, [articles.length]);
   function update(index: number, patch: Partial<Article>) {
     onChange(
       articles.map((article, i) =>
@@ -72,7 +86,15 @@ export function BlogArticleEditor({
     changeBlocks(
       articleIndex,
       (articles[articleIndex].blocks ?? []).map((block, i) =>
-        i === blockIndex ? ({ ...block, ...patch, ...(block.type === "text" && "text" in patch ? { html: undefined } : {}) } as BlogBlock) : block,
+        i === blockIndex
+          ? ({
+              ...block,
+              ...patch,
+              ...(block.type === "text" && "text" in patch
+                ? { html: undefined }
+                : {}),
+            } as BlogBlock)
+          : block,
       ),
     );
   }
@@ -125,6 +147,7 @@ export function BlogArticleEditor({
       {articles.map((article, index) => (
         <details
           key={index}
+          id={`articolo-${guideSlug(article)}`}
           open={index === 0}
           className="rounded-xl border border-hairline bg-white p-5"
         >
@@ -179,7 +202,12 @@ export function BlogArticleEditor({
               onChange={(title) => update(index, { title })}
               required
             />
-            {article.title && <p className="text-sm text-muted">Indirizzo stabile: {guidePath(article)}. Cambiare il titolo conserva questo indirizzo.</p>}
+            {article.title && (
+              <p className="text-sm text-muted">
+                Indirizzo stabile: {guidePath(article)}. Cambiare il titolo
+                conserva questo indirizzo.
+              </p>
+            )}
             <TextField
               label="Sintesi sotto il titolo"
               value={article.caption}

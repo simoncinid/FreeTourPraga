@@ -13,7 +13,7 @@ const base = new URL(
 );
 if (!["localhost", "127.0.0.1"].includes(base.hostname))
   throw Error("Il collaudo produzione è consentito solo su PostgreSQL locale.");
-base.pathname="/postgres";
+base.pathname = "/postgres";
 const databaseName = `ftp_test_http_${randomBytes(6).toString("hex")}`;
 const testUrl = new URL(base);
 testUrl.pathname = "/" + databaseName;
@@ -23,24 +23,50 @@ const admin = new PrismaClient({
 const salt = randomBytes(16).toString("hex"),
   passwordHash = `${salt}:${scryptSync("PragaLocale!2026", salt, 64).toString("hex")}`;
 const smtpTemp = await mkdtemp(join(tmpdir(), "ftp-smtp-"));
-const certPath = join(smtpTemp, "cert.pem"), keyPath = join(smtpTemp, "key.pem");
-const certResult = spawnSync("openssl", ["req","-x509","-newkey","rsa:2048","-nodes","-keyout",keyPath,"-out",certPath,"-days","1","-subj","/CN=localhost","-addext","subjectAltName=DNS:localhost,IP:127.0.0.1"], { stdio: "ignore" });
-if (certResult.status !== 0) throw Error("Cannot generate isolated SMTP test certificate");
+const certPath = join(smtpTemp, "cert.pem"),
+  keyPath = join(smtpTemp, "key.pem");
+const certResult = spawnSync(
+  "openssl",
+  [
+    "req",
+    "-x509",
+    "-newkey",
+    "rsa:2048",
+    "-nodes",
+    "-keyout",
+    keyPath,
+    "-out",
+    certPath,
+    "-days",
+    "1",
+    "-subj",
+    "/CN=localhost",
+    "-addext",
+    "subjectAltName=DNS:localhost,IP:127.0.0.1",
+  ],
+  { stdio: "ignore" },
+);
+if (certResult.status !== 0)
+  throw Error("Cannot generate isolated SMTP test certificate");
 const capturedEmails = [];
 const smtp = new SMTPServer({
- key: await readFile(keyPath), cert: await readFile(certPath),
- authOptional: true, disabledCommands: ["AUTH"],
- onData(stream, session, callback) {
-  const chunks = [];
-  stream.on("data", data => chunks.push(data));
-  stream.on("end", () => {
-   if (!session.secure) return callback(Error("STARTTLS required in SMTP test"));
-   capturedEmails.push(Buffer.concat(chunks)); callback();
-  });
-  stream.on("error", callback);
- },
+  key: await readFile(keyPath),
+  cert: await readFile(certPath),
+  authOptional: true,
+  disabledCommands: ["AUTH"],
+  onData(stream, session, callback) {
+    const chunks = [];
+    stream.on("data", (data) => chunks.push(data));
+    stream.on("end", () => {
+      if (!session.secure)
+        return callback(Error("STARTTLS required in SMTP test"));
+      capturedEmails.push(Buffer.concat(chunks));
+      callback();
+    });
+    stream.on("error", callback);
+  },
 });
-await new Promise(resolve => smtp.listen(0,"127.0.0.1",resolve));
+await new Promise((resolve) => smtp.listen(0, "127.0.0.1", resolve));
 const smtpPort = smtp.server.address().port;
 const env = {
   ...process.env,
@@ -75,6 +101,17 @@ async function run(command, args, childEnv = env) {
     );
   });
 }
+async function resetTestLimits() {
+  assert.match(testUrl.pathname, /^\/ftp_test_http_[a-z0-9_]+$/);
+  const qa = new PrismaClient({
+    datasources: { db: { url: testUrl.toString() } },
+  });
+  try {
+    await qa.$executeRaw`UPDATE "PlatformState" SET data = jsonb_set(data, '{rateLimits}', '{}'::jsonb) WHERE id = 'main'`;
+  } finally {
+    await qa.$disconnect();
+  }
+}
 let server,
   created = false;
 try {
@@ -86,7 +123,11 @@ try {
     "deploy",
   ]);
   await run("npm", ["run", "build"]);
-  server=spawn(process.execPath,['.next-http/standalone/server.js'],{env:{...env,PORT:'3101',HOSTNAME:'127.0.0.1'},detached:true,stdio:['ignore','inherit','inherit']});
+  server = spawn(process.execPath, [".next-http/standalone/server.js"], {
+    env: { ...env, PORT: "3101", HOSTNAME: "127.0.0.1" },
+    detached: true,
+    stdio: ["ignore", "inherit", "inherit"],
+  });
   let ready = false;
   for (let i = 0; i < 60; i++) {
     if (server.exitCode !== null) throw Error("Server produzione QA terminato");
@@ -112,21 +153,91 @@ try {
   };
   await run(process.execPath, ["scripts/http-smoke.mjs"], testEnv);
   await run(process.execPath, ["scripts/http-e2e.mjs"], testEnv);
-  if (process.env.RUN_BROWSER_TESTS === "1") await run(process.execPath, ["scripts/browser-e2e.mjs"], testEnv);
+  if (process.env.RUN_TOUR_PRICE_TESTS === "1") {
+    await resetTestLimits();
+    await run(process.execPath, ["scripts/tour-price-e2e.mjs"], testEnv);
+  }
+  if (process.env.RUN_SPECIFICATIONS_TESTS === "1") {
+    await resetTestLimits();
+    await run(process.execPath, ["scripts/specifications-e2e.mjs"], testEnv);
+  }
+  if (process.env.RUN_BROWSER_TESTS === "1")
+    await run(process.execPath, ["scripts/browser-e2e.mjs"], testEnv);
+  await run(process.execPath, [
+    "scripts/import-seo-content.mjs",
+    "--postgres",
+    "--editorial",
+    "--apply",
+  ]);
+  if (process.env.RUN_COMPLETION_TESTS === "1") {
+    await run(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        "scripts/apply-specifications-postgres.ts",
+        "--apply",
+      ],
+      { ...env, TEST_POSTGRES: "1" },
+    );
+    await resetTestLimits();
+    await run(
+      process.execPath,
+      ["scripts/technical-completion-e2e.mjs"],
+      testEnv,
+    );
+  }
   for (let i = 0; i < 5; i++) {
-    const response = await fetch("http://localhost:3101/api/platform/cron?task=jobs", {
-      method: "POST", headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
-    });
+    const response = await fetch(
+      "http://localhost:3101/api/platform/cron?task=jobs",
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
+      },
+    );
     assert.equal(response.status, 200);
     const result = await response.json();
     if (!result.jobs.length) break;
   }
-  const parsedEmails = await Promise.all(capturedEmails.map(raw => simpleParser(raw)));
-  assert.ok(parsedEmails.some(message => message.attachments.some(file => file.filename?.endsWith(".ics") && file.content.toString().includes("BEGIN:VCALENDAR"))), "SMTP must deliver the actual calendar attachment");
-  assert.ok(parsedEmails.some(message => message.text?.includes("Punto d'incontro") && message.html?.includes("gestisci-prenotazione")), "SMTP must deliver booking details and scoped links");
-  console.log(`PASS SMTP: ${parsedEmails.length} messages received by isolated STARTTLS server; booking HTML and ICS attachments verified. No internet email sent.`);
-  await run(process.execPath, ["scripts/import-seo-content.mjs", "--postgres", "--editorial", "--apply"]);
-  await run(process.execPath, ["scripts/check-seo.mjs", "--url", "http://localhost:3101"], testEnv);
+  const parsedEmails = await Promise.all(
+    capturedEmails.map((raw) => simpleParser(raw)),
+  );
+  assert.ok(
+    parsedEmails.some((message) =>
+      message.attachments.some(
+        (file) =>
+          file.filename?.endsWith(".ics") &&
+          file.content.toString().includes("BEGIN:VCALENDAR"),
+      ),
+    ),
+    "SMTP must deliver the actual calendar attachment",
+  );
+  assert.ok(
+    parsedEmails.some(
+      (message) =>
+        message.text?.includes("Punto d'incontro") &&
+        message.html?.includes("gestisci-prenotazione"),
+    ),
+    "SMTP must deliver booking details and scoped links",
+  );
+  if (process.env.RUN_COMPLETION_TESTS === "1")
+    assert.ok(
+      parsedEmails.some(
+        (message) =>
+          message.text?.includes(
+            "QA SOLO TEST: beneficiario e IBAN di esempio",
+          ) && message.text?.includes("Pagamento tramite bonifico"),
+      ),
+      "SMTP must include the bank-transfer instructions frozen at checkout",
+    );
+  console.log(
+    `PASS SMTP: ${parsedEmails.length} messages received by isolated STARTTLS server; booking HTML and ICS attachments verified. No internet email sent.`,
+  );
+  await run(
+    process.execPath,
+    ["scripts/check-seo.mjs", "--url", "http://localhost:3101"],
+    testEnv,
+  );
   console.log(
     "PASS: production build + isolated PostgreSQL + complete HTTP workflows. External services disabled.",
   );
@@ -142,6 +253,6 @@ try {
       `DROP DATABASE "${databaseName}" WITH (FORCE)`,
     );
   await admin.$disconnect();
-  await new Promise(resolve => smtp.close(resolve));
+  await new Promise((resolve) => smtp.close(resolve));
   await rm(smtpTemp, { recursive: true, force: true });
 }

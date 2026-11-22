@@ -29,11 +29,11 @@ test("content reads skip calendar expansion while catalog and booking reads reta
     assert.deepEqual((await navigationTours())[0], {
       title: tour.title, slug: tour.slug, canonicalPath: tour.canonicalPath,
     });
-    assert.equal((await readState()).tours[0].slots.length, 90);
+    assert.equal((await readState()).tours[0].slots.length, 365);
     const publicSlots = (await catalog()).find((item) => item.id === tour.id)!.slots;
-    assert.equal(publicSlots.length, 90);
-    assert.equal(new Set(publicSlots.map((slot) => slot.id)).size, 90);
-    assert.equal((await catalog()).find((item) => item.id === tour.id)!.slots.length, 90);
+    assert.equal(publicSlots.length, 365);
+    assert.equal(new Set(publicSlots.map((slot) => slot.id)).size, 365);
+    assert.equal((await catalog()).find((item) => item.id === tour.id)!.slots.length, 365);
   } finally {
     if (previousStorage === undefined) delete process.env.PLATFORM_STORAGE;
     else process.env.PLATFORM_STORAGE = previousStorage;

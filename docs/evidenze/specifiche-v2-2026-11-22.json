@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-22T20:05:56.244Z",
+  "checks": [
+    "Autorizzazioni admin/operator, tour con quattro categorie e blocchi, menu gerarchico e partner persistiti",
+    "Browser checkout CZK con adulti, studenti e over 65, prezzi server, email e snapshot delle categorie",
+    "API calendario: limite prenotati, modifica capienza, orario extra e chiusura senza cancellare prenotazioni; calendario dentro tour",
+    "Partner: redirect reale, tre click/due visitatori, CSV e storico conservato dopo eliminazione",
+    "Browser desktop/mobile: nessun overflow, blocchi pubblici, filtri, form telefono, menu che si richiude, nessun account cliente"
+  ],
+  "browserErrors": [],
+  "scope": "Solo locale; nessun rilascio Railway",
+  "productionHttpPassed": true,
+  "smtp": {
+    "localStartTLS": true,
+    "messages": 12,
+    "calendarAttachmentsVerified": true,
+    "internetEmailSent": false
+  },
+  "seo": {
+    "checked": 212,
+    "passed": 212,
+    "failed": 0,
+    "sitemapUrls": 81
+  },
+  "matrix": {
+    "rows": 101,
+    "completed": 96,
+    "open": 5,
+    "openIds": [
+      "H14",
+      "H18",
+      "N06",
+      "N09",
+      "E11"
+    ]
+  },
+  "unitTests": {
+    "total": 66,
+    "passed": 66
+  },
+  "lintPassed": true,
+  "typecheckPassed": true,
+  "standaloneBuildPassed": true,
+  "matrixSupersededBy": "audit-specifiche-v2-2026-11-22.json",
+  "matrixIsHistorical": true
+}

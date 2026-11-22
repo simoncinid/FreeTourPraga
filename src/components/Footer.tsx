@@ -24,10 +24,13 @@ export async function Footer() {
             <a href={`tel:${g.phone.replaceAll(" ", "")}`}>{g.phone}</a>
             <p>{g.address}</p>
           </div>
+          <div className="mt-5">
+            <SocialLinks compact />
+          </div>
         </div>
         <div>
           <h2 className="mb-4 font-normal text-white">Informazioni</h2>
-          <div className={`${ui.footerLinks} mb-5 grid gap-x-6 gap-y-3 text-sm`}>
+          <div className={`${ui.footerLinks} grid gap-x-6 gap-y-3 text-sm`}>
             {g.navigation
               .filter(
                 (n) =>
@@ -44,7 +47,6 @@ export async function Footer() {
             <Link href="/privacy">Privacy e cookie</Link>
             <Link href="/termini">Termini e cancellazioni</Link>
           </div>
-          <SocialLinks compact />
         </div>
       </div>
       <div className="border-t border-white/10 py-5">

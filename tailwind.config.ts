@@ -15,7 +15,8 @@ const config: Config = {
           disabled: "rgb(var(--primary-disabled) / <alpha-value>)",
           soft: "var(--primary-soft)",
           "soft-strong": "var(--primary-soft-strong)",
-          muted: "var(--primary-muted)"
+          muted: "var(--primary-muted)",
+          "on-dark": "rgb(var(--primary-on-dark) / <alpha-value>)"
         },
         navy: "#071A35",
         "navy-soft": "#102747",
@@ -32,11 +33,11 @@ const config: Config = {
         "surface-soft": "#F3F0E9",
         "surface-card": "#FFFFFF",
         "surface-strong": "#EEE9DF",
-        "on-primary": "#000000",
+        "on-primary": "#FFFFFF",
         "on-dark": "#FFFFFF",
         "legal-link": "#102747",
         "star-rating": "rgb(var(--primary) / <alpha-value>)",
-        whatsapp: "#25D366",
+        whatsapp: "#17A34A",
         success: "#15803D",
         warning: "rgb(var(--warning) / <alpha-value>)",
         scrim: "#000000"

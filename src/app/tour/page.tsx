@@ -1,3 +1,5 @@
+import { SectionBlocks } from "@/components/SectionBlocks";
+import { SpecialOffers } from "@/components/SpecialOffers";
 import { tourPath } from "@/lib/public-paths";
 import ui from "@/components/public-ui.module.css";
 import { Suspense } from "react";
@@ -5,33 +7,36 @@ import { AddedToCartBanner } from "@/components/AddedToCartBanner";
 import { JsonLd } from "@/components/JsonLd";
 import { TourFilters } from "@/components/TourFilters";
 import { catalog, publicPage } from "@/lib/platform/public";
-export const dynamic="force-dynamic";
+export const dynamic = "force-dynamic";
 import { absoluteUrl, site } from "@/lib/site";
 
 const baseMetadata = {
   title: "Tour guidati in italiano a Praga",
-  description: "Catalogo tour FreeTourPraga in italiano, con disponibilità, gruppi ristretti e assistenza tutti i giorni dalle 9 alle 19.",
+  description:
+    "Catalogo tour FreeTourPraga in italiano, con disponibilità, gruppi ristretti e assistenza tutti i giorni dalle 9 alle 19.",
   keywords: [
     ...site.keywords,
     "catalogo tour Praga",
     "prenotare tour Praga",
     "tour Praga famiglie",
-    "tour Praga piccoli gruppi"
+    "tour Praga piccoli gruppi",
   ],
   alternates: {
-    canonical: "/tour/"
+    canonical: "/tour/",
   },
   openGraph: {
     title: "Tour guidati in italiano a Praga",
-    description: "Catalogo tour in italiano a Praga con gruppi ristretti, disponibilita e assistenza WhatsApp.",
+    description:
+      "Catalogo tour in italiano a Praga con gruppi ristretti, disponibilita e assistenza WhatsApp.",
     url: absoluteUrl("/tour"),
     type: "website",
-    locale: "it_IT"
-  }
+    locale: "it_IT",
+  },
 };
 
 export default async function TourListingPage() {
- const tours=await catalog(); const content=await publicPage("catalogo");
+  const tours = await catalog();
+  const content = await publicPage("catalogo");
   return (
     <section className={`${ui.page} ${ui.catalog} section`}>
       <JsonLd
@@ -43,8 +48,8 @@ export default async function TourListingPage() {
             "@type": "ListItem",
             position: index + 1,
             url: absoluteUrl(tourPath(tour)),
-            name: tour.title
-          }))
+            name: tour.title,
+          })),
         }}
       />
       <div className="container-page">
@@ -53,15 +58,27 @@ export default async function TourListingPage() {
         </Suspense>
         <div className="mb-8">
           <p className="micro-label mb-2 text-muted">Catalogo tour</p>
-          <h1 className="display-xl mb-4">{content?.title||"Tour guidati in italiano a Praga"}</h1>
+          <h1 className="display-xl mb-4">
+            {content?.title || "Tour guidati in italiano a Praga"}
+          </h1>
           <p className="body-md max-w-2xl">
-            {content?.body||"Filtra per esperienza, controlla i posti e prenota con conferma email automatica."}
+            {content?.body ||
+              "Filtra per esperienza, controlla i posti e prenota con conferma email automatica."}
           </p>
         </div>
         <TourFilters tours={tours} />
+        <SectionBlocks blocks={content?.contentBlocks} />
       </div>
+      <SpecialOffers />
     </section>
   );
 }
 
-export async function generateMetadata(){const p=await publicPage("catalogo");return {...baseMetadata,...(p?.seoTitle?{title:p.seoTitle}:{}),...(p?.seoDescription?{description:p.seoDescription}:{})};}
+export async function generateMetadata() {
+  const p = await publicPage("catalogo");
+  return {
+    ...baseMetadata,
+    ...(p?.seoTitle ? { title: p.seoTitle } : {}),
+    ...(p?.seoDescription ? { description: p.seoDescription } : {}),
+  };
+}

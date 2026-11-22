@@ -101,13 +101,28 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
               <p>{date(booking.startsAt)} · ora di Praga</p>
               <p>
                 {booking.totalGuests} partecipanti ·{" "}
-                {formatMoney(booking.totalCents)} ·{" "}
+                {formatMoney(booking.totalCents, booking.currency)} ·{" "}
                 {booking.paymentStatus === "paid"
                   ? "Pagato"
                   : booking.paymentStatus === "refunded"
                     ? "Rimborsato"
-                    : "Contanti sul posto"}
+                    : booking.paymentMethod === "bank_transfer"
+                      ? "Bonifico in attesa"
+                      : "Contanti sul posto"}
               </p>
+              {booking.paymentMethod === "bank_transfer" && (
+                <p className="whitespace-pre-wrap">
+                  Causale: {booking.pnr}. {booking.paymentInstructions}
+                </p>
+              )}
+              {booking.categorySnapshot && (
+                <p>
+                  {booking.categorySnapshot
+                    .filter((c) => c.quantity)
+                    .map((c) => `${c.quantity} ${c.label}`)
+                    .join(" · ")}
+                </p>
+              )}
               <p>
                 {booking.meetingPoint}
                 <br />
@@ -130,7 +145,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                 <p>
                   {booking.cancellationReason}
                   {booking.refundCents
-                    ? ` · Rimborso previsto: ${formatMoney(booking.refundCents)} · stato: ${booking.refundStatus === "succeeded" ? "completato" : booking.refundStatus === "manual" ? "in gestione allo staff" : "in elaborazione"}`
+                    ? ` · Rimborso previsto: ${formatMoney(booking.refundCents, booking.currency)} · stato: ${booking.refundStatus === "succeeded" ? "completato" : booking.refundStatus === "manual" ? "in gestione allo staff" : "in elaborazione"}`
                     : ""}
                 </p>
               )}
@@ -201,7 +216,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                 >
                   <p>
                     {booking.paymentStatus === "paid"
-                      ? `Rimborso previsto secondo le condizioni accettate: ${formatMoney(booking.refundPreviewCents)}.`
+                      ? `Rimborso previsto secondo le condizioni accettate: ${formatMoney(booking.refundPreviewCents, booking.currency)}.`
                       : "Non ci sono pagamenti registrati da rimborsare."}{" "}
                     I posti saranno liberati dopo la conferma.
                   </p>

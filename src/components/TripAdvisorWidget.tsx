@@ -16,6 +16,45 @@ export type TripAdvisorReview = {
 
 const AUTOPLAY_MS = 5000;
 
+function WriteReviewCta({
+  profileUrl,
+  googleReviewUrl,
+}: {
+  profileUrl: string;
+  googleReviewUrl?: string;
+}) {
+  return (
+    <div className={styles.writeReview}>
+      <p>Hai esplorato Praga con noi? Lascia una recensione.</p>
+      <div className={styles.writeReviewActions}>
+        {googleReviewUrl ? (
+          <a
+            className={styles.writeReviewBtn}
+            href={googleReviewUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Scrivi una recensione su Google
+          </a>
+        ) : null}
+        <a
+          className={styles.writeReviewBtn}
+          href={profileUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Scrivi una recensione su Tripadvisor
+          <ArrowUpRight
+            size={15}
+            className={styles.reviewsButtonArrow}
+            aria-hidden
+          />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function ReviewCardBody({ review }: { review: TripAdvisorReview }) {
   return (
     <div className={styles.reviewInner}>
@@ -53,6 +92,7 @@ function ReviewCardBody({ review }: { review: TripAdvisorReview }) {
 export function TripAdvisorWidget({
   tripAdvisor,
   layout = "section",
+  googleReviewUrl,
 }: {
   tripAdvisor: {
     profileUrl: string;
@@ -63,6 +103,7 @@ export function TripAdvisorWidget({
     reviews: TripAdvisorReview[];
   };
   layout?: "section" | "card";
+  googleReviewUrl?: string;
 }) {
   const reviews = tripAdvisor.reviews;
   const [index, setIndex] = useState(0);
@@ -328,6 +369,12 @@ export function TripAdvisorWidget({
               )}
             </div>
           )}
+        </div>
+        <div className={styles.writeReviewSlot}>
+          <WriteReviewCta
+            profileUrl={tripAdvisor.profileUrl}
+            googleReviewUrl={googleReviewUrl}
+          />
         </div>
       </div>
     </section>

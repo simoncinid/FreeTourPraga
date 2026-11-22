@@ -1,3 +1,4 @@
+import { tourHeadlinePrice } from "./participant-pricing";
 import { tourPath } from "./public-paths";
 import { absoluteUrl, site, socialLinks } from "./site";
 import type { Tour } from "./types";
@@ -69,9 +70,17 @@ export function tourJsonLd(tour: Tour) {
     },
     offers: {
       "@type": "Offer",
-      price: (tour.basePriceCents / 100).toFixed(2),
-      priceCurrency: "EUR",
-      ...(tour.slots.length ? { availability: tour.slots.some(slot => slot.capacity > slot.reserved) ? "https://schema.org/InStock" : "https://schema.org/SoldOut" } : {}),
+      price: (tourHeadlinePrice(tour).priceCents / 100).toFixed(2),
+      priceCurrency: tour.currency ?? "EUR",
+      ...(tour.slots.length
+        ? {
+            availability: tour.slots.some(
+              (slot) => slot.capacity > slot.reserved,
+            )
+              ? "https://schema.org/InStock"
+              : "https://schema.org/SoldOut",
+          }
+        : {}),
       url: absoluteUrl(tourPath(tour)),
     },
     itinerary: {

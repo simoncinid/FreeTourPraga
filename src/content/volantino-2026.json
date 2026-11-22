@@ -1,0 +1,481 @@
+{
+  "sourceUrl": "https://it.freetourpraga.com/wp-content/uploads/2026/11/Scopri-i-nostri-tour-a-Praga-2026.pdf",
+  "sha256": "bc9f8e0d873cd1100640d5b64ee24eaa4bc403497afdc5d96227f30cf888e9fb",
+  "tours": [
+    {
+      "slug": "free-tour-praga",
+      "title": "Città Vecchia e Quartiere Ebraico",
+      "category": "Gli essenziali",
+      "description": "Una piacevole passeggiata per le strade della Città Vecchia e del Quartiere Ebraico alla scoperta di alcuni dei monumenti più importanti in città. Ammirerete la bellezza della Piazza della Città Vecchia, la complessità dell’orologio astronomico e il fascino del quartiere ebraico. In più scoprirete tutti gli avvenimenti storici più importanti fino all’età contemporanea. Un viaggio nella storia millenaria della capitale boema, imprescindibile per poter conoscere al meglio la città di Praga. Il tour non prevede un costo fisso, al termine della visita guidata sarete voi a stabilire il prezzo più idoneo in base al lavoro svolto dalla guida. ATTENZIONE: Per i gruppi superiori a 6 persone si prega di contattarci per concordare un pagamento minimo o organizzare il tour in forma privata al fine di garantire la qualitá del servizio.",
+      "operatingDays": "Tutti i giorni",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departureTime": "10:00",
+      "durationMinutes": 150,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 0,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 13–19 anni",
+          "priceCents": 0,
+          "minAge": 13,
+          "maxAge": 19
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–12 anni",
+          "priceCents": 0,
+          "minAge": 6,
+          "maxAge": 12
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza."
+      ],
+      "currency": "EUR",
+      "highlights": [
+        "Piazza della Città Vecchia",
+        "Orologio astronomico",
+        "Quartiere Ebraico",
+        "Storia di Praga fino all’età contemporanea"
+      ]
+    },
+    {
+      "slug": "castello-praga-mala-strana",
+      "title": "Castello di Praga e Malá Strana",
+      "category": "Gli essenziali",
+      "description": "Scopri con noi il simbolo dello stato ceco: Il Castello di Praga. Dal nostro punto di incontro ci dirigeremo verso il caratteristico quartiere di Malá Strana dove vedremo il Ponte Carlo, l’Isola di Kampa, il Muro di John Lennon e la Chiesa del Bambin Gesù di Praga. Entreremo poi nell’area del Castello di Praga dove visiteremo le 3 corti e ammireremo i maggiori punti di interesse come l’esterno della Cattedrale di San Vito, la Porta Mattia e la Porta dei Giganti. Vedremo dall’esterno l’antico Palazzo Reale e la Basilica di San Giorgio ed entreremo infine nel pittoresco Vicolo d’Oro. Durante il tour è previsto uno spostamento con i mezzi di trasporto. É necessario munirsi in anticipo di un biglietto da 39 corone (valido per 30 minuti).",
+      "operatingDays": "Tutti i giorni",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departureTime": "14:30",
+      "durationMinutes": 150,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 40000,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 13–19 anni",
+          "priceCents": 35000,
+          "minAge": 13,
+          "maxAge": 19
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–12 anni",
+          "priceCents": 20000,
+          "minAge": 6,
+          "maxAge": 12
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza.",
+        "Munirsi in anticipo di un biglietto mezzi da 39 CZK, valido 30 minuti."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Ponte Carlo e Isola di Kampa",
+        "Muro di John Lennon e Chiesa del Bambin Gesù",
+        "Tre corti del Castello",
+        "Cattedrale di San Vito, Palazzo Reale e Basilica di San Giorgio dall’esterno",
+        "Vicolo d’Oro"
+      ]
+    },
+    {
+      "slug": "citta-nuova-di-praga",
+      "title": "Città Nuova e Missione Anthropoid",
+      "category": "Gli essenziali",
+      "description": "Scopri con noi il Novecento praghese passeggiando tra i monumenti e i luoghi più suggestivi di questo controverso secolo, partendo da Piazza Venceslao, la piazza che fu teatro delle principali proteste e manifestazioni contro l’invasione nazista e successivamente contro il partito comunista, ci dirigeremo verso la storica Galleria Lucerna per arrivare alla sorprendente chiesa della Madonna delle Nevi e alla testa rotante di Kafka. Visiteremo poi Karlovo Náměstí, la piazza più grande della Repubblica Ceca, e la cripta della chiesa dei Santi Cirillo e Metodio, teatro finale dell’Operazione Anthropoid, una delle missioni militari più importanti della Seconda Guerra Mondiale. Concluderemo in riva al fiume con la particolarissima Casa Danzante.",
+      "operatingDays": "Martedì, venerdì e domenica",
+      "weekdays": [
+        2,
+        5,
+        0
+      ],
+      "departureTime": "10:30",
+      "durationMinutes": 120,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 40000,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 13–19 anni",
+          "priceCents": 35000,
+          "minAge": 13,
+          "maxAge": 19
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–12 anni",
+          "priceCents": 20000,
+          "minAge": 6,
+          "maxAge": 12
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Piazza Venceslao",
+        "Galleria Lucerna e Madonna delle Nevi",
+        "Testa rotante di Kafka",
+        "Karlovo Náměstí",
+        "Cripta dei Santi Cirillo e Metodio e Operazione Anthropoid",
+        "Casa Danzante"
+      ]
+    },
+    {
+      "slug": "comunismo",
+      "title": "Comunismo e Bunker Antiatomico",
+      "category": "Tuffo nella storia",
+      "description": "Un toccante viaggio alla scoperta di uno dei periodi più bui della storia cecoslovacca. Nel 1948 il partito comunista cecoslovacco, con un colpo di stato, prese il potere come partito unico alla guida del paese. É l’inizio della dittatura comunista. Scopri con noi i momenti più duri di questa orribile dittatura, la storia di Jan Palach e Jan Zajíc che si immolarono in segno di protesta dandosi fuoco durante la Primavera di Praga e le storie degli eroi che guidarono il popolo verso la libertà come Vaclav Havel e i dissidenti della Charta 77. Durante il tour visiteremo anche un bunker antiatomico realizzato durante la guerra fredda e destinato all’élite del partito comunista, riutilizzato poi come base e centro segreto di spionaggio dalle STB, i servizi segreti comunisti cecoslovacchi.",
+      "operatingDays": "Lunedì, mercoledì, venerdì e domenica",
+      "weekdays": [
+        1,
+        3,
+        5,
+        0
+      ],
+      "departureTime": "15:00",
+      "durationMinutes": 150,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 65000,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 13–19 anni",
+          "priceCents": 60000,
+          "minAge": 13,
+          "maxAge": 19
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–12 anni",
+          "priceCents": 30000,
+          "minAge": 6,
+          "maxAge": 12
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Ingresso al bunker",
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Dittatura comunista dal 1948",
+        "Jan Palach e Jan Zajíc",
+        "Václav Havel e Charta 77",
+        "Bunker antiatomico e storia delle STB"
+      ]
+    },
+    {
+      "slug": "petrin-monastero-strahov",
+      "title": "Biblioteca di Strahov e Quartiere Hradčany",
+      "category": "Gli angoli nascosti",
+      "description": "Un tour unico alla scoperta dei tesori nascosti di Praga, dove il fascino storico si fonde con il barocco boemo. Visiteremo l'antico Monastero di Strahov, ammirando la Chiesa dell'Assunzione e la spettacolare biblioteca teologica e filosofica con oltre 200.000 volumi. Dopo una breve sosta all'antica birreria dei monaci, proseguiremo verso il Loreto, Palazzo Černín, il pittoresco quartiere di Nový Svět e l'elegante piazza Hradčanské náměstí. L'itinerario varia in base alla stagione: • Periodo estivo (1 mag - 31 ott): salita panoramica con la funicolare sulla collina di Petřín prima del monastero e conclusione davanti al Castello. • Periodo invernale (1 nov - 30 apr): Biblioteca e discesa a Hradčanské náměstí, poi lungo via Nerudova fino a Malá Strana, concludendo nella Chiesa di San Nicola (NO FUNICOLARE)",
+      "operatingDays": "Lunedì, mercoledì e venerdì",
+      "weekdays": [
+        1,
+        3,
+        5
+      ],
+      "departureTime": "09:30",
+      "durationMinutes": 180,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 90000,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 15–19 anni",
+          "priceCents": 80000,
+          "minAge": 15,
+          "maxAge": 19
+        },
+        {
+          "id": "senior",
+          "label": "Over 65",
+          "priceCents": 75000,
+          "minAge": 65
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–14 anni",
+          "priceCents": 30000,
+          "minAge": 6,
+          "maxAge": 14
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Trasporto",
+        "Biblioteca di Strahov",
+        "Funicolare in estate / San Nicola in inverno",
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza.",
+        "Estate (1 maggio–31 ottobre): funicolare di Petřín e conclusione davanti al Castello.",
+        "Inverno (1 novembre–30 aprile): Biblioteca, via Nerudova e Chiesa di San Nicola; senza funicolare."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Monastero e Biblioteca di Strahov",
+        "Antica birreria dei monaci",
+        "Loreto e Palazzo Černín",
+        "Nový Svět e Hradčanské náměstí",
+        "Petřín e funicolare in estate",
+        "Via Nerudova e Chiesa di San Nicola in inverno"
+      ]
+    },
+    {
+      "slug": "tour-praga-esoterica",
+      "title": "Praga Esoterica",
+      "category": "Tuffo nella storia",
+      "description": "Tra il XVI e il XVII secolo, durante il regno di Rodolfo II d’Asburgo, passato alla storia come Il Re Folle di Praga, la capitale boema visse un periodo di forte fermento culturale e di sviluppo delle dottrine esoteriche favorito dal re in persona, il quale, interessato all’apprendimento di queste arti esoteriche, invitò alla corte praghese centinaia di alchimisti ed esoteristi di ogni genere provenienti da tutto il mondo. Ancora oggi Praga mostra i segni di una profonda cultura esoterica, segni che sono impressi nei monumenti, nei palazzi e tra i tortuosi vicoli della città. Seguici in questo viaggio a caccia dei simboli esoterici di Praga, scopri come leggerli e interpretarli e svela il segreto che ancora oggi si cela nel percorso iniziatico nascosto tra le strade di Praga.",
+      "operatingDays": "Martedì, giovedì e sabato",
+      "weekdays": [
+        2,
+        4,
+        6
+      ],
+      "departureTime": "18:00",
+      "durationMinutes": 120,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 50000,
+          "minAge": 20
+        },
+        {
+          "id": "young",
+          "label": "Ridotto 13–19 anni",
+          "priceCents": 45000,
+          "minAge": 13,
+          "maxAge": 19
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 6–12 anni",
+          "priceCents": 30000,
+          "minAge": 6,
+          "maxAge": 12
+        },
+        {
+          "id": "infants",
+          "label": "Minori di 6 anni",
+          "priceCents": 0,
+          "minAge": 0,
+          "maxAge": 5
+        }
+      ],
+      "inclusions": [
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Praga di Rodolfo II",
+        "Alchimisti e dottrine esoteriche",
+        "Simboli nei monumenti e nei vicoli",
+        "Percorso iniziatico tra le strade della città"
+      ]
+    },
+    {
+      "slug": "interni-castello-praga",
+      "title": "Tour degli interni del Castello",
+      "category": "Gli essenziali",
+      "description": "Scoprite con noi l’affascinante storia del monumento più importante dello Stato Ceco: il Castello di Praga. Oltre alla visita di tutti gli ambienti esterni, accederemo all’imponente Cattedrale di San Vito, un vero e proprio gioiello dell’arte gotica. Ci dirigeremo poi verso l’antico Palazzo Reale e visiteremo la maestosa Sala Vladislao. A mezzogiorno osserveremo l’affascinante rito del cambio della guardia con musiche originali suonate dall’orchestra dell’esercito della Repubblica Ceca. Entreremo nell’incantevole Chiesa romanica di San Giorgio risalente al X secolo, uno dei luoghi di culto più antichi della Boemia, e visiteremo infine il famoso Vicolo d’Oro con ricostruzioni di tipiche abitazioni popolari dal cinquecento fino al XX secolo.",
+      "operatingDays": "Martedì, giovedì e sabato",
+      "weekdays": [
+        2,
+        4,
+        6
+      ],
+      "departureTime": "09:30",
+      "durationMinutes": 180,
+      "arrivalMinutes": 15,
+      "priceCategories": [
+        {
+          "id": "adults",
+          "label": "Adulti",
+          "priceCents": 125000,
+          "minAge": 17
+        },
+        {
+          "id": "senior",
+          "label": "Over 65",
+          "priceCents": 112500,
+          "minAge": 65
+        },
+        {
+          "id": "students",
+          "label": "Studenti fino a 26 anni",
+          "priceCents": 112500,
+          "minAge": 0,
+          "maxAge": 26
+        },
+        {
+          "id": "children",
+          "label": "Ridotto 7–16 anni",
+          "priceCents": 50000,
+          "minAge": 7,
+          "maxAge": 16
+        }
+      ],
+      "inclusions": [
+        "Biglietti di ingresso",
+        "Guida italiana"
+      ],
+      "safetyNotes": [
+        "Presentarsi 15 minuti prima della partenza.",
+        "Il volantino non specifica una tariffa per minori di 7 anni: contattaci prima di prenotare per questa fascia."
+      ],
+      "currency": "CZK",
+      "highlights": [
+        "Ambienti esterni del Castello",
+        "Cattedrale di San Vito",
+        "Antico Palazzo Reale e Sala Vladislao",
+        "Cambio della guardia a mezzogiorno",
+        "Basilica di San Giorgio",
+        "Vicolo d’Oro"
+      ]
+    }
+  ],
+  "offers": [
+    {
+      "tours": [
+        "Castello",
+        "Città Nuova"
+      ],
+      "priceCents": 70000
+    },
+    {
+      "tours": [
+        "Città Nuova",
+        "Comunismo"
+      ],
+      "priceCents": 95000
+    },
+    {
+      "tours": [
+        "Castello",
+        "Comunismo"
+      ],
+      "priceCents": 95000
+    },
+    {
+      "tours": [
+        "Castello",
+        "Praga Esoterica"
+      ],
+      "priceCents": 80000
+    },
+    {
+      "tours": [
+        "Città Nuova",
+        "Praga Esoterica"
+      ],
+      "priceCents": 80000
+    },
+    {
+      "tours": [
+        "Comunismo",
+        "Praga Esoterica"
+      ],
+      "priceCents": 105000
+    }
+  ],
+  "offersNote": "Offerte riservate ai paganti adulti, prenotando durante il Free Tour Città Vecchia o tramite servizio clienti. Non applicabili alle prenotazioni online.",
+  "currency": "CZK"
+}

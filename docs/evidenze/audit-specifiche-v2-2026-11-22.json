@@ -1,0 +1,684 @@
+{
+  "date": "2026-11-22",
+  "scope": "Ricontrollo documentale e mirato del codice/dati locali; nessuna correzione applicativa",
+  "documents": [
+    {
+      "version": "V1",
+      "pages": 8,
+      "sha256": "edf0b41dd17b23f82a922a2cc8e204343a3046710b2543fb8c788f580a6a412d"
+    },
+    {
+      "version": "V1 (1)",
+      "pages": 7,
+      "sha256": "1c505b9da863d25dd899f4b6590d8f686e7f11996bd96ad85c781a75aad7004f"
+    },
+    {
+      "version": "V2",
+      "pages": 6,
+      "sha256": "c5eb3990c11ef96846e24c3f5e1f3ed577db4c469e9986d1327d7d82dc2eb855"
+    }
+  ],
+  "matrix": {
+    "rows": 108,
+    "completed": 79,
+    "open": 29,
+    "openIds": [
+      "H09",
+      "H14",
+      "H18",
+      "N06",
+      "N09",
+      "N10",
+      "T12",
+      "E01",
+      "E02",
+      "E03",
+      "E05",
+      "E06",
+      "E07",
+      "E10",
+      "E11",
+      "C02",
+      "C06",
+      "C08",
+      "C10",
+      "C11",
+      "A04",
+      "Q05",
+      "D06",
+      "T21",
+      "T22",
+      "E12",
+      "E13",
+      "C14",
+      "A09"
+    ]
+  },
+  "probes": {
+    "editorRoutes": {
+      "homepage": {
+        "genericPageForm": true,
+        "structuredContentForm": false
+      },
+      "blog": {
+        "genericPageForm": true,
+        "structuredContentForm": false
+      },
+      "faq": {
+        "genericPageForm": true,
+        "structuredContentForm": false
+      }
+    },
+    "navigation": {
+      "initialHeaderTourChildren": 3,
+      "initialCmsTourChildren": 0
+    },
+    "categoryPrice": {
+      "categoryCents": 99900,
+      "cardBaseCents": 2900
+    },
+    "legacyTourClosureAfterOpen": {
+      "slotClosed": false,
+      "stillClosedForBooking": true
+    },
+    "bareSlotClosureAfterGeneration": {
+      "closed": false
+    }
+  },
+  "localBrochureComparison": {
+    "tourRecords": 7,
+    "comparedFieldsPerTour": 10,
+    "mismatches": 0,
+    "castleInteriorsOperationalReviewRequired": true
+  },
+  "checks": [
+    {
+      "id": "D01",
+      "status": "pass",
+      "result": "esclusione esplicita dell’account conforme alla decisione utente; filtro menu in navigation.ts e 404 in proxy.ts."
+    },
+    {
+      "id": "D02",
+      "status": "pass",
+      "result": "gestione firmata della singola prenotazione in booking.ts e ManageBooking.tsx; scenari move/cancel nel collaudo precedente."
+    },
+    {
+      "id": "D03",
+      "status": "pass",
+      "result": "currency EUR come fallback, CZK esplicito nei sei listini pagati del volantino; valuta salvata in quote/ordine/prenotazione. Carrelli misti rifiutati, senza conversione."
+    },
+    {
+      "id": "D04",
+      "status": "pass",
+      "result": "i campi indirizzi/social/recensioni sono predisposti; i valori reali assenti non sono sostituiti con dati fittizi. Completamento operativo distinto nelle X dedicate."
+    },
+    {
+      "id": "D05",
+      "status": "pass",
+      "result": "scelta provvisoria consentita dall’utente: mantenuta la palette esistente. Non equivale all’applicazione dell’identità definitiva: D06."
+    },
+    {
+      "id": "H01",
+      "status": "pass",
+      "result": "H1 ufficiale presente in defaultSiteContent(), archivio locale e rendering home; le interruzioni di riga sono solo grafiche."
+    },
+    {
+      "id": "H02",
+      "status": "pass",
+      "result": "testo ufficiale presente come heroEyebrow e visualizzato sopra l’H1. La posizione è una scelta grafica, il testo è conservato."
+    },
+    {
+      "id": "H03",
+      "status": "pass",
+      "result": "descrizione ufficiale presente in defaultSiteContent(), archivio locale e home."
+    },
+    {
+      "id": "H04",
+      "status": "pass",
+      "result": "HeroTourCta e collegamento contentWhatsapp; etichette ufficiali presenti. Destinazione WhatsApp costruita dal recapito configurato."
+    },
+    {
+      "id": "H05",
+      "status": "pass",
+      "result": "quattro coppie titolo/testo in home.stats e quattro icone nel rendering home."
+    },
+    {
+      "id": "H06",
+      "status": "pass",
+      "result": "quattro gruppi richiesti presenti in home.groups; tours mancanti dal catalogo rimandano a richiesta informazioni. Possono comparire anche tour/categorie già esistenti."
+    },
+    {
+      "id": "H07",
+      "status": "pass",
+      "result": "ExperienceRotator gestisce gruppi e rotazione con intervallo; ExperienceGroupsEditor è presente. Accesso diretto all’editor home resta difettoso: E12."
+    },
+    {
+      "id": "H08",
+      "status": "pass",
+      "result": "titolo e corpo ufficiali presenti nell’archivio locale e nella sezione home.trust."
+    },
+    {
+      "id": "H09",
+      "status": "open",
+      "result": "Testo: i quattro box e i corpi sono presenti, ma il quarto titolo è «Assistenza diretta 7 su 7», anziché «Assistenza diretta 7 giorni su 7». Allineamento letterale non completo."
+    },
+    {
+      "id": "H10",
+      "status": "pass",
+      "result": "galleryEyebrow/galleryTitle/galleryBody corrispondono ai contenuti richiesti, con normalizzazione tipografica dell’apostrofo."
+    },
+    {
+      "id": "H11",
+      "status": "pass",
+      "result": "sei risposte ufficiali in aiQuestions/content.answers e rendering HomeAnswers. Modifica tramite link CMS FAQ da correggere: E12."
+    },
+    {
+      "id": "H12",
+      "status": "pass",
+      "result": "titolo, corpo, CTA e link /partner-europa presenti nella home e nei dati locali."
+    },
+    {
+      "id": "H13",
+      "status": "pass",
+      "result": "globals.tripAdvisorTitle e tripAdvisorBody corrispondono a V2; TripAdvisorSection li passa al widget."
+    },
+    {
+      "id": "H14",
+      "status": "open",
+      "result": "Dato: campo e pulsante Google predisposti; googleReviewUrl è vuoto nell’archivio locale. Manca la destinazione ufficiale."
+    },
+    {
+      "id": "H15",
+      "status": "pass",
+      "result": "WriteReviewCta usa il profilo ufficiale Tripadvisor configurabile. Il requisito parla di collegamento alla pagina ufficiale, non impone una specifica URL del modulo recensione."
+    },
+    {
+      "id": "H16",
+      "status": "pass",
+      "result": "MeetingPoints contiene iframe interattivo, radio e indicazioni del punto selezionato. Attualmente iframe con loading lazy, non caricamento dietro pulsante; tale pulsante non è richiesto dai PDF."
+    },
+    {
+      "id": "H17",
+      "status": "pass",
+      "result": "indirizzo del Teatro degli Stati esatto nei dati globali e nell’importazione delle specifiche."
+    },
+    {
+      "id": "H18",
+      "status": "open",
+      "result": "Dato/integrazione: castleMeetingAddress è vuoto. La mappa può usare il campo, ma il semplice salvataggio dei dati globali non aggiorna anche meetingAddress/abilitazione del tour già importato."
+    },
+    {
+      "id": "N01",
+      "status": "pass",
+      "result": "MobileNavigation chiude details alla selezione di un link e al cambio pathname; percorso mobile verificato nel collaudo precedente."
+    },
+    {
+      "id": "N02",
+      "status": "pass",
+      "result": "Header usa siteNavigation con le quattro voci principali, Altro e carrello. Il pulsante account è escluso per decisione dell’utente."
+    },
+    {
+      "id": "N03",
+      "status": "pass",
+      "result": "defaultNavigation raggruppa Partner Europa, Agenzie e scuole, Blog, FAQ e Aiuto sotto Altro; esiste /aiuto."
+    },
+    {
+      "id": "N04",
+      "status": "pass",
+      "result": "bordo bianco del Torna su in globals.css e collocazione sopra gli altri contatti; nessuna dipendenza dal colore scuro del footer."
+    },
+    {
+      "id": "N05",
+      "status": "pass",
+      "result": "floating-instagram tra WhatsApp e Torna su; ig.me usa l’handle ricavato dal volantino. Controllata la configurazione, non il recapito di messaggi su Instagram."
+    },
+    {
+      "id": "N06",
+      "status": "open",
+      "result": "Dato: profili Facebook e Instagram presenti; mancano TikTok, YouTube e LinkedIn. Supporto icone e campi non equivale a cinque collegamenti attivi."
+    },
+    {
+      "id": "N07",
+      "status": "pass",
+      "result": "Informazioni utili usa BlogGuideList: immagine, anteprima e link all’articolo. Il layout usa lo stesso schema a card delle esperienze."
+    },
+    {
+      "id": "N08",
+      "status": "pass",
+      "result": "Contatti raccoglie gli indirizzi dei tour pubblicati, elimina duplicati del punto principale e mostra gli altri ritrovi. Il punto Castello non confermato resta H18."
+    },
+    {
+      "id": "N09",
+      "status": "open",
+      "result": "Dato: officeAddress è vuoto. Dicitura «previo appuntamento» predisposta ma non visibile senza l’indirizzo reale."
+    },
+    {
+      "id": "N10",
+      "status": "open",
+      "result": "Dato: il requisito originario elenca cinque social anche nei Contatti. SocialLinks è riusato, ma i profili disponibili sono soltanto due, come N06."
+    },
+    {
+      "id": "N11",
+      "status": "pass",
+      "result": "campo tel in InquiryForm, validazione API, persistenza phone, visualizzazione nelle richieste staff e pulizia per retention."
+    },
+    {
+      "id": "N12",
+      "status": "pass",
+      "result": "griglia partner collocata dopo CollaborationPage/form; nessuna scheda fittizia pubblicata. Con zero partner approvati la griglia è omessa."
+    },
+    {
+      "id": "N13",
+      "status": "pass",
+      "result": "scheda pubblica con nome, immagine opzionale, descrizione, contatti e link tracciato; CRUD e rendering esaminati."
+    },
+    {
+      "id": "T01",
+      "status": "pass",
+      "result": "TourFilters non contiene più il campo Cerca né il filtro testuale libero."
+    },
+    {
+      "id": "T02",
+      "status": "pass",
+      "result": "TourFilters usa meno/più, minimo 1 e massimo derivato dalla capienza dei tour."
+    },
+    {
+      "id": "T03",
+      "status": "pass",
+      "result": "riesaminati testo e struttura del volantino di 10 pagine; conservati URL e SHA256 nel JSON di importazione."
+    },
+    {
+      "id": "T04",
+      "status": "pass",
+      "result": "sette descrizioni e relativi highlights nel JSON; confronto dei dieci campi editoriali/operativi con i sette record locali senza differenze."
+    },
+    {
+      "id": "T05",
+      "status": "pass",
+      "result": "giorni riportati nel JSON e nei sette record locali, con weekdays coerenti nell’importazione. Coerenza dopo future modifiche distinta in T22."
+    },
+    {
+      "id": "T06",
+      "status": "pass",
+      "result": "orari e anticipo 15 minuti nel JSON, schede e record locali; il testo mostrato e la programmazione restano campi distinti."
+    },
+    {
+      "id": "T07",
+      "status": "pass",
+      "result": "durate di 150/120/180 minuti allineate al volantino e ai record locali."
+    },
+    {
+      "id": "T08",
+      "status": "pass",
+      "result": "inclusioni per guida, bunker, trasporto, Biblioteca, funicolare/San Nicola e ingressi Castello presenti nei listini pertinenti."
+    },
+    {
+      "id": "T09",
+      "status": "pass",
+      "result": "nota 39 CZK/30 minuti e varianti stagionali Strahov conservate in descrizione e safetyNotes."
+    },
+    {
+      "id": "T10",
+      "status": "pass",
+      "result": "importi e categorie dei sei tour pagati confrontati con il volantino e con i dati locali; nessuna conversione EUR. Il volantino non indica un prezzo per minori di 7 anni al Castello interni."
+    },
+    {
+      "id": "T11",
+      "status": "pass",
+      "result": "sei offerte e condizioni originali conservate; specialOffers nel CMS e onlineDiscounts=false sui tour del volantino. L’editor home resta soggetto a E12."
+    },
+    {
+      "id": "T12",
+      "status": "open",
+      "result": "Tecnico: descrizioni, giorni, durata, inclusioni e listino sono presenti, ma il prezzo in evidenza continua a leggere basePriceCents separato dalle categorie; dopo una modifica del listino può diventare incoerente. R3/T22."
+    },
+    {
+      "id": "T13",
+      "status": "pass",
+      "result": "TourCommercialEditor e tourSchema supportano aggiunta/rimozione, nome, età e prezzo di categorie per tour; calcolo server tramite selectedPrices. Coerenza del prezzo in evidenza esclusa: T22."
+    },
+    {
+      "id": "T14",
+      "status": "pass",
+      "result": "categorie sovrapposte restano visibili e selezionabili; test dedicato su adulti/studenti/over 65. Non si introduce un filtro automatico per età."
+    },
+    {
+      "id": "T15",
+      "status": "pass",
+      "result": "QuickBooking, usato anche nella pagina tour, mostra prezzo unitario e meno/più per ogni categoria; preventivo ricalcolato dal server."
+    },
+    {
+      "id": "T16",
+      "status": "pass",
+      "result": "carrello e checkout trasmettono categorie/quantità, il server controlla capienza e salva snapshot/valuta; collaudo precedente con tre categorie in CZK."
+    },
+    {
+      "id": "T17",
+      "status": "pass",
+      "result": "selettore Free Tour/a pagamento in TourOperationsEditor; isFreeTour influenza le regole di calcolo. Configurazione dei metodi di pagamento distinta in T21."
+    },
+    {
+      "id": "T18",
+      "status": "pass",
+      "result": "freeGroupLimit/freeGroupMode/freeGroupPriceCents configurabili, con controlli server e regola contatto oltre 6 per il Free Tour del volantino."
+    },
+    {
+      "id": "T19",
+      "status": "pass",
+      "result": "capienza per prenotazione e per partenza modificabili; rimosso il tetto funzionale 25. Rimane il limite tecnico di validazione 10.000."
+    },
+    {
+      "id": "T20",
+      "status": "pass",
+      "result": "importazione locale con dry run, backup e revisione idempotente; non esegue automaticamente la stessa revisione sui dati Railway."
+    },
+    {
+      "id": "E01",
+      "status": "open",
+      "result": "Tecnico: sezioni e blocchi esistono, ma l’esperienza non è uniforme e i link diretti home/blog/FAQ aprono il modulo pagina generico. Riprodotto mediante rendering del componente: R1."
+    },
+    {
+      "id": "E02",
+      "status": "open",
+      "result": "Tecnico: il tour dispone di sezioni specifiche; molte pagine mantengono titolo/sopratitolo/testo in un modulo generico. Home/blog/FAQ hanno il difetto R1; uniformazione non completata."
+    },
+    {
+      "id": "E03",
+      "status": "open",
+      "result": "Tecnico: aggiunta blocchi presente per tour e alcune pagine, ma il percorso /admin/contenuti/homepage passa dall’endpoint SEO che non pubblica i nuovi blocchi. Non soddisfatto «in entrambe le sezioni» senza eccezioni. R1."
+    },
+    {
+      "id": "E04",
+      "status": "pass",
+      "result": "SectionBlocksEditor offre su/giù e rimozione per i blocchi; renderer conserva l’ordine. La copertura delle pagine cui applicarli è E03/E05."
+    },
+    {
+      "id": "E05",
+      "status": "open",
+      "result": "Tecnico: SectionBlocks è collegato a tour, home, Chi siamo, catalogo, Contatti, Partner Europa e ContentBlock; non a tutte le pagine pubbliche. Percorso home non persistente per R1."
+    },
+    {
+      "id": "E06",
+      "status": "open",
+      "result": "Tecnico: autonomia CMS parziale. Testi di pagine B2B/lavoro/collaborazioni e varie etichette restano nel codice; percorsi editoriali incompleti e prezzo in evidenza non sincronizzato. R1/R2/R3."
+    },
+    {
+      "id": "E07",
+      "status": "open",
+      "result": "Tecnico: albero aggiuntivo presente ma non identico all’header. Header passa i tour a siteNavigation; ContentWorkspace no: sottomenu automatico tour vuoto. Alcune destinazioni finiscono sul generico pagine. R2."
+    },
+    {
+      "id": "E08",
+      "status": "pass",
+      "result": "NavigationEditor e schema supportano frecce su/giù per voci principali e sottovoci; header legge gli stessi dati salvati."
+    },
+    {
+      "id": "E09",
+      "status": "pass",
+      "result": "aggiunta/rimozione di voci principali e sottovoci implementata; non comprende la creazione automatica delle pagine di destinazione, non richiesta da questo punto."
+    },
+    {
+      "id": "E10",
+      "status": "open",
+      "result": "Tecnico: validazione e anteprima dei soli blocchi presenti. Su home/blog/FAQ il modulo sbagliato può inviare contenuti che l’endpoint tratta come soli metadati, senza pubblicarli: R1."
+    },
+    {
+      "id": "E11",
+      "status": "open",
+      "result": "Validazione cliente: prova/approvazione dell’editor non effettuata; inoltre l’editor da sottoporre al committente richiede prima le correzioni E01–E10."
+    },
+    {
+      "id": "C01",
+      "status": "pass",
+      "result": "frecce e input mese gestiscono anche il cambio anno; codice di shift basato su Date.UTC."
+    },
+    {
+      "id": "C02",
+      "status": "open",
+      "result": "Tecnico: dal/al e scorciatoie impostano il bersaglio delle operazioni, non filtrano la vista. «Questo mese»/«Mese scorso» usano il mese sfogliato, non necessariamente quello attuale. R4."
+    },
+    {
+      "id": "C03",
+      "status": "pass",
+      "result": "select multiplo più Seleziona tutti/Deseleziona e ambito testuale; selezione iniziale vuota. È una lista nativa, non un dropdown personalizzato."
+    },
+    {
+      "id": "C04",
+      "status": "pass",
+      "result": "con un tour selezionato, il click sul giorno apre un pannello con le partenze; il PDF ammette pannello o modale."
+    },
+    {
+      "id": "C05",
+      "status": "pass",
+      "result": "operazione open con orari espliciti crea partenze per i giorni selezionati; test API su un nuovo orario."
+    },
+    {
+      "id": "C06",
+      "status": "open",
+      "result": "Tecnico: chiudi/riapri funziona per le nuove calendarRules, ma riaprire un orario ancora presente in tour.closures non lo rende prenotabile. Riproduzione: slot.closed=false ma isTourClosed=true. R5."
+    },
+    {
+      "id": "C07",
+      "status": "pass",
+      "result": "modifica capienza per orario e validazione server contro i posti già riservati; rigetto 409 verificato nei test precedenti."
+    },
+    {
+      "id": "C08",
+      "status": "open",
+      "result": "Tecnico: operazioni per periodo presenti, ma riaperture di chiusure legacy per-tour incomplete; la combinazione libera di tutte le operazioni non è ancora garantita. R5."
+    },
+    {
+      "id": "C09",
+      "status": "pass",
+      "result": "nuove regole da/al, giorni e orari applicano eccezioni di capienza e partenze extra nel solo intervallo selezionato; test dedicati. Limiti di compatibilità in C06/C10."
+    },
+    {
+      "id": "C10",
+      "status": "open",
+      "result": "Tecnico: nuove regole riapplicate, ma generateScheduledSlots imposta previous.closed=false. Una chiusura conservata solo sullo slot viene persa; le closures legacy per-tour non sono superate dalla riapertura. R5."
+    },
+    {
+      "id": "C11",
+      "status": "open",
+      "result": "Tecnico: stesso componente/API dentro il tour, ma dopo una mutazione del calendario il TourEditor conserva il vecchio stato; il successivo salvataggio scheda può essere respinto per calendarRules diverse. Serve riallineare i due flussi. R6."
+    },
+    {
+      "id": "C12",
+      "status": "pass",
+      "result": "posti riservati conservati, controlli atomici e divieto di eliminare/spostare implicitamente partenze occupate; difetti di apertura non cancellano le prenotazioni."
+    },
+    {
+      "id": "C13",
+      "status": "pass",
+      "result": "schedule con giorni settimanali, orari, capienza e intervallo; generazione fino a 366 giorni e test di un anno completo. Non è una ricorrenza pluriennale infinita, che non è richiesta dal PDF."
+    },
+    {
+      "id": "A01",
+      "status": "pass",
+      "result": "commissionRules modificabili nella scheda tour per guide, agenzie, hotel e promoter. Tipologie ulteriori non configurabili: A09."
+    },
+    {
+      "id": "A02",
+      "status": "pass",
+      "result": "regole per free/paid/package e filtro facoltativo per codice affiliato. Beneficiario è l’affiliato associato alla vendita; non è implementata una ripartizione verso terzi."
+    },
+    {
+      "id": "A03",
+      "status": "pass",
+      "result": "fisso × partecipanti oppure percentuale del totale del tour dopo gli sconti; test commissionFor. Non è richiesta la conferma manuale di incasso cash per calcolare la commissione."
+    },
+    {
+      "id": "A04",
+      "status": "open",
+      "result": "Decisione da validare: esistono regole package, ma il codice considera pacchetto qualunque ordine con più righe. La documentazione distingue tour/pacchetto senza definire che ogni carrello multiplo lo sia. L’assunzione non va presentata come requisito confermato. R7."
+    },
+    {
+      "id": "A05",
+      "status": "pass",
+      "result": "commissionMatured controlla fine tour e stato confirmed/present; cancelled/no_show esclusi. Coerente con il criterio operativo indicato dall’utente."
+    },
+    {
+      "id": "A06",
+      "status": "pass",
+      "result": "cancelReservation azzera commissionCents; riepilogo esclude cancellati. Non equivale a un sistema contabile di recupero commissioni già pagate, non descritto nei PDF."
+    },
+    {
+      "id": "A07",
+      "status": "pass",
+      "result": "riepilogo previste/maturate/liquidate per valuta; endpoint pay ricontrolla maturazione, impedendo la liquidazione prima della fine del tour."
+    },
+    {
+      "id": "A08",
+      "status": "pass",
+      "result": "regola scelta copiata in commissionRuleSnapshot e importo salvato nella prenotazione; test verifica che un cambio successivo della regola non cambi lo snapshot."
+    },
+    {
+      "id": "P01",
+      "status": "pass",
+      "result": "partnerSchema, API PUT/DELETE e PartnersManager gestiscono schede, bozza/pubblicazione ed eliminazione logica."
+    },
+    {
+      "id": "P02",
+      "status": "pass",
+      "result": "ImageSourceField collegato all’immagine partner e al caricamento media esistente; immagini ammesse dallo schema."
+    },
+    {
+      "id": "P03",
+      "status": "pass",
+      "result": "link pubblico passa dal redirect del partner, valida la destinazione HTTPS e registra il conteggio. Bot/prefetch riconoscibili esclusi."
+    },
+    {
+      "id": "P04",
+      "status": "pass",
+      "result": "deduplica partner/giorno/visitatore con consenso; senza consenso solo click totali. Sono visitatori-giorno misurabili, non utenti unici nell’intero periodo: scelta esplicitata."
+    },
+    {
+      "id": "P05",
+      "status": "pass",
+      "result": "eliminazione logica conserva anagrafica di riferimento e conteggi storici; caso partner eliminato coperto nei test."
+    },
+    {
+      "id": "P06",
+      "status": "pass",
+      "result": "filtro dal/al e aggregati giornalieri in partnerStats e PartnersManager."
+    },
+    {
+      "id": "P07",
+      "status": "pass",
+      "result": "endpoint stats?format=csv esporta periodo, partner, totali e visitatori-giorno; caso verificato nel collaudo precedente."
+    },
+    {
+      "id": "Q01",
+      "status": "pass",
+      "result": "lint e TypeScript rieseguiti durante il ricontrollo: superati. Non dimostrano da soli la copertura dei requisiti."
+    },
+    {
+      "id": "Q02",
+      "status": "pass",
+      "result": "suite esistente rieseguita: 66/66. Le riproduzioni R1/R3/R5 dimostrano lacune della copertura, non invalidate dal verde della suite."
+    },
+    {
+      "id": "Q03",
+      "status": "pass",
+      "result": "evidenza precedente di test su PostgreSQL e flussi HTTP isolati disponibile; non rieseguiti integralmente in questo audit documentale e mirato."
+    },
+    {
+      "id": "Q04",
+      "status": "pass",
+      "result": "build standalone rieseguita durante l’audit: superata; nessun rilascio remoto."
+    },
+    {
+      "id": "Q05",
+      "status": "open",
+      "result": "Verifica: il precedente collaudo browser copre scenari selezionati, non tutti i percorsi editoriali. Non verifica i casi R1/R5/R6; con le lacune emerse non è un collaudo completo dei requisiti."
+    },
+    {
+      "id": "Q06",
+      "status": "pass",
+      "result": "tabella rettificata con stati puntuali, richieste omesse, fonti per pagina e riproduzioni. Il precedente totale 96/101 è superato da questo audit."
+    },
+    {
+      "id": "D06",
+      "status": "open",
+      "result": "X — Dato: la palette/set definitivi annunciati nei documenti non sono disponibili; l’aspetto provvisorio D05 non chiude questo requisito."
+    },
+    {
+      "id": "T21",
+      "status": "open",
+      "result": "X — Perimetro: checkoutSchema ammette solo cash e catalog dichiara stripe=false. Non c’è configurazione dei metodi per singolo tour; chiarire/attuare il requisito senza dare per autorizzata l’attivazione di provider esterni."
+    },
+    {
+      "id": "T22",
+      "status": "open",
+      "result": "X — Tecnico: categorie e basePriceCents sono separati senza sincronizzazione; prova 999,00 contro 29,00. Anche operatingDays/departureTime sono testi separati dalla schedule: richiedono aggiornamento distinto. R3."
+    },
+    {
+      "id": "E12",
+      "status": "open",
+      "result": "X — Tecnico riprodotto: ContentWorkspace classifica come pagina generica qualsiasi chiave già presente in pages, incluse homepage/blog/faq; API page salva soltanto SEO per tali chiavi. R1."
+    },
+    {
+      "id": "E13",
+      "status": "open",
+      "result": "X — Tecnico: pageLabels/route admin non coprono tutte le voci dell’header e le pagine storiche; /agenzie-b2b mantiene testi/benefit nel codice, Informazioni utili reindirizza l’editor a FAQ. R2."
+    },
+    {
+      "id": "C14",
+      "status": "open",
+      "result": "X — Tecnico: nella creazione il fixedTourId non esiste; OperationalCalendar riceve tutti i tour e apre il selettore generale. Occorre bloccare il calendario fino al primo salvataggio o limitarlo al nuovo tour. R6."
+    },
+    {
+      "id": "A09",
+      "status": "open",
+      "result": "X — Tecnico: il modello e lo schema ammettono solo hotel/guide/promoter/agency. Una categoria ulteriore non può essere creata autonomamente."
+    }
+  ],
+  "previousEvidence": "specifiche-v2-2026-11-22.json",
+  "verification": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "unitTests": {
+      "passed": 66,
+      "total": 66
+    },
+    "build": "passed",
+    "fullBrowserAndPostgresRerun": false,
+    "applicationFixesMade": false
+  },
+  "sourceReferences": {
+    "R1": [
+      "src/components/ContentWorkspace.tsx:180",
+      "src/lib/platform/api.ts:880"
+    ],
+    "R2": [
+      "src/components/Header.tsx",
+      "src/components/ContentWorkspace.tsx",
+      "src/app/admin/[...section]/page.tsx",
+      "src/app/agenzie-b2b/page.tsx"
+    ],
+    "R3": [
+      "src/components/TourCommercialEditor.tsx",
+      "src/components/TourCard.tsx",
+      "src/lib/platform/api.ts"
+    ],
+    "R4": [
+      "src/components/OperationalCalendar.tsx:33"
+    ],
+    "R5": [
+      "src/lib/platform/calendar-operations.ts",
+      "src/lib/platform/calendar-rules.ts",
+      "src/lib/platform/scheduling.ts"
+    ],
+    "R6": [
+      "src/components/AdminWorkspace.tsx:625",
+      "src/components/AdminWorkspace.tsx:1379",
+      "src/lib/platform/api.ts:731"
+    ],
+    "R7": [
+      "src/lib/platform/booking.ts:392",
+      "src/lib/platform/commissions.ts"
+    ]
+  },
+  "matrixIsHistorical": true,
+  "matrixSupersededBy": "correzione-t12-2026-11-22.json"
+}

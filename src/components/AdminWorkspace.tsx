@@ -1,5 +1,11 @@
 "use client";
-import { CalendarClosures } from "./CalendarClosures";
+import { jsonEqual } from "@/lib/json-equal";
+import { tourHeadlinePrice, categoriesFor } from "@/lib/participant-pricing";
+import { OperationalCalendar } from "./OperationalCalendar";
+import { PartnersManager } from "./PartnersManager";
+import { SectionBlocksEditor } from "./SectionBlocksEditor";
+import { TourCommercialEditor } from "./TourCommercialEditor";
+import { commissionMatured } from "@/lib/platform/commissions";
 import { TourOperationsEditor } from "./TourOperationsEditor";
 import Link from "next/link";
 import { TourGalleryEditor } from "./TourGalleryEditor";
@@ -47,6 +53,7 @@ const navigation = [
   ["prenotazioni", "Prenotazioni", Ticket],
   ["tour", "Tour e orari", MapIcon],
   ["calendario", "Calendario", CalendarDays],
+  ["partner-europa", "Partner Europa", Users],
   ["affiliati", "Affiliati", Users],
   ["pre-tour", "Email", Mail],
   ["last-minute", "Last minute", Settings2],
@@ -56,11 +63,7 @@ const navigation = [
 ] as const;
 
 /** Fuori perimetro Fase 1: OTA, Ads, audit. */
-const PHASE2_OR_EXTRA_SECTIONS = new Set<string>([
-  "canali",
-  "report",
-  "audit",
-]);
+const PHASE2_OR_EXTRA_SECTIONS = new Set<string>(["canali", "report", "audit"]);
 
 const phase1Navigation = navigation.filter(
   ([slug]) => !PHASE2_OR_EXTRA_SECTIONS.has(slug),
@@ -151,9 +154,9 @@ function Chip({ value }: { value: string }) {
   );
 }
 const adminTimeFormatter = new Intl.DateTimeFormat("it-IT", {
-    timeZone: "Europe/Prague",
-    dateStyle: "short",
-    timeStyle: "short",
+  timeZone: "Europe/Prague",
+  dateStyle: "short",
+  timeStyle: "short",
 });
 function time(value: string) {
   return adminTimeFormatter.format(new Date(value));
@@ -175,23 +178,33 @@ export function AdminWorkspace() {
     [tourFilter, setTourFilter] = useState(""),
     [dateFilter, setDateFilter] = useState(""),
     [slotFilter, setSlotFilter] = useState("");
-  const slotsByTour = useMemo(() => new Map(
-    (data?.tours ?? []).map((tour) => [tour.slug, new Map(tour.slots.map((slot) => [slot.id, slot]))]),
-  ), [data]);
-  const load = useCallback(async (signal?: AbortSignal) => {
-    const r = await fetch("/api/platform/admin/state", {
-      credentials: "same-origin",
-      cache: "no-store",
-      signal,
-    });
-    if (r.status === 401) {
-      router.replace("/accesso");
-      return;
-    }
-    const d = await r.json();
-    if (!r.ok) throw Error(d.error);
-    setData(d);
-  }, [router]);
+  const slotsByTour = useMemo(
+    () =>
+      new Map(
+        (data?.tours ?? []).map((tour) => [
+          tour.slug,
+          new Map(tour.slots.map((slot) => [slot.id, slot])),
+        ]),
+      ),
+    [data],
+  );
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      const r = await fetch("/api/platform/admin/state", {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal,
+      });
+      if (r.status === 401) {
+        router.replace("/accesso");
+        return;
+      }
+      const d = await r.json();
+      if (!r.ok) throw Error(d.error);
+      setData(d);
+    },
+    [router],
+  );
   useEffect(() => {
     const controller = new AbortController();
     load(controller.signal).catch((e) => {
@@ -243,7 +256,14 @@ export function AdminWorkspace() {
     );
   if (
     data.role !== "admin" &&
-    ["tour", "affiliati", "contenuti", "impostazioni", "sito"].includes(section)
+    [
+      "tour",
+      "affiliati",
+      "partner-europa",
+      "contenuti",
+      "impostazioni",
+      "sito",
+    ].includes(section)
   )
     return (
       <section className="section container-page">
@@ -255,8 +275,7 @@ export function AdminWorkspace() {
         </Link>
       </section>
     );
-  const slot = (b: Reservation) =>
-    slotsByTour.get(b.tourSlug)?.get(b.slotId);
+  const slot = (b: Reservation) => slotsByTour.get(b.tourSlug)?.get(b.slotId);
   const filtered = data.bookings.filter(
     (b) =>
       (!tourFilter || b.tourSlug === tourFilter) &&
@@ -270,10 +289,17 @@ export function AdminWorkspace() {
         .includes(search.toLowerCase()),
   );
   const active = data.bookings.filter((b) => b.status !== "cancelled");
-  const revenue = active.reduce((s, b) => s + b.totalCents, 0);
-  const collected = active
-    .filter((b) => b.paymentStatus === "paid")
-    .reduce((s, b) => s + b.totalCents, 0);
+  const moneyTotals = (rows: Reservation[]) =>
+    [...new Set(rows.map((b) => b.currency ?? "EUR"))]
+      .map((currency) =>
+        formatMoney(
+          rows
+            .filter((b) => (b.currency ?? "EUR") === currency)
+            .reduce((n, b) => n + b.totalCents, 0),
+          currency,
+        ),
+      )
+      .join(" + ") || formatMoney(0);
   const table = (rows: Reservation[]) => (
     <>
       <div className="grid gap-4 md:hidden">
@@ -295,7 +321,7 @@ export function AdminWorkspace() {
               partecipanti
             </p>
             <div className="flex justify-between">
-              <strong>{formatMoney(b.totalCents)}</strong>
+              <strong>{formatMoney(b.totalCents, b.currency)}</strong>
               <Chip value={b.paymentStatus} />
             </div>
           </article>
@@ -342,7 +368,7 @@ export function AdminWorkspace() {
                   </small>
                 </td>
                 <td>{b.totalGuests}</td>
-                <td>{formatMoney(b.totalCents)}</td>
+                <td>{formatMoney(b.totalCents, b.currency)}</td>
                 <td>
                   <Chip value={b.status} />
                 </td>
@@ -390,9 +416,7 @@ export function AdminWorkspace() {
               .filter(
                 ([slug]) =>
                   data.role === "admin" ||
-                  !["tour", "contenuti", "impostazioni", "sito"].includes(
-                    slug,
-                  ),
+                  !["tour", "contenuti", "impostazioni", "sito"].includes(slug),
               )
               .map(([slug, label, Icon]) => (
                 <Link key={slug} href={`/admin${slug ? "/" + slug : ""}`}>
@@ -458,419 +482,526 @@ export function AdminWorkspace() {
           </div>
         ) : (
           <>
-        {section === "" && (
-          <>
-            <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Prenotazioni attive", active.length],
-                ["Vendite", formatMoney(revenue)],
-                ["Incassato", formatMoney(collected)],
-                ["Da incassare", formatMoney(revenue - collected)],
-              ].map(([label, value]) => (
-                <div className="card p-6" key={label}>
-                  <p className="text-sm">{label}</p>
-                  <strong className="admin-metric mt-3 block text-ink">
-                    {value}
-                  </strong>
+            {section === "" && (
+              <>
+                <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    ["Prenotazioni attive", active.length],
+                    ["Vendite", moneyTotals(active)],
+                    [
+                      "Incassato",
+                      moneyTotals(
+                        active.filter((b) => b.paymentStatus === "paid"),
+                      ),
+                    ],
+                    [
+                      "Da incassare",
+                      moneyTotals(
+                        active.filter((b) => b.paymentStatus !== "paid"),
+                      ),
+                    ],
+                  ].map(([label, value]) => (
+                    <div className="card p-6" key={label}>
+                      <p className="text-sm">{label}</p>
+                      <strong className="admin-metric mt-3 block text-ink">
+                        {value}
+                      </strong>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="card mb-7 grid gap-4 p-6"><h2 className="display-md">Richieste dal sito</h2><p>{data.inquiries.filter((i) => i.status === "new").length} richieste da gestire · {data.inquiries.length} totali</p>{data.inquiries.slice().reverse().slice(0, 5).map((i) => <div key={i.id} className="border-t pt-3"><strong>{i.name}</strong><p className="whitespace-pre-wrap text-sm">{i.message}</p><small>{time(i.createdAt)} · {i.status === "new" ? "Da gestire" : "Gestita"}</small></div>)}<Link href="/admin/richieste" className="underline">Apri richieste e messaggi</Link></div>
-          </>
-        )}
-        {section === "prenotazioni" &&
-          (detail === "nuova" ? (
-            <ManualBooking
-              tours={data.tours}
-              busy={busy}
-              save={(input) => mutate("manual", input)}
-            />
-          ) : booking ? (
-            <BookingDetail
-              booking={booking}
-              tour={data.tours.find((t) => t.slug === booking.tourSlug)!}
-              busy={busy}
-              save={(body) => mutate("booking", body, "PATCH")}
-            />
-          ) : (
-            <>
-              <div className="card mb-6 grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4">
-                <Field
-                  label="Cerca nome, PNR, email"
-                  value={search}
-                  onChange={setSearch}
-                />
-                <label>
-                  Tour
-                  <select
-                    className="text-input"
-                    value={tourFilter}
-                    onChange={(e) => {
-                      setTourFilter(e.target.value);
-                      setSlotFilter("");
-                    }}
-                  >
-                    <option value="">Tutti i tour</option>
-                    {data.tours.map((t) => (
-                      <option key={t.id} value={t.slug}>
-                        {t.title}
-                      </option>
+                <div className="card mb-7 grid gap-4 p-6">
+                  <h2 className="display-md">Richieste dal sito</h2>
+                  <p>
+                    {data.inquiries.filter((i) => i.status === "new").length}{" "}
+                    richieste da gestire · {data.inquiries.length} totali
+                  </p>
+                  {data.inquiries
+                    .slice()
+                    .reverse()
+                    .slice(0, 5)
+                    .map((i) => (
+                      <div key={i.id} className="border-t pt-3">
+                        <strong>{i.name}</strong>
+                        <p className="whitespace-pre-wrap text-sm">
+                          {i.message}
+                        </p>
+                        <small>
+                          {time(i.createdAt)} ·{" "}
+                          {i.status === "new" ? "Da gestire" : "Gestita"}
+                        </small>
+                      </div>
                     ))}
-                  </select>
-                </label>
-                <Field
-                  label="Data"
-                  value={dateFilter}
-                  onChange={setDateFilter}
-                  type="date"
+                  <Link href="/admin/richieste" className="underline">
+                    Apri richieste e messaggi
+                  </Link>
+                </div>
+              </>
+            )}
+            {section === "prenotazioni" &&
+              (detail === "nuova" ? (
+                <ManualBooking
+                  tours={data.tours}
+                  busy={busy}
+                  save={(input) => mutate("manual", input)}
                 />
-                <label>
-                  Partenza
-                  <select
-                    className="text-input"
-                    value={slotFilter}
-                    onChange={(e) => setSlotFilter(e.target.value)}
+              ) : booking ? (
+                <BookingDetail
+                  booking={booking}
+                  tour={data.tours.find((t) => t.slug === booking.tourSlug)!}
+                  busy={busy}
+                  save={(body) => mutate("booking", body, "PATCH")}
+                />
+              ) : (
+                <>
+                  <div className="card mb-6 grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4">
+                    <Field
+                      label="Cerca nome, PNR, email"
+                      value={search}
+                      onChange={setSearch}
+                    />
+                    <label>
+                      Tour
+                      <select
+                        className="text-input"
+                        value={tourFilter}
+                        onChange={(e) => {
+                          setTourFilter(e.target.value);
+                          setSlotFilter("");
+                        }}
+                      >
+                        <option value="">Tutti i tour</option>
+                        {data.tours.map((t) => (
+                          <option key={t.id} value={t.slug}>
+                            {t.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <Field
+                      label="Data"
+                      value={dateFilter}
+                      onChange={setDateFilter}
+                      type="date"
+                    />
+                    <label>
+                      Partenza
+                      <select
+                        className="text-input"
+                        value={slotFilter}
+                        onChange={(e) => setSlotFilter(e.target.value)}
+                      >
+                        <option value="">Tutti gli orari</option>
+                        {data.tours
+                          .filter((t) => !tourFilter || t.slug === tourFilter)
+                          .flatMap((t) => t.slots)
+                          .map((s) => (
+                            <option value={s.id} key={s.id}>
+                              {time(s.startsAt)}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="mb-5 flex flex-wrap gap-3">
+                    <Link
+                      className="button-primary"
+                      href="/admin/prenotazioni/nuova"
+                    >
+                      <Plus size={17} />
+                      Nuova prenotazione
+                    </Link>
+                    <a
+                      className="button-secondary"
+                      href="/api/platform/admin/export"
+                      download
+                    >
+                      Esporta CSV
+                    </a>
+                  </div>
+                  {table(filtered.slice().reverse())}
+                </>
+              ))}
+            {section === "tour" &&
+              (detail ? (
+                <TourEditor
+                  key={detail}
+                  tour={
+                    data.tours.find((t) => t.slug === detail) || {
+                      ...structuredClone(data.tours[0]),
+                      id: crypto.randomUUID(),
+                      slug: "nuovo-tour",
+                      title: "Nuovo tour",
+                      canonicalPath: undefined,
+                      sourceUrl: undefined,
+                      sourceUpdatedAt: undefined,
+                      importedFromWordpress: false,
+                      operationalReviewRequired: false,
+                      schedule: undefined,
+                      calendarRules: [],
+                      commissionRules: [],
+                      commissionPackageWith: [],
+                      closures: [],
+                      published: false,
+                      slots: [],
+                    }
+                  }
+                  calendar={(reconcile) =>
+                    data.tours.some((t) => t.slug === detail) ? (
+                      <OperationalCalendar
+                        tours={data.tours}
+                        fixedTourId={
+                          data.tours.find((t) => t.slug === detail)?.id
+                        }
+                        busy={busy}
+                        save={async (body) => {
+                          const result = await mutate(
+                            "calendar/operation",
+                            body,
+                          );
+                          if (!result) throw Error("Modifica non salvata");
+                          const updated = result.tours?.find(
+                            (t: CatalogTour) => t.slug === detail,
+                          );
+                          if (updated) reconcile(updated);
+                          return result;
+                        }}
+                      />
+                    ) : (
+                      <p className="card p-6">
+                        Salva il nuovo tour per attivare il suo calendario.
+                      </p>
+                    )
+                  }
+                  availableTours={data.tours}
+                  defaults={data.settings}
+                  categories={[
+                    ...new Set(
+                      data.tours.map((t) => t.category.trim()).filter(Boolean),
+                    ),
+                  ].sort((a, b) => a.localeCompare(b, "it"))}
+                  closedDates={data.closedDates ?? []}
+                  busy={busy}
+                  save={async (t) => {
+                    const result = await mutate("tour", t, "PUT");
+                    if (
+                      result &&
+                      !data.tours.some((existing) => existing.id === t.id)
+                    )
+                      router.push(`/admin/tour/${t.slug}`);
+                    return result;
+                  }}
+                />
+              ) : (
+                <>
+                  <Link
+                    className="button-primary mb-6"
+                    href="/admin/tour/nuovo"
                   >
-                    <option value="">Tutti gli orari</option>
-                    {data.tours
-                      .filter((t) => !tourFilter || t.slug === tourFilter)
-                      .flatMap((t) => t.slots)
-                      .map((s) => (
-                        <option value={s.id} key={s.id}>
-                          {time(s.startsAt)}
-                        </option>
-                      ))}
-                  </select>
-                </label>
+                    Crea un tour
+                  </Link>
+                  <div className="grid gap-5">
+                    {data.tours.map((t) => (
+                      <article
+                        className="card flex flex-wrap items-start justify-between gap-4 p-6"
+                        key={t.id}
+                      >
+                        <div>
+                          <h2 className="display-md">{t.title}</h2>
+                          <p>
+                            {t.slots.length} partenze · da{" "}
+                            {tourHeadlinePrice(t).text} ·{" "}
+                            {t.published ? "Pubblicato" : "Bozza"}
+                          </p>
+                        </div>
+                        <Link
+                          className="button-secondary"
+                          href={`/admin/tour/${t.slug}`}
+                        >
+                          Modifica
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              ))}
+            {section === "calendario" && (
+              <OperationalCalendar
+                tours={data.tours}
+                busy={busy}
+                save={async (body) => {
+                  const result = await mutate("calendar/operation", body);
+                  if (!result)
+                    throw Error(
+                      "Modifica non salvata: controlla il messaggio del gestionale",
+                    );
+                  return result;
+                }}
+              />
+            )}
+            {section === "partner-europa" && (
+              <PartnersManager data={data} busy={busy} mutate={mutate} />
+            )}
+
+            {section === "impostazioni" && (
+              <SettingsEditor
+                key={JSON.stringify(data.settings)}
+                settings={data.settings}
+                busy={busy}
+                save={(s) => mutate("settings", s, "PUT")}
+              />
+            )}
+            {section === "last-minute" && (
+              <LastMinuteEditor
+                key={`lm-${JSON.stringify(data.settings)}`}
+                settings={data.settings}
+                busy={busy}
+                save={(s) => mutate("settings", s, "PUT")}
+              />
+            )}
+            {section === "affiliati" && (
+              <AffiliatesSection
+                busy={busy}
+                tours={data.tours}
+                affiliates={data.affiliates}
+                bookings={data.bookings}
+                save={(a) => mutate("affiliate", a, "PUT")}
+                pay={(code) => mutate("commissions/pay", { code })}
+                toggleActive={(a) =>
+                  mutate("affiliate", { ...a, active: !a.active }, "PUT")
+                }
+                renderReport={table}
+              />
+            )}
+            {section === "canali" && (
+              <>
+                <OtaImport busy={busy} save={(b) => mutate("ota", b)} />
+                <div className="mt-7 grid gap-5">
+                  {data.ota
+                    .slice()
+                    .reverse()
+                    .map((m) => (
+                      <article className="card p-6" key={m.id}>
+                        <div className="flex flex-wrap justify-between">
+                          <h2 className="font-bold">
+                            {m.provider} · {m.reference}
+                          </h2>
+                          <Chip value={m.status} />
+                        </div>
+                        <p className="mt-3 text-sm">{m.error}</p>
+                        <details className="my-4">
+                          <summary>Email originale</summary>
+                          <pre className="mt-3 whitespace-pre-wrap break-words text-xs">
+                            {m.raw}
+                          </pre>
+                        </details>
+                        {m.status === "review" && !m.pnr && (
+                          <ManualBooking
+                            tours={data.tours}
+                            busy={busy}
+                            save={(booking) =>
+                              mutate("ota/approve", { id: m.id, booking })
+                            }
+                          />
+                        )}
+                        {m.status === "review" && (
+                          <button
+                            className="button-secondary"
+                            disabled={busy}
+                            onClick={() => mutate("ota/close", { id: m.id })}
+                          >
+                            Chiudi revisione
+                          </button>
+                        )}
+                        {m.pnr && (
+                          <Link
+                            className="underline"
+                            href={`/admin/prenotazioni/${m.pnr}`}
+                          >
+                            {m.pnr}
+                          </Link>
+                        )}
+                      </article>
+                    ))}
+                </div>
+              </>
+            )}
+            {section === "pre-tour" && (
+              <>
+                <EmailTemplatesEditor
+                  key={`mail-${JSON.stringify(data.settings.emailTemplates)}-${data.settings.emailFooter}`}
+                  settings={data.settings}
+                  busy={busy}
+                  save={(s) => mutate("settings", s, "PUT")}
+                />
+                <div className="card mb-6 p-6">
+                  <h2 className="display-md mb-3">Coda invii</h2>
+                  <p>
+                    Conferme, modifiche e cancellazioni via email. Gli invii non
+                    riusciti vengono ritentati automaticamente.
+                  </p>
+                  <button
+                    className="button-secondary mt-4"
+                    disabled={busy}
+                    onClick={() => mutate("jobs/run", {})}
+                  >
+                    Elabora coda ora
+                  </button>
+                </div>
+                <div className="grid gap-4">
+                  {data.jobs
+                    .slice()
+                    .reverse()
+                    .map((j) => (
+                      <article className="card p-5" key={j.id}>
+                        <div className="flex flex-wrap justify-between gap-3">
+                          <strong>
+                            {j.type} · {j.bookingPnr || j.subject}
+                          </strong>
+                          <Chip value={j.status} />
+                        </div>
+                        <p className="my-2 text-sm">
+                          {j.to} · {time(j.runAt)} · {j.attempts} tentativi
+                        </p>
+                        {j.error && (
+                          <p className="text-sm text-red-700">{j.error}</p>
+                        )}
+                        <details className="mt-3">
+                          <summary>Anteprima</summary>
+                          <p className="mt-3 whitespace-pre-wrap text-sm">
+                            {j.text || `Rimborso ${formatMoney(j.amount || 0)}`}
+                          </p>
+                        </details>
+                        {j.status === "failed" && (
+                          <button
+                            className="button-secondary mt-3"
+                            onClick={() => mutate("jobs/retry", { id: j.id })}
+                          >
+                            Riprova
+                          </button>
+                        )}
+                      </article>
+                    ))}
+                </div>
+              </>
+            )}
+            {section === "contenuti" && (
+              <ContentWorkspace
+                content={data.siteContent}
+                tours={data.tours.filter((t) => t.published)}
+                pages={data.pages}
+                detail={detail}
+                busy={busy}
+                saveSite={(content) => mutate("site-content", content, "PUT")}
+                savePage={(body) => mutate("page", body, "PUT")}
+              />
+            )}
+            {section === "richieste" && (
+              <div className="grid gap-4">
+                {!data.inquiries.length && <p>Nessuna richiesta ricevuta.</p>}
+                {data.inquiries
+                  .slice()
+                  .reverse()
+                  .map((i) => (
+                    <article className="card p-6" key={i.id}>
+                      <h2 className="display-md">
+                        {i.type} · {i.name}
+                      </h2>
+                      <p className="my-2">
+                        {i.email} · {i.phone || "Telefono non indicato"} ·{" "}
+                        {time(i.createdAt)}
+                      </p>
+                      <p className="whitespace-pre-wrap">{i.message}</p>
+                      <button
+                        className="button-secondary mt-4"
+                        onClick={() =>
+                          mutate(
+                            "inquiry",
+                            {
+                              id: i.id,
+                              status: i.status === "new" ? "handled" : "new",
+                            },
+                            "PATCH",
+                          )
+                        }
+                      >
+                        {i.status === "new"
+                          ? "Segna come gestita"
+                          : "Riapri richiesta"}
+                      </button>
+                    </article>
+                  ))}
               </div>
-              <div className="mb-5 flex flex-wrap gap-3">
-                <Link
-                  className="button-primary"
-                  href="/admin/prenotazioni/nuova"
-                >
-                  <Plus size={17} />
-                  Nuova prenotazione
-                </Link>
+            )}
+            {section === "report" && (
+              <>
+                <div className="grid gap-5 md:grid-cols-2">
+                  {["site", "civitatis", "getyourguide", "manual"].map(
+                    (source) => {
+                      const rows = active.filter((b) =>
+                        b.source.startsWith(source),
+                      );
+                      return (
+                        <div className="card p-6" key={source}>
+                          <h2 className="display-md">{source}</h2>
+                          <p className="my-3">
+                            {rows.length} prenotazioni ·{" "}
+                            {formatMoney(
+                              rows.reduce((s, b) => s + b.totalCents, 0),
+                            )}
+                          </p>
+                          <p className="text-sm">
+                            Partecipanti:{" "}
+                            {rows.reduce((s, b) => s + b.totalGuests, 0)}
+                          </p>
+                        </div>
+                      );
+                    },
+                  )}
+                  <div className="card p-6">
+                    <h2 className="display-md">Qualità operativa</h2>
+                    <p className="mt-4">
+                      Cancellazioni:{" "}
+                      {
+                        data.bookings.filter((b) => b.status === "cancelled")
+                          .length
+                      }
+                    </p>
+                    <p>
+                      Assenti:{" "}
+                      {
+                        data.bookings.filter((b) => b.status === "no_show")
+                          .length
+                      }
+                    </p>
+                    <p>
+                      Commissioni non liquidate:{" "}
+                      {formatMoney(
+                        active
+                          .filter((b) => !b.commissionPaid)
+                          .reduce((s, b) => s + b.commissionCents, 0),
+                      )}
+                    </p>
+                  </div>
+                </div>
                 <a
-                  className="button-secondary"
+                  className="button-secondary mt-6"
                   href="/api/platform/admin/export"
                   download
                 >
-                  Esporta CSV
+                  Scarica dati prenotazioni
                 </a>
-              </div>
-              {table(filtered.slice().reverse())}
-            </>
-          ))}
-        {section === "tour" &&
-          (detail ? (
-            <TourEditor
-              key={detail}
-              tour={
-                data.tours.find((t) => t.slug === detail) || {
-                  ...structuredClone(data.tours[0]),
-                  id: crypto.randomUUID(),
-                  slug: "nuovo-tour",
-                  title: "Nuovo tour",
-                  canonicalPath: undefined,
-                  sourceUrl: undefined,
-                  sourceUpdatedAt: undefined,
-                  importedFromWordpress: false,
-                  operationalReviewRequired: false,
-                  schedule: undefined,
-                  closures: [],
-                  published: false,
-                  slots: [],
-                }
-              }
-              defaults={data.settings}
-              categories={[
-                ...new Set(
-                  data.tours
-                    .map((t) => t.category.trim())
-                    .filter(Boolean),
-                ),
-              ].sort((a, b) => a.localeCompare(b, "it"))}
-              closedDates={data.closedDates ?? []}
-              busy={busy}
-              save={(t) => mutate("tour", t, "PUT")}
-            />
-          ) : (
-            <>
-              <Link className="button-primary mb-6" href="/admin/tour/nuovo">
-                Crea un tour
-              </Link>
-              <div className="grid gap-5">
-                {data.tours.map((t) => (
-                  <article
-                    className="card flex flex-wrap items-start justify-between gap-4 p-6"
-                    key={t.id}
-                  >
-                    <div>
-                      <h2 className="display-md">{t.title}</h2>
-                      <p>
-                        {t.slots.length} partenze · da{" "}
-                        {formatMoney(t.basePriceCents)} ·{" "}
-                        {t.published ? "Pubblicato" : "Bozza"}
-                      </p>
-                    </div>
-                    <Link
-                      className="button-secondary"
-                      href={`/admin/tour/${t.slug}`}
-                    >
-                      Modifica
-                    </Link>
-                  </article>
-                ))}
-              </div>
-            </>
-          ))}
-        {section === "calendario" && <CalendarClosures closedDates={data.closedDates ?? []} busy={busy} save={(body) => mutate("calendar/closure", body)} bookings={active.map((b) => ({ date: slot(b) ? pragueLocal(slot(b)!.startsAt).slice(0, 10) : "", guests: b.totalGuests }))} />}
-        {section === "impostazioni" && (
-          <SettingsEditor
-            key={JSON.stringify(data.settings)}
-            settings={data.settings}
-            busy={busy}
-            save={(s) => mutate("settings", s, "PUT")}
-          />
-        )}
-        {section === "last-minute" && (
-          <LastMinuteEditor
-            key={`lm-${JSON.stringify(data.settings)}`}
-            settings={data.settings}
-            busy={busy}
-            save={(s) => mutate("settings", s, "PUT")}
-          />
-        )}
-        {section === "affiliati" && (
-          <AffiliatesSection
-            busy={busy}
-            affiliates={data.affiliates}
-            bookings={data.bookings}
-            save={(a) => mutate("affiliate", a, "PUT")}
-            pay={(code) => mutate("commissions/pay", { code })}
-            toggleActive={(a) =>
-              mutate("affiliate", { ...a, active: !a.active }, "PUT")
-            }
-            renderReport={table}
-          />
-        )}
-        {section === "canali" && (
-          <>
-            <OtaImport busy={busy} save={(b) => mutate("ota", b)} />
-            <div className="mt-7 grid gap-5">
-              {data.ota
-                .slice()
-                .reverse()
-                .map((m) => (
-                  <article className="card p-6" key={m.id}>
-                    <div className="flex flex-wrap justify-between">
-                      <h2 className="font-bold">
-                        {m.provider} · {m.reference}
-                      </h2>
-                      <Chip value={m.status} />
-                    </div>
-                    <p className="mt-3 text-sm">{m.error}</p>
-                    <details className="my-4">
-                      <summary>Email originale</summary>
-                      <pre className="mt-3 whitespace-pre-wrap break-words text-xs">
-                        {m.raw}
-                      </pre>
-                    </details>
-                    {m.status === "review" && !m.pnr && (
-                      <ManualBooking
-                        tours={data.tours}
-                        busy={busy}
-                        save={(booking) =>
-                          mutate("ota/approve", { id: m.id, booking })
-                        }
-                      />
-                    )}
-                    {m.status === "review" && (
-                      <button
-                        className="button-secondary"
-                        disabled={busy}
-                        onClick={() => mutate("ota/close", { id: m.id })}
-                      >
-                        Chiudi revisione
-                      </button>
-                    )}
-                    {m.pnr && (
-                      <Link
-                        className="underline"
-                        href={`/admin/prenotazioni/${m.pnr}`}
-                      >
-                        {m.pnr}
-                      </Link>
-                    )}
-                  </article>
-                ))}
-            </div>
-          </>
-        )}
-        {section === "pre-tour" && (
-          <>
-            <EmailTemplatesEditor
-              key={`mail-${JSON.stringify(data.settings.emailTemplates)}-${data.settings.emailFooter}`}
-              settings={data.settings}
-              busy={busy}
-              save={(s) => mutate("settings", s, "PUT")}
-            />
-            <div className="card mb-6 p-6">
-              <h2 className="display-md mb-3">Coda invii</h2>
-              <p>
-                Conferme, modifiche e cancellazioni via email. Gli invii non
-                riusciti vengono ritentati automaticamente.
-              </p>
-              <button
-                className="button-secondary mt-4"
-                disabled={busy}
-                onClick={() => mutate("jobs/run", {})}
-              >
-                Elabora coda ora
-              </button>
-            </div>
-            <div className="grid gap-4">
-              {data.jobs
-                .slice()
-                .reverse()
-                .map((j) => (
-                  <article className="card p-5" key={j.id}>
-                    <div className="flex flex-wrap justify-between gap-3">
-                      <strong>
-                        {j.type} · {j.bookingPnr || j.subject}
-                      </strong>
-                      <Chip value={j.status} />
-                    </div>
-                    <p className="my-2 text-sm">
-                      {j.to} · {time(j.runAt)} · {j.attempts} tentativi
-                    </p>
-                    {j.error && (
-                      <p className="text-sm text-red-700">{j.error}</p>
-                    )}
-                    <details className="mt-3">
-                      <summary>Anteprima</summary>
-                      <p className="mt-3 whitespace-pre-wrap text-sm">
-                        {j.text || `Rimborso ${formatMoney(j.amount || 0)}`}
-                      </p>
-                    </details>
-                    {j.status === "failed" && (
-                      <button
-                        className="button-secondary mt-3"
-                        onClick={() => mutate("jobs/retry", { id: j.id })}
-                      >
-                        Riprova
-                      </button>
-                    )}
-                  </article>
-                ))}
-            </div>
-          </>
-        )}
-        {section === "contenuti" && (
-          <ContentWorkspace
-            content={data.siteContent}
-            pages={data.pages}
-            detail={detail}
-            busy={busy}
-            saveSite={content => mutate("site-content", content, "PUT")}
-            savePage={body => mutate("page", body, "PUT")}
-          />
-        )}
-        {section === "richieste" && (
-          <div className="grid gap-4">
-            {!data.inquiries.length && <p>Nessuna richiesta ricevuta.</p>}
-            {data.inquiries
-              .slice()
-              .reverse()
-              .map((i) => (
-                <article className="card p-6" key={i.id}>
-                  <h2 className="display-md">
-                    {i.type} · {i.name}
-                  </h2>
-                  <p className="my-2">
-                    {i.email} · {time(i.createdAt)}
-                  </p>
-                  <p className="whitespace-pre-wrap">{i.message}</p>
-                  <button
-                    className="button-secondary mt-4"
-                    onClick={() =>
-                      mutate(
-                        "inquiry",
-                        {
-                          id: i.id,
-                          status: i.status === "new" ? "handled" : "new",
-                        },
-                        "PATCH",
-                      )
-                    }
-                  >
-                    {i.status === "new"
-                      ? "Segna come gestita"
-                      : "Riapri richiesta"}
-                  </button>
-                </article>
-              ))}
-          </div>
-        )}
-        {section === "report" && (
-          <>
-            <div className="grid gap-5 md:grid-cols-2">
-              {["site", "civitatis", "getyourguide", "manual"].map((source) => {
-                const rows = active.filter((b) => b.source.startsWith(source));
-                return (
-                  <div className="card p-6" key={source}>
-                    <h2 className="display-md">{source}</h2>
-                    <p className="my-3">
-                      {rows.length} prenotazioni ·{" "}
-                      {formatMoney(rows.reduce((s, b) => s + b.totalCents, 0))}
-                    </p>
-                    <p className="text-sm">
-                      Partecipanti:{" "}
-                      {rows.reduce((s, b) => s + b.totalGuests, 0)}
-                    </p>
-                  </div>
-                );
-              })}
+              </>
+            )}
+            {section === "audit" && (
               <div className="card p-6">
-                <h2 className="display-md">Qualità operativa</h2>
-                <p className="mt-4">
-                  Cancellazioni:{" "}
-                  {data.bookings.filter((b) => b.status === "cancelled").length}
-                </p>
-                <p>
-                  Assenti:{" "}
-                  {data.bookings.filter((b) => b.status === "no_show").length}
-                </p>
-                <p>
-                  Commissioni non liquidate:{" "}
-                  {formatMoney(
-                    active
-                      .filter((b) => !b.commissionPaid)
-                      .reduce((s, b) => s + b.commissionCents, 0),
-                  )}
-                </p>
+                <h2 className="display-md mb-5">Storico delle operazioni</h2>
+                {data.audit.map((a) => (
+                  <p className="border-b py-3 text-sm" key={a.id}>
+                    {time(a.at)} · {a.actor} · {a.action} · {a.target}
+                  </p>
+                ))}
               </div>
-            </div>
-            <a
-              className="button-secondary mt-6"
-              href="/api/platform/admin/export"
-              download
-            >
-              Scarica dati prenotazioni
-            </a>
-          </>
-        )}
-        {section === "audit" && (
-          <div className="card p-6">
-            <h2 className="display-md mb-5">Storico delle operazioni</h2>
-            {data.audit.map((a) => (
-              <p className="border-b py-3 text-sm" key={a.id}>
-                {time(a.at)} · {a.actor} · {a.action} · {a.target}
-              </p>
-            ))}
-          </div>
-        )}
+            )}
           </>
         )}
       </div>
@@ -904,6 +1035,12 @@ function ManualBooking({
             {
               tourSlug: tour,
               slotId: f.get("slotId"),
+              participants: selected?.priceCategories?.length
+                ? categoriesFor(selected).map((c) => ({
+                    categoryId: c.id,
+                    quantity: Number(f.get(`category:${c.id}`)),
+                  }))
+                : undefined,
               adults: Number(f.get("adults")),
               children: Number(f.get("children")),
               infants: Number(f.get("infants")),
@@ -953,22 +1090,46 @@ function ManualBooking({
           ["Adulti", "adults", "number"],
           ["Bambini", "children", "number"],
           ["Infanti", "infants", "number"],
-        ].map(([label, name, type]) => (
-          <label key={name}>
-            {label}
-            <input
-              name={name}
-              type={type}
-              required
-              className="text-input"
-              min={name === "adults" ? 1 : 0}
-              defaultValue={
-                type === "number" ? (name === "adults" ? 1 : 0) : undefined
-              }
-            />
-          </label>
-        ))}
+        ]
+          .filter(
+            ([, name]) =>
+              !selected?.priceCategories?.length ||
+              !["adults", "children", "infants"].includes(name),
+          )
+          .map(([label, name, type]) => (
+            <label key={name}>
+              {label}
+              <input
+                name={name}
+                type={type}
+                required
+                className="text-input"
+                min={name === "adults" ? 1 : 0}
+                defaultValue={
+                  type === "number" ? (name === "adults" ? 1 : 0) : undefined
+                }
+              />
+            </label>
+          ))}
       </div>
+      {selected?.priceCategories?.length && (
+        <div className="form-grid">
+          {categoriesFor(selected).map((c, i) => (
+            <label key={`${selected.id}:${c.id}`}>
+              {c.label} · {formatMoney(c.priceCents, selected.currency)}
+              <input
+                type="number"
+                name={`category:${c.id}`}
+                min={0}
+                max={selected.maxGuests}
+                required
+                defaultValue={i === 0 ? 1 : 0}
+                className="text-input"
+              />
+            </label>
+          ))}
+        </div>
+      )}
       <label>
         Note
         <textarea name="notes" className="text-input" />
@@ -1025,8 +1186,8 @@ function BookingDetail({
           infanti
         </p>
         <p>
-          {formatMoney(b.totalCents)} · sconto {formatMoney(b.discountCents)} ·{" "}
-          {b.source}
+          {formatMoney(b.totalCents, b.currency)} · sconto{" "}
+          {formatMoney(b.discountCents, b.currency)} · {b.source}
         </p>
         <div className="flex gap-3">
           <Chip value={b.status} />
@@ -1046,34 +1207,48 @@ function BookingDetail({
             onChange={setPhone}
           />
         </div>
-        {b.paymentMethod === "cash" && b.paymentStatus !== "paid" && (
-          <div className="form-grid">
-            <Field
-              label="Adulti"
-              type="number"
-              min={1}
-              max={100}
-              value={adults}
-              onChange={(v) => setAdults(Number(v))}
-            />
-            <Field
-              label="Bambini"
-              type="number"
-              min={0}
-              max={100}
-              value={children}
-              onChange={(v) => setChildren(Number(v))}
-            />
-            <Field
-              label="Infanti"
-              type="number"
-              min={0}
-              max={100}
-              value={infants}
-              onChange={(v) => setInfants(Number(v))}
-            />
-          </div>
+        {b.categorySnapshot && (
+          <ul>
+            {b.categorySnapshot
+              .filter((c) => c.quantity)
+              .map((c) => (
+                <li key={c.id}>
+                  {c.quantity} {c.label} ·{" "}
+                  {formatMoney(c.unitPriceCents, b.currency)} per persona
+                </li>
+              ))}
+          </ul>
         )}
+        {!b.categorySnapshot &&
+          ["cash", "bank_transfer"].includes(b.paymentMethod) &&
+          b.paymentStatus !== "paid" && (
+            <div className="form-grid">
+              <Field
+                label="Adulti"
+                type="number"
+                min={1}
+                max={100}
+                value={adults}
+                onChange={(v) => setAdults(Number(v))}
+              />
+              <Field
+                label="Bambini"
+                type="number"
+                min={0}
+                max={100}
+                value={children}
+                onChange={(v) => setChildren(Number(v))}
+              />
+              <Field
+                label="Infanti"
+                type="number"
+                min={0}
+                max={100}
+                value={infants}
+                onChange={(v) => setInfants(Number(v))}
+              />
+            </div>
+          )}
         <Text label="Note operative" value={notes} onChange={setNotes} />
         <div className="form-grid">
           <label>
@@ -1134,9 +1309,7 @@ function BookingDetail({
               name,
               email,
               phone,
-              adults,
-              children,
-              infants,
+              ...(!b.categorySnapshot ? { adults, children, infants } : {}),
               ...(b.status !== "pending" ? { status } : {}),
               paymentStatus: payment,
               notify,
@@ -1150,8 +1323,8 @@ function BookingDetail({
         <div className="card grid gap-4 p-6">
           <h2 className="display-md">Rimborso da completare</h2>
           <p>
-            Importo: {formatMoney(b.refundCents || 0)}. Esegui il rimborso in
-            contanti o sul portale OTA, poi registralo.
+            Importo: {formatMoney(b.refundCents || 0, b.currency)}. Esegui il
+            rimborso in contanti o sul portale OTA, poi registralo.
           </p>
           <label className="flex gap-3">
             <input
@@ -1215,20 +1388,29 @@ function BookingDetail({
 }
 function TourEditor({
   tour,
+  availableTours,
   categories,
+  calendar,
   defaults,
   closedDates = [],
   busy,
   save,
 }: {
   tour: CatalogTour;
+  calendar: (reconcile: (tour: CatalogTour) => void) => ReactNode;
+  availableTours: CatalogTour[];
   defaults: Settings;
   categories: string[];
   closedDates?: string[];
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
-  const [t, setT] = useState(() => ({ ...tour, cancellationHours: tour.cancellationHours ?? defaults.cancellationHours, lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent, galleryImages: tourGalleryImages(tour) }));
+  const [t, setT] = useState(() => ({
+    ...tour,
+    cancellationHours: tour.cancellationHours ?? defaults.cancellationHours,
+    lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent,
+    galleryImages: tourGalleryImages(tour),
+  }));
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -1240,13 +1422,17 @@ function TourEditor({
     ["category", "Categoria"],
     ["language", "Lingua"],
     ["durationMinutes", "Durata in minuti", "number"],
-    ["maxGuests", "Massimo partecipanti per prenotazione (fino a 25)", "number"],
+    [
+      "maxGuests",
+      "Massimo partecipanti per prenotazione (configurabile)",
+      "number",
+    ],
     ["meetingPoint", "Punto d’incontro"],
     ["meetingAddress", "Indirizzo"],
     ["mapUrl", "Link Google Maps"],
-    ["basePriceCents", "Prezzo adulti (€)", "number"],
-    ["childPriceCents", "Prezzo bambini (€)", "number"],
-    ["infantPriceCents", "Prezzo infanti (€)", "number"],
+    ["basePriceCents", "Prezzo adulti (valuta tour)", "number"],
+    ["childPriceCents", "Prezzo bambini (valuta tour)", "number"],
+    ["infantPriceCents", "Prezzo infanti (valuta tour)", "number"],
     ["adultMinAge", "Età minima adulti", "number"],
     ["childMinAge", "Età minima bambini", "number"],
     ["bookingCutoffHours", "Chiusura prenotazioni (ore prima)", "number"],
@@ -1254,193 +1440,333 @@ function TourEditor({
     ["seoDescription", "Descrizione SEO"],
   ];
   return (
-    <form
-      className="grid gap-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (busy || galleryUploading || coverUploading) return;
-        save({
-          ...t,
-          slots: t.slots.map((s) => ({
-            ...s,
-            startsAt: new Date(s.startsAt).toISOString(),
-            endsAt: new Date(s.endsAt).toISOString(),
-          })),
-        });
-      }}
-    >
-      <Link href="/admin/tour" className="underline">
-        ← Tour e orari
-      </Link>
-      <div className="card grid gap-5 p-6">
-        <h2 className="display-md">Informazioni e tariffe</h2>
-        <ImageSourceField
-          label="Foto copertina"
-          value={t.imageUrl}
-          required
-          disabled={busy || galleryUploading || coverUploading}
-          onNotice={setUploadMessage}
-          onUploading={setCoverUploading}
-          onChange={(imageUrl) => set("imageUrl", imageUrl)}
-        />
-        {uploadMessage && <p role="status">{uploadMessage}</p>}
-        <div className="form-grid">
-          {fields.map(([key, label, type]) =>
-            key === "category" ? (
-              <label key={key} className="grid gap-1 text-sm">
-                {label}
-                <input
-                  className="text-input"
-                  list="tour-category-options"
-                  value={String(t.category ?? "")}
-                  onChange={(e) => set("category", e.target.value)}
-                />
-                <datalist id="tour-category-options">
-                  {categories.map((item) => (
-                    <option key={item} value={item} />
-                  ))}
-                </datalist>
-                <span className="text-xs text-body">
-                  Comparirà come tab in homepage se almeno un tour pubblicato
-                  usa questa categoria.
-                </span>
-              </label>
-            ) : (
-              <Field
-                key={key}
-                label={label}
-                type={type}
-                value={String(key.endsWith("PriceCents") ? Number(t[key] ?? 0) / 100 : t[key] ?? "")}
-                min={type === "number" ? (key === "maxGuests" ? 1 : 0) : undefined}
-                max={key === "maxGuests" ? 25 : undefined}
-                step={key.endsWith("PriceCents") ? "0.01" : undefined}
-                onChange={(v) => set(key, key.endsWith("PriceCents") ? Math.round(Number(v) * 100) : type === "number" ? Number(v) : v)}
+    <>
+      <form
+        className="grid gap-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (busy || galleryUploading || coverUploading) return;
+          save({
+            ...t,
+            calendarRules: tour.calendarRules,
+            closures: !jsonEqual(
+              t.calendarRules ?? [],
+              tour.calendarRules ?? [],
+            )
+              ? tour.closures
+              : t.closures,
+            slots: (!jsonEqual(t.calendarRules ?? [], tour.calendarRules ?? [])
+              ? tour.slots
+              : t.slots
+            ).map((s) => ({
+              ...s,
+              startsAt: new Date(s.startsAt).toISOString(),
+              endsAt: new Date(s.endsAt).toISOString(),
+            })),
+          });
+        }}
+      >
+        <Link href="/admin/tour" className="underline">
+          ← Tour e orari
+        </Link>
+        <div className="card grid gap-5 p-6">
+          <h2 className="display-md">Scheda tour</h2>
+          <p>
+            Modifica i blocchi nell’ordine della pagina. Salva la scheda prima
+            di intervenire sul calendario.
+          </p>
+          <details open className="grid gap-4">
+            <summary className="title-md">
+              1. Intestazione, copertina e informazioni
+            </summary>
+            <div className="grid gap-4 pt-4">
+              <ImageSourceField
+                label="Foto copertina"
+                value={t.imageUrl}
+                required
+                disabled={busy || galleryUploading || coverUploading}
+                onNotice={setUploadMessage}
+                onUploading={setCoverUploading}
+                onChange={(imageUrl) => set("imageUrl", imageUrl)}
               />
-            ),
+              {uploadMessage && <p role="status">{uploadMessage}</p>}
+              <div className="form-grid">
+                {fields
+                  .filter(
+                    ([key]) =>
+                      !t.priceCategories?.length ||
+                      ![
+                        "basePriceCents",
+                        "childPriceCents",
+                        "infantPriceCents",
+                        "adultMinAge",
+                        "childMinAge",
+                      ].includes(key),
+                  )
+                  .map(([key, label, type]) =>
+                    key === "category" ? (
+                      <label key={key} className="grid gap-1 text-sm">
+                        {label}
+                        <input
+                          className="text-input"
+                          list="tour-category-options"
+                          value={String(t.category ?? "")}
+                          onChange={(e) => set("category", e.target.value)}
+                        />
+                        <datalist id="tour-category-options">
+                          {categories.map((item) => (
+                            <option key={item} value={item} />
+                          ))}
+                        </datalist>
+                        <span className="text-xs text-body">
+                          Comparirà come tab in homepage se almeno un tour
+                          pubblicato usa questa categoria.
+                        </span>
+                      </label>
+                    ) : (
+                      <Field
+                        key={key}
+                        label={label}
+                        type={type}
+                        value={String(
+                          key.endsWith("PriceCents")
+                            ? Number(t[key] ?? 0) / 100
+                            : (t[key] ?? ""),
+                        )}
+                        min={
+                          type === "number"
+                            ? key === "maxGuests"
+                              ? 1
+                              : 0
+                            : undefined
+                        }
+                        max={key === "maxGuests" ? 10000 : undefined}
+                        step={key.endsWith("PriceCents") ? "0.01" : undefined}
+                        onChange={(v) =>
+                          set(
+                            key,
+                            key.endsWith("PriceCents")
+                              ? Math.round(Number(v) * 100)
+                              : type === "number"
+                                ? Number(v)
+                                : v,
+                          )
+                        }
+                      />
+                    ),
+                  )}
+              </div>
+              <div className="form-grid">
+                <label>
+                  Giorni operativi (solo per tour senza partenze)
+                  <input
+                    className="text-input"
+                    disabled={
+                      t.schedule?.enabled ||
+                      !!t.calendarRules?.length ||
+                      !!t.slots.length
+                    }
+                    value={t.operatingDays ?? ""}
+                    onChange={(e) => set("operatingDays", e.target.value)}
+                  />
+                </label>
+                <label>
+                  Orario mostrato (solo per tour senza partenze)
+                  <input
+                    className="text-input"
+                    disabled={
+                      t.schedule?.enabled ||
+                      !!t.calendarRules?.length ||
+                      !!t.slots.length
+                    }
+                    value={t.departureTime ?? ""}
+                    onChange={(e) => set("departureTime", e.target.value)}
+                  />
+                </label>
+                <label>
+                  Anticipo richiesto (minuti)
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={0}
+                    max={240}
+                    value={t.arrivalMinutes ?? 15}
+                    onChange={(e) =>
+                      set("arrivalMinutes", Number(e.target.value))
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+          </details>
+          <details className="grid gap-4">
+            <summary className="title-md">
+              2. Descrizione, itinerario e informazioni pratiche
+            </summary>
+            <div className="grid gap-4 pt-4">
+              <Text
+                label="Descrizione breve"
+                value={t.shortDescription}
+                onChange={(v) => set("shortDescription", v)}
+              />
+              <Text
+                label="Descrizione completa"
+                value={t.description}
+                onChange={(v) => set("description", v)}
+              />
+              {(
+                [
+                  ["highlights", "Punti salienti (uno per riga)"],
+                  ["inclusions", "Servizi inclusi (uno per riga)"],
+                  ["safetyNotes", "Informazioni pratiche (una per riga)"],
+                ] as const
+              ).map(([key, label]) => (
+                <Text
+                  key={key}
+                  label={label}
+                  value={t[key].join("\n")}
+                  onChange={(v) => set(key, v.split("\n"))}
+                />
+              ))}
+              <div className="grid gap-3">
+                <Text
+                  label="Foto punti salienti (gruppi separati da riga vuota, max 4 URL per gruppo)"
+                  value={(t.highlightGalleries || [])
+                    .map((group) => group.join("\n"))
+                    .join("\n\n")}
+                  onChange={(v) =>
+                    set(
+                      "highlightGalleries",
+                      v
+                        .split(/\n\s*\n/)
+                        .map((group) =>
+                          group
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .filter(Boolean)
+                            .slice(0, 4),
+                        )
+                        .filter((group) => group.length > 0),
+                    )
+                  }
+                />
+                <label className="grid gap-2 text-sm">
+                  Oppure carica foto e aggiungile all’ultimo gruppo (JPEG, PNG o
+                  WebP; massimo 5 MB)
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={busy || galleryUploading || coverUploading}
+                    onChange={async (event) => {
+                      const files = Array.from(event.currentTarget.files || []);
+                      event.currentTarget.value = "";
+                      if (!files.length) return;
+                      setCoverUploading(true);
+                      setUploadMessage("Caricamento foto punti salienti…");
+                      try {
+                        const urls: string[] = [];
+                        for (const file of files) {
+                          urls.push(await uploadAdminImage(file));
+                        }
+                        const groups = [...(t.highlightGalleries || [])];
+                        const last = groups[groups.length - 1] || [];
+                        if (groups.length === 0 || last.length >= 4) {
+                          groups.push(urls.slice(0, 4));
+                          if (urls.length > 4) {
+                            for (let i = 4; i < urls.length; i += 4) {
+                              groups.push(urls.slice(i, i + 4));
+                            }
+                          }
+                        } else {
+                          const room = 4 - last.length;
+                          groups[groups.length - 1] = [
+                            ...last,
+                            ...urls.slice(0, room),
+                          ];
+                          const rest = urls.slice(room);
+                          for (let i = 0; i < rest.length; i += 4) {
+                            groups.push(rest.slice(i, i + 4));
+                          }
+                        }
+                        set("highlightGalleries", groups);
+                        setUploadMessage(
+                          "Foto aggiunte ai punti salienti. Salva il tour per pubblicarle.",
+                        );
+                      } catch (error) {
+                        setUploadMessage(
+                          error instanceof Error
+                            ? error.message
+                            : "Errore caricamento",
+                        );
+                      } finally {
+                        setCoverUploading(false);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </details>
+          <label className="flex gap-3">
+            <input
+              type="checkbox"
+              checked={t.published}
+              onChange={(e) => set("published", e.target.checked)}
+            />
+            Pubblica sul sito
+          </label>
+          {t.importedFromWordpress && (
+            <label className="flex gap-3">
+              <input
+                type="checkbox"
+                checked={!t.operationalReviewRequired}
+                onChange={(e) =>
+                  set("operationalReviewRequired", !e.target.checked)
+                }
+              />
+              Prezzi, fasce di età, capienza e partenze verificati
+            </label>
           )}
         </div>
-        <Text label="Descrizione breve" value={t.shortDescription} onChange={(v) => set("shortDescription", v)} />
-        <Text
-          label="Descrizione completa"
-          value={t.description}
-          onChange={(v) => set("description", v)}
+        <TourCommercialEditor
+          tour={t}
+          availableTours={availableTours}
+          change={set}
         />
-        {(
-          [
-            ["highlights", "Punti salienti (uno per riga)"],
-            ["inclusions", "Servizi inclusi (uno per riga)"],
-            ["safetyNotes", "Informazioni pratiche (una per riga)"],
-          ] as const
-        ).map(([key, label]) => (
-          <Text
-            key={key}
-            label={label}
-            value={t[key].join("\n")}
-            onChange={(v) => set(key, v.split("\n"))}
-          />
-        ))}
-        <div className="grid gap-3">
-          <Text
-            label="Foto punti salienti (gruppi separati da riga vuota, max 4 URL per gruppo)"
-            value={(t.highlightGalleries || [])
-              .map((group) => group.join("\n"))
-              .join("\n\n")}
-            onChange={(v) =>
-              set(
-                "highlightGalleries",
-                v
-                  .split(/\n\s*\n/)
-                  .map((group) =>
-                    group
-                      .split("\n")
-                      .map((line) => line.trim())
-                      .filter(Boolean)
-                      .slice(0, 4),
-                  )
-                  .filter((group) => group.length > 0),
-              )
-            }
-          />
-          <label className="grid gap-2 text-sm">
-            Oppure carica foto e aggiungile all’ultimo gruppo (JPEG, PNG o WebP;
-            massimo 5 MB)
-            <input
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              disabled={busy || galleryUploading || coverUploading}
-              onChange={async (event) => {
-                const files = Array.from(event.currentTarget.files || []);
-                event.currentTarget.value = "";
-                if (!files.length) return;
-                setCoverUploading(true);
-                setUploadMessage("Caricamento foto punti salienti…");
-                try {
-                  const urls: string[] = [];
-                  for (const file of files) {
-                    urls.push(await uploadAdminImage(file));
-                  }
-                  const groups = [...(t.highlightGalleries || [])];
-                  const last = groups[groups.length - 1] || [];
-                  if (groups.length === 0 || last.length >= 4) {
-                    groups.push(urls.slice(0, 4));
-                    if (urls.length > 4) {
-                      for (let i = 4; i < urls.length; i += 4) {
-                        groups.push(urls.slice(i, i + 4));
-                      }
-                    }
-                  } else {
-                    const room = 4 - last.length;
-                    groups[groups.length - 1] = [
-                      ...last,
-                      ...urls.slice(0, room),
-                    ];
-                    const rest = urls.slice(room);
-                    for (let i = 0; i < rest.length; i += 4) {
-                      groups.push(rest.slice(i, i + 4));
-                    }
-                  }
-                  set("highlightGalleries", groups);
-                  setUploadMessage(
-                    "Foto aggiunte ai punti salienti. Salva il tour per pubblicarle.",
-                  );
-                } catch (error) {
-                  setUploadMessage(
-                    error instanceof Error
-                      ? error.message
-                      : "Errore caricamento",
-                  );
-                } finally {
-                  setCoverUploading(false);
-                }
-              }}
-            />
-          </label>
-        </div>
-        <Text
-          label="Titoli o ID attività OTA (uno per riga)"
-          value={(t.otaAliases || []).join("\n")}
-          onChange={(v) => set("otaAliases", v.split("\n").filter(Boolean))}
+        <SectionBlocksEditor
+          blocks={t.contentBlocks}
+          onChange={(blocks) => set("contentBlocks", blocks)}
+          onUploading={setCoverUploading}
         />
-        <label className="flex gap-3">
-          <input
-            type="checkbox"
-            checked={t.published}
-            onChange={(e) => set("published", e.target.checked)}
-          />
-          Pubblica sul sito
-        </label>
-        {t.importedFromWordpress && <label className="flex gap-3">
-          <input type="checkbox" checked={!t.operationalReviewRequired} onChange={(e) => set("operationalReviewRequired", !e.target.checked)} />
-          Prezzi, fasce di età, capienza e partenze verificati
-        </label>}
-      </div>
-      <TourOperationsEditor tour={t} change={set} closedDates={closedDates} />
-      <TourGalleryEditor photos={t.galleryImages} disabled={busy || coverUploading} onChange={(photos) => set("galleryImages", photos)} onUploading={setGalleryUploading} />
-      <button className="button-primary" disabled={busy || galleryUploading || coverUploading}>
-        Salva tour e programmazione
-      </button>
-    </form>
+        <TourOperationsEditor tour={t} change={set} closedDates={closedDates} />
+        <TourGalleryEditor
+          photos={t.galleryImages}
+          disabled={busy || coverUploading}
+          onChange={(photos) => set("galleryImages", photos)}
+          onUploading={setGalleryUploading}
+        />
+        <button
+          className="button-primary"
+          disabled={
+            busy ||
+            galleryUploading ||
+            coverUploading ||
+            t.paymentMethods?.length === 0
+          }
+        >
+          Salva tour e programmazione
+        </button>
+      </form>
+      {calendar((updated) =>
+        setT((current) => ({
+          ...current,
+          slots: updated.slots,
+          calendarRules: updated.calendarRules,
+          closures: updated.closures,
+        })),
+      )}
+    </>
   );
 }
 function SettingsEditor({
@@ -1454,7 +1780,12 @@ function SettingsEditor({
 }) {
   const [s, setS] = useState(settings);
   const field = (
-    key: "multiTourPercent" | "minimumTours" | "cancellationHours" | "lateRefundPercent" | "retentionDays",
+    key:
+      | "multiTourPercent"
+      | "minimumTours"
+      | "cancellationHours"
+      | "lateRefundPercent"
+      | "retentionDays",
     label: string,
   ) => (
     <Field
@@ -1486,8 +1817,8 @@ function SettingsEditor({
       </div>
       <p className="text-sm">
         Le tariffe e le fasce d’età si gestiscono per ciascun tour. Listino
-        last-minute in <Link href="/admin/last-minute">Last minute</Link>.
-        Testi email in <Link href="/admin/pre-tour">Email</Link>.
+        last-minute in <Link href="/admin/last-minute">Last minute</Link>. Testi
+        email in <Link href="/admin/pre-tour">Email</Link>.
       </p>
       <button className="button-primary" disabled={busy}>
         Salva regole
@@ -1515,9 +1846,9 @@ function LastMinuteEditor({
     >
       <h2 className="display-md">Listino last-minute</h2>
       <p className="text-sm">
-        Quando è attivo, nelle ultime ore prima della partenza (dopo la
-        chiusura standard del tour) il listino applicato in checkout riceve lo
-        sconto indicato. Distinto dalla “chiusura prenotazioni” di ogni tour.
+        Quando è attivo, nelle ultime ore prima della partenza (dopo la chiusura
+        standard del tour) il listino applicato in checkout riceve lo sconto
+        indicato. Distinto dalla “chiusura prenotazioni” di ogni tour.
       </p>
       <label className="flex items-center gap-3 text-sm">
         <input
@@ -1584,7 +1915,8 @@ function EmailTemplatesEditor({
         {
           "{kind} {nome} {pnr} {tour} {data} {persone} {totale} {incontro} {indirizzo} {mappa} {pagamento} {nota} {cancellazione} {manageUrl} {calendarUrl} {assistenza} {firma} {brand}"
         }
-        . Per la mail operativa anche {"{email} {telefono} {note} {adulti} {minori} {affiliate}"}.
+        . Per la mail operativa anche{" "}
+        {"{email} {telefono} {note} {adulti} {minori} {affiliate}"}.
       </p>
       <Text
         label="Firma email"
@@ -1680,6 +2012,7 @@ const emptyAffiliate = (): Affiliate => ({
 });
 
 function AffiliatesSection({
+  tours,
   busy,
   affiliates,
   bookings,
@@ -1689,6 +2022,7 @@ function AffiliatesSection({
   renderReport,
 }: {
   busy: boolean;
+  tours: CatalogTour[];
   affiliates: Affiliate[];
   bookings: Reservation[];
   save: (a: Affiliate) => Promise<unknown>;
@@ -1714,7 +2048,7 @@ function AffiliatesSection({
         {affiliates.map((a) => {
           const rows = bookings.filter((b) => b.affiliateCode === a.code);
           const payable = rows.filter(
-            (b) => b.status === "present" && !b.commissionPaid,
+            (b) => commissionMatured({ tours }, b) && !b.commissionPaid,
           );
           return (
             <article className="card p-6" key={a.code}>
@@ -1724,15 +2058,53 @@ function AffiliatesSection({
                   <p>
                     {a.type} · {a.code}
                     {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
-                    {a.commissionPercent}% ·{" "}
-                    {a.active ? "Attivo" : "Sospeso"}
+                    {a.commissionPercent}% · {a.active ? "Attivo" : "Sospeso"}
                   </p>
-                  <p>
-                    {rows.length} prenotazioni · maturato da liquidare{" "}
-                    {formatMoney(
-                      payable.reduce((s, b) => s + b.commissionCents, 0),
-                    )}
-                  </p>
+                  <p>{rows.length} prenotazioni</p>
+                  {[...new Set(rows.map((b) => b.currency ?? "EUR"))].map(
+                    (currency) => (
+                      <div key={currency} className="text-sm">
+                        <p>
+                          Previste:{" "}
+                          {formatMoney(
+                            rows
+                              .filter(
+                                (b) =>
+                                  (b.currency ?? "EUR") === currency &&
+                                  !b.commissionPaid &&
+                                  ["confirmed", "present"].includes(b.status) &&
+                                  !commissionMatured({ tours }, b),
+                              )
+                              .reduce((n, b) => n + b.commissionCents, 0),
+                            currency,
+                          )}
+                        </p>
+                        <p>
+                          Maturate da liquidare:{" "}
+                          {formatMoney(
+                            payable
+                              .filter((b) => (b.currency ?? "EUR") === currency)
+                              .reduce((n, b) => n + b.commissionCents, 0),
+                            currency,
+                          )}
+                        </p>
+                        <p>
+                          Liquidate:{" "}
+                          {formatMoney(
+                            rows
+                              .filter(
+                                (b) =>
+                                  (b.currency ?? "EUR") === currency &&
+                                  b.commissionPaid &&
+                                  b.status !== "cancelled",
+                              )
+                              .reduce((n, b) => n + b.commissionCents, 0),
+                            currency,
+                          )}
+                        </p>
+                      </div>
+                    ),
+                  )}
                   <a
                     className="block break-all text-sm underline"
                     href={
@@ -1878,17 +2250,23 @@ function AffiliateEditor({
         />
         <label>
           Tipologia
-          <select
+          <input
             className="text-input"
+            list="affiliate-types"
             value={a.type}
-            onChange={(e) =>
-              setA({ ...a, type: e.target.value as Affiliate["type"] })
-            }
-          >
-            {["hotel", "guide", "promoter", "agency"].map((x) => (
-              <option key={x}>{x}</option>
+            maxLength={80}
+            required
+            onChange={(e) => setA({ ...a, type: e.target.value })}
+          />
+          <datalist id="affiliate-types">
+            {["hotel", "guide", "promoter", "agency"].map((v) => (
+              <option key={v} value={v} />
             ))}
-          </select>
+          </datalist>
+          <small>
+            Puoi inserire una nuova tipologia; usa lo stesso nome nelle regole
+            commissione.
+          </small>
         </label>
       </div>
       <p className="text-sm">

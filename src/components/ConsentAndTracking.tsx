@@ -6,7 +6,9 @@ import { useBrowserStorage } from "@/lib/browser-storage";
 export function ConsentAndTracking() {
   const savedConsent = useBrowserStorage("ftp-consent");
   const consent =
-    savedConsent === "essential" || savedConsent === "marketing"
+    savedConsent === "essential" ||
+    savedConsent === "marketing" ||
+    savedConsent === "statistics"
       ? "essential"
       : null;
   const [open, setOpen] = useState(false);
@@ -27,8 +29,11 @@ export function ConsentAndTracking() {
     const maxAge = 30 * 24 * 60 * 60;
     document.cookie = `ftp_affiliates=${encodeURIComponent(value)}; Max-Age=${maxAge}; path=/; SameSite=Lax`;
   }, []);
-  function choose() {
-    localStorage.setItem("ftp-consent", "essential");
+  function choose(kind: "essential" | "statistics" = "essential") {
+    localStorage.setItem("ftp-consent", kind);
+    document.cookie = `ftp_consent=${kind}; Max-Age=31536000; path=/; SameSite=Lax`;
+    if (kind === "essential")
+      document.cookie = "ftp_partner_visitor=; Max-Age=0; path=/; SameSite=Lax";
     window.dispatchEvent(new Event("ftp-storage"));
     setOpen(false);
     window.dispatchEvent(new Event("ftp-consent"));
@@ -43,14 +48,24 @@ export function ConsentAndTracking() {
           <strong className="text-ink">La tua scelta, prima di partire.</strong>
           <p className="my-3 text-sm">
             Usiamo solo i dati necessari per prenotazioni, sicurezza e
-            attribuzione affiliati. Nessun tracciamento pubblicitario.{" "}
+            attribuzione affiliati. Puoi consentire anche le statistiche anonime
+            sui click ai partner. Nessun tracciamento pubblicitario.{" "}
             <Link className="underline" href="/privacy">
               Informativa privacy
             </Link>
           </p>
           <div className="consent-banner-actions">
-            <button className="button-primary consent-btn-essential" onClick={choose}>
+            <button
+              className="button-primary consent-btn-essential"
+              onClick={() => choose("essential")}
+            >
               Ok, solo necessari
+            </button>
+            <button
+              className="button-secondary"
+              onClick={() => choose("statistics")}
+            >
+              Consenti statistiche
             </button>
           </div>
         </aside>

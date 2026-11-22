@@ -1,29 +1,29 @@
 import type { Tour } from "./types";
 
-export const MAX_TOUR_CAPACITY = 25;
 export const FREE_GROUP_LIMIT = 6;
 export const FREE_GROUP_PRICE_CENTS = 1200;
-export const FREE_TOUR_NOTE =
-  "Per il free tour consigliamo un contributo di almeno 10 € a persona, da riconoscere alla guida. Per gruppi superiori a 6 persone la tariffa è fissa: 12 € a persona.";
 
 export function isFreeTour(tour: Pick<Tour, "basePriceCents" | "isFreeTour">) {
   return tour.isFreeTour ?? tour.basePriceCents === 0;
 }
 export function tourPrices(tour: Tour, guests: number) {
-  const group = isFreeTour(tour) && guests > FREE_GROUP_LIMIT;
+  const group =
+    isFreeTour(tour) &&
+    (tour.freeGroupMode ?? "fixed") === "fixed" &&
+    guests > (tour.freeGroupLimit ?? FREE_GROUP_LIMIT);
   return {
     adult: group
-      ? FREE_GROUP_PRICE_CENTS
+      ? (tour.freeGroupPriceCents ?? FREE_GROUP_PRICE_CENTS)
       : isFreeTour(tour)
         ? 0
         : tour.basePriceCents,
     child: group
-      ? FREE_GROUP_PRICE_CENTS
+      ? (tour.freeGroupPriceCents ?? FREE_GROUP_PRICE_CENTS)
       : isFreeTour(tour)
         ? 0
         : tour.childPriceCents,
     infant: group
-      ? FREE_GROUP_PRICE_CENTS
+      ? (tour.freeGroupPriceCents ?? FREE_GROUP_PRICE_CENTS)
       : isFreeTour(tour)
         ? 0
         : tour.infantPriceCents,
@@ -35,4 +35,13 @@ export function cancellationNote(
   defaults = { cancellationHours: 24, lateRefundPercent: 0 },
 ) {
   return `Cancellazione gratuita fino a ${tour.cancellationHours ?? defaults.cancellationHours} ore prima della partenza. Dopo il termine: rimborso del ${tour.lateRefundPercent ?? defaults.lateRefundPercent}% dell’importo pagato.`;
+}
+
+export function freeTourNote(tour: Tour) {
+  const limit = tour.freeGroupLimit ?? FREE_GROUP_LIMIT;
+  if (tour.freeGroupMode === "none")
+    return "Tour a offerta libera: scegli il contributo da riconoscere alla guida al termine della visita.";
+  if (tour.freeGroupMode === "contact")
+    return `Per gruppi superiori a ${limit} persone contattaci per concordare un pagamento minimo o organizzare un tour privato.`;
+  return `Tour a offerta libera. Per gruppi superiori a ${limit} persone: ${((tour.freeGroupPriceCents ?? FREE_GROUP_PRICE_CENTS) / 100).toFixed(2)} ${tour.currency ?? "EUR"} a persona.`;
 }

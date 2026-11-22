@@ -1,4 +1,4 @@
-import { ExternalLink } from "lucide-react";
+import { BrandIcon } from "./BrandIcon";
 import { publicSiteContent } from "@/lib/platform/public";
 
 export async function SocialLinks({ compact = false }: { compact?: boolean }) {
@@ -8,7 +8,7 @@ export async function SocialLinks({ compact = false }: { compact?: boolean }) {
   if (!socialLinks.length) return null;
 
   return (
-    <div className={compact ? "flex flex-wrap gap-2" : "grid gap-3"}>
+    <div className={compact ? "flex flex-wrap gap-x-5 gap-y-2" : "grid gap-3"}>
       {socialLinks.map((link) => (
         <a
           key={link.label}
@@ -17,12 +17,14 @@ export async function SocialLinks({ compact = false }: { compact?: boolean }) {
           rel="me noreferrer"
           className={
             compact
-              ? "button-secondary !min-h-10 !px-4"
+              ? "inline-flex items-center gap-2 text-sm text-white/85"
               : "flex items-center justify-between rounded-sm border border-hairline-soft px-4 py-3 text-sm text-ink"
           }
         >
-          <span>{link.label}</span>
-          <ExternalLink size={16} />
+          <span className="inline-flex items-center gap-2">
+            <BrandIcon name={link.label} />
+            {link.label}
+          </span>
         </a>
       ))}
     </div>

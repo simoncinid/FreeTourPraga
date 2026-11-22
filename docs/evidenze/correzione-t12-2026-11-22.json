@@ -1,0 +1,69 @@
+{
+  "at": "2026-11-22T20:50:27.338Z",
+  "checks": [
+    "Categoria adulti preferita alla tariffa minori gratuita",
+    "Prezzo e valuta allineati in card, testata, API catalogo, SEO e preventivo",
+    "Prezzo modificato da 400 a 999 CZK tramite editor amministrativo",
+    "Cambio valuta a EUR verificato tramite editor",
+    "Prenotazione precedente conservata a 400 CZK"
+  ],
+  "browserErrors": [],
+  "requirement": "T12",
+  "status": "completed",
+  "unitTests": {
+    "passed": 71,
+    "total": 71
+  },
+  "lintPassed": true,
+  "typecheckPassed": true,
+  "productionHttpPassed": true,
+  "standaloneBuildPassed": true,
+  "database": "PostgreSQL locale temporaneo",
+  "seo": {
+    "passed": 212,
+    "total": 212
+  },
+  "smtp": {
+    "localStartTLS": true,
+    "messages": 11,
+    "internetEmailSent": false
+  },
+  "remoteDeployment": false,
+  "referenceRule": "Categoria con ID adults; altrimenti prima categoria configurata. Nessun minimo tra tutte le fasce.",
+  "matrix": {
+    "rows": 108,
+    "completed": 80,
+    "open": 28,
+    "openIds": [
+      "D06",
+      "H09",
+      "H14",
+      "H18",
+      "N06",
+      "N09",
+      "N10",
+      "T21",
+      "T22",
+      "E01",
+      "E02",
+      "E03",
+      "E05",
+      "E06",
+      "E07",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "C02",
+      "C06",
+      "C08",
+      "C10",
+      "C11",
+      "C14",
+      "A04",
+      "A09",
+      "Q05"
+    ]
+  },
+  "remainingT22": "Sincronizzazione dei testi giorni/orari con la programmazione operativa."
+}

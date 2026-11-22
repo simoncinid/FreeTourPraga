@@ -56,7 +56,15 @@ export function BookingConfirmation() {
       <div className={`container-page ${ui.confirmationGrid}`}>
         <div className={ui.confirmationIntro}>
           <p className="micro-label text-primary">Il tuo viaggio a Praga</p>
-          {receipt && receipt.bookings.length > 0 && receipt.bookings.every(b => b.status === "confirmed") && <CheckCircle2 size={34} className={`${ui.confirmationCheck} mt-5 text-success`} aria-hidden />}
+          {receipt &&
+            receipt.bookings.length > 0 &&
+            receipt.bookings.every((b) => b.status === "confirmed") && (
+              <CheckCircle2
+                size={34}
+                className={`${ui.confirmationCheck} mt-5 text-success`}
+                aria-hidden
+              />
+            )}
           <h1 className="display-xl my-5">
             {!receipt
               ? "La tua prenotazione."
@@ -68,7 +76,8 @@ export function BookingConfirmation() {
             <p className="mb-5">
               Riceverai via email i dettagli della prenotazione. L’email include
               il link per modificare o cancellare la singola prenotazione, senza
-              creare un account. Il saldo è in contanti sul posto.
+              creare un account. Il metodo di pagamento è riportato nel
+              riepilogo.
             </p>
           )}
         </div>
@@ -81,11 +90,18 @@ export function BookingConfirmation() {
           {!receipt && !message && (
             <p role="status">Caricamento del riepilogo…</p>
           )}
-          {receipt && receipt.bookings.map((b) => (
-              <article key={b.pnr} data-status={b.status} className="card mb-5 grid gap-4 p-6">
+          {receipt &&
+            receipt.bookings.map((b) => (
+              <article
+                key={b.pnr}
+                data-status={b.status}
+                className="card mb-5 grid gap-4 p-6"
+              >
                 <div className="flex flex-wrap justify-between gap-3">
                   <strong>{b.pnr}</strong>
-                  <span className={`status-chip ${b.status === "confirmed" ? "status-success" : b.status === "pending" ? "status-warning" : "status-muted"}`}>
+                  <span
+                    className={`status-chip ${b.status === "confirmed" ? "status-success" : b.status === "pending" ? "status-warning" : "status-muted"}`}
+                  >
                     {
                       {
                         confirmed: "Confermata",
@@ -98,6 +114,11 @@ export function BookingConfirmation() {
                   </span>
                 </div>
                 <h2 className="display-md">{b.tourTitle}</h2>
+                <p className="whitespace-pre-wrap">
+                  {b.paymentMethod === "bank_transfer"
+                    ? `Bonifico · ${b.paymentStatus === "paid" ? "Pagamento registrato" : "In attesa del pagamento"}. Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
+                    : "Pagamento in contanti sul posto."}
+                </p>
                 <p>
                   {new Date(b.startsAt).toLocaleString("it-IT", {
                     timeZone: "Europe/Prague",
@@ -106,8 +127,13 @@ export function BookingConfirmation() {
                   })}
                 </p>
                 <p>
-                  {b.adults} adulti · {b.children} bambini · {b.infants} infanti
-                  · {formatMoney(b.totalCents)}
+                  {b.categorySnapshot
+                    ? b.categorySnapshot
+                        .filter((c) => c.quantity)
+                        .map((c) => `${c.quantity} ${c.label}`)
+                        .join(" · ")
+                    : `${b.adults} adulti · ${b.children} bambini · ${b.infants} infanti`}
+                  · {formatMoney(b.totalCents, b.currency)}
                 </p>
                 <p>
                   {b.meetingPoint}
@@ -133,7 +159,7 @@ export function BookingConfirmation() {
                   </a>
                 </div>
               </article>
-          ))}
+            ))}
         </div>
         <div className={ui.confirmationActions}>
           <Link href="/tour" className="button-primary">
