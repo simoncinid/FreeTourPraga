@@ -1,5 +1,7 @@
 # Stato della Fase 1 — 15 novembre 2026
 
+**Aggiornamento specifiche V2, sessione 22 novembre 2026:** per lo stato corrente usare [MODIFICHE-SPECIFICHE-V2.md](MODIFICHE-SPECIFICHE-V2.md). I paragrafi seguenti conservano la cronologia delle consegne precedenti; le indicazioni su attivazione Stripe e catalogo soltanto dimostrativo sono superate. Il perimetro corrente comprende contanti/bonifico configurabili, i sette tour del volantino, CMS e calendario corretti e rilascio Railway; SMTP resta subordinato ai dati del provider del committente.
+
 Perimetro richiesto: sei step della Fase 1 del PDF, con Railway al posto di Vercel e backup giornaliero. Il committente ha confermato il mantenimento del catalogo dimostrativo e la successiva configurazione di Stripe e SMTP su Railway. Incluse le modifiche contemporanee a home, menu, Chi siamo, Informazioni utili, Blog e Aiuto.
 
 ## Verifiche completate sul codice

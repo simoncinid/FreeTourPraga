@@ -39,15 +39,11 @@ Dal sito usare “Area staff” nel footer, oppure aprire `/accesso`; dopo il lo
 
 Le credenziali staff iniziali sono in `privato/railway-accesso.txt`, mai nel repository o nel container. Le password non sono recuperabili dal gestionale: per sostituirle generare un nuovo hash e aggiornare `STAFF_USERS`.
 
-## Attivare Stripe (committente)
+## Pagamenti per tour — aggiornamento specifiche V2
 
-1. In web impostare `STRIPE_SECRET_KEY` di test.
-2. Creare un webhook Stripe verso `https://web-production-f3beeaff.up.railway.app/api/stripe/webhook` e salvare il relativo `STRIPE_WEBHOOK_SECRET` in web.
-3. Eventi: `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_succeeded`; per i flussi di rimborso già presenti, `refund.created`, `refund.updated`, `refund.failed`.
-4. Ridistribuire web. Eseguire un pagamento test dal browser e verificare stato, importo EUR, conferma email e calendario. Provare anche abbandono, scadenza e reinvio dello stesso evento.
-5. Usare chiavi live solo dopo il completamento dell’anteprima (`SITE_PREVIEW=false`) e la configurazione del corrispondente webhook live. La chiave privata resta solo in web.
+Dal gestionale, nella scheda del tour, scegliere contanti e/o bonifico. Contanti è il default; il bonifico richiede beneficiario, IBAN e istruzioni confermati dal committente. Il checkout propone soltanto metodi disponibili per tutti i tour nell’ordine. Il server ricontrolla la configurazione alla vendita e congela le istruzioni nella prenotazione; il team registra incassi e rimborsi manuali.
 
-Prima di questi passaggi il checkout propone i contanti; il pagamento online compare automaticamente dopo la configurazione. Il test automatico del protocollo Stripe usa un mock HTTPS e webhook firmati: non equivale a una transazione sul proprio account Stripe.
+Stripe non è attivo nella versione corrente: `/api/stripe/webhook` restituisce 410 e le chiavi da sole non abilitano il checkout. La precedente procedura di attivazione tramite sole variabili è superata; non richiedere credenziali Stripe per completare il perimetro attuale.
 
 ## Attivare SMTP (committente)
 
@@ -55,7 +51,7 @@ In **web**, non nel worker, impostare `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS o 4
 
 Worker usa `PLATFORM_URL` e lo stesso `CRON_SECRET` di web. Ogni minuto richiede `/api/platform/cron?task=jobs`; `ENABLE_OTA=false` evita l’attivazione di integrazioni della Fase 2. Il worker scrive lo stato HTTP nei log; il gestionale mostra l’esito di ogni invio. Gli invii falliti si possono ritentare dal gestionale. Verificare recapito reale, cartella spam, allegato ICS e link di pagamento con una casella controllata prima del lancio.
 
-`railway run --service web node scripts/preflight.mjs` richiede il file locale di questo script e usa le variabili del servizio; il controllo è di configurazione e non invia messaggi o pagamenti. Stripe e SMTP mancanti producono esito non superato, intenzionalmente.
+`railway run --service web node scripts/preflight.mjs` richiede il file locale di questo script e usa le variabili del servizio; il controllo è di configurazione e non invia messaggi o pagamenti. SMTP mancante produce esito non superato. Stripe non è un prerequisito del perimetro corrente.
 
 ## Backup giornaliero
 

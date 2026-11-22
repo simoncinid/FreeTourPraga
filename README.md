@@ -2,7 +2,7 @@
 
 Sito Next.js, booking e gestionale della **Fase 1** del contratto. Infrastruttura: **GitHub + Railway** (web, PostgreSQL, worker email e backup cifrato giornaliero).
 
-L’ambiente Railway è un’**anteprima con catalogo dimostrativo**, su richiesta del committente. Stripe e SMTP saranno configurati dal committente su Railway. Non è ancora una consegna commerciale validata: [stato e attività residue](docs/STATO-CONSEGNA.md).
+L’ambiente Railway è un’**anteprima di revisione**, su richiesta del committente. I tour propongono contanti e, se configurato, bonifico. Stripe è escluso dal perimetro corrente; mancano i dati SMTP del committente per il recapito reale delle email. Non è ancora una consegna commerciale validata: [matrice aggiornata delle specifiche](docs/MODIFICHE-SPECIFICHE-V2.md).
 
 - [Requisiti e manuale Fase 1](docs/FASE-1.md)
 - [Deploy e configurazione Railway](docs/RAILWAY.md)

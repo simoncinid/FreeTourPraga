@@ -21,12 +21,13 @@
     "test:http": "node scripts/run-http-tests.mjs",
     "test:http:production": "node scripts/run-production-http-tests.mjs",
     "preflight": "node scripts/preflight.mjs",
-    "test:browser": "RUN_BROWSER_TESTS=1 node scripts/run-production-http-tests.mjs",
+    "test:browser": "npm run test:specifications",
     "railway:configure": "node scripts/configure-railway.mjs",
     "test:cms": "node --import tsx scripts/cms-content-e2e.mjs",
     "seo:prepare": "python3 scripts/prepare-seo-content.py",
     "seo:import": "node scripts/import-seo-content.mjs",
-    "seo:check": "node scripts/check-seo.mjs"
+    "seo:check": "node scripts/check-seo.mjs",
+    "test:specifications": "RUN_TOUR_PRICE_TESTS=1 RUN_SPECIFICATIONS_TESTS=1 RUN_COMPLETION_TESTS=1 node scripts/run-production-http-tests.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1163.0",

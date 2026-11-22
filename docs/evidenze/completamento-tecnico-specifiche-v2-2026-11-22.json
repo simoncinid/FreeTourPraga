@@ -1,0 +1,172 @@
+{
+  "recordedAt": "2026-11-22T21:29:28.858235+00:00",
+  "status": "technical_requirements_completed",
+  "sourceCommit": "98dba41",
+  "matrix": {
+    "rows": 110,
+    "completed": 102,
+    "open": 8,
+    "openIds": [
+      "D06",
+      "D07",
+      "H14",
+      "H18",
+      "N06",
+      "N09",
+      "N10",
+      "E11"
+    ]
+  },
+  "lintPassed": true,
+  "typecheckPassed": true,
+  "unitTests": {
+    "passed": 86,
+    "total": 86,
+    "postgresqlPassed": true
+  },
+  "productionHttpPassed": true,
+  "standaloneBuildPassed": true,
+  "localBrowser": {
+    "checks": [
+      "R1: home, blog e FAQ modificati dagli editor corretti e persistiti nelle pagine pubbliche",
+      "R2/E13: dodici pagine pubbliche, benefici B2B, blocchi blog/FAQ e pagina storica raggiungibili e modificabili",
+      "C14: calendario protetto prima del primo salvataggio",
+      "R5/R6: riapertura closure legacy, tre rigenerazioni e salvataggio scheda senza perdere la bozza o le regole",
+      "R4: scorciatoie ancorate al mese attuale e vista filtrata su intervallo che attraversa due mesi",
+      "A04/A09/T21: categorie affiliate personalizzate, singolo vs pacchetto esplicito, checkout bonifico e registrazione incasso",
+      "H18: salvataggio indirizzo globale sincronizza punto Castello, mappa e abilitazione; campo vuoto blocca le vendite"
+    ],
+    "errors": []
+  },
+  "smtp": {
+    "localStartTLS": true,
+    "messages": 28,
+    "bankTransferInstructionsVerified": true,
+    "icsVerified": true,
+    "internetEmailSent": false
+  },
+  "localSeo": {
+    "checked": 215,
+    "passed": 215,
+    "failed": [],
+    "sitemapUrls": 84
+  },
+  "railway": {
+    "project": "7a0fae1d-ca22-4b6e-9030-483094639511",
+    "service": "web",
+    "deployment": "0a0c782d-6cb9-4f27-a2d6-2c165510d491",
+    "deploymentStatus": "SUCCESS",
+    "origin": "https://web-production-f3beeaff.up.railway.app",
+    "health": "postgresql",
+    "previewKept": true,
+    "dnsChanged": false,
+    "migration": {
+      "apply": true,
+      "applied": true,
+      "tours": 12,
+      "updated": [
+        "free-tour-praga",
+        "castello-praga-mala-strana",
+        "citta-nuova-di-praga",
+        "comunismo",
+        "petrin-monastero-strahov",
+        "tour-praga-esoterica",
+        "interni-castello-praga"
+      ],
+      "articles": 28,
+      "preservedBookings": 1,
+      "preservedOrders": 1,
+      "backupPath": "privato/before-specifications-railway-1795382791610-3f4e320b-e243-4e86-b381-4a5421b8dd35.json",
+      "backupSha256": "7417d9fa893f4f1ded9ebc47c775dea4311b35690638ffde53fcf01626880c89"
+    },
+    "secondMigrationDryRun": {
+      "applied": false,
+      "preservedBookings": 1,
+      "preservedOrders": 1
+    },
+    "preservation": {
+      "preserved": true,
+      "before": {
+        "bookings": {
+          "count": 1,
+          "sha256": "5da16db4356c1732b9063743705d6f82cec6ed0a4736a424ea8b854f99515d7e"
+        },
+        "orders": {
+          "count": 1,
+          "sha256": "4fd133576d853528ffad20614d8241a5e43be9acdeff46523527ae3311a6768e"
+        }
+      },
+      "after": {
+        "bookings": {
+          "count": 1,
+          "sha256": "5da16db4356c1732b9063743705d6f82cec6ed0a4736a424ea8b854f99515d7e"
+        },
+        "orders": {
+          "count": 1,
+          "sha256": "4fd133576d853528ffad20614d8241a5e43be9acdeff46523527ae3311a6768e"
+        }
+      }
+    },
+    "browser": {
+      "origin": "https://web-production-f3beeaff.up.railway.app",
+      "checks": [
+        "PostgreSQL, login staff, 12 tour, listini del volantino, CZK esplicito e Castello protetto senza indirizzo",
+        "Editor strutturati e nuove pagine raggiungibili, albero con tutti i tour, nuovo tour protetto, calendario con filtro vista",
+        "Homepage ufficiale e catalogo mobile senza overflow; nessuna prenotazione o email di prova creata in produzione"
+      ],
+      "errors": [],
+      "bookings": 1,
+      "orders": 1
+    },
+    "seo": {
+      "checked": 191,
+      "passed": 191,
+      "failed": [],
+      "sitemapUrls": 0
+    },
+    "preflight": {
+      "passedChecks": 7,
+      "pendingChecks": [
+        "SMTP e mittente configurati"
+      ],
+      "stripeRequired": false,
+      "exitCode": 1,
+      "note": "L’esito non superato deriva esclusivamente dai dati SMTP del committente mancanti, D07."
+    },
+    "testBookingsCreated": 0,
+    "externalEmailSent": false,
+    "beforeReleaseBackup": {
+      "privateLocalFile": "privato/railway-before-technical-completion-1795381885433.json.gz",
+      "sha256": "d6058a92de2a5e78bfbd22ca3e9d0a55f85019d62eccecb0f46e6da44a6ad030"
+    },
+    "missingDataVerified": {
+      "googleReviewUrl": true,
+      "castleMeetingAddress": true,
+      "officeAddress": true,
+      "social": [
+        "tiktok",
+        "youtube",
+        "linkedin"
+      ]
+    },
+    "counts": {
+      "tours": 12,
+      "bookings": 1,
+      "orders": 1,
+      "articles": 28
+    }
+  },
+  "resolvedTechnicalFindings": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8"
+  ],
+  "historicalReportsPreserved": true,
+  "testCommand": "npm run test:specifications",
+  "testBrowserCommand": "npm run test:browser"
+}

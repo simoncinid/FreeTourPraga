@@ -23,16 +23,13 @@ add('Account amministratore con password distinta dallo sviluppo', Array.isArray
  const [salt,key] = u.passwordHash.split(':');
  return !timingSafeEqual(scryptSync('PragaLocale!2026', salt, 64), Buffer.from(key,'hex'));
 }));
-add('Chiave Stripe configurata', /^sk_(test|live)_/.test(env.STRIPE_SECRET_KEY || ''));
-add('Firma webhook Stripe configurata', /^whsec_.{10,}$/.test(env.STRIPE_WEBHOOK_SECRET || ''));
 add('SMTP e mittente configurati', present('SMTP_HOST') && present('SMTP_FROM') && present('ADMIN_EMAIL'));
 if (env.SITE_PREVIEW === 'true') {
- add('Anteprima con pagamenti esclusivamente di test', !present('STRIPE_SECRET_KEY') || env.STRIPE_SECRET_KEY.startsWith('sk_test_'));
- console.log('Anteprima: indicizzazione disabilitata, catalogo dimostrativo.');
+ console.log('Anteprima: indicizzazione disabilitata. Pagamenti online non attivi.');
 }
 for (const c of checks) console.log(`${c.pass ? 'OK' : 'DA CONFIGURARE'}: ${c.name}`);
 console.log('Backup giornaliero: verificare il servizio Railway backup, il suo ultimo esito e la prova di ripristino.');
 console.log('Worker: verificare servizio attivo e CRON_SECRET uguale a web. Immagini CMS persistite in PostgreSQL.');
-console.log('Perimetro: Fase 1. Twilio, OTA, affiliati e campagne Ads non sono requisiti di questo controllo.');
-console.log('Le configurazioni presenti non sostituiscono il collaudo reale di Stripe, SMTP e backup.');
+console.log('Perimetro: contanti e bonifico configurabili per tour; affiliazioni e commissioni. Stripe, Twilio, OTA e campagne Ads non sono requisiti di questo controllo.');
+console.log('Le configurazioni presenti non sostituiscono il collaudo reale di SMTP e backup. Le chiavi Stripe non abilitano il checkout online nella versione corrente.');
 if (checks.some(c => !c.pass)) process.exitCode = 1;
