@@ -13,6 +13,8 @@ function smtpTransport() {
     port,
     secure: port === 465,
     requireTLS: port !== 465,
+    // Su Railway l’AAAA del mailserver può restare irraggiungibile: forziamo IPv4.
+    family: 4,
     auth: process.env.SMTP_USER
       ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
       : undefined,

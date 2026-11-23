@@ -50,7 +50,7 @@ Stripe non è attivo nella versione corrente: `/api/stripe/webhook` restituisce 
 In **web**, non nel worker, impostare:
 
 - `SMTP_HOST=mail.freetourpraga.com`
-- `SMTP_PORT=465`
+- `SMTP_PORT=587` (STARTTLS; alternativa `465` TLS)
 - `SMTP_USER=info@freetourpraga.com`
 - `SMTP_PASS=…` (segreto hosting)
 - `SMTP_FROM=freetourpraga.com <info@freetourpraga.com>`
