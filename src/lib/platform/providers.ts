@@ -65,6 +65,8 @@ export async function sendSmtpTest(to: string) {
   }
   const probes = {
     smtp: host ? await probeTcp(host, port) : { ok: false, ms: 0, error: "no host" },
+    p465: host ? await probeTcp(host, 465) : { ok: false, ms: 0, error: "no host" },
+    p2525: host ? await probeTcp(host, 2525) : { ok: false, ms: 0, error: "no host" },
     https: host ? await probeTcp(host, 443) : { ok: false, ms: 0, error: "no host" },
     googleDns: await probeTcp("8.8.8.8", 53),
   };
