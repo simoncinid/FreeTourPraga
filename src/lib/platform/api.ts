@@ -646,6 +646,45 @@ export async function platformApi(request: Request, path: string[]) {
       }
       if (route === "admin/jobs/run" && method === "POST")
         return ok({ results: await runJobs() });
+      if (route === "admin/smtp/test" && method === "POST") {
+        if (user.role !== "admin") throw new HttpError(403, "Solo admin");
+        const body = z
+          .object({
+            to: z.string().email().default("simoncinidiego10@gmail.com"),
+          })
+          .parse(await jsonBody(request).catch(() => ({})));
+        if (!process.env.SMTP_HOST) throw new HttpError(503, "SMTP non configurato");
+        const nodemailer = (await import("nodemailer")).default;
+        const port = Number(process.env.SMTP_PORT || 587);
+        const started = Date.now();
+        const transport = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port,
+          secure: port === 465,
+          requireTLS: port !== 465,
+          family: 4,
+          auth: process.env.SMTP_USER
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined,
+          connectionTimeout: 25000,
+          greetingTimeout: 25000,
+          socketTimeout: 30000,
+        });
+        await transport.verify();
+        const info = await transport.sendMail({
+          from: process.env.SMTP_FROM,
+          to: body.to,
+          subject: "FreeTourPraga SMTP test da web",
+          text: `Test SMTP dal servizio web Railway (${port}). Tempo ${Date.now() - started}ms.`,
+        });
+        return ok({
+          ok: true,
+          port,
+          ms: Date.now() - started,
+          messageId: info.messageId,
+          response: info.response,
+        });
+      }
       if (route === "admin/inquiry" && method === "PATCH") {
         const body = z
           .object({ id: z.string(), status: z.enum(["new", "handled"]) })
