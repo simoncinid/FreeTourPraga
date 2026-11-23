@@ -59,6 +59,8 @@ In **web**, non nel worker, impostare:
 
 Le conferme admin usano oggetto e corpo identici a Contact Form 7 (`Reserva freetourpraga.com italiano` + campi in spagnolo) perché UWT li importa automaticamente. In collaudo impostare `BOOKING_ADMIN_EMAILS` solo su una casella di test: non inviare prenotazioni fittizie a `admin@unitedworldtours.eu`. Validare recapito, spam e allegato ICS prima del go-live. Configurare SPF/DKIM/DMARC sul dominio mittente e ridistribuire web.
 
+**Blocco SMTP Railway:** sui piani Free/Trial/Hobby le porte SMTP in uscita (25/465/587/2525) sono disabilitate. Diagnosi del 23/11/2026 dal runtime web: egress `152.55.176.205`, timeout su 587/465 verso `mail.freetourpraga.com`, mentre 443 verso lo stesso host è ok. Con `railway run` (rete diversa) l’SMTP funziona. Per usare l’SMTP dell’hosting serve **piano Pro** (poi ridistribuire web) oppure un relay transazionale HTTPS (Resend/SendGrid/Mailgun/Postmark). Vedi [Outbound Networking](https://docs.railway.com/networking/outbound-networking).
+
 Worker usa `PLATFORM_URL` e lo stesso `CRON_SECRET` di web. Ogni minuto richiede `/api/platform/cron?task=jobs`; `ENABLE_OTA=false` evita l’attivazione di integrazioni della Fase 2. Il worker scrive lo stato HTTP nei log; il gestionale mostra l’esito di ogni invio. Gli invii falliti si possono ritentare dal gestionale. Verificare recapito reale, cartella spam, allegato ICS e link di pagamento con una casella controllata prima del lancio.
 
 `railway run --service web node scripts/preflight.mjs` richiede il file locale di questo script e usa le variabili del servizio; il controllo è di configurazione e non invia messaggi o pagamenti. SMTP mancante produce esito non superato. Stripe non è un prerequisito del perimetro corrente.
