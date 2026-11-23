@@ -34,24 +34,71 @@ function smtpTransport() {
   return sharedTransport;
 }
 
+async function probeTcp(host: string, port: number, timeoutMs = 8000) {
+  const net = await import("node:net");
+  const started = Date.now();
+  return new Promise<{ ok: boolean; ms: number; error?: string }>((resolve) => {
+    const socket = net.connect({ host, port, family: 4 });
+    const done = (ok: boolean, error?: string) => {
+      socket.destroy();
+      resolve({ ok, ms: Date.now() - started, error });
+    };
+    socket.setTimeout(timeoutMs, () => done(false, "timeout"));
+    socket.once("connect", () => done(true));
+    socket.once("error", (e) => done(false, e.message));
+  });
+}
+
 export async function sendSmtpTest(to: string) {
-  const transport = smtpTransport();
+  const host = process.env.SMTP_HOST || "";
   const port = Number(process.env.SMTP_PORT || 587);
   const started = Date.now();
-  await transport.verify();
-  const info = await transport.sendMail({
-    from: process.env.SMTP_FROM,
-    to,
-    subject: "FreeTourPraga SMTP test da web",
-    text: `Test SMTP dal servizio web Railway (${port}). Tempo ${Date.now() - started}ms.`,
-  });
-  return {
-    ok: true as const,
-    port,
-    ms: Date.now() - started,
-    messageId: info.messageId,
-    response: info.response,
+  let egress: string | undefined;
+  try {
+    egress = await fetch("https://api.ipify.org?format=json", {
+      signal: AbortSignal.timeout(5000),
+    })
+      .then((r) => r.json())
+      .then((j: { ip?: string }) => j.ip);
+  } catch {
+    egress = "unknown";
+  }
+  const probes = {
+    smtp: host ? await probeTcp(host, port) : { ok: false, ms: 0, error: "no host" },
+    https: host ? await probeTcp(host, 443) : { ok: false, ms: 0, error: "no host" },
+    googleDns: await probeTcp("8.8.8.8", 53),
   };
+  try {
+    sharedTransport = null;
+    const transport = smtpTransport();
+    await transport.verify();
+    const info = await transport.sendMail({
+      from: process.env.SMTP_FROM,
+      to,
+      subject: "FreeTourPraga SMTP test da web",
+      text: `Test SMTP dal servizio web Railway (${port}). Egress ${egress}. Tempo ${Date.now() - started}ms.`,
+    });
+    return {
+      ok: true as const,
+      port,
+      egress,
+      probes,
+      ms: Date.now() - started,
+      messageId: info.messageId,
+      response: info.response,
+    };
+  } catch (e) {
+    sharedTransport = null;
+    return {
+      ok: false as const,
+      port,
+      egress,
+      probes,
+      ms: Date.now() - started,
+      host,
+      error: e instanceof Error ? `${e.name}: ${e.message}` : String(e),
+    };
+  }
 }
 
 export async function runJobs() {
