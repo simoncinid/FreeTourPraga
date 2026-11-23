@@ -1,6 +1,14 @@
+import { setDefaultResultOrder } from "node:dns";
 import nodemailer, { type Transporter } from "nodemailer";
 import { transaction } from "./store";
 import { releaseExpired } from "./booking";
+
+// Preferisci A/IPv4: evita timeout se compare un AAAA non raggiungibile.
+try {
+  setDefaultResultOrder("ipv4first");
+} catch {
+  /* Node senza setDefaultResultOrder */
+}
 
 let sharedTransport: Transporter | null = null;
 
@@ -13,8 +21,6 @@ function smtpTransport() {
     port,
     secure: port === 465,
     requireTLS: port !== 465,
-    // Su Railway l’AAAA del mailserver può restare irraggiungibile: forziamo IPv4.
-    family: 4,
     auth: process.env.SMTP_USER
       ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
       : undefined,
@@ -26,6 +32,26 @@ function smtpTransport() {
     maxMessages: 50,
   });
   return sharedTransport;
+}
+
+export async function sendSmtpTest(to: string) {
+  const transport = smtpTransport();
+  const port = Number(process.env.SMTP_PORT || 587);
+  const started = Date.now();
+  await transport.verify();
+  const info = await transport.sendMail({
+    from: process.env.SMTP_FROM,
+    to,
+    subject: "FreeTourPraga SMTP test da web",
+    text: `Test SMTP dal servizio web Railway (${port}). Tempo ${Date.now() - started}ms.`,
+  });
+  return {
+    ok: true as const,
+    port,
+    ms: Date.now() - started,
+    messageId: info.messageId,
+    response: info.response,
+  };
 }
 
 export async function runJobs() {

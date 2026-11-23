@@ -1,4 +1,3 @@
-import { applyVisualPatches, visualPatchSchema } from "./visual-content";
 import { jsonEqual } from "../json-equal";
 import {
   partnerSchema,
@@ -648,42 +647,19 @@ export async function platformApi(request: Request, path: string[]) {
         return ok({ results: await runJobs() });
       if (route === "admin/smtp/test" && method === "POST") {
         if (user.role !== "admin") throw new HttpError(403, "Solo admin");
-        const body = z
-          .object({
-            to: z.string().email().default("simoncinidiego10@gmail.com"),
-          })
-          .parse(await jsonBody(request).catch(() => ({})));
-        if (!process.env.SMTP_HOST) throw new HttpError(503, "SMTP non configurato");
-        const nodemailer = (await import("nodemailer")).default;
-        const port = Number(process.env.SMTP_PORT || 587);
-        const started = Date.now();
-        const transport = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port,
-          secure: port === 465,
-          requireTLS: port !== 465,
-          family: 4,
-          auth: process.env.SMTP_USER
-            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-            : undefined,
-          connectionTimeout: 25000,
-          greetingTimeout: 25000,
-          socketTimeout: 30000,
-        });
-        await transport.verify();
-        const info = await transport.sendMail({
-          from: process.env.SMTP_FROM,
-          to: body.to,
-          subject: "FreeTourPraga SMTP test da web",
-          text: `Test SMTP dal servizio web Railway (${port}). Tempo ${Date.now() - started}ms.`,
-        });
-        return ok({
-          ok: true,
-          port,
-          ms: Date.now() - started,
-          messageId: info.messageId,
-          response: info.response,
-        });
+        let to = "simoncinidiego10@gmail.com";
+        try {
+          const body = z
+            .object({ to: z.string().email().optional() })
+            .parse(await jsonBody(request));
+          if (body.to) to = body.to;
+        } catch {
+          /* body opzionale */
+        }
+        if (!process.env.SMTP_HOST)
+          throw new HttpError(503, "SMTP non configurato");
+        const { sendSmtpTest } = await import("./providers");
+        return ok(await sendSmtpTest(to));
       }
       if (route === "admin/inquiry" && method === "PATCH") {
         const body = z
@@ -742,21 +718,6 @@ export async function platformApi(request: Request, path: string[]) {
         });
         return ok({ ok: true });
       }
-      if (route === "admin/visual-content" && method === "POST") {
-        await requireStaff(["admin"]);
-        const input = visualPatchSchema.parse(await jsonBody(request));
-        const result = await transaction((s) => {
-          const result = applyVisualPatches(s, input);
-          audit(
-            s,
-            user.email,
-            "content.visual.publish",
-            JSON.stringify(result),
-          );
-          return result;
-        });
-        return ok({ ok: true, ...result });
-      }
       if (route === "admin/site-content" && method === "PUT") {
         const content = siteContentSchema.parse(await jsonBody(request));
         await transaction((s) => {
@@ -784,7 +745,7 @@ export async function platformApi(request: Request, path: string[]) {
             const address = content.globals.castleMeetingAddress?.trim() || "";
             castle.meetingAddress = address;
             castle.mapUrl = address
-              ? "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7"
+              ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
               : "";
             castle.mapEmbedUrl = address
               ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`
