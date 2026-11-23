@@ -4,21 +4,27 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import css from "./admin-records.module.css";
 export { css as recordsCss };
 export function useRecordPagination(total: number) {
-  const area = useRef<HTMLDivElement>(null);
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
   const [page, setPage] = useState(0),
     [size, setSize] = useState(7);
   useEffect(() => {
-    const element = area.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) =>
       setSize(Math.max(1, Math.floor((entry.contentRect.height - 42) / 56))),
     );
     observer.observe(element);
     return () => observer.disconnect();
-  }, [total]);
+  }, [total, element]);
   const pages = Math.max(1, Math.ceil(total / size)),
     current = Math.min(page, pages - 1);
-  return { area, size, page: current, start: current * size, pages, setPage };
+  return {
+    area: setElement,
+    size,
+    page: current,
+    start: current * size,
+    pages,
+    setPage,
+  };
 }
 export function RecordPager({
   page,

@@ -50,7 +50,8 @@
   border-radius: 7px;
   font-size: 12px;
 }
-.tabs button[aria-selected="true"] {
+.tabs button[aria-selected="true"],
+.tabs button[aria-pressed="true"] {
   background: #fff;
   color: #14324b;
   font-weight: 600;

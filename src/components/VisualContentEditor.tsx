@@ -238,7 +238,9 @@ export function VisualContentEditor({
     if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
       setAvailableWidth(entry.contentRect.width);
-      setPreviewHeight(Math.max(550, entry.contentRect.height || window.innerHeight * 0.8));
+      setPreviewHeight(
+        Math.max(550, entry.contentRect.height || window.innerHeight * 0.8),
+      );
     });
     observer.observe(element);
     return () => observer.disconnect();
@@ -647,9 +649,11 @@ export function VisualContentEditor({
     setNotice("Bozza annullata.");
   }
   const publishRef = useRef(publish);
-  publishRef.current = publish;
   const discardRef = useRef(discard);
-  discardRef.current = discard;
+  useEffect(() => {
+    publishRef.current = publish;
+    discardRef.current = discard;
+  });
   const iframeSource = `${destination.href}${destination.href.includes("?") ? "&" : "?"}cms-preview=1&revision=${revision}`;
   const canSave =
     dirty > 0 && !busy && !uploading && readySource === iframeSource;

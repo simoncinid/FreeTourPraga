@@ -35,7 +35,7 @@ export function InquiriesManager({
           .includes(search.toLocaleLowerCase("it")),
     )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const paging = useRecordPagination(rows.length),
+  const { area: pagingArea, ...paging } = useRecordPagination(rows.length),
     item = inquiries.find((row) => row.id === selected);
   return (
     <section className={css.center}>
@@ -72,7 +72,7 @@ export function InquiriesManager({
           {inquiries.filter((item) => item.status === "new").length} da gestire
         </span>
       </div>
-      <div ref={paging.area} className={css.tableArea}>
+      <div ref={pagingArea} className={css.tableArea}>
         <table className={css.table}>
           <colgroup>
             <col style={{ width: "22%" }} />

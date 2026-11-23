@@ -77,16 +77,17 @@ export function OperationalCalendar({
   const [capacity, setCapacity] = useState(25);
   const dialog = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
-    if (fixedTourId) return;
-    if (!tours.length) return;
-    setIds((current) => {
-      if (!current.length) return tours.map((t) => t.id);
-      const valid = new Set(tours.map((t) => t.id));
-      const next = current.filter((id) => valid.has(id));
-      return next.length ? next : tours.map((t) => t.id);
-    });
-  }, [tours, fixedTourId]);
+  const [previousTours, setPreviousTours] = useState(tours);
+  if (previousTours !== tours) {
+    setPreviousTours(tours);
+    if (!fixedTourId && tours.length) {
+      setIds((current) => {
+        const valid = new Set(tours.map((t) => t.id));
+        const next = current.filter((id) => valid.has(id));
+        return next.length ? next : tours.map((t) => t.id);
+      });
+    }
+  }
 
   const selected = tours.filter((t) => ids.includes(t.id));
   const allSelected = tours.length > 0 && ids.length === tours.length;
@@ -335,8 +336,8 @@ export function OperationalCalendar({
             />
           </label>
           <p className="calendar-day-modal-format">
-            Accetta tutti / Tutti / TUTTI, orari singoli o elenchi
-            (10:00, 14:30) e intervalli ogni 30 minuti (10:00-12:00).
+            Accetta tutti / Tutti / TUTTI, orari singoli o elenchi (10:00,
+            14:30) e intervalli ogni 30 minuti (10:00-12:00).
           </p>
           {action !== "close" && (
             <label>

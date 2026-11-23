@@ -35,7 +35,7 @@ export function TourGalleryEditor({
     [draft, setDraft] = useState<{ index: number; photo: TourPhoto } | null>(
       null,
     );
-  const paging = useRecordPagination(photos.length),
+  const { area: pagingArea, ...paging } = useRecordPagination(photos.length),
     locked = disabled || uploading;
   function move(index: number, delta: number) {
     const next = [...photos];
@@ -127,7 +127,7 @@ export function TourGalleryEditor({
           />
         </label>
       </div>
-      <div ref={paging.area} className={css.tableArea}>
+      <div ref={pagingArea} className={css.tableArea}>
         <table className={css.table}>
           <colgroup>
             <col style={{ width: 85 }} />

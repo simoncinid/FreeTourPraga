@@ -26,7 +26,7 @@ export function TourVisualEditor({
   const source = useRef(tour),
     changeRef = useRef(change),
     cleanup = useRef<() => void>(() => {});
-  const url = useRef(
+  const [url] = useState(
     `/tour/${previewTour.slug}?cms-preview=1&cms-tour=${encodeURIComponent(tour.id)}${isNew ? "&cms-new=1" : ""}`,
   );
   const [editing, setEditing] = useState<Editing | null>(null),
@@ -182,7 +182,7 @@ export function TourVisualEditor({
         <iframe
           ref={iframe}
           title="Contenuto pubblico del tour modificabile"
-          src={url.current}
+          src={url}
           onLoad={connect}
           style={{
             width: 1440,

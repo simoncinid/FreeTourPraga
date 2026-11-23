@@ -61,10 +61,6 @@ export function AffiliatesSection({
   );
 
   useEffect(() => {
-    setPage(0);
-  }, [search]);
-
-  useEffect(() => {
     const el = dialog.current;
     if (!el) return;
     if (modal) {
@@ -87,7 +83,10 @@ export function AffiliatesSection({
             value={search}
             aria-label="Cerca affiliato"
             placeholder="Nome, codice, email, tipologia…"
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
           />
         </label>
         <p className="affiliates-count" role="status">
@@ -394,8 +393,8 @@ function AffiliateEditor({
         </label>
       </div>
       <p className="affiliate-modal-hint">
-        Link WP: <code>/?affiliates=ID</code>. Commissione 0 = solo attribuzione.
-        Le % valgono per le prenotazioni future.
+        Link WP: <code>/?affiliates=ID</code>. Commissione 0 = solo
+        attribuzione. Le % valgono per le prenotazioni future.
       </p>
       <div className="affiliate-modal-actions">
         <button

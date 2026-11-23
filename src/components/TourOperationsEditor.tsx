@@ -49,7 +49,7 @@ export function TourOperationsEditor({
       index,
     })),
   ].sort((a, b) => a.date.localeCompare(b.date));
-  const paging = useRecordPagination(closures.length);
+  const { area: pagingArea, ...paging } = useRecordPagination(closures.length);
   return (
     <div className={css.workspace}>
       <nav className={css.subnav} aria-label="Programmazione e policy">
@@ -230,7 +230,7 @@ export function TourOperationsEditor({
             Chiusura
           </button>
         </div>
-        <div ref={paging.area} className={records.tableArea}>
+        <div ref={pagingArea} className={records.tableArea}>
           <table className={records.table}>
             <thead>
               <tr>

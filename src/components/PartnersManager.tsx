@@ -62,10 +62,12 @@ export function PartnersManager({
   const statistics = stats.filter((item) =>
     item.name.toLocaleLowerCase("it").includes(search.toLocaleLowerCase("it")),
   );
-  const paging = useRecordPagination(
+  const { area: pagingArea, ...paging } = useRecordPagination(
       tab === "partners" ? partners.length : statistics.length,
     ),
-    dailyPaging = useRecordPagination(history?.daily.length || 0);
+    { area: dailyPagingArea, ...dailyPaging } = useRecordPagination(
+      history?.daily.length || 0,
+    );
   function edit(partner: EuropeanPartner) {
     setEditorTab("data");
     setNotice("");
@@ -172,7 +174,7 @@ export function PartnersManager({
           )}
         </div>
       </div>
-      <div ref={paging.area} className={css.tableArea}>
+      <div ref={pagingArea} className={css.tableArea}>
         <table className={css.table}>
           <colgroup>
             <col style={{ width: "28%" }} />
@@ -374,14 +376,14 @@ export function PartnersManager({
             <nav className={css.tabs} aria-label="Campi partner">
               <button
                 type="button"
-                aria-selected={editorTab === "data"}
+                aria-pressed={editorTab === "data"}
                 onClick={() => setEditorTab("data")}
               >
                 Dati partner
               </button>
               <button
                 type="button"
-                aria-selected={editorTab === "media"}
+                aria-pressed={editorTab === "media"}
                 onClick={() => setEditorTab("media")}
               >
                 Foto o logo
@@ -490,7 +492,7 @@ export function PartnersManager({
             visitatori-giorno
           </p>
           <div className={css.history}>
-            <div ref={dailyPaging.area} className={css.tableArea}>
+            <div ref={dailyPagingArea} className={css.tableArea}>
               <table className={css.table}>
                 <thead>
                   <tr>
