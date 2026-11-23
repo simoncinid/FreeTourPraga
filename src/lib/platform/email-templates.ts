@@ -239,6 +239,7 @@ function asTemplate(
   };
 }
 
+/** Solo i template pre-UWT/CF7: dopo la migrazione le modifiche del gestionale restano. */
 function isLegacyUwtAdminTemplate(admin: {
   subject?: string;
   text?: string;
@@ -246,13 +247,31 @@ function isLegacyUwtAdminTemplate(admin: {
   const subject = admin.subject || "";
   const text = admin.text || "";
   if (!subject.trim() || !text.trim()) return true;
-  if (subject !== UWT_ADMIN_SUBJECT) return true;
-  if (!text.includes("Teléfono:")) return true;
-  if (!text.includes("Cantidad de personas:")) return true;
-  if (!text.includes("Total a pagar:")) return true;
-  if (!text.includes("{uwtTour}")) return true;
-  if (text.includes("Stato:") || text.includes("PNR:")) return true;
+  if (subject.includes("{pnr}") || subject.includes("{kind}")) return true;
+  if (text.includes("Stato:") || text.includes("\nPNR:") || text.includes("PNR: {pnr}"))
+    return true;
+  if (!text.includes("Teléfono:") && !text.includes("Telefono:")) return true;
+  if (!text.includes("Cantidad de personas:") && !text.includes("Adulti:"))
+    return true;
   return false;
+}
+
+function isLegacyConfirmedTemplate(template: EmailKindTemplate): boolean {
+  return (
+    (template.subject.includes("{kind}") &&
+      template.subject.includes("{pnr}") &&
+      !template.subject.includes("{customerSubject}")) ||
+    (template.text.includes("Prenotazione {pnr}:") &&
+      !template.text.includes("{fecha}"))
+  );
+}
+
+function isLegacyCancelledTemplate(template: EmailKindTemplate): boolean {
+  return (
+    template.subject.includes("{kind}") &&
+    template.subject.includes("{brand}") &&
+    !/cancell/i.test(template.subject)
+  );
 }
 
 export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
@@ -269,21 +288,17 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
         subject: adminRaw.subject!.trim(),
         text: adminRaw.text!.trim(),
       };
+  // Migrazione one-shot dei testi vecchi; da lì in poi vale ciò che salvi nel gestionale.
+  if (adminRaw.text?.includes("Telefono:") && !adminRaw.text.includes("Teléfono:")) {
+    admin.text = admin.text.replaceAll("Telefono:", "Teléfono:");
+  }
+  if (admin.text.includes("Tour: {tour}") && !admin.text.includes("{uwtTour}")) {
+    admin.text = admin.text.replaceAll("Tour: {tour}", "Tour: {uwtTour}");
+  }
   const confirmed = asTemplate(value.confirmed, defaults.confirmed);
-  if (
-    !confirmed.subject.includes("{customerSubject}") ||
-    !confirmed.text.includes("{fecha}") ||
-    !confirmed.html.includes("{fecha}")
-  ) {
-    Object.assign(confirmed, defaults.confirmed);
-  }
+  if (isLegacyConfirmedTemplate(confirmed)) Object.assign(confirmed, defaults.confirmed);
   const cancelled = asTemplate(value.cancelled, defaults.cancelled);
-  if (
-    cancelled.subject.includes("{kind}") ||
-    !/cancell/i.test(cancelled.subject)
-  ) {
-    Object.assign(cancelled, defaults.cancelled);
-  }
+  if (isLegacyCancelledTemplate(cancelled)) Object.assign(cancelled, defaults.cancelled);
   return {
     confirmed,
     modified: asTemplate(value.modified, defaults.modified),

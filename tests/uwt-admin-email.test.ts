@@ -76,7 +76,7 @@ describe("UWT / CF7 admin email contract", () => {
       },
       confirmed: {
         subject: "{kind} · {pnr} · {brand}",
-        text: "old",
+        text: "Prenotazione {pnr}: Confermata\nCiao",
         html: "<p>old</p>",
       },
     });
@@ -84,5 +84,35 @@ describe("UWT / CF7 admin email contract", () => {
     assert.match(normalized.admin.text, /Teléfono:/);
     assert.match(normalized.admin.text, /\{uwtTour\}/);
     assert.equal(normalized.confirmed.subject, "{customerSubject}");
+  });
+
+  it("keeps gestionale edits after migration", () => {
+    const normalized = normalizeEmailTemplates({
+      admin: {
+        subject: UWT_ADMIN_SUBJECT,
+        text: "Tour: {uwtTour}\n\nDe: {nome}\n\nTeléfono: {telefono}\n\nCantidad de personas: {cantidad}\nTESTO GESTIONALE",
+      },
+      confirmed: {
+        subject: "{customerSubject}",
+        text: "Ciao {nome}, conferma custom con {fecha} e {hora}",
+        html: "<p>{fecha} {hora} custom</p>",
+      },
+      cancelled: {
+        subject: "Cancellazione personalizzata · {pnr}",
+        text: "Cancellata custom {fecha}",
+        html: "<p>Cancellata custom</p>",
+      },
+      modified: {
+        subject: "Modifica custom",
+        text: "Modificata",
+        html: "<p>Modificata</p>",
+      },
+    });
+    assert.match(normalized.admin.text, /TESTO GESTIONALE/);
+    assert.match(normalized.confirmed.text, /conferma custom/);
+    assert.equal(
+      normalized.cancelled.subject,
+      "Cancellazione personalizzata · {pnr}",
+    );
   });
 });

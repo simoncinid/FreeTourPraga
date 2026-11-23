@@ -209,13 +209,16 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   });
   const adminTo = bookingAdminRecipients();
   if (adminTo && kind === "Confermata") {
-    // Solo le conferme usano oggetto/corpo CF7: UWT importa da queste email.
+    // Oggetto/corpo dal gestionale (default CF7/UWT). Non hardcodare: altrimenti «Salva testi email» non ha effetto.
     enqueue(s, {
       key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
       type: "email",
       bookingPnr: b.pnr,
       to: adminTo,
-      subject: UWT_ADMIN_SUBJECT,
+      subject: renderEmailTemplate(
+        settings.emailTemplates.admin.subject || UWT_ADMIN_SUBJECT,
+        vars,
+      ),
       text: renderEmailTemplate(
         settings.emailTemplates.admin.text.replaceAll(
           "EUR {totale}",
@@ -229,30 +232,44 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     adminTo &&
     (kind === "Cancellata" || kind === "Cancellata e rimborso richiesto")
   ) {
+    const cancelAdminSubject = `Cancellazione freetourpraga.com italiano · ${b.pnr}`;
+    const cancelAdminText = settings.emailTemplates.admin.text.includes(
+      "{uwtTour}",
+    )
+      ? renderEmailTemplate(
+          [
+            `Cancellazione: ${kind}`,
+            settings.emailTemplates.admin.text,
+            `--`,
+            `Nota: oggetto «${cancelAdminSubject}» (diverso da conferma UWT).`,
+          ].join("\n\n"),
+          vars,
+        )
+      : [
+          `Cancellazione prenotazione ${b.pnr}`,
+          `Stato: ${kind}`,
+          `Tour: ${cf7.uwtTourName}`,
+          `De: ${b.name}`,
+          `Email: ${b.email}`,
+          `Teléfono: ${b.phone}`,
+          `Fecha: ${fecha}`,
+          `Hora: ${hora}`,
+          `Cantidad de personas: ${pax.cantidad}`,
+          `Niños: ${pax.ninos}`,
+          `Total a pagar: ${formatTotalPagar(b)}`,
+          `Idioma del Tour: italiano`,
+          `Afiliado: ${afiliado}`,
+          `Mensaje: ${b.notes || ""}`,
+          `--`,
+          `Nota operativa: oggetto diverso da «${UWT_ADMIN_SUBJECT}» per non creare una nuova prenotazione in UWT.`,
+        ].join("\n");
     enqueue(s, {
       key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
       type: "email",
       bookingPnr: b.pnr,
       to: adminTo,
-      subject: `Cancellazione freetourpraga.com italiano · ${b.pnr}`,
-      text: [
-        `Cancellazione prenotazione ${b.pnr}`,
-        `Stato: ${kind}`,
-        `Tour: ${cf7.uwtTourName}`,
-        `De: ${b.name}`,
-        `Email: ${b.email}`,
-        `Teléfono: ${b.phone}`,
-        `Fecha: ${fecha}`,
-        `Hora: ${hora}`,
-        `Cantidad de personas: ${pax.cantidad}`,
-        `Niños: ${pax.ninos}`,
-        `Total a pagar: ${formatTotalPagar(b)}`,
-        `Idioma del Tour: italiano`,
-        `Afiliado: ${afiliado}`,
-        `Mensaje: ${b.notes || ""}`,
-        `--`,
-        `Nota operativa: oggetto diverso da «${UWT_ADMIN_SUBJECT}» per non creare una nuova prenotazione in UWT.`,
-      ].join("\n"),
+      subject: cancelAdminSubject,
+      text: cancelAdminText,
       runAt: new Date().toISOString(),
     });
   }

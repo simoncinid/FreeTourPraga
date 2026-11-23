@@ -1911,12 +1911,18 @@ function EmailTemplatesEditor({
     >
       <h2 className="display-md">Testi email modificabili</h2>
       <p className="text-sm">
-        Placeholder:{" "}
+        I testi salvati qui sono quelli usati dalla coda email. Placeholder
+        cliente:{" "}
         {
-          "{kind} {nome} {pnr} {tour} {data} {persone} {totale} {incontro} {indirizzo} {mappa} {pagamento} {nota} {cancellazione} {manageUrl} {calendarUrl} {assistenza} {firma} {brand}"
+          "{customerSubject} {nome} {pnr} {tour} {fecha} {hora} {persone} {totale} {incontro} {indirizzo} {mappa} {pagamento} {nota} {cancellazione} {manageUrl} {calendarUrl} {assistenza} {firma} {brand}"
         }
-        . Per la mail operativa anche{" "}
-        {"{email} {telefono} {note} {adulti} {minori} {affiliate}"}.
+        . Mail operativa UWT:{" "}
+        {
+          "{uwtTour} {nome} {email} {telefono} {fecha} {hora} {cantidad} {ninos} {totalPagar} {afiliado} {note}"
+        }
+        . Per UWT lascia l’oggetto conferma admin esattamente{" "}
+        <code>Reserva freetourpraga.com italiano</code> e la riga{" "}
+        <code>Tour: {"{uwtTour}"}</code>.
       </p>
       <Text
         label="Firma email"
@@ -1968,7 +1974,7 @@ function EmailTemplatesEditor({
         </div>
       ))}
       <div className="grid gap-3 border-t pt-4">
-        <h3 className="font-bold">Avviso operativo (staff / portali)</h3>
+        <h3 className="font-bold">Avviso operativo UWT / admin (solo testo, come CF7 mail 1)</h3>
         <Field
           label="Oggetto"
           value={s.emailTemplates.admin.subject}
