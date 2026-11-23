@@ -1,13 +1,21 @@
 import type { EmailKindTemplate, EmailTemplates, Settings } from "./model";
+import { UWT_ADMIN_SUBJECT } from "./cf7-mail-map";
 
 export const EMAIL_PLACEHOLDERS = [
   "kind",
   "nome",
   "pnr",
   "tour",
+  "uwtTour",
+  "customerSubject",
   "data",
+  "fecha",
+  "hora",
   "persone",
+  "cantidad",
+  "ninos",
   "totale",
+  "totalPagar",
   "incontro",
   "indirizzo",
   "mappa",
@@ -21,6 +29,7 @@ export const EMAIL_PLACEHOLDERS = [
   "firma",
   "brand",
   "affiliate",
+  "afiliado",
   "email",
   "telefono",
   "note",
@@ -28,41 +37,94 @@ export const EMAIL_PLACEHOLDERS = [
   "minori",
 ] as const;
 
+/** Corpo admin identico a CF7 mail 1: UWT fa parsing riga per riga. */
+export function defaultAdminEmailTemplate(): {
+  subject: string;
+  text: string;
+} {
+  return {
+    subject: UWT_ADMIN_SUBJECT,
+    text: [
+      "Tour: {uwtTour}",
+      "",
+      "De: {nome}",
+      "",
+      "Email: {email}",
+      "",
+      "Teléfono: {telefono}",
+      "",
+      "Fecha: {fecha}",
+      "",
+      "Hora: {hora}",
+      "",
+      "Cantidad de personas: {cantidad}",
+      "",
+      "Niños: {ninos}",
+      "",
+      "Total a pagar: {totalPagar}",
+      "",
+      "Idioma del Tour: italiano",
+      "",
+      "Afiliado: {afiliado}",
+      "",
+      "Mensaje:",
+      "{note}",
+      "",
+      "--",
+      "Este e-mail se ha enviado vía FORMULARIO DE RESERVAS desde Free Tour Praga https://freetourpraga.com",
+    ].join("\n"),
+  };
+}
+
 export function defaultEmailTemplates(): EmailTemplates {
   return {
     confirmed: {
-      subject: "{kind} · {pnr} · {brand}",
+      subject: "{customerSubject}",
       text: [
-        "Prenotazione {pnr}: {kind}",
         "Ciao {nome},",
-        "{tour}",
-        "{data}",
-        "{persone} · {totale}",
+        "",
+        "Grazie per aver prenotato con noi.",
+        "",
+        "Dettagli della prenotazione:",
+        "- Nome: {nome}",
+        "- Tour: {tour}",
+        "- Data del tour: {fecha}",
+        "- Ora: {hora}",
+        "- Persone: {persone}",
+        "- Lingua: italiano",
+        "- Prezzo: {totale}",
+        "- Riferimento: {pnr}",
+        "",
         "Punto d'incontro: {incontro}, {indirizzo}",
-        "{mappa}",
+        "Mappa: {mappa}",
+        "",
         "{pagamento}",
         "{nota}",
         "{cancellazione}",
-        "Gestisci questa prenotazione: {manageUrl}",
-        "Assistenza: {assistenza} · riferimento {pnr}.",
-        "Calendario: {calendarUrl}",
+        "",
+        "Gestisci modifica o cancellazione: {manageUrl}",
+        "Aggiungi al calendario: {calendarUrl}",
+        "",
+        "Assistenza: {assistenza}",
         "{firma}",
       ].join("\n"),
       html: `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
 <p>Grazie per aver prenotato con noi.</p>
-<h3 style="background-color:#167895;color:#ffffff;padding:5px">{kind} · {pnr}</h3>
+<h3 style="background-color:#167895;color:#ffffff;padding:5px">Dettagli della prenotazione</h3>
 <ul>
 <li style="margin-bottom:10px"><b>Nome:</b> {nome}</li>
 <li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
-<li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
+<li style="margin-bottom:10px"><b>Data del tour:</b> {fecha}</li>
+<li style="margin-bottom:10px"><b>Ora:</b> {hora}</li>
 <li style="margin-bottom:10px"><b>Persone:</b> {persone}</li>
-<li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
 <li style="margin-bottom:10px"><b>Lingua:</b> italiano</li>
+<li style="margin-bottom:10px"><b>Prezzo:</b> {totale}</li>
+<li style="margin-bottom:10px"><b>Riferimento:</b> {pnr}</li>
 </ul>
 <h3 style="background-color:#167895;color:#ffffff;padding:5px">Punto di partenza</h3>
 <p>{incontro} · {indirizzo}<br/>
 <a href="{mappa}">Mappa »</a></p>
-<p><b>Telefono:</b> {telefonoContatto}</p>
+<p><b>Telefono assistenza:</b> {telefonoContatto}</p>
 <p>{pagamento}</p>
 <p>{nota}</p>
 <p>{cancellazione}</p>
@@ -72,29 +134,36 @@ export function defaultEmailTemplates(): EmailTemplates {
 </div>`,
     },
     modified: {
-      subject: "{kind} · {pnr} · {brand}",
+      subject: "Prenotazione aggiornata · {pnr} · {tour}",
       text: [
-        "Prenotazione {pnr}: {kind}",
         "Ciao {nome},",
-        "La tua prenotazione è stata aggiornata.",
-        "{tour}",
-        "{data}",
-        "{persone} · {totale}",
+        "",
+        "La tua prenotazione {pnr} è stata aggiornata.",
+        "",
+        "- Tour: {tour}",
+        "- Data del tour: {fecha}",
+        "- Ora: {hora}",
+        "- Persone: {persone}",
+        "- Prezzo: {totale}",
+        "",
         "Punto d'incontro: {incontro}, {indirizzo}",
-        "{mappa}",
+        "Mappa: {mappa}",
+        "",
         "{cancellazione}",
+        "",
         "Gestisci questa prenotazione: {manageUrl}",
-        "Assistenza: {assistenza} · riferimento {pnr}.",
         "Calendario: {calendarUrl}",
+        "Assistenza: {assistenza}",
         "{firma}",
       ].join("\n"),
       html: `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
 <p>La tua prenotazione è stata aggiornata.</p>
-<h3 style="background-color:#167895;color:#ffffff;padding:5px">{kind} · {pnr}</h3>
+<h3 style="background-color:#167895;color:#ffffff;padding:5px">Aggiornamento · {pnr}</h3>
 <ul>
 <li style="margin-bottom:10px"><b>Nome:</b> {nome}</li>
 <li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
-<li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
+<li style="margin-bottom:10px"><b>Data del tour:</b> {fecha}</li>
+<li style="margin-bottom:10px"><b>Ora:</b> {hora}</li>
 <li style="margin-bottom:10px"><b>Persone:</b> {persone}</li>
 <li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
 </ul>
@@ -105,53 +174,37 @@ export function defaultEmailTemplates(): EmailTemplates {
 </div>`,
     },
     cancelled: {
-      subject: "{kind} · {pnr} · {brand}",
+      subject: "Cancellazione prenotazione · {pnr} · {tour}",
       text: [
-        "Prenotazione {pnr}: {kind}",
         "Ciao {nome},",
-        "La prenotazione per {tour} del {data} è stata cancellata.",
-        "{persone} · {totale}",
+        "",
+        "La prenotazione {pnr} per {tour} del {fecha} alle {hora} è stata cancellata.",
+        "",
+        "Partecipanti: {persone}",
+        "Importo della prenotazione: {totale}",
+        "",
         "{pagamento}",
-        "{cancellazione}",
-        "Assistenza: {assistenza} · riferimento {pnr}.",
+        "",
+        "Se è previsto un rimborso, il nostro team lo gestirà manualmente e ti aggiornerà via email. Non è richiesta alcuna azione da parte tua, salvo diversa indicazione.",
+        "",
+        "Per assistenza indica sempre il riferimento {pnr}: {assistenza}",
+        "",
         "{firma}",
       ].join("\n"),
       html: `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
-<p>La prenotazione è stata cancellata.</p>
-<h3 style="background-color:#167895;color:#ffffff;padding:5px">{kind} · {pnr}</h3>
+<p>Ciao {nome},</p>
+<p>La prenotazione <b>{pnr}</b> per <b>{tour}</b> del <b>{fecha}</b> alle <b>{hora}</b> è stata cancellata.</p>
 <ul>
-<li style="margin-bottom:10px"><b>Nome:</b> {nome}</li>
-<li style="margin-bottom:10px"><b>Tour:</b> {tour}</li>
-<li style="margin-bottom:10px"><b>Data/ora:</b> {data}</li>
-<li style="margin-bottom:10px"><b>Totale:</b> {totale}</li>
+<li style="margin-bottom:10px"><b>Partecipanti:</b> {persone}</li>
+<li style="margin-bottom:10px"><b>Importo:</b> {totale}</li>
 </ul>
 <p>{pagamento}</p>
-<p>{cancellazione}</p>
-<p>Assistenza: {assistenza}</p>
+<p>Se è previsto un rimborso, il nostro team lo gestirà manualmente e ti aggiornerà via email.</p>
+<p>Assistenza (riferimento {pnr}): {assistenza}</p>
 <p style="text-align:center;padding-top:20px">{firma}</p>
 </div>`,
     },
-    admin: {
-      subject: "Reserva freetourpraga.com italiano · {pnr} · {kind}",
-      text: [
-        "Tour: {tour}",
-        "Stato: {kind}",
-        "PNR: {pnr}",
-        "De: {nome}",
-        "Email: {email}",
-        "Telefono: {telefono}",
-        "Fecha: {data}",
-        "Adulti: {adulti}",
-        "Minori: {minori}",
-        "Idioma del Tour: italiano",
-        "Afiliado: {affiliate}",
-        "Mensaje: {note}",
-        "Totale: {totale}",
-        "Gestione: {manageUrl}",
-        "--",
-        "Email inviata dal sistema prenotazioni Free Tour Praga",
-      ].join("\n"),
-    },
+    admin: defaultAdminEmailTemplate(),
   };
 }
 
@@ -186,6 +239,22 @@ function asTemplate(
   };
 }
 
+function isLegacyUwtAdminTemplate(admin: {
+  subject?: string;
+  text?: string;
+}): boolean {
+  const subject = admin.subject || "";
+  const text = admin.text || "";
+  if (!subject.trim() || !text.trim()) return true;
+  if (subject !== UWT_ADMIN_SUBJECT) return true;
+  if (!text.includes("Teléfono:")) return true;
+  if (!text.includes("Cantidad de personas:")) return true;
+  if (!text.includes("Total a pagar:")) return true;
+  if (!text.includes("{uwtTour}")) return true;
+  if (text.includes("Stato:") || text.includes("PNR:")) return true;
+  return false;
+}
+
 export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
   const defaults = defaultEmailTemplates();
   if (!raw || typeof raw !== "object") return defaults;
@@ -194,20 +263,28 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
     value.admin && typeof value.admin === "object"
       ? (value.admin as { subject?: string; text?: string })
       : {};
+  const admin = isLegacyUwtAdminTemplate(adminRaw)
+    ? defaults.admin
+    : {
+        subject: adminRaw.subject!.trim(),
+        text: adminRaw.text!.trim(),
+      };
+  const confirmed = asTemplate(value.confirmed, defaults.confirmed);
+  if (!confirmed.subject.includes("{customerSubject}")) {
+    confirmed.subject = defaults.confirmed.subject;
+  }
+  const cancelled = asTemplate(value.cancelled, defaults.cancelled);
+  if (
+    cancelled.subject.includes("{kind}") ||
+    !/cancell/i.test(cancelled.subject)
+  ) {
+    Object.assign(cancelled, defaults.cancelled);
+  }
   return {
-    confirmed: asTemplate(value.confirmed, defaults.confirmed),
+    confirmed,
     modified: asTemplate(value.modified, defaults.modified),
-    cancelled: asTemplate(value.cancelled, defaults.cancelled),
-    admin: {
-      subject:
-        typeof adminRaw.subject === "string" && adminRaw.subject.trim()
-          ? adminRaw.subject
-          : defaults.admin.subject,
-      text:
-        typeof adminRaw.text === "string" && adminRaw.text.trim()
-          ? adminRaw.text
-          : defaults.admin.text,
-    },
+    cancelled,
+    admin,
   };
 }
 

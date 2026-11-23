@@ -111,7 +111,7 @@ export function bookingAdminRecipients() {
   const raw =
     process.env.BOOKING_ADMIN_EMAILS ||
     process.env.ADMIN_EMAIL ||
-    "info@freetourpraga.com,admin@unitedworldtours.eu,freetourpraga@gmail.com";
+    "info@freetourpraga.com,admin@unitedworldtours.eu";
   return raw
     .split(",")
     .map((e) => e.trim())

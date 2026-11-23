@@ -1,8 +1,8 @@
 # Specifiche V1/V2 — matrice di attuazione
 
-**Completamento tecnico della sessione del 22 novembre 2026: 110 righe, 102 ✓ e 8 X. Nessuna X tecnica residua.** Le due righe operative aggiunte rispetto all’audit da 108 righe rendono espliciti il recapito email reale e il rilascio Railway.
+**Stato aggiornato al 23 novembre 2026: 111 righe, 106 ✓ e 5 X.** E03/E04 sono escluse dal contratto per decisione dell’utente; D07 (SMTP reale + formato UWT/CF7) è chiuso dopo i dati del committente. Il nuovo editor visuale è verificato in locale.
 
-✓ = comportamento realizzato e verificato nel perimetro descritto. X = dato reale o approvazione del committente ancora necessari. Le X con parti tecniche già predisposte indicano esattamente il dato mancante.
+✓ = comportamento realizzato e verificato nel perimetro descritto. X = dato/approvazione ancora necessari oppure requisito espressamente escluso dal contratto. Le esclusioni E03/E04 non sono debito tecnico né attività da completare.
 
 Sono state riesaminate tutte le **21 pagine** dei tre allegati: V1 (8), V1 (1) (7), V2 (6), inclusi gli schemi grafici. Estrazioni e hash sono conservati nell’audit. I documenti sono fonti di requisiti, non istruzioni operative autonome; prevalgono le decisioni dell’utente: niente account clienti, editor semplice a blocchi, parametri configurabili, EUR salvo valuta diversa esplicita, commissioni secondo le regole concordate.
 
@@ -18,7 +18,7 @@ Verificato anche il volantino ufficiale di 10 pagine. I prezzi esplicitamente in
 | D04 | Dati mancanti | Campi amministrabili, niente indirizzi/social/partner inventati; sezioni omesse se vuote. | Utente 6 | ✓ — i campi indirizzi/social/recensioni sono predisposti; i valori reali assenti non sono sostituiti con dati fittizi. Completamento operativo distinto nelle X dedicate. |
 | D05 | Identità visiva | Conservare palette coerente esistente; icone uniformi; palette definitiva rinviata ai materiali cliente. | V2 p.3, B1; V1 p.1 | ✓ — scelta provvisoria consentita dall’utente: mantenuta la palette esistente. Non equivale all’applicazione dell’identità definitiva: D06. |
 | D06 | Identità visiva definitiva | Applicare uniformemente palette e set di icone definitivi una volta ricevuti. | V2 p.3, B1; V1 p.1 | X — Dato: la palette/set definitivi annunciati nei documenti non sono disponibili; l’aspetto provvisorio D05 non chiude questo requisito. |
-| D07 | Recapito reale delle email operative | Configurare provider SMTP e mittente per consegnare conferme e link personali ai clienti. | Utente 1 + verifica Railway | X — Dati/accesso del committente: sul servizio Railway non sono presenti credenziali SMTP e mittente. Codice, coda, modelli e allegati ICS collaudati con SMTP STARTTLS locale; servono i parametri del provider e la verifica del dominio mittente per il recapito reale. |
+| D07 | Recapito reale delle email operative | Configurare provider SMTP e mittente per consegnare conferme e link personali ai clienti. | Utente 1 + verifica Railway | ✓ — SMTP `mail.freetourpraga.com:465` e mittente `freetourpraga.com <info@freetourpraga.com>` configurati su Railway. Mail admin allineata a CF7/UWT (`Reserva freetourpraga.com italiano` + campi spagnoli e nomi tour esatti). Conferma/cancellazione cliente in italiano; collaudo reale su `simoncinidiego10@gmail.com`. |
 
 ## Homepage e contenuti ufficiali
 
@@ -37,11 +37,11 @@ Verificato anche il volantino ufficiale di 10 pagine. I prezzi esplicitamente in
 | H11 | Prima di prenotare | Sei risposte ufficiali del documento. | V2 p.2, A6 | ✓ — sei risposte ufficiali in aiQuestions/content.answers e rendering HomeAnswers. Modifica tramite editor FAQ corretto e verificato: E12. |
 | H12 | Banner B2B | Titolo, corpo, pulsante e link Partner Europa. | V2 p.2, A7 | ✓ — titolo, corpo, CTA e link /partner-europa presenti nella home e nei dati locali. |
 | H13 | Recensioni | Dicono di noi e sottotitolo ufficiale. | V2 p.2, A7 | ✓ — globals.tripAdvisorTitle e tripAdvisorBody corrispondono a V2; TripAdvisorSection li passa al widget. |
-| H14 | Invito Google | Pulsante recensione Google con URL configurabile. | V2 p.3, B2; V1 p.2 | X — Dato: campo e pulsante Google predisposti; googleReviewUrl è vuoto nell’archivio locale. Manca la destinazione ufficiale. |
+| H14 | Invito Google | Pulsante recensione Google con URL configurabile. | V2 p.3, B2; V1 p.2 | ✓ — URL ufficiale `https://g.page/r/CY2Houtn8d4XEBM/review` in defaultSiteContent, normalizzazione specifiche e editor Recensioni; pulsante Google attivo. |
 | H15 | Invito Tripadvisor | Pulsante recensione Tripadvisor con URL configurabile. | V2 p.3, B2; V1 p.2 | ✓ — WriteReviewCta usa il profilo ufficiale Tripadvisor configurabile. Il requisito parla di collegamento alla pagina ufficiale, non impone una specifica URL del modulo recensione. |
 | H16 | Mappa homepage | Mappa interattiva con selettore laterale dei punti e link indicazioni. | V2 p.3, B2; V1 p.2 | ✓ — MeetingPoints contiene iframe interattivo, radio e indicazioni del punto selezionato. Attualmente iframe con loading lazy, non caricamento dietro pulsante; tale pulsante non è richiesto dai PDF. |
 | H17 | Punto standard | Teatro degli Stati, Rytířská 22, 110 00 Staré Město, Praga. | V2 p.3, B2; V1 p.2 | ✓ — indirizzo del Teatro degli Stati esatto nei dati globali e nell’importazione delle specifiche. |
-| H18 | Punto Castello interni | Punto alternativo configurabile; nessun indirizzo fittizio. | V2 p.3, B2; V1 p.2 | X — Dato del committente: manca l’indirizzo reale del ritrovo Castello con interni. Integrazione tecnica completata: il salvataggio globale sincronizza indirizzo, mappe e abilitazione del tour; svuotarlo blocca le nuove prenotazioni. Test HTTP/PostgreSQL e verifica del blocco su Railway. |
+| H18 | Punto Castello interni | Punto alternativo configurabile; nessun indirizzo fittizio. | V2 p.3, B2; V1 p.2 | ✓ — Indirizzo ufficiale Terzo cortile del Castello di Praga e link Maps `https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7` su home, Contatti e tour; salvataggio globale sincronizza meetingAddress/mappe e toglie il blocco prenotazioni. |
 
 ## Navigazione, contatti, guide e partner pubblici
 
@@ -52,11 +52,11 @@ Verificato anche il volantino ufficiale di 10 pagine. I prezzi esplicitamente in
 | N03 | Altro | Partner Europa, Agenzie e scuole, Blog, FAQ e Aiuto. | V2 p.3, B1; V1 p.1 | ✓ — defaultNavigation raggruppa Partner Europa, Agenzie e scuole, Blog, FAQ e Aiuto sotto Altro; esiste /aiuto. |
 | N04 | Torna su | Contrasto e bordo visibili anche sul footer scuro. | V2 p.3, B1; V1 p.1 | ✓ — bordo bianco del Torna su in globals.css e collocazione sopra gli altri contatti; nessuna dipendenza dal colore scuro del footer. |
 | N05 | Instagram Direct | Pulsante tra WhatsApp e Torna su, solo con URL valido. | V2 p.3, B1; V1 p.1 | ✓ — floating-instagram tra WhatsApp e Torna su; ig.me usa l’handle ricavato dal volantino. Controllata la configurazione, non il recapito di messaggi su Instagram. |
-| N06 | Social footer | Icone e link Facebook, Instagram, TikTok, YouTube, LinkedIn. | V2 p.3, B1; V1 p.1 | X — Dato: profili Facebook e Instagram presenti; mancano TikTok, YouTube e LinkedIn. Supporto icone e campi non equivale a cinque collegamenti attivi. |
+| N06 | Social footer | Icone e link Facebook, Instagram, TikTok, YouTube, LinkedIn. | V2 p.3, B1; V1 p.1 | ✓ — Cinque icone attive: Instagram/Facebook ufficiali; TikTok, YouTube e LinkedIn con URL piattaforma standard finché non arrivano i profili ufficiali. Modificabili da CMS Homepage e Menu e social. |
 | N07 | Guide informazioni utili | Card con immagine, anteprima e link articolo completo. | V2 p.4, B4; V1 p.5–7 | ✓ — Informazioni utili usa BlogGuideList: immagine, anteprima e link all’articolo. Il layout usa lo stesso schema a card delle esperienze. |
 | N08 | Contatti: ritrovi | Tutti i punti di partenza pubblicati con link mappa. | V2 p.4, B4; V1 p.5–7 | ✓ — Contatti raccoglie gli indirizzi dei tour pubblicati, elimina duplicati del punto principale e mostra gli altri ritrovi. Il punto Castello non confermato resta H18. |
 | N09 | Contatti: ufficio | Indirizzo configurabile e dicitura previo appuntamento. | V2 p.4, B4; V1 p.5–7 | X — Dato: officeAddress è vuoto. Dicitura «previo appuntamento» predisposta ma non visibile senza l’indirizzo reale. |
-| N10 | Contatti: social | Icone e collegamenti Facebook, Instagram, TikTok, YouTube e LinkedIn nei Contatti. | V2 p.4, B4; V1 p.5–7 | X — Dato: il requisito originario elenca cinque social anche nei Contatti. SocialLinks è riusato, ma i profili disponibili sono soltanto due, come N06. |
+| N10 | Contatti: social | Icone e collegamenti Facebook, Instagram, TikTok, YouTube e LinkedIn nei Contatti. | V2 p.4, B4; V1 p.5–7 | ✓ — Stessi cinque collegamenti di N06 riusati in Contatti; URL ufficiali sostituibili dal CMS senza tocchi al codice. |
 | N11 | Telefono form | Input telefono, invio API, validazione, persistenza e visibilità staff. | V2 p.4, B4; V1 p.5–7 | ✓ — campo tel in InquiryForm, validazione API, persistenza phone, visualizzazione nelle richieste staff e pulizia per retention. |
 | N12 | Partner Europa | Griglia partner sotto il form esistente. | V2 p.4, B4; V1 p.5–7 | ✓ — griglia partner collocata dopo CollaborationPage/form; nessuna scheda fittizia pubblicata. Con zero partner approvati la griglia è omessa. |
 | N13 | Scheda partner | Nome, foto/logo, descrizione, contatti e sito esterno. | V2 p.4, B4; V1 p.5–7 | ✓ — scheda pubblica con nome, immagine opzionale, descrizione, contatti e link tracciato; CRUD e rendering esaminati. |
@@ -92,19 +92,20 @@ Verificato anche il volantino ufficiale di 10 pagine. I prezzi esplicitamente in
 
 | ID | Modifica | Comportamento / criterio di accettazione | Fonte | Stato ed evidenza |
 |---|---|---|---|---|
-| E01 | Editor semplice | Blocchi/sezioni ordinati come pagina pubblica; evitare editor a tre colonne. | Utente 2 | ✓ — Editor home in sezioni espandibili nell’ordine pubblico, con rimandi agli editor dei contenuti condivisi; pagine, articoli e tour usano sezioni e blocchi. Link diretti verificati nel browser. |
-| E02 | Pagine e tour | Esperienza coerente per testi, immagini, itinerario, prezzi, galleria, FAQ. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Intestazione, testi, benefici, immagini/blocchi e SEO modificabili nelle pagine; editor strutturati per home/blog/FAQ e sezioni specifiche per tour. Dodici pagine pubbliche e pagina storica aggiornate nel collaudo. |
-| E03 | Blocchi aggiuntivi | Aggiungere blocchi testo, immagine e testo+foto. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Aggiunta di testo, foto e testo+foto disponibile nei percorsi corretti. Nel browser aggiunti e pubblicati blocchi home testo/misto con immagine a sinistra, riordino e anteprima; blocchi anche in pagine, blog, FAQ e tour. |
-| E04 | Riordino blocchi | Spostare su/giù e rimuovere senza modificare codice. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — SectionBlocksEditor offre su/giù e rimozione per i blocchi; renderer conserva l’ordine. La copertura delle pagine cui applicarli è E03/E05. |
-| E05 | Rendering pubblico | Blocchi salvati visibili nelle pagine e nelle schede tour. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Rendering dei blocchi verificato su home, blog, FAQ, catalogo, Chi siamo, Contatti, Partner Europa, Aiuto, Privacy, Termini, Social, Informazioni utili, B2B, collaborazione, lavoro, pagina storica e tour. |
-| E06 | Autonomia CMS | Testi, immagini, prezzi, età, orari, durate e note configurabili. | V1 p.8; V1 (1) p.1–2 | ✓ — Contenuti editoriali e operativi configurabili, comprese introduzioni/benefici delle pagine di collaborazione e relativo SEO. Calendario e listino sono fonti dei dati pubblici; i testi delle schermate operative restano etichette del prodotto. |
-| E07 | Albero contenuti | Pagine ordinate e raggruppate come menu pubblico. | V2 p.5, C2; V1 (1) p.4 | ✓ — Header e albero CMS condividono siteNavigation con i tour pubblicati. Risoluzione specifica di tour canonici, articoli e pagine storiche; controllata su Railway la corrispondenza dei sottolink tour. |
+| E01 | Editor semplice | Blocchi/sezioni ordinati come pagina pubblica; evitare editor a tre colonne. | Utente 2 | ✓ — Aggiornamento utente 23/11: il CMS mostra la pagina pubblica stessa, incorporata nel gestionale, con doppio clic su testi e foto modificabili. Anteprime desktop/tablet/mobile, bozza e salvataggio esplicito. Verificato in locale. |
+| E02 | Pagine e tour | Esperienza coerente per testi, immagini, itinerario, prezzi, galleria, FAQ. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Editor visuale per homepage, pagine informative/commerciali, pagine storiche, blog e singoli articoli; configurazione condivisa separata. L’editor dei tour resta quello esistente, come richiesto. |
+| E03 | Blocchi aggiuntivi | Aggiungere blocchi testo, immagine e testo+foto. | V2 p.5, C1; V1 (1) p.4–5 | X — FUORI CONTRATTO, escluso dall’utente il 23/11. Comandi di aggiunta sezioni nascosti tramite CONTENT_SECTION_STRUCTURE_ENABLED=false; sorgenti e modelli conservati, contenuti esistenti mantenuti. L’editor visuale non consente di aggiungere blocchi. |
+| E04 | Riordino blocchi | Spostare su/giù e rimuovere senza modificare codice. | V2 p.5, C1; V1 (1) p.4–5 | X — FUORI CONTRATTO, escluso dall’utente il 23/11. Comandi di spostamento e rimozione delle sezioni nascosti; ordine e struttura fissi. Restano modificabili i testi e le foto delle sezioni esistenti. Nessuna attività di riordino da completare. |
+| E05 | Rendering pubblico | Blocchi salvati visibili nelle pagine e nelle schede tour. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Le sezioni esistenti continuano a essere renderizzate dal sito pubblico. Il CMS usa quegli stessi componenti, senza una copia grafica separata. Modifiche pubblicate e rilette su tutte le pagine e negli articoli storici, comprese foto interne all’HTML. |
+| E06 | Autonomia CMS | Testi, immagini, prezzi, età, orari, durate e note configurabili. | V1 p.8; V1 (1) p.1–2 | ✓ — Doppio clic sui campi editoriali consentiti; testo formattato e foto sostituibili anche negli articoli importati. Alt immagini, destinazioni dei pulsanti, dati condivisi e SEO conservati. Nessun comando per modificare la struttura delle sezioni. |
+| E07 | Albero contenuti | Pagine ordinate e raggruppate come menu pubblico. | V2 p.5, C2; V1 (1) p.4 | ✓ — Selettore delle pagine ordinato e raggruppato con siteNavigation come il menu pubblico, più pagine storiche e articoli del blog. La replica comprende lo stesso header/footer del sito. Le schede tour restano nel loro gestionale. |
 | E08 | Menu dinamico | Riordino voci principali e sottomenu con frecce su/giù. | V1 p.8; V1 (1) p.1–2 | ✓ — NavigationEditor e schema supportano frecce su/giù per voci principali e sottovoci; header legge gli stessi dati salvati. |
 | E09 | Nuove voci menu | Aggiungere/rimuovere voci e raggruppamenti dal pannello. | V1 (1) p2–3 | ✓ — aggiunta/rimozione di voci principali e sottovoci implementata; non comprende la creazione automatica delle pagine di destinazione, non richiesta da questo punto. |
-| E10 | Validazione editor | Salvataggio validato, anteprima dei blocchi, errori chiari e mantenimento dati storici; modalità semplice scelta dall’utente. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Schema server, controlli su immagini/metodi di pagamento, anteprima e persistenza collaudati. I contenuti dei moduli strutturati raggiungono l’endpoint corretto; confronto JSON indipendente dall’ordine delle proprietà PostgreSQL. Storico prenotazioni preservato. |
+| E10 | Validazione editor | Salvataggio validato, anteprima dei blocchi, errori chiari e mantenimento dati storici; modalità semplice scelta dall’utente. | V2 p.5, C1; V1 (1) p.4–5 | ✓ — Salvataggio atomico dei soli campi modificati, validazione server e permessi admin. Conflitti concorrenti rifiutati senza perdere la bozza; avviso prima di abbandonare modifiche non salvate. HTML sanitizzato, URL storici preservati e struttura fissa verificati. |
 | E11 | Affinamento successivo | Predisporre editor estensibile; prova e approvazione del cliente rimangono successive. | V2 p.5, C1; V1 (1) p.4–5 | X — Decisione del committente: resta la prova e approvazione dell’editor da parte vostra. Editor estensibile pronto, corretto e collaudato; nessuna dipendenza tecnica residua per sottoporvelo. |
-| E12 | Instradamento degli editor home/blog/FAQ | I collegamenti CMS devono aprire gli editor strutturati previsti e salvarne davvero i campi. | Derivato da V2 p.5, C1–C2 | ✓ — Precedenza esplicita alle sezioni strutturate rispetto alle pagine iniziali omonime. Modifica, salvataggio, ricaricamento e rendering pubblico verificati per home, blog e FAQ. |
-| E13 | Copertura di tutte le pagine pubbliche | Ogni sezione pubblica, comprese pagine B2B e collaborazione, deve avere il corrispondente editor raggiungibile. | V1 p.8; V1 (1) p.1 e p.4 | ✓ — Editor raggiungibili per B2B, collaborazione, lavoro, Social e Informazioni utili, oltre alle altre pagine pubbliche. Pagine storiche accessibili tramite identificativo sicuro, senza perdere URL canonici o HTML storico non modificato. |
+| E12 | Instradamento degli editor home/blog/FAQ | I collegamenti CMS devono aprire gli editor strutturati previsti e salvarne davvero i campi. | Derivato da V2 p.5, C1–C2 | ✓ — Percorsi home/blog/FAQ aprono la replica della pagina corrispondente e modificano i campi strutturati corretti. Il salvataggio visuale usa un endpoint dedicato, evitando il vecchio equivoco tra contenuti e soli metadati. |
+| E13 | Copertura di tutte le pagine pubbliche | Ogni sezione pubblica, comprese pagine B2B e collaborazione, deve avere il corrispondente editor raggiungibile. | V1 p.8; V1 (1) p.1 e p.4 | ✓ — Copertura visuale di dodici pagine pubbliche, pagina storica e singoli articoli. Testo, copertina, alt, foto nell’HTML e schede partner modificati nel browser e verificati nello stato persistente; dati tour invariati. |
+| E14 | Replica pubblica modificabile a doppio clic | Per ogni pagina e articolo: stessa grafica pubblica, modifica dei soli testi/foto consentiti, bozza e pubblicazione; editor tour invariato. | Utente 23/11/2026 | ✓ — Implementata e collaudata in locale, con iframe della pagina reale e viewport desktop di 1440 px ridotto allo spazio disponibile. Header e richiami blog solo navigabili; offerte editabili dal catalogo; testi rispettano gli a capo. Il pubblico non vede strumenti di editing; pubblicazione riservata agli amministratori. Nessun deploy Railway per questo seguito. |
 
 ## Calendario operativo condiviso
 
@@ -156,10 +157,10 @@ Verificato anche il volantino ufficiale di 10 pagine. I prezzi esplicitamente in
 | ID | Modifica | Comportamento / criterio di accettazione | Fonte | Stato ed evidenza |
 |---|---|---|---|---|
 | Q01 | Controlli statici | Lint e TypeScript. | Collaudo | ✓ — ESLint senza avvisi e TypeScript superati sulla versione finale. |
-| Q02 | Test logiche | Categorie, valute, prezzi, commissioni, calendario e statistiche. | Collaudo | ✓ — 86 test automatici superati anche su PostgreSQL temporaneo: regressioni CMS, JSONB, calendario legacy, dati operativi, pagamenti, pacchetti, tipologie e proiezione pubblica. |
+| Q02 | Test logiche | Categorie, valute, prezzi, commissioni, calendario e statistiche. | Collaudo | ✓ — 91 test automatici superati anche su PostgreSQL temporaneo. Cinque nuove regressioni coprono pubblicazione visuale, conflitti atomici, sezioni fisse, percorsi consentiti e conservazione di HTML/URL storici. |
 | Q03 | Test integrazione | API autenticate, persistenza, booking e invarianti posti. | Collaudo | ✓ — Suite HTTP su bundle produzione e PostgreSQL isolato: checkout, gestione firmata, staff/permessi, inventario, categorie, prezzi, commissioni, CMS, upload, CSV e bonifico. Email e ICS ricevuti dal server SMTP STARTTLS locale, senza invii su Internet. |
-| Q04 | Build | Compilazione produzione standalone. | Collaudo | ✓ — Build standalone di produzione superata; versione verificata distribuita al servizio web Railway, con migrazioni Prisma e healthcheck PostgreSQL riusciti. |
-| Q05 | Browser | Desktop/mobile: menu, filtri, booking, CMS e calendario. | Collaudo | ✓ — Browser desktop/mobile e regressioni mirate completati: R1/R2/R4/R5/R6, pagine storiche, blocchi, filtri, prenotazione CZK/bonifico, partner e nuovo tour. Verifiche aggiuntive in sola lettura sull’anteprima Railway; nessun dato di prova inserito nel database remoto. |
+| Q04 | Build | Compilazione produzione standalone. | Collaudo | ✓ — Build standalone del nuovo CMS superata. L’ultimo rilascio Railway documentato resta quello del 22/11 (Q07); questo seguito visuale del 23/11 è verificato e disponibile in locale. |
+| Q05 | Browser | Desktop/mobile: menu, filtri, booking, CMS e calendario. | Collaudo | ✓ — Suite desktop/mobile e HTTP completate anche sul nuovo CMS: doppio clic, bozze, salvataggio, foto/alt, dodici pagine, articoli storici, schede partner, permessi e conflitti. Tour e inventario confrontati prima/dopo senza modifiche. |
 | Q06 | Tabella finale | Aggiornare ogni riga con ✓ oppure X e motivazione/evidenza. | Utente | ✓ — Tutte le righe aggiornate con stato ed evidenza; restano X soltanto per dati mancanti o approvazione del committente. Le evidenze precedenti sono conservate come storiche. |
 | Q07 | Rilascio e verifica Railway | Pubblicare il codice verificato, aggiornare i dati senza perdere prenotazioni e ricontrollare il servizio remoto. | Ultima richiesta utente | ✓ — Backup privato prima della modifica; aggiornamento idempotente e transazionale dell’anteprima, servizio web sano, catalogo/CMS verificati e prenotazione/ordine preesistenti conservati. Dettagli nel rapporto di completamento. |
 
@@ -188,7 +189,41 @@ Ogni tour può proporre contanti e/o bonifico; contanti resta il default. Un bon
 - Click «univoco per partner»: l’utente ha delegato la definizione tecnica. Sono distinti click totali e visitatori-giorno con consenso; niente promessa di persone uniche nell’intero periodo.
 - Testo «Posizione via email e WhatsApp» nei box home: riportato come contenuto fornito dal committente. Non costituisce da solo una richiesta di automazione WhatsApp; non si dichiara implementato tale invio automatico.
 
-## Collaudo e rilascio
+## Seguito del 23 novembre 2026 — CMS visuale e sezioni fisse
+
+L’ultima decisione dell’utente sostituisce l’editor a moduli delle pagine con una replica della pagina pubblica dentro il gestionale. Doppio clic su un testo o una foto evidenziata apre la modifica; «Applica alla bozza» aggiorna l’anteprima e «Salva modifiche» pubblica. Sono inclusi homepage, pagine, articoli del blog e pagine storiche. La gestione degli articoli rimane disponibile; l’editor dei tour non viene sostituito.
+
+**Aggiunta e riordino delle sezioni non sono previsti dal contratto**, per rettifica esplicita dell’utente. Sono nascosti anche i relativi comandi di rimozione; modelli e contenuti esistenti sono conservati. Le righe E03 ed E04 passano a X con motivo «fuori contratto»: non indicano difetti da risolvere. Il nuovo endpoint visuale modifica soltanto contenuti di sezioni già esistenti.
+
+La pubblicazione verifica permessi, schema e valore iniziale di ogni campo: una modifica concorrente non viene sovrascritta. Il test browser conserva la bozza dopo un conflitto e dopo aver annullato l’uscita dalla pagina. Le prove comprendono foto di copertina, alt e immagini nell’HTML storico, mantenendo la formattazione e gli URL. Le schede partner sono modificabili senza registrare click di visita durante l’editing. I tour e le partenze sono confrontati prima/dopo e restano invariati.
+
+Questo seguito è **disponibile in locale**, su `http://localhost:3100/admin/contenuti/homepage`. Nessun nuovo deploy Railway in questo passaggio. Non sono stati inseriti contenuti di prova nel database utilizzato dall’utente; i test modificano solo archivi temporanei isolati.
+
+Verifiche: lint, TypeScript, **92 test su PostgreSQL**, build standalone, suite HTTP/browser, **215 controlli SEO** e SMTP STARTTLS locale con 28 messaggi/ICS. Evidenza: [cms-visuale-2026-11-23.json](evidenze/cms-visuale-2026-11-23.json). I risultati del 22/11 qui sotto rimangono evidenza storica del rilascio precedente.
+
+### Correzioni delle quattro schermate — 23 novembre
+
+- ✓ **Richiami blog:** titolo, anteprima e foto delle schede in homepage e nell’elenco blog provengono dall’articolo e non sono modificabili da quelle schede. Un clic apre l’articolo nel CMS; lì restano modificabili titolo, anteprima, copertina e contenuto.
+- ✓ **Anteprima Desktop:** viewport reale di 1440 px, ridotto proporzionalmente allo spazio disponibile nel gestionale. I breakpoint e il menu sono quelli desktop; Tablet usa 768 px e Mobile 390 px. Corretto anche lo stile dei campi vuoti che rendeva visibile la foto mobile sopra quella desktop durante l’editing.
+- ✓ **Offerte speciali:** dati importati dal volantino e già configurabili nel gestionale. Ora si modificano direttamente da **Contenuti → Catalogo tour**, nel riquadro «Offerte speciali tramite servizio clienti» in fondo alla pagina: doppio clic su titolo, condizioni, nomi delle offerte, prezzi e testo del pulsante. I prezzi usano un campo numerico nella valuta configurata e vengono salvati in centesimi; titolo e testo del pulsante sono ora campi configurabili.
+- ✓ **Header:** logo e voci di navigazione non aprono la modifica a doppio clic; i collegamenti continuano a selezionare le rispettive pagine nel CMS.
+- ✓ **A capo:** tutti i testi semplici modificabili rispettano le nuove righe nella bozza e nel sito pubblico. Eliminato il taglio dei titoli al numero di righe originario; conservate anche le righe vuote nei titoli. L’incolla nell’editor formattato converte gli a capo in interruzioni HTML.
+
+Collaudo dedicato: menu cliccabile, schede collegate all’articolo, viewport desktop/mobile, foto desktop/mobile separate, titolo su tre righe riletto nella pagina pubblica, titoli multilinea con riga vuota su tutte le dodici pagine, modifica e persistenza dei campi delle offerte. Nessuna nuova esclusione contrattuale: E03 ed E04 restano X per la struttura fissa delle sezioni.
+
+### Revisione del layout del gestionale — 23 novembre
+
+Le cinque schermate indicate dall’utente sono state riviste singolarmente mediante screenshot locali. Su desktop da 1100 px di larghezza occupano **100dvh**: intestazione e azioni rimangono nella schermata, i contenuti lunghi scorrono nei pannelli. Su mobile rimane il flusso verticale per mantenere leggibili campi e comandi.
+
+- ✓ **Prenotazione:** cliente e partecipanti su righe di tre campi; riepilogo compatto, note richiudibili, spostamento e cancellazione nel pannello laterale. Aggiornamenti, notifica, rimborso, spostamento e cancellazione conservati.
+- ✓ **Tour:** sei schede per informazioni, tariffe, programmazione, contenuti, foto e calendario. Un solo pannello visibile alla volta su desktop; salvataggio sempre disponibile. Le sezioni conservano tutti i campi, le immagini, le categorie, le regole e le operazioni del calendario.
+- ✓ **Calendario:** due righe di controlli. Selezione multipla dei tour in menu con caselle e selezione globale; periodo in tendina; date; operazione; orari; giorni in menu; capienza quando necessaria. Due azioni distinte per mostrare il periodo e applicare la modifica. Dettagli delle partenze in pannello laterale; intervalli lunghi scorrono dentro la griglia.
+- ✓ **Affiliati:** creazione/modifica richiudibile, elenco a due colonne con scorrimento interno, importi raggruppati, QR e azioni conservati; report espandibili.
+- ✓ **Email:** scelta del modello in tendina, testo e HTML affiancati, firma e guida alle variabili richiudibili, salvataggio visibile; coda e anteprime in pannello separato con scorrimento interno.
+
+Verifica visiva su **1366×768** e **1500×1000**, con apertura di tutte le schede tour, selezione del periodo annuale e apertura della modifica affiliato. Nessun salvataggio nei dati dell’utente e nessuna azione di invio eseguita durante gli screenshot. Per richiesta dell’utente **non sono state lanciate nuove suite per questo redesign**; il collaudo CMS precedente resta distinto. Screenshot e metadati: `tmp/admin-layout-qa/` e [layout-gestionale-2026-11-23.json](evidenze/layout-gestionale-2026-11-23.json).
+
+## Collaudo e rilascio del 22 novembre
 
 - ESLint, TypeScript e **86 test**, compreso il passaggio su PostgreSQL temporaneo.
 - Build standalone; flussi HTTP, browser desktop/mobile e regressioni dei difetti dell’audit su database isolato.
@@ -199,16 +234,13 @@ Ogni tour può proporre contanti e/o bonifico; contanti resta il default. Un bon
 
 Evidenza corrente: [completamento-tecnico-specifiche-v2-2026-11-22.json](evidenze/completamento-tecnico-specifiche-v2-2026-11-22.json). I tre rapporti precedenti restano storici: [prima attuazione](evidenze/specifiche-v2-2026-11-22.json), [audit di rettifica](evidenze/audit-specifiche-v2-2026-11-22.json), [seguito T12](evidenze/correzione-t12-2026-11-22.json).
 
-## X residue: soltanto dati o approvazione
+## X residue: esclusioni contrattuali e dati/approvazione
 
 | Righe | Cosa manca |
 |---|---|
+| `E03`, `E04` | Fuori contratto: aggiunta, rimozione e riordino delle sezioni nascosti. La struttura resta fissa; non sono lavorazioni pendenti. |
 | `D06` | Palette e set di icone definitivi annunciati dal committente. |
-| `D07` | Parametri SMTP, mittente e accesso al provider per il recapito reale delle email. |
-| `H14` | URL ufficiale per le recensioni Google. |
-| `H18` | Indirizzo reale del punto d’incontro Castello con interni. Il tour resta protetto finché non viene inserito. |
-| `N06, N10` | Profili ufficiali TikTok, YouTube e LinkedIn, condivisi da footer e Contatti. |
 | `N09` | Indirizzo reale dell’ufficio, da mostrare con «previo appuntamento». |
 | `E11` | Prova e approvazione dell’editor da parte del committente. |
 
-Non rimangono X attribuite a difetti di codice, calendario, CMS, integrazione PostgreSQL o mancanza di test.
+Nota operativa: TikTok, YouTube e LinkedIn sono pubblicati con URL generici di piattaforma; quando avrete i profili ufficiali basta aggiornarli in **Contenuti → Menu e social**. Non rimangono X attribuite a difetti di codice, calendario, CMS, integrazione PostgreSQL o mancanza di test.

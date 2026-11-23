@@ -47,7 +47,17 @@ Stripe non è attivo nella versione corrente: `/api/stripe/webhook` restituisce 
 
 ## Attivare SMTP (committente)
 
-In **web**, non nel worker, impostare `SMTP_HOST`, `SMTP_PORT` (587 STARTTLS o 465 TLS), `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` e `ADMIN_EMAIL`. `BOOKING_ADMIN_EMAILS` contiene i destinatari delle conferme operative. Validare queste caselle prima di inviare prenotazioni reali. Configurare il dominio mittente nel proprio provider (SPF/DKIM/DMARC) e ridistribuire web.
+In **web**, non nel worker, impostare:
+
+- `SMTP_HOST=mail.freetourpraga.com`
+- `SMTP_PORT=465`
+- `SMTP_USER=info@freetourpraga.com`
+- `SMTP_PASS=…` (segreto hosting)
+- `SMTP_FROM=freetourpraga.com <info@freetourpraga.com>`
+- `ADMIN_EMAIL=info@freetourpraga.com`
+- `BOOKING_ADMIN_EMAILS=info@freetourpraga.com,admin@unitedworldtours.eu`
+
+Le conferme admin usano oggetto e corpo identici a Contact Form 7 (`Reserva freetourpraga.com italiano` + campi in spagnolo) perché UWT li importa automaticamente. In collaudo impostare `BOOKING_ADMIN_EMAILS` solo su una casella di test: non inviare prenotazioni fittizie a `admin@unitedworldtours.eu`. Validare recapito, spam e allegato ICS prima del go-live. Configurare SPF/DKIM/DMARC sul dominio mittente e ridistribuire web.
 
 Worker usa `PLATFORM_URL` e lo stesso `CRON_SECRET` di web. Ogni minuto richiede `/api/platform/cron?task=jobs`; `ENABLE_OTA=false` evita l’attivazione di integrazioni della Fase 2. Il worker scrive lo stato HTTP nei log; il gestionale mostra l’esito di ogni invio. Gli invii falliti si possono ritentare dal gestionale. Verificare recapito reale, cartella spam, allegato ICS e link di pagamento con una casella controllata prima del lancio.
 

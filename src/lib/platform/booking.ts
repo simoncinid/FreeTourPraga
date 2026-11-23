@@ -30,6 +30,7 @@ import {
   normalizeSettings,
   renderEmailTemplate,
 } from "./email-templates";
+import { cf7MailForSlug, UWT_ADMIN_SUBJECT } from "./cf7-mail-map";
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export function enqueue(
   s: PlatformState,
@@ -58,14 +59,58 @@ export function slotFor(
   if (!tour || !slot) throw new HttpError(404, "Partenza non disponibile");
   return { tour, slot };
 }
+function pragueDateParts(iso: string) {
+  const starts = new Date(iso);
+  const fecha = new Intl.DateTimeFormat("it-IT", {
+    timeZone: "Europe/Prague",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(starts);
+  const hora = new Intl.DateTimeFormat("it-IT", {
+    timeZone: "Europe/Prague",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(starts);
+  return { fecha, hora, when: `${fecha} ${hora}` };
+}
+function formatTotalPagar(b: Reservation) {
+  const currency = b.currency ?? "EUR";
+  const amount = b.totalCents / 100;
+  const formatted =
+    currency === "CZK"
+      ? String(Math.round(amount))
+      : amount.toFixed(2).replace(/\.00$/, "");
+  return `${formatted} ${currency}`;
+}
+/** Allinea CF7: Cantidad ≈ adulti/fasce paganti, Niños ≈ minori. */
+function cantidadNinos(b: Reservation) {
+  if (!b.categorySnapshot?.length) {
+    return { cantidad: String(b.adults), ninos: String(b.children) };
+  }
+  let ninos = 0;
+  let cantidad = 0;
+  for (const c of b.categorySnapshot) {
+    if (
+      /minori|bambin|niñ|child|kid|infant|ninos/i.test(
+        `${c.id} ${c.label}`,
+      )
+    ) {
+      ninos += c.quantity;
+    } else {
+      cantidad += c.quantity;
+    }
+  }
+  return { cantidad: String(cantidad), ninos: String(ninos) };
+}
 export function notification(s: PlatformState, b: Reservation, kind: string) {
   const settings = normalizeSettings(s.settings);
   s.settings = settings;
   const { tour, slot } = slotFor(s, b);
   const contact = siteContent(s.siteContent).globals;
-  const when = new Date(slot.startsAt).toLocaleString("it-IT", {
-    timeZone: "Europe/Prague",
-  });
+  const { fecha, hora, when } = pragueDateParts(slot.startsAt);
+  const cf7 = cf7MailForSlug(tour.slug, tour.title);
   const manageUrl = `${site.url}/gestisci-prenotazione/${b.pnr}/${bookingManagementProof(b.id, b.pnr)}`;
   const calendarUrl = `${site.url}/api/calendar/booking/${b.pnr}?manage=${bookingManagementProof(b.id, b.pnr)}`;
   const paymentLine =
@@ -85,19 +130,31 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
               ? `Pagamento tramite bonifico. Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
               : "Pagamento in contanti sul posto.";
   const affiliate = resolveAffiliate(s, b.affiliateCode, false);
+  const afiliado =
+    affiliate?.wpId != null
+      ? String(affiliate.wpId)
+      : affiliate?.code || b.affiliateCode || "";
+  const pax = cantidadNinos(b);
   const vars: Record<string, string> = {
     kind,
     nome: b.name,
     pnr: b.pnr,
     tour: tour.title,
+    uwtTour: cf7.uwtTourName,
+    customerSubject: cf7.customerSubject,
     data: when,
+    fecha,
+    hora,
     persone: b.categorySnapshot
       ? b.categorySnapshot
           .filter((c) => c.quantity)
           .map((c) => `${c.quantity} ${c.label}`)
           .join("; ")
       : `${b.adults} adulti + ${b.children} minori (+ ${b.infants} infants)`,
+    cantidad: pax.cantidad,
+    ninos: pax.ninos,
     totale: `${(b.totalCents / 100).toFixed(2)} ${b.currency ?? "EUR"}`,
+    totalPagar: formatTotalPagar(b),
     incontro: tour.meetingPoint,
     indirizzo: tour.meetingAddress,
     mappa: tour.mapUrl,
@@ -114,11 +171,12 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     affiliate: affiliate
       ? `${affiliate.name} (${affiliate.code}${affiliate.wpId != null ? ` / wp#${affiliate.wpId}` : ""})`
       : b.affiliateCode || "—",
+    afiliado,
     email: b.email,
     telefono: b.phone,
-    note: b.notes || "—",
-    adulti: String(b.adults),
-    minori: String(b.children),
+    note: b.notes || "",
+    adulti: pax.cantidad,
+    minori: pax.ninos,
   };
   const htmlVars = Object.fromEntries(
     Object.entries(vars).map(([k, v]) => [
@@ -149,19 +207,15 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     calendar: reservationIcs(s, b),
     runAt: new Date().toISOString(),
   });
-  const adminKinds = new Set([
-    "Confermata",
-    "Cancellata",
-    "Cancellata e rimborso richiesto",
-  ]);
   const adminTo = bookingAdminRecipients();
-  if (adminTo && adminKinds.has(kind)) {
+  if (adminTo && kind === "Confermata") {
+    // Solo le conferme usano oggetto/corpo CF7: UWT importa da queste email.
     enqueue(s, {
       key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
       type: "email",
       bookingPnr: b.pnr,
       to: adminTo,
-      subject: renderEmailTemplate(settings.emailTemplates.admin.subject, vars),
+      subject: UWT_ADMIN_SUBJECT,
       text: renderEmailTemplate(
         settings.emailTemplates.admin.text.replaceAll(
           "EUR {totale}",
@@ -169,6 +223,36 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
         ),
         vars,
       ),
+      runAt: new Date().toISOString(),
+    });
+  } else if (
+    adminTo &&
+    (kind === "Cancellata" || kind === "Cancellata e rimborso richiesto")
+  ) {
+    enqueue(s, {
+      key: `email-admin:${b.pnr}:${kind}:${randomUUID()}`,
+      type: "email",
+      bookingPnr: b.pnr,
+      to: adminTo,
+      subject: `Cancellazione freetourpraga.com italiano · ${b.pnr}`,
+      text: [
+        `Cancellazione prenotazione ${b.pnr}`,
+        `Stato: ${kind}`,
+        `Tour: ${cf7.uwtTourName}`,
+        `De: ${b.name}`,
+        `Email: ${b.email}`,
+        `Teléfono: ${b.phone}`,
+        `Fecha: ${fecha}`,
+        `Hora: ${hora}`,
+        `Cantidad de personas: ${pax.cantidad}`,
+        `Niños: ${pax.ninos}`,
+        `Total a pagar: ${formatTotalPagar(b)}`,
+        `Idioma del Tour: italiano`,
+        `Afiliado: ${afiliado}`,
+        `Mensaje: ${b.notes || ""}`,
+        `--`,
+        `Nota operativa: oggetto diverso da «${UWT_ADMIN_SUBJECT}» per non creare una nuova prenotazione in UWT.`,
+      ].join("\n"),
       runAt: new Date().toISOString(),
     });
   }
