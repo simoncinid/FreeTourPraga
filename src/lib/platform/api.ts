@@ -1,3 +1,4 @@
+import { applyVisualPatches, visualPatchSchema } from "./visual-content";
 import { jsonEqual } from "../json-equal";
 import {
   partnerSchema,
@@ -632,9 +633,11 @@ export async function platformApi(request: Request, path: string[]) {
           .parse(await jsonBody(request));
         await transaction((s) => {
           const j = s.jobs.find((j) => j.id === id);
-          if (j && j.status === "failed") {
+          if (j && (j.status === "failed" || j.status === "queued")) {
             j.status = "queued";
             j.attempts = 0;
+            j.error = undefined;
+            j.leaseUntil = undefined;
             j.runAt = new Date().toISOString();
             audit(s, user.email, "job.retry", id);
           }
@@ -700,6 +703,21 @@ export async function platformApi(request: Request, path: string[]) {
         });
         return ok({ ok: true });
       }
+      if (route === "admin/visual-content" && method === "POST") {
+        await requireStaff(["admin"]);
+        const input = visualPatchSchema.parse(await jsonBody(request));
+        const result = await transaction((s) => {
+          const result = applyVisualPatches(s, input);
+          audit(
+            s,
+            user.email,
+            "content.visual.publish",
+            JSON.stringify(result),
+          );
+          return result;
+        });
+        return ok({ ok: true, ...result });
+      }
       if (route === "admin/site-content" && method === "PUT") {
         const content = siteContentSchema.parse(await jsonBody(request));
         await transaction((s) => {
@@ -727,7 +745,7 @@ export async function platformApi(request: Request, path: string[]) {
             const address = content.globals.castleMeetingAddress?.trim() || "";
             castle.meetingAddress = address;
             castle.mapUrl = address
-              ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+              ? "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7"
               : "";
             castle.mapEmbedUrl = address
               ? `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`

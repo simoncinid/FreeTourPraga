@@ -1,14 +1,38 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import { transaction } from "./store";
 import { releaseExpired } from "./booking";
+
+let sharedTransport: Transporter | null = null;
+
+function smtpTransport() {
+  if (!process.env.SMTP_HOST) throw new Error("SMTP non configurato");
+  if (sharedTransport) return sharedTransport;
+  const port = Number(process.env.SMTP_PORT || 587);
+  sharedTransport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      : undefined,
+    connectionTimeout: 25000,
+    greetingTimeout: 25000,
+    socketTimeout: 30000,
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
+  });
+  return sharedTransport;
+}
 
 export async function runJobs() {
   await transaction((s) => {
     releaseExpired(s);
   });
   const results = [];
-  const deadline = Date.now() + 35000;
-  for (let index = 0; index < 20 && Date.now() + 15000 < deadline; index++) {
+  const deadline = Date.now() + 50000;
+  for (let index = 0; index < 20 && Date.now() + 20000 < deadline; index++) {
     const job = await transaction((s) => {
       const j = s.jobs.find(
         (j) =>
@@ -31,19 +55,7 @@ export async function runJobs() {
         job.key.startsWith("wa:")
       )
         throw new Error("Reminder disattivati in Fase 1");
-      if (!process.env.SMTP_HOST) throw new Error("SMTP non configurato");
-      const transport = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_PORT === "465",
-        requireTLS: process.env.SMTP_PORT !== "465",
-        auth: process.env.SMTP_USER
-          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-          : undefined,
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 12000,
-      });
+      const transport = smtpTransport();
       const { to, subject, text, html, bcc } = job;
       await transport.sendMail({
         from: process.env.SMTP_FROM,
@@ -70,6 +82,7 @@ export async function runJobs() {
       });
       results.push({ id: job.id, status: "sent" });
     } catch (e) {
+      sharedTransport = null;
       await transaction((s) => {
         const j = s.jobs.find((j) => j.id === job.id)!;
         j.status = j.attempts >= 5 ? "failed" : "queued";

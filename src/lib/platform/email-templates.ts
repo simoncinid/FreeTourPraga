@@ -270,8 +270,12 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
         text: adminRaw.text!.trim(),
       };
   const confirmed = asTemplate(value.confirmed, defaults.confirmed);
-  if (!confirmed.subject.includes("{customerSubject}")) {
-    confirmed.subject = defaults.confirmed.subject;
+  if (
+    !confirmed.subject.includes("{customerSubject}") ||
+    !confirmed.text.includes("{fecha}") ||
+    !confirmed.html.includes("{fecha}")
+  ) {
+    Object.assign(confirmed, defaults.confirmed);
   }
   const cancelled = asTemplate(value.cancelled, defaults.cancelled);
   if (
