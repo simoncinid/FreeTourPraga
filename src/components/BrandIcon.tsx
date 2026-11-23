@@ -1,4 +1,14 @@
+import { useId } from "react";
+
+const brandColors: Record<string, string> = {
+  facebook: "#1877F2",
+  youtube: "#FF0000",
+  linkedin: "#0A66C2",
+  tiktok: "#000000",
+};
+
 export function BrandIcon({ name }: { name: string }) {
+  const uid = useId().replace(/:/g, "");
   const key = name.toLowerCase().replace(/\s/g, "");
   const paths: Record<string, string> = {
     facebook:
@@ -12,15 +22,45 @@ export function BrandIcon({ name }: { name: string }) {
     tiktok:
       "M16.6 0c.4 3.5 2.3 5.6 5.6 5.8v4c-2 0-3.9-.6-5.5-1.7v8.1c0 10.3-13.2 10.7-13.2 1.1 0-4.2 3.4-7.3 7.4-6.7v4.2c-4.4-1.4-5.4 5.7-1.1 5.7 1.8 0 2.8-1.2 2.8-3.4V0Z",
   };
-  return paths[key] ? (
+  if (!paths[key]) return null;
+  const igId = `ig-${uid}`;
+  const fill =
+    key === "instagram"
+      ? `url(#${igId})`
+      : brandColors[key] || "currentColor";
+  return (
     <svg
       width="20"
       height="20"
       viewBox="0 0 24 24"
-      fill="currentColor"
       aria-hidden="true"
     >
-      <path d={paths[key]} />
+      {key === "instagram" && (
+        <defs>
+          <linearGradient id={igId} x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F58529" />
+            <stop offset="50%" stopColor="#DD2A7B" />
+            <stop offset="100%" stopColor="#515BD4" />
+          </linearGradient>
+        </defs>
+      )}
+      {key === "tiktok" ? (
+        <>
+          <path
+            d={paths.tiktok}
+            fill="#25F4EE"
+            transform="translate(-1.2 0.8)"
+          />
+          <path
+            d={paths.tiktok}
+            fill="#FE2C55"
+            transform="translate(1.2 -0.8)"
+          />
+          <path d={paths.tiktok} fill="#000000" />
+        </>
+      ) : (
+        <path d={paths[key]} fill={fill} />
+      )}
     </svg>
-  ) : null;
+  );
 }

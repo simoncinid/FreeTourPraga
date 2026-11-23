@@ -61,6 +61,8 @@ export type SiteContent = {
   };
   home: {
     specialOffers?: { label: string; priceCents: number }[];
+    specialOffersTitle?: string;
+    specialOffersCtaLabel?: string;
     specialOffersNote?: string;
     specialOffersCurrency?: "EUR" | "CZK";
     contentBlocks?: import("../types").ContentSectionBlock[];
@@ -144,13 +146,16 @@ export function defaultSiteContent(): SiteContent {
       navigationVersion: 2,
       navigation: structuredClone(defaultNavigation),
       officeAddress: "",
-      castleMeetingAddress: "",
-      googleReviewUrl: "",
-      instagramDirectUrl: "",
+      castleMeetingAddress:
+        "Terzo cortile del Castello di Praga, 119 00 Praha 1-Hradčany",
+      googleReviewUrl: "https://g.page/r/CY2Houtn8d4XEBM/review",
+      instagramDirectUrl: "https://ig.me/m/freetours_praga",
     },
     home: {
       heroImage: "/images/hero-prague-dusk.png",
       heroImageMobile: "/images/hero-prague-mobile.webp",
+      specialOffersTitle: "Offerte speciali tramite servizio clienti",
+      specialOffersCtaLabel: "Contattaci per le offerte",
       heroTitle: "TOUR GUIDATI IN ITALIANO A PRAGA",
       heroEyebrow: "Scopri l’anima autentica di Praga, in totale sicurezza.",
       heroBody:
@@ -333,6 +338,35 @@ export function siteContent(
       ? { ...p, title: "Assistenza diretta 7 giorni su 7" }
       : p,
   );
+  content.globals.googleReviewUrl =
+    content.globals.googleReviewUrl?.trim() ||
+    base.globals.googleReviewUrl ||
+    "";
+  content.globals.castleMeetingAddress =
+    content.globals.castleMeetingAddress?.trim() ||
+    base.globals.castleMeetingAddress ||
+    "";
+  {
+    const saved = new Map(
+      content.globals.socialLinks.map((link) => [
+        link.label.trim().toLowerCase(),
+        link,
+      ]),
+    );
+    const known = new Set(
+      base.globals.socialLinks.map((link) => link.label.toLowerCase()),
+    );
+    content.globals.socialLinks = [
+      ...base.globals.socialLinks.map((fallback) => {
+        const existing = saved.get(fallback.label.toLowerCase());
+        return existing?.url?.trim() ? existing : fallback;
+      }),
+      ...content.globals.socialLinks.filter(
+        (link) =>
+          !known.has(link.label.trim().toLowerCase()) && link.url?.trim(),
+      ),
+    ];
+  }
   content.contentVersion = 2;
   // Discard legacy customer-account links, including navigation already saved in the CMS.
   content.globals.navigation = content.globals.navigation.filter(

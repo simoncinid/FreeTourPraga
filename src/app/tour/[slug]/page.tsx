@@ -17,6 +17,10 @@ import { JsonLd } from "@/components/JsonLd";
 import panels from "@/components/tour-panels.module.css";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
+import { session } from "@/lib/platform/security";
+import { readState } from "@/lib/platform/store";
+import { publicTour } from "@/lib/platform/scheduling";
+import { tourGalleryImages } from "@/lib/tour-gallery";
 import { catalog } from "@/lib/platform/public";
 export const dynamic = "force-dynamic";
 import { minutesToLabel } from "@/lib/format";
@@ -25,13 +29,21 @@ import { breadcrumbJsonLd, tourJsonLd } from "@/lib/seo";
 import { tourPath } from "@/lib/public-paths";
 import { RichContent } from "@/components/RichContent";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
   const { slug } = await params;
   const tour = (await catalog()).find(
     (t) => t.slug === slug || t.canonicalPath === `/tour/${slug}/`,
   );
+  if ((await searchParams)?.["cms-tour"])
+    return { title: "Anteprima tour", robots: { index: false, follow: false } };
   if (!tour) return {};
   return {
     title:
@@ -73,11 +85,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function TourDetailPage({ params }: Props) {
+export default async function TourDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const tour = (await catalog()).find(
+  let tour: import("@/lib/types").Tour | undefined = (await catalog()).find(
     (t) => t.slug === slug || t.canonicalPath === `/tour/${slug}/`,
   );
+  const previewId = (await searchParams)?.["cms-tour"];
+  if (typeof previewId === "string") {
+    const staff = await session();
+    if (staff && ["admin", "operator"].includes(staff.role)) {
+      const state = await readState({ generateSlots: false });
+      const stored = state.tours.find((t) => t.id === previewId);
+      if (stored) tour = publicTour(state, stored);
+      else if ((await searchParams)?.["cms-new"] === "1" && state.tours[0]) {
+        const draft = {
+          ...structuredClone(state.tours[0]),
+          id: previewId,
+          title: "Nuovo tour",
+          slug: "nuovo-tour",
+          published: false,
+        };
+        tour = publicTour(state, draft);
+      }
+    }
+  }
   if (!tour) notFound();
   const price = tourHeadlinePrice(tour);
   const content = await publicSiteContent();
@@ -103,7 +134,10 @@ export default async function TourDetailPage({ params }: Props) {
           <div
             className={`grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end ${ui.detailTitleRow}`}
           >
-            <h1 className="display-xl tour-detail-title mb-0 min-w-0">
+            <h1
+              data-tour-field="title"
+              className="display-xl tour-detail-title mb-0 min-w-0"
+            >
               {tour.title}
             </h1>
             <div className={ui.detailOffer}>
@@ -114,10 +148,16 @@ export default async function TourDetailPage({ params }: Props) {
               <div className={ui.detailMeta}>
                 <span>
                   <Clock3 size={15} aria-hidden />{" "}
-                  {minutesToLabel(tour.durationMinutes)}
+                  <span
+                    data-tour-field="durationMinutes"
+                    data-tour-kind="number"
+                  >
+                    {minutesToLabel(tour.durationMinutes)}
+                  </span>
                 </span>
                 <span>
-                  <Users size={15} aria-hidden /> Guida in {tour.language}
+                  <Users size={15} aria-hidden /> Guida in{" "}
+                  <span data-tour-field="language">{tour.language}</span>
                 </span>
               </div>
             </div>
@@ -128,6 +168,11 @@ export default async function TourDetailPage({ params }: Props) {
           key={tour.id}
           title={tour.title}
           photos={tourPhotos(tour)}
+          editPaths={tourPhotos(tour).map((photo) =>
+            photo.url === tour.imageUrl
+              ? "imageUrl"
+              : `galleryImages.${tourGalleryImages(tour).findIndex((p) => p.url === photo.url)}.url`,
+          )}
         />
 
         <div className="mb-8 border-b border-hairline pb-4 text-sm font-semibold text-ink">
@@ -144,7 +189,13 @@ export default async function TourDetailPage({ params }: Props) {
             <TourFacts tour={tour} />
             <section id="esperienza">
               <h2 className="display-md mb-4">L&apos;esperienza</h2>
-              <div className="body-md">
+              <div
+                className="body-md"
+                data-tour-field={
+                  tour.descriptionHtml ? "descriptionHtml" : "description"
+                }
+                data-tour-kind={tour.descriptionHtml ? "html" : "text"}
+              >
                 {tour.descriptionHtml ? (
                   <RichContent html={tour.descriptionHtml} />
                 ) : (
@@ -152,7 +203,7 @@ export default async function TourDetailPage({ params }: Props) {
                 )}
               </div>
             </section>
-            <SectionBlocks blocks={tour.contentBlocks} />
+            <SectionBlocks blocks={tour.contentBlocks} tourEditable />
             <section id="dettagli" className={panels.highlightPanel}>
               <h2 className="display-md mb-4">Cosa vedrai</h2>
               <TourHighlights
@@ -168,7 +219,7 @@ export default async function TourDetailPage({ params }: Props) {
                   Incluso
                 </h2>
                 <ul className={panels.panelList}>
-                  {tour.inclusions.map((item) => (
+                  {tour.inclusions.map((item, index) => (
                     <li
                       key={item}
                       className={`${panels.panelTickItem} body-md`}
@@ -178,7 +229,9 @@ export default async function TourDetailPage({ params }: Props) {
                         size={18}
                         aria-hidden
                       />
-                      <span>{item}</span>
+                      <span data-tour-field={`inclusions.${index}`}>
+                        {item}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -188,7 +241,7 @@ export default async function TourDetailPage({ params }: Props) {
                   Informazioni pratiche
                 </h2>
                 <ul className={panels.panelList}>
-                  {tour.safetyNotes.map((note) => (
+                  {tour.safetyNotes.map((note, index) => (
                     <li
                       key={note}
                       className={`${panels.panelTickItem} body-md`}
@@ -198,7 +251,9 @@ export default async function TourDetailPage({ params }: Props) {
                         size={18}
                         aria-hidden
                       />
-                      <span>{note}</span>
+                      <span data-tour-field={`safetyNotes.${index}`}>
+                        {note}
+                      </span>
                     </li>
                   ))}
                 </ul>

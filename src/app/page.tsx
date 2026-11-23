@@ -1,3 +1,4 @@
+import { siteEdit } from "@/lib/visual-content";
 import { MeetingPoints } from "@/components/MeetingPoints";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { contentWhatsapp } from "@/lib/platform/content";
@@ -35,7 +36,8 @@ function groupsFromCatalog(
   cmsGroups: SiteContent["home"]["groups"],
 ) {
   const assigned = new Set<string>();
-  const groups = cmsGroups.map((group) => ({
+  const groups = cmsGroups.map((group, editIndex) => ({
+    editIndex: editIndex as number | undefined,
     title: group.title,
     subtitle: group.subtitle,
     items: group.items.map((item) => {
@@ -60,6 +62,7 @@ function groupsFromCatalog(
     if (existing) existing.items.push({ title: tour.title, tour });
     else
       groups.push({
+        editIndex: undefined,
         title: tour.category,
         subtitle: "",
         items: [{ title: tour.title, tour }],
@@ -76,9 +79,11 @@ export default async function HomePage() {
     <div className={styles.home}>
       <div className={styles.aboveFold}>
         <section
+          data-cms-background="hero"
           className={`${styles.hero} relative isolate overflow-hidden bg-navy text-white`}
         >
           <Image
+            {...siteEdit("home.heroImage", "image")}
             src={h.heroImage}
             alt="Praga"
             fill
@@ -87,6 +92,7 @@ export default async function HomePage() {
             className={`object-cover ${styles.heroPhotoDesktop}`}
           />
           <Image
+            {...siteEdit("home.heroImageMobile", "image")}
             src={h.heroImageMobile || h.heroImage}
             alt="Praga"
             fill
@@ -98,34 +104,25 @@ export default async function HomePage() {
             className={`${styles.heroInner} container-page relative z-10 grid items-center py-20`}
           >
             <div className={styles.heroCopy}>
-              <p className="uppercase-tag mb-5 text-primary">{h.heroEyebrow}</p>
-              <h1 className="display-xl hero-title mb-5 !text-white">
-                {h.heroTitle ===
-                "Free Tour Praga in italiano: scopri la città con noi." ? (
-                  <>
-                    Free Tour Praga in italiano:
-                    <br />
-                    scopri la città con noi.
-                  </>
-                ) : h.heroTitle ===
-                  "Scopri l'anima autentica di Praga, in totale sicurezza." ? (
-                  <>
-                    Scopri l&apos;anima autentica{" "}
-                    <span className={styles.keepTogether}>di Praga,</span> in
-                    totale sicurezza.
-                  </>
-                ) : h.heroTitle === "TOUR GUIDATI IN ITALIANO A PRAGA" ? (
-                  <>
-                    TOUR GUIDATI
-                    <br className={styles.heroTitleBreak} /> IN ITALIANO
-                    <br className={styles.heroTitleBreak} /> A PRAGA
-                  </>
-                ) : (
-                  h.heroTitle
-                )}
+              <p
+                {...siteEdit("home.heroEyebrow")}
+                className="uppercase-tag mb-5 text-primary"
+              >
+                {h.heroEyebrow}
+              </p>
+              <h1
+                {...siteEdit("home.heroTitle", "text", h.heroTitle)}
+                className="display-xl hero-title mb-5 !text-white"
+              >
+                {h.heroTitle}
               </h1>
               <div className={styles.heroCtaBlock}>
-                <p className="body-md mb-8 !text-white/90">{h.heroBody}</p>
+                <p
+                  {...siteEdit("home.heroBody")}
+                  className="body-md mb-8 !text-white/90"
+                >
+                  {h.heroBody}
+                </p>
                 <div className={styles.heroActions}>
                   <HeroTourCta
                     href={h.primaryHref}
@@ -137,6 +134,7 @@ export default async function HomePage() {
                     }))}
                   />
                   <a
+                    {...siteEdit("home.secondaryLabel")}
                     className={`button-secondary ${styles.heroWhatsapp}`}
                     href={contentWhatsapp(
                       c,
@@ -172,7 +170,14 @@ export default async function HomePage() {
                         aria-hidden
                       />
                       <div>
-                        <strong className={styles.benefitTitle}>
+                        <strong
+                          {...siteEdit(
+                            `home.stats.${index}.value`,
+                            "text",
+                            item.value,
+                          )}
+                          className={styles.benefitTitle}
+                        >
                           {titleWords.slice(0, titleMid).join(" ")}
                           {titleWords.length > 1 ? (
                             <>
@@ -182,7 +187,12 @@ export default async function HomePage() {
                           ) : null}
                           {titleWords.slice(titleMid).join(" ")}
                         </strong>
-                        <p className={styles.benefitLabel}>{item.label}</p>
+                        <p
+                          {...siteEdit(`home.stats.${index}.label`)}
+                          className={styles.benefitLabel}
+                        >
+                          {item.label}
+                        </p>
                       </div>
                     </li>
                   );
@@ -194,9 +204,21 @@ export default async function HomePage() {
       </div>
       <section className="editorial-section">
         <div className="container-page">
-          <p className="uppercase-tag mb-3 text-primary">{h.toursEyebrow}</p>
-          <h2 className="display-lg mb-3">{h.toursTitle}</h2>
-          <p className={`${styles.toursLead} body-md mb-8`}>{h.toursBody}</p>
+          <p
+            {...siteEdit("home.toursEyebrow")}
+            className="uppercase-tag mb-3 text-primary"
+          >
+            {h.toursEyebrow}
+          </p>
+          <h2 {...siteEdit("home.toursTitle")} className="display-lg mb-3">
+            {h.toursTitle}
+          </h2>
+          <p
+            {...siteEdit("home.toursBody")}
+            className={`${styles.toursLead} body-md mb-8`}
+          >
+            {h.toursBody}
+          </p>
           {groups.length > 0 ? (
             <ExperienceRotator
               groups={groups}
@@ -216,23 +238,33 @@ export default async function HomePage() {
       >
         <div className="container-page grid items-center gap-12 lg:grid-cols-[.8fr_1.2fr]">
           <div>
-            <p className="uppercase-tag mb-3 text-primary">{h.trustEyebrow}</p>
-            <h2 className="display-lg !text-white">
-              {h.trustTitle.split("\n").map((line, index) => (
-                <span key={index} className="block">
-                  {line.split(/(nostro ospite)/i).map((part, partIndex) =>
-                    part.toLocaleLowerCase("it") === "nostro ospite" ? (
-                      <span key={partIndex} className={styles.trustAccent}>
-                        {part}
-                      </span>
-                    ) : (
-                      part
-                    ),
-                  )}
-                </span>
-              ))}
+            <p
+              {...siteEdit("home.trustEyebrow")}
+              className="uppercase-tag mb-3 text-primary"
+            >
+              {h.trustEyebrow}
+            </p>
+            <h2
+              {...siteEdit("home.trustTitle", "text", h.trustTitle)}
+              data-cms-multiline="true"
+              className="display-lg !text-white"
+            >
+              {h.trustTitle.split(/(nostro ospite)/i).map((part, index) =>
+                part.toLocaleLowerCase("it") === "nostro ospite" ? (
+                  <span key={index} className={styles.trustAccent}>
+                    {part}
+                  </span>
+                ) : (
+                  part
+                ),
+              )}
             </h2>
-            <p className="body-md mt-5 !text-white/85">{h.trustBody}</p>
+            <p
+              {...siteEdit("home.trustBody")}
+              className="body-md mt-5 !text-white/85"
+            >
+              {h.trustBody}
+            </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {h.pillars.map((pillar, index) => {
@@ -241,9 +273,19 @@ export default async function HomePage() {
                 <article key={pillar.title} className={styles.trustCard}>
                   <div className={styles.trustCardHeading}>
                     <Icon size={36} className={styles.trustIcon} aria-hidden />
-                    <h3 className="title-md !text-white">{pillar.title}</h3>
+                    <h3
+                      {...siteEdit(`home.pillars.${index}.title`)}
+                      className="title-md !text-white"
+                    >
+                      {pillar.title}
+                    </h3>
                   </div>
-                  <p className="body-sm mt-3 !text-white/80">{pillar.text}</p>
+                  <p
+                    {...siteEdit(`home.pillars.${index}.text`)}
+                    className="body-sm mt-3 !text-white/80"
+                  >
+                    {pillar.text}
+                  </p>
                 </article>
               );
             })}
@@ -252,17 +294,31 @@ export default async function HomePage() {
       </section>
       <section className="editorial-section">
         <div className="container-page">
-          <p className="uppercase-tag mb-3 text-primary">{h.galleryEyebrow}</p>
-          <h2 className="display-lg mb-3">{h.galleryTitle}</h2>
-          <p className={`${styles.galleryLead} body-md mb-8`}>
+          <p
+            {...siteEdit("home.galleryEyebrow")}
+            className="uppercase-tag mb-3 text-primary"
+          >
+            {h.galleryEyebrow}
+          </p>
+          <h2 {...siteEdit("home.galleryTitle")} className="display-lg mb-3">
+            {h.galleryTitle}
+          </h2>
+          <p
+            {...siteEdit("home.galleryBody")}
+            className={`${styles.galleryLead} body-md mb-8`}
+          >
             {h.galleryBody}
           </p>
           <HomeGallery items={c.gallery} />
         </div>
       </section>
       <section className="container-page py-12">
-        <h2 className="display-lg mb-3">{h.answersTitle}</h2>
-        <p className="mb-6">{h.answersBody}</p>
+        <h2 {...siteEdit("home.answersTitle")} className="display-lg mb-3">
+          {h.answersTitle}
+        </h2>
+        <p {...siteEdit("home.answersBody")} className="mb-6">
+          {h.answersBody}
+        </p>
         <HomeAnswers items={c.answers} />
       </section>
       <MeetingPoints
@@ -270,6 +326,7 @@ export default async function HomePage() {
           {
             label: "Punto standard — Teatro degli Stati",
             address: c.globals.address,
+            binding: "globals.address",
             mapUrl: `https://www.google.com/maps?q=${encodeURIComponent(c.globals.address)}`,
           },
           ...(c.globals.castleMeetingAddress
@@ -277,7 +334,8 @@ export default async function HomePage() {
                 {
                   label: "Castello di Praga con interni",
                   address: c.globals.castleMeetingAddress,
-                  mapUrl: `https://www.google.com/maps?q=${encodeURIComponent(c.globals.castleMeetingAddress)}`,
+                  binding: "globals.castleMeetingAddress",
+                  mapUrl: "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7",
                 },
               ]
             : []),
@@ -286,15 +344,27 @@ export default async function HomePage() {
       <TripAdvisorSection />
       {!!h.contentBlocks?.length && (
         <section className="container-page py-12">
-          <SectionBlocks blocks={h.contentBlocks} />
+          <SectionBlocks
+            binding={{ scope: "site", path: ["home", "contentBlocks"] }}
+            blocks={h.contentBlocks}
+          />
         </section>
       )}
       <section className={`${styles.partnerSection} editorial-section`}>
         <div className="container-page">
           <div className={styles.partnerPanel}>
             <div className={styles.partnerCopy}>
-              <p className="uppercase-tag text-primary">{h.partnerEyebrow}</p>
-              <h2 className="display-lg">
+              <p
+                {...siteEdit("home.partnerEyebrow")}
+                className="uppercase-tag text-primary"
+              >
+                {h.partnerEyebrow}
+              </p>
+              <h2
+                {...siteEdit("home.partnerTitle", "text", h.partnerTitle)}
+                data-cms-multiline="true"
+                className="display-lg"
+              >
                 {h.partnerTitle
                   .split(/(su misura)/i)
                   .map((part, index) =>
@@ -305,12 +375,14 @@ export default async function HomePage() {
                     ),
                   )}
               </h2>
-              <p className="body-md">{h.partnerBody}</p>
+              <p {...siteEdit("home.partnerBody")} className="body-md">
+                {h.partnerBody}
+              </p>
               <Link
                 href="/partner-europa"
                 className={`button-primary ${styles.partnerCta}`}
               >
-                {h.partnerLabel}
+                <span {...siteEdit("home.partnerLabel")}>{h.partnerLabel}</span>
                 <ArrowRight
                   size={20}
                   className={styles.partnerCtaArrow}

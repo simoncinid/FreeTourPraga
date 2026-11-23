@@ -45,14 +45,11 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
       </label>
 
       {filtered.length ? (
-        <CardCarousel
-          key={query}
-          label="Articoli del blog"
-          autoPlay={false}
-        >
+        <CardCarousel key={query} label="Articoli del blog" autoPlay={false}>
           {filtered.map((guide) => (
             <Link
               key={guide.title}
+              data-cms-reference="article"
               href={guidePath(guide)}
               className={`${styles.article} card overflow-hidden no-underline text-inherit`}
             >
@@ -66,8 +63,12 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
                 />
               </div>
               <div className={styles.articleBody}>
-                <h2 className={`title-md ${styles.articleTitle}`}>{guide.title}</h2>
-                <p className={`body-sm ${styles.articleCaption}`}>{guide.caption}</p>
+                <h2 className={`title-md ${styles.articleTitle}`}>
+                  {guide.title}
+                </h2>
+                <p className={`body-sm ${styles.articleCaption}`}>
+                  {guide.caption}
+                </p>
                 <span className={styles.articleCta}>
                   Leggi la guida <ArrowUpRight size={15} />
                 </span>

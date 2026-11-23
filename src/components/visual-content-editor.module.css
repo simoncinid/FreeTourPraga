@@ -1,0 +1,275 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 10px;
+  background: white;
+  border: 1px solid #dce4ec;
+  border-radius: 10px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.pageSelect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 0 1 320px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #14324b;
+  white-space: nowrap;
+}
+.pageSelect > span {
+  flex-shrink: 0;
+}
+.pageSelect > select {
+  min-height: 34px !important;
+  height: 34px;
+  padding: 0 10px !important;
+  font-size: 13px !important;
+  min-width: 0;
+  flex: 1;
+}
+.discardButton {
+  width: auto !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 10px !important;
+  font-size: 11px !important;
+  flex-shrink: 0;
+}
+.devices {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.devices button {
+  padding: 0 9px;
+  border: 1px solid #d3dce5;
+  border-radius: 7px;
+  background: white;
+  color: #263d54;
+  min-height: 30px;
+  height: 30px;
+  font-size: 11px;
+  width: auto !important;
+}
+.devices .seoButton {
+  border: 0 !important;
+  background: rgb(var(--primary)) !important;
+  color: #fff !important;
+  padding: 0 11px !important;
+  font-size: 11px !important;
+  font-weight: 500;
+  min-height: 30px !important;
+  height: 30px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.devices button[aria-pressed="true"] {
+  background: #102a43;
+  color: white;
+}
+.devices a {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.stage {
+  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  padding: 8px;
+  background: #e6ebf1;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+}
+.previewViewport {
+  position: relative;
+  flex-shrink: 0;
+}
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0;
+  background: white;
+  box-shadow: 0 8px 35px #102a4314;
+  border-radius: 8px;
+  max-width: none;
+  transform-origin: top left;
+}
+.notice {
+  background: #eaf7f3;
+  color: #174c3c;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.seoModal {
+  border: 0;
+  border-radius: 14px;
+  padding: 0;
+  width: min(720px, calc(100vw - 24px));
+  max-height: 100dvh;
+  box-shadow: 0 24px 80px #0004;
+}
+.seoModal::backdrop {
+  background: #102a43a8;
+  backdrop-filter: blur(3px);
+}
+.seoModalBody {
+  display: flex;
+  flex-direction: column;
+  max-height: 100dvh;
+  min-height: 0;
+  background: #fff;
+}
+.seoModalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e7edf3;
+  flex-shrink: 0;
+}
+.seoModalHead h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #14324b;
+}
+.seoModalHead .button-secondary {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  width: auto !important;
+}
+.seoModalContent {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  align-content: start;
+}
+.seoModalContent label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.seoModalContent .text-input {
+  min-height: 40px !important;
+  font-size: 13px !important;
+}
+.seoModalContent > p {
+  margin: 0;
+  font-size: 12px;
+  color: #667b8c;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+}
+.links a {
+  text-decoration: underline;
+}
+.dialog {
+  border: 0;
+  border-radius: 18px;
+  padding: 0;
+  width: min(680px, calc(100vw - 32px));
+  max-height: 88vh;
+  box-shadow: 0 24px 80px #0004;
+}
+.dialog::backdrop {
+  background: #102a43a8;
+  backdrop-filter: blur(3px);
+}
+.dialogBody {
+  padding: 28px;
+  display: grid;
+  gap: 20px;
+}
+.dialogBody > p {
+  font-size: 13px;
+  color: #52677a;
+}
+.dialogBody label {
+  display: grid;
+  gap: 7px;
+}
+.dialogBody textarea {
+  width: 100%;
+}
+.richEditor {
+  min-height: 250px;
+  max-height: 50vh;
+  overflow: auto;
+  border: 1px solid #cdd9e3;
+  border-radius: 9px;
+  padding: 18px;
+  line-height: 1.7;
+}
+.richEditor:focus {
+  outline: 2px solid #0b83a6;
+}
+.richEditor p {
+  margin: 0 0 14px;
+}
+.richEditor h2 {
+  font-size: 24px;
+  margin: 18px 0;
+}
+@media (max-width: 1100px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+  .devices {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 700px) {
+  .toolbar {
+    padding: 8px;
+  }
+  .pageSelect {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .stage {
+    padding: 4px;
+  }
+  .dialogBody {
+    padding: 20px;
+  }
+}

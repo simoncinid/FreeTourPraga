@@ -1,4 +1,5 @@
 "use client";
+import { siteEdit } from "@/lib/visual-content";
 
 import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -27,16 +28,6 @@ function WriteReviewCta({
     <div className={styles.writeReview}>
       <p>Hai esplorato Praga con noi? Lascia una recensione.</p>
       <div className={styles.writeReviewActions}>
-        {googleReviewUrl ? (
-          <a
-            className={styles.writeReviewBtn}
-            href={googleReviewUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Scrivi una recensione su Google
-          </a>
-        ) : null}
         <a
           className={styles.writeReviewBtn}
           href={profileUrl}
@@ -50,6 +41,16 @@ function WriteReviewCta({
             aria-hidden
           />
         </a>
+        {googleReviewUrl ? (
+          <a
+            className={`${styles.writeReviewBtn} ${styles.writeReviewBtnGoogle}`}
+            href={googleReviewUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Scrivi una recensione su Google
+          </a>
+        ) : null}
       </div>
     </div>
   );
@@ -200,13 +201,12 @@ export function TripAdvisorWidget({
             </button>
           ) : null}
           <div className={styles.reviewStage}>
-            <div
-              ref={measureRef}
-              className={styles.reviewMeasure}
-              aria-hidden
-            >
+            <div ref={measureRef} className={styles.reviewMeasure} aria-hidden>
               {reviews.map((item) => (
-                <div key={`measure-${item.author}-${item.date}`} className={styles.reviewCard}>
+                <div
+                  key={`measure-${item.author}-${item.date}`}
+                  className={styles.reviewCard}
+                >
                   <ReviewCardBody review={item} />
                 </div>
               ))}
@@ -246,7 +246,9 @@ export function TripAdvisorWidget({
             <span>TripAdvisor / Le vostre storie</span>
           </div>
           <h2 id="reviews-title" className={styles.showcaseTitle}>
-            {tripAdvisor.title || "Dicono di noi"}
+            <span {...siteEdit("globals.tripAdvisorTitle")}>
+              {tripAdvisor.title || "Dicono di noi"}
+            </span>
             <span aria-hidden>.</span>
           </h2>
           <div className={styles.showcaseRating}>
@@ -271,7 +273,9 @@ export function TripAdvisorWidget({
               </a>
             </div>
           </div>
-          <p className="body-md">{body}</p>
+          <p className="body-md">
+            <span {...siteEdit("globals.tripAdvisorBody")}>{body}</span>
+          </p>
         </div>
         <div className={styles.reviewScene}>
           <div className={styles.sceneHalo} aria-hidden />

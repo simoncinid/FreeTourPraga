@@ -1,3 +1,4 @@
+import { pageEdit, siteEdit } from "@/lib/visual-content";
 import { catalog } from "@/lib/platform/public";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -38,19 +39,22 @@ export default async function Page() {
     <section className={`${ui.page} ${ui.contact} section`}>
       <div className={`container-page ${ui.contactGrid}`}>
         <div>
-          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+          <p
+            {...pageEdit("contatti", "subtitle")}
+            className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
+          >
             {page?.subtitle || "Un consiglio da chi vive qui"}
           </p>
-          <h1 className="display-xl mb-6">
+          <h1 {...pageEdit("contatti", "title")} className="display-xl mb-6">
             {page?.title || "Praga è più vicina di quanto pensi."}
           </h1>
-          <p className="body-md mb-10 max-w-md">
-            Un dubbio sul tour, sul punto d’incontro o sull’esperienza giusta
-            per te? Parliamone: siamo qui per aiutarti a organizzare la visita.
+          <p
+            {...pageEdit("contatti", "body")}
+            className="body-md mb-10 max-w-md"
+          >
+            {page?.body ||
+              "Un dubbio sul tour, sul punto d’incontro o sull’esperienza giusta per te? Parliamone: siamo qui per aiutarti a organizzare la visita."}
           </p>
-          {page?.body && (
-            <p className="mb-6 whitespace-pre-wrap">{page.body}</p>
-          )}
           <div className={ui.contactRows}>
             <a
               className={ui.contactRow}
@@ -68,37 +72,16 @@ export default async function Page() {
               <Mail size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Email</strong>
-                <small>{site.email}</small>
+                <small {...siteEdit("globals.email")}>{site.email}</small>
               </span>
             </a>
-            {site.socialLinks.length > 0 && (
-              <div className={ui.contactSocialRow}>
-                {site.socialLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    className={ui.contactRow}
-                    href={link.url}
-                    target="_blank"
-                    rel="me noreferrer"
-                  >
-                    <span className={ui.contactIcon} aria-hidden>
-                      <BrandIcon name={link.label} />
-                    </span>
-                    <span>
-                      <strong className="block text-ink">{link.label}</strong>
-                      <small>Apri profilo</small>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            )}
             <div className={ui.contactRow}>
               <MapPin size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">
                   Punto d’incontro principale
                 </strong>
-                <small>{site.address}</small>
+                <small {...siteEdit("globals.address")}>{site.address}</small>
               </span>
             </div>
             {hasOtherPoints && (
@@ -126,23 +109,57 @@ export default async function Page() {
                     </a>
                   ))}
                   {site.castleMeetingAddress && (
-                    <p className={ui.contactOtherPoint}>
+                    <a
+                      href="https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7"
+                      target="_blank"
+                      rel="noreferrer"
+                      className={ui.contactOtherPoint}
+                    >
                       <strong className="block">Castello con interni</strong>
-                      <span>{site.castleMeetingAddress}</span>
-                    </p>
+                      <span {...siteEdit("globals.castleMeetingAddress")}>
+                        {site.castleMeetingAddress}
+                      </span>
+                    </a>
                   )}
                   {site.officeAddress && (
                     <p className={ui.contactOtherPoint}>
                       <strong className="block">
                         Sede ufficio — previo appuntamento
                       </strong>
-                      <span>{site.officeAddress}</span>
+                      <span {...siteEdit("globals.officeAddress")}>
+                        {site.officeAddress}
+                      </span>
                     </p>
                   )}
                 </div>
               </details>
             )}
-            <SectionBlocks blocks={page?.contentBlocks} />
+            {site.socialLinks.length > 0 && (
+              <div className={ui.contactSocialRow} role="list">
+                {site.socialLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    role="listitem"
+                    className={ui.contactSocialIcon}
+                    href={link.url}
+                    target="_blank"
+                    rel="me noreferrer"
+                    aria-label={link.label}
+                    title={link.label}
+                  >
+                    <BrandIcon name={link.label} />
+                  </a>
+                ))}
+              </div>
+            )}
+            <SectionBlocks
+              binding={{
+                scope: "page",
+                key: "contatti",
+                path: ["contentBlocks"],
+              }}
+              blocks={page?.contentBlocks}
+            />
           </div>
         </div>
         <div className={ui.contactAside}>

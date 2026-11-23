@@ -1,3 +1,4 @@
+import { pageEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { SpecialOffers } from "@/components/SpecialOffers";
 import { tourPath } from "@/lib/public-paths";
@@ -58,16 +59,19 @@ export default async function TourListingPage() {
         </Suspense>
         <div className="mb-8">
           <p className="micro-label mb-2 text-muted">Catalogo tour</p>
-          <h1 className="display-xl mb-4">
+          <h1 {...pageEdit("catalogo", "title")} className="display-xl mb-4">
             {content?.title || "Tour guidati in italiano a Praga"}
           </h1>
-          <p className="body-md max-w-2xl">
+          <p {...pageEdit("catalogo", "body")} className="body-md max-w-2xl">
             {content?.body ||
               "Filtra per esperienza, controlla i posti e prenota con conferma email automatica."}
           </p>
         </div>
         <TourFilters tours={tours} />
-        <SectionBlocks blocks={content?.contentBlocks} />
+        <SectionBlocks
+          binding={{ scope: "page", key: "catalogo", path: ["contentBlocks"] }}
+          blocks={content?.contentBlocks}
+        />
       </div>
       <SpecialOffers />
     </section>

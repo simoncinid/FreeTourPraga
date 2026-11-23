@@ -1,3 +1,4 @@
+import { pageEdit, siteEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { RichContent } from "@/components/RichContent";
 import { publicPage } from "@/lib/platform/public";
@@ -13,50 +14,65 @@ const icons = [ShieldCheck, Users, MapPin, Headset];
 export default async function Page() {
   const { home } = await publicSiteContent();
   const page = await publicPage("chi-siamo");
-  const lines = (page?.title || home.trustTitle).split("\n").filter(Boolean);
+  const lines = (page?.title || home.trustTitle).split("\n");
 
   return (
     <section className={`${ui.page} ${ui.about} section`}>
       <div className={`container-page ${ui.aboutInner}`}>
-        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+        <p
+          {...pageEdit("chi-siamo", "subtitle")}
+          className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
+        >
           {page?.subtitle || "Chi siamo"}
         </p>
         <h1 className={`display-xl ${ui.aboutTitle}`}>
-          {lines.map((line, index) =>
-            index === 0 ? (
-              <span key={line} className={ui.aboutTitleRow}>
-                <span>{line}</span>
-                <Link
-                  href="/tour"
-                  className={`button-primary ${ui.aboutTourCta}`}
-                >
-                  Tutti i tour
-                  <ArrowRight size={16} aria-hidden />
-                </Link>
-              </span>
-            ) : (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ),
-          )}
+          <span className={ui.aboutTitleRow}>
+            <span {...pageEdit("chi-siamo", "title")}>{lines.join("\n")}</span>
+            <Link
+              href="/tour"
+              className={`button-primary ${ui.aboutTourCta}`}
+              style={{ alignSelf: "flex-start" }}
+            >
+              Tutti i tour <ArrowRight size={16} aria-hidden />
+            </Link>
+          </span>
         </h1>
-        <div className={`body-md whitespace-pre-wrap ${ui.aboutLead}`}>
+        <div
+          {...pageEdit(
+            "chi-siamo",
+            page?.bodyHtml ? "bodyHtml" : "body",
+            page?.bodyHtml ? "html" : "text",
+          )}
+          className={`body-md whitespace-pre-wrap ${ui.aboutLead}`}
+        >
           {page?.bodyHtml ? (
             <RichContent html={page.bodyHtml} />
           ) : (
             page?.body || home.trustBody
           )}
         </div>
-        <SectionBlocks blocks={page?.contentBlocks} />
+        <SectionBlocks
+          binding={{ scope: "page", key: "chi-siamo", path: ["contentBlocks"] }}
+          blocks={page?.contentBlocks}
+        />
         <div className={ui.aboutGrid}>
           {home.pillars.map((pillar, index) => {
             const Icon = icons[index % icons.length];
             return (
               <article key={pillar.title} className="card p-6">
                 <Icon className="mb-4 text-primary" size={26} />
-                <h2 className="title-md">{pillar.title}</h2>
-                <p className="body-sm mt-3">{pillar.text}</p>
+                <h2
+                  {...siteEdit(`home.pillars.${index}.title`)}
+                  className="title-md"
+                >
+                  {pillar.title}
+                </h2>
+                <p
+                  {...siteEdit(`home.pillars.${index}.text`)}
+                  className="body-sm mt-3"
+                >
+                  {pillar.text}
+                </p>
               </article>
             );
           })}

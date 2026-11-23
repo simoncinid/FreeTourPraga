@@ -154,6 +154,8 @@ export const siteContentSchema = z.object({
       )
       .max(30)
       .optional(),
+    specialOffersTitle: z.string().trim().min(1).max(250).optional(),
+    specialOffersCtaLabel: z.string().trim().min(1).max(150).optional(),
     specialOffersNote: z.string().max(5000).optional(),
     specialOffersCurrency: z.enum(["EUR", "CZK"]).optional(),
     contentBlocks: z.array(contentSectionSchema).max(60).optional(),

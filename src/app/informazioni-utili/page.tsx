@@ -1,3 +1,4 @@
+import { pageEdit } from "@/lib/visual-content";
 import { publicPage } from "@/lib/platform/public";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import type { Metadata } from "next";
@@ -20,14 +21,27 @@ export default async function Page() {
     <section className="section">
       <div className="container-page">
         <div className={ui.usefulHeader}>
-          <h1 className={`display-xl ${ui.usefulTitle}`}>
+          <h1
+            {...pageEdit("informazioni-utili", "title")}
+            className={`display-xl ${ui.usefulTitle}`}
+          >
             {page?.title || "Informazioni utili"}
           </h1>
-          <p className={`body-md ${ui.usefulLead}`}>
+          <p
+            {...pageEdit("informazioni-utili", "body")}
+            className={`body-md ${ui.usefulLead}`}
+          >
             {page?.body || c.home.answersBody}
           </p>
         </div>
-        <SectionBlocks blocks={page?.contentBlocks} />
+        <SectionBlocks
+          binding={{
+            scope: "page",
+            key: "informazioni-utili",
+            path: ["contentBlocks"],
+          }}
+          blocks={page?.contentBlocks}
+        />
         <BlogGuideList items={c.gallery} />
         <div className={ui.usefulActions}>
           <Link href="/faq" className="button-primary">

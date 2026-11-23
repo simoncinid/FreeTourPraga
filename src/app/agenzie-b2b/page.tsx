@@ -17,6 +17,7 @@ export default async function Page() {
   return (
     <>
       <CollaborationPage
+        pageKey="agenzie-b2b"
         eyebrow={data.subtitle}
         title={data.title}
         titleLines={
@@ -27,7 +28,14 @@ export default async function Page() {
         benefits={data.benefits ?? []}
       />
       <div className="container-page mb-12">
-        <SectionBlocks blocks={page?.contentBlocks} />
+        <SectionBlocks
+          binding={{
+            scope: "page",
+            key: "agenzie-b2b",
+            path: ["contentBlocks"],
+          }}
+          blocks={page?.contentBlocks}
+        />
       </div>
     </>
   );

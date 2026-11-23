@@ -1,9 +1,15 @@
 "use client";
+import { siteEdit } from "@/lib/visual-content";
 
 import { useState } from "react";
 import styles from "./public-ui.module.css";
 
-export type MeetingPoint = { label: string; address: string; mapUrl: string };
+export type MeetingPoint = {
+  label: string;
+  address: string;
+  mapUrl: string;
+  binding?: string;
+};
 
 export function MeetingPoints({ points }: { points: MeetingPoint[] }) {
   const [index, setIndex] = useState(0);
@@ -24,7 +30,9 @@ export function MeetingPoints({ points }: { points: MeetingPoint[] }) {
             allowFullScreen
           />
         </div>
-        <fieldset className={`grid content-start gap-4 p-6 ${styles.meetingPanel}`}>
+        <fieldset
+          className={`grid content-start gap-4 p-6 ${styles.meetingPanel}`}
+        >
           <legend className="sr-only">Seleziona punto d’incontro</legend>
           {points.map((p, i) => (
             <label key={p.address} className="flex items-start gap-3">
@@ -36,7 +44,12 @@ export function MeetingPoints({ points }: { points: MeetingPoint[] }) {
               />
               <span>
                 <strong>{p.label}</strong>
-                <small className="block">{p.address}</small>
+                <small
+                  {...(p.binding ? siteEdit(p.binding) : {})}
+                  className="block"
+                >
+                  {p.address}
+                </small>
               </span>
             </label>
           ))}

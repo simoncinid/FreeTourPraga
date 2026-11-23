@@ -1,5 +1,9 @@
 "use client";
 import {
+  VisualContentEditor,
+  type VisualContentChrome,
+} from "./VisualContentEditor";
+import {
   contentEditorSection,
   contentEditorTarget,
   pageEditorId,
@@ -17,7 +21,7 @@ import {
   pageLabels,
   type ContentSection,
 } from "@/lib/content-sections";
-import type { ContentPage } from "@/lib/platform/model";
+import type { ContentPage, EuropeanPartner } from "@/lib/platform/model";
 import type { SiteContent } from "@/lib/platform/content";
 
 function Input({
@@ -230,19 +234,25 @@ function PageEditor({
 export function ContentWorkspace({
   content,
   tours,
+  partners,
   pages,
   detail,
   busy,
   saveSite,
   savePage,
+  saveVisual,
+  onChromeChange,
 }: {
   content: SiteContent;
   tours: Pick<Tour, "title" | "slug" | "canonicalPath">[];
   pages: Record<string, ContentPage>;
+  partners?: EuropeanPartner[];
   detail?: string;
   busy: boolean;
+  saveVisual: (body: unknown) => Promise<unknown>;
   saveSite: (content: SiteContent) => Promise<unknown>;
   savePage: (body: unknown) => Promise<unknown>;
+  onChromeChange?: (chrome: VisualContentChrome | null) => void;
 }) {
   const section: ContentSection = contentEditorSection(detail, pages);
   const pageKey =
@@ -257,6 +267,29 @@ export function ContentWorkspace({
         : section === "faq"
           ? "faq"
           : null;
+  if (detail === "articoli")
+    return (
+      <SiteContentEditor
+        initial={content}
+        section="blog"
+        busy={busy}
+        save={saveSite}
+      />
+    );
+  if (!["identita", "navigazione", "recensioni"].includes(section))
+    return (
+      <VisualContentEditor
+        key={detail || "homepage"}
+        content={content}
+        pages={pages}
+        tours={tours}
+        partners={partners}
+        detail={detail}
+        busy={busy}
+        save={saveVisual}
+        onChromeChange={onChromeChange}
+      />
+    );
   return (
     <div className="grid gap-6">
       <div>

@@ -64,7 +64,9 @@ export function TourHighlights({ items }: { items: HighlightRow[] }) {
           <div key={item.text} className={styles.highlightRow}>
             <div className={styles.highlightCopy}>
               <CheckCircle2 className="shrink-0 text-primary" size={22} />
-              <span className="body-md">{item.text}</span>
+              <span className="body-md" data-tour-field={`highlights.${row}`}>
+                {item.text}
+              </span>
             </div>
             {item.images.length > 0 && (
               <div className={styles.highlightThumbs}>
@@ -77,6 +79,8 @@ export function TourHighlights({ items }: { items: HighlightRow[] }) {
                     onClick={() => setOpen({ row, index })}
                   >
                     <Image
+                      data-tour-field={`highlightGalleries.${row}.${index}`}
+                      data-tour-kind="image"
                       src={src}
                       alt=""
                       fill

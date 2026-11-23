@@ -63,7 +63,9 @@ export function CardCarousel({
    * Solo mobile: max slide = quanti pallini stanno in una riga.
    * Infinity su desktop / prima della misura.
    */
-  const [mobileSlideCap, setMobileSlideCap] = useState(Number.POSITIVE_INFINITY);
+  const [mobileSlideCap, setMobileSlideCap] = useState(
+    Number.POSITIVE_INFINITY,
+  );
   const visibleChildren =
     limitToDotRowMobile &&
     !desktop &&
@@ -168,8 +170,9 @@ export function CardCarousel({
 
     const el = track.current;
     if (!el) return;
-    const instant = window.matchMedia("(prefers-reduced-motion: reduce)")
-      .matches;
+    const instant = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     el.scrollTo({
       left:
         pages > 1
@@ -181,6 +184,7 @@ export function CardCarousel({
 
   useEffect(() => {
     if (
+      new URLSearchParams(window.location.search).has("cms-preview") ||
       !autoPlay ||
       paused ||
       hovered ||
@@ -211,9 +215,7 @@ export function CardCarousel({
     return (
       <div
         key={
-          isValidElement(child) && child.key != null
-            ? String(child.key)
-            : index
+          isValidElement(child) && child.key != null ? String(child.key) : index
         }
         className="card-carousel-slide"
         role="group"

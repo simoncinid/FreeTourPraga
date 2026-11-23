@@ -1,4 +1,5 @@
 "use client";
+import { siteEdit } from "@/lib/visual-content";
 
 import { CardCarousel } from "./CardCarousel";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export type ExperienceItem =
   { title: string; tour: Tour } | { title: string; href: string };
 
 export type ExperienceGroup = {
+  editIndex?: number;
   title: string;
   subtitle: string;
   items: ExperienceItem[];
@@ -99,6 +101,7 @@ export function ExperienceRotator({
 
   useEffect(() => {
     if (
+      new URLSearchParams(window.location.search).has("cms-preview") ||
       paused ||
       hovered ||
       count < 2 ||
@@ -170,7 +173,14 @@ export function ExperienceRotator({
             aria-controls={listboxId}
             onClick={() => setMenuOpen((open) => !open)}
           >
-            <span className={styles.experienceMenuValue}>{group.title}</span>
+            <span
+              {...(group.editIndex !== undefined
+                ? siteEdit(`home.groups.${group.editIndex}.title`)
+                : {})}
+              className={styles.experienceMenuValue}
+            >
+              {group.title}
+            </span>
             <ChevronDown
               size={16}
               aria-hidden
@@ -222,7 +232,14 @@ export function ExperienceRotator({
         aria-labelledby={`gruppo-tab-${index} ${selectId}`}
         className="experience-panel"
       >
-        <h3 className="display-md mb-6">{group.title}</h3>
+        <h3
+          {...(group.editIndex !== undefined
+            ? siteEdit(`home.groups.${group.editIndex}.title`)
+            : {})}
+          className="display-md mb-6"
+        >
+          {group.title}
+        </h3>
         <CardCarousel
           key={group.title}
           label={`Tour: ${group.title}`}

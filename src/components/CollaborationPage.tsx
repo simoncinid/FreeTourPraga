@@ -1,14 +1,13 @@
+import { pageEdit } from "@/lib/visual-content";
 import type { LucideIcon } from "lucide-react";
 import { Handshake, Hotel, Users } from "lucide-react";
-import {
-  InquiryForm,
-  type InquiryVariant,
-} from "@/components/InquiryForm";
+import { InquiryForm, type InquiryVariant } from "@/components/InquiryForm";
 import ui from "@/components/public-ui.module.css";
 
 const defaultIcons = [Users, Hotel, Handshake] as const;
 
 export function CollaborationPage({
+  pageKey,
   eyebrow,
   title,
   titleLines,
@@ -16,6 +15,7 @@ export function CollaborationPage({
   benefits,
   formVariant = "partner",
 }: {
+  pageKey?: string;
   eyebrow: string;
   title: string;
   titleLines?: string[];
@@ -29,18 +29,23 @@ export function CollaborationPage({
     <section className={`${ui.page} ${ui.partner} section`}>
       <div className="container-page grid items-start gap-16 lg:grid-cols-[.9fr_1.1fr]">
         <div>
-          <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+          <p
+            {...(pageKey ? pageEdit(pageKey, "subtitle") : {})}
+            className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
+          >
             {eyebrow}
           </p>
           <h1 className="display-xl mb-5">
-            {lines.map((line, index) => (
-              <span key={line}>
-                {index > 0 ? <br /> : null}
-                {line}
-              </span>
-            ))}
+            <span {...(pageKey ? pageEdit(pageKey, "title") : {})}>
+              {lines.join("\n")}
+            </span>
           </h1>
-          <p className="body-md mb-10">{body}</p>
+          <p
+            {...(pageKey ? pageEdit(pageKey, "body") : {})}
+            className="body-md mb-10"
+          >
+            {body}
+          </p>
           <div className={ui.partnerBenefits}>
             {benefits.map((benefit, index) => {
               const Icon =
@@ -49,8 +54,21 @@ export function CollaborationPage({
                 <div key={benefit.title} className={ui.partnerBenefit}>
                   <Icon size={36} className={ui.partnerIcon} aria-hidden />
                   <div>
-                    <strong className="block text-ink">{benefit.title}</strong>
-                    <small>{benefit.text}</small>
+                    <strong
+                      {...(pageKey
+                        ? pageEdit(pageKey, `benefits.${index}.title`)
+                        : {})}
+                      className="block text-ink"
+                    >
+                      {benefit.title}
+                    </strong>
+                    <small
+                      {...(pageKey
+                        ? pageEdit(pageKey, `benefits.${index}.text`)
+                        : {})}
+                    >
+                      {benefit.text}
+                    </small>
                   </div>
                 </div>
               );

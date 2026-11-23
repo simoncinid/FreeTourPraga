@@ -1,4 +1,5 @@
 "use client";
+import { siteEdit } from "@/lib/visual-content";
 
 import { CardCarousel } from "./CardCarousel";
 import styles from "@/app/home.module.css";
@@ -14,11 +15,16 @@ function chunkPairs(items: Answer[]) {
   return pages;
 }
 
-function AnswerCard({ item }: { item: Answer }) {
+function AnswerCard({ item, index }: { item: Answer; index: number }) {
   return (
     <article className={`card p-6 ${styles.answerCard}`}>
-      <h3 className={`title-md mb-3 ${styles.answerTitle}`}>{item.question}</h3>
-      <p>{item.answer}</p>
+      <h3
+        {...siteEdit(`answers.${index}.question`)}
+        className={`title-md mb-3 ${styles.answerTitle}`}
+      >
+        {item.question}
+      </h3>
+      <p {...siteEdit(`answers.${index}.answer`)}>{item.answer}</p>
     </article>
   );
 }
@@ -31,7 +37,11 @@ export function HomeAnswers({ items }: { items: Answer[] }) {
     <div className={styles.answers}>
       <div className={styles.answersDesktop}>
         {items.map((item) => (
-          <AnswerCard key={item.question} item={item} />
+          <AnswerCard
+            key={item.question}
+            item={item}
+            index={items.indexOf(item)}
+          />
         ))}
       </div>
       <div className={styles.answersMobile}>
@@ -44,7 +54,11 @@ export function HomeAnswers({ items }: { items: Answer[] }) {
           {pages.map((pair, index) => (
             <div key={index} className={styles.answersPage}>
               {pair.map((item) => (
-                <AnswerCard key={item.question} item={item} />
+                <AnswerCard
+                  key={item.question}
+                  item={item}
+                  index={items.indexOf(item)}
+                />
               ))}
             </div>
           ))}

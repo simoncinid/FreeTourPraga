@@ -1,4 +1,6 @@
 "use client";
+import { useState } from "react";
+import { TourPackageSelect } from "./TourPackageSelect";
 import type { CatalogTour } from "@/lib/platform/model";
 import type { CommissionRule, PriceCategory } from "@/lib/types";
 import { categoriesFor } from "@/lib/participant-pricing";
@@ -6,13 +8,22 @@ export function TourCommercialEditor({
   tour: t,
   availableTours,
   change,
+  section = "all",
 }: {
+  section?: "all" | "categories" | "rules" | "commissions";
   tour: CatalogTour;
   availableTours: CatalogTour[];
   change: (key: keyof CatalogTour, value: unknown) => void;
 }) {
+  const [categoryPage, setCategoryPage] = useState(0);
+  const [rulePage, setRulePage] = useState(0);
   const categories = categoriesFor(t),
     rules = t.commissionRules ?? [];
+  const currentCategoryPage = Math.min(
+    categoryPage,
+    Math.max(0, Math.ceil(categories.length / 3) - 1),
+  );
+  const currentRulePage = Math.min(rulePage, Math.max(0, rules.length - 1));
   const setCategory = (i: number, patch: Partial<PriceCategory>) =>
     change(
       "priceCategories",
@@ -25,7 +36,26 @@ export function TourCommercialEditor({
     );
   return (
     <>
-      <section className="card grid gap-5 p-6">
+      <section
+        data-tour-panel="categories"
+        hidden={section !== "all" && section !== "categories"}
+        className="card tour-prices grid gap-5 p-6"
+        onInvalidCapture={(e) => {
+          const index = Number(
+            (e.target as HTMLElement).closest<HTMLElement>(
+              "[data-category-index]",
+            )?.dataset.categoryIndex || 0,
+          );
+          const nextPage = Math.floor(index / 3);
+          if (nextPage !== currentCategoryPage) {
+            e.preventDefault();
+            setCategoryPage(nextPage);
+            requestAnimationFrame(() =>
+              (e.target as HTMLInputElement).reportValidity(),
+            );
+          }
+        }}
+      >
         <h2 className="display-md">Categorie e prezzi</h2>
         <label>
           Valuta
@@ -43,113 +73,155 @@ export function TourCommercialEditor({
           sovrapporsi: il cliente sceglie la categoria applicabile per ciascuna
           persona.
         </p>
-        {categories.map((c, i) => (
-          <fieldset className="grid gap-3 rounded border p-4" key={c.id}>
-            <legend>Categoria {i + 1}</legend>
-            <label>
-              Nome
-              <input
-                className="text-input"
-                required
-                value={c.label}
-                onChange={(e) => setCategory(i, { label: e.target.value })}
-              />
-            </label>
-            <div className="form-grid">
+        <div className="price-category-grid">
+          {categories.map((c, i) => (
+            <fieldset
+              data-category-index={i}
+              hidden={
+                Math.floor(i / 3) !==
+                Math.min(
+                  categoryPage,
+                  Math.max(0, Math.ceil(categories.length / 3) - 1),
+                )
+              }
+              className="grid gap-3 rounded border p-4"
+              key={c.id}
+            >
+              <legend>Categoria {i + 1}</legend>
               <label>
-                Prezzo unitario ({t.currency ?? "EUR"})
+                Nome *
                 <input
                   className="text-input"
                   required
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={c.priceCents / 100}
-                  onChange={(e) =>
-                    setCategory(i, {
-                      priceCents: Math.round(Number(e.target.value) * 100),
-                    })
-                  }
+                  value={c.label}
+                  onChange={(e) => setCategory(i, { label: e.target.value })}
                 />
               </label>
+              <div className="form-grid">
+                <label>
+                  Prezzo ({t.currency ?? "EUR"}) *
+                  <input
+                    className="text-input"
+                    required
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={c.priceCents / 100}
+                    onChange={(e) =>
+                      setCategory(i, {
+                        priceCents: Math.round(Number(e.target.value) * 100),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Età min
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={c.minAge ?? ""}
+                    onChange={(e) =>
+                      setCategory(i, {
+                        minAge:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Età max
+                  <input
+                    className="text-input"
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={c.maxAge ?? ""}
+                    onChange={(e) =>
+                      setCategory(i, {
+                        maxAge:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+              </div>
               <label>
-                Età minima (facoltativa)
+                Condizioni
                 <input
                   className="text-input"
-                  type="number"
-                  min={0}
-                  max={120}
-                  value={c.minAge ?? ""}
+                  value={c.description ?? ""}
                   onChange={(e) =>
-                    setCategory(i, {
-                      minAge:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
+                    setCategory(i, { description: e.target.value })
                   }
                 />
               </label>
-              <label>
-                Età massima (facoltativa)
-                <input
-                  className="text-input"
-                  type="number"
-                  min={0}
-                  max={120}
-                  value={c.maxAge ?? ""}
-                  onChange={(e) =>
-                    setCategory(i, {
-                      maxAge:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  disabled={i === 0}
+                  onClick={() => {
+                    const next = [...categories];
+                    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                    change("priceCategories", next);
+                  }}
+                >
+                  Sposta su
+                </button>
+                <button
+                  type="button"
+                  disabled={categories.length === 1}
+                  onClick={() =>
+                    change(
+                      "priceCategories",
+                      categories.filter((_, j) => j !== i),
+                    )
                   }
-                />
-              </label>
-            </div>
-            <label>
-              Condizioni
-              <input
-                className="text-input"
-                value={c.description ?? ""}
-                onChange={(e) =>
-                  setCategory(i, { description: e.target.value })
-                }
-              />
-            </label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                disabled={i === 0}
-                onClick={() => {
-                  const next = [...categories];
-                  [next[i - 1], next[i]] = [next[i], next[i - 1]];
-                  change("priceCategories", next);
-                }}
-              >
-                Sposta su
-              </button>
-              <button
-                type="button"
-                disabled={categories.length === 1}
-                onClick={() =>
-                  change(
-                    "priceCategories",
-                    categories.filter((_, j) => j !== i),
-                  )
-                }
-              >
-                Rimuovi categoria
-              </button>
-            </div>
-          </fieldset>
-        ))}
+                >
+                  Rimuovi categoria
+                </button>
+              </div>
+            </fieldset>
+          ))}
+        </div>
+        <div className="admin-pagination">
+          <span>
+            Pagina{" "}
+            {Math.min(
+              categoryPage + 1,
+              Math.max(1, Math.ceil(categories.length / 3)),
+            )}{" "}
+            di {Math.max(1, Math.ceil(categories.length / 3))}
+          </span>
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={currentCategoryPage === 0}
+            onClick={() => setCategoryPage(currentCategoryPage - 1)}
+          >
+            Precedente
+          </button>
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={
+              currentCategoryPage >= Math.ceil(categories.length / 3) - 1
+            }
+            onClick={() => setCategoryPage(currentCategoryPage + 1)}
+          >
+            Successiva
+          </button>
+        </div>
         <button
           type="button"
           className="button-secondary"
-          onClick={() =>
+          onClick={() => {
+            setCategoryPage(Math.floor(categories.length / 3));
             change("priceCategories", [
               ...categories,
               {
@@ -157,8 +229,8 @@ export function TourCommercialEditor({
                 label: "Nuova categoria",
                 priceCents: 0,
               },
-            ])
-          }
+            ]);
+          }}
         >
           Aggiungi categoria
         </button>
@@ -171,7 +243,11 @@ export function TourCommercialEditor({
           Consenti sconti automatici online su questo tour
         </label>
       </section>
-      <section className="card grid gap-4 p-6">
+      <section
+        data-tour-panel="rules"
+        hidden={section !== "all" && section !== "rules"}
+        className="card tour-group-rules grid gap-4 p-6"
+      >
         <h2 className="display-md">Regole gruppi Free Tour</h2>
         <label>
           Modalità
@@ -215,7 +291,11 @@ export function TourCommercialEditor({
           />
         </label>
       </section>
-      <section className="card grid gap-4 p-6">
+      <section
+        data-tour-panel="rules"
+        hidden={section !== "all" && section !== "rules"}
+        className="card tour-payments grid gap-4 p-6"
+      >
         <h2 className="display-md">Pagamenti</h2>
         <p>
           I metodi selezionati sono disponibili per questo tour. I tour nello
@@ -254,7 +334,11 @@ export function TourCommercialEditor({
           />
         </label>
       </section>
-      <section className="card grid gap-4 p-6">
+      <section
+        data-tour-panel="commissions"
+        hidden={section !== "all" && section !== "commissions"}
+        className="card tour-commission-card grid gap-4 p-6"
+      >
         <h2 className="display-md">Commissioni affiliati</h2>
         <p>
           Fisso per persona, percentuale sul totale pagato per questo tour. Il
@@ -262,38 +346,37 @@ export function TourCommercialEditor({
           Maturazione dopo la fine della visita; cancellazioni e assenze
           escluse.
         </p>
-        <label>
-          Pacchetto commissionale: abbinamenti con questo tour
-          <select
-            multiple
-            className="text-input min-h-32"
-            value={t.commissionPackageWith ?? []}
-            onChange={(e) =>
-              change(
-                "commissionPackageWith",
-                Array.from(e.target.selectedOptions, (o) => o.value),
-              )
-            }
-          >
-            {availableTours
+        <div>
+          <TourPackageSelect
+            options={availableTours
               .filter((v) => v.id !== t.id)
-              .map((v) => (
-                <option key={v.id} value={v.slug}>
-                  {v.title}
-                </option>
-              ))}
-          </select>
+              .map((v) => ({ value: v.slug, label: v.title }))}
+            value={t.commissionPackageWith ?? []}
+            onChange={(value) => change("commissionPackageWith", value)}
+          />
           <small>
             Solo un abbinamento selezionato nello stesso ordine applica la
             regola pacchetto. Nessuna selezione = tour singolo. Non applica
             sconti al cliente.
           </small>
-        </label>
+        </div>
         {rules.map((r, i) => (
-          <fieldset className="grid gap-3 rounded border p-4" key={i}>
+          <fieldset
+            hidden={i !== currentRulePage}
+            className="tour-commission-rule grid gap-3 rounded border p-4"
+            key={i}
+            onInvalidCapture={(event) => {
+              if (rulePage !== i) {
+                event.preventDefault();
+                setRulePage(i);
+                const input = event.target as HTMLInputElement;
+                requestAnimationFrame(() => input.reportValidity());
+              }
+            }}
+          >
             <legend>Regola {i + 1}</legend>
             <label>
-              Tipo affiliato
+              Tipo affiliato *
               <input
                 className="text-input"
                 list={`commission-affiliate-types-${i}`}
@@ -317,9 +400,11 @@ export function TourCommercialEditor({
               </datalist>
             </label>
             <label>
-              Codice affiliato (vuoto = tutti del tipo)
+              Codice affiliato
               <input
                 className="text-input"
+                placeholder="Tutti gli affiliati del tipo"
+                title="Lascia vuoto per applicare la regola a tutti gli affiliati del tipo"
                 value={r.affiliateCode ?? ""}
                 onChange={(e) =>
                   setRule(i, { affiliateCode: e.target.value.toUpperCase() })
@@ -389,10 +474,34 @@ export function TourCommercialEditor({
             </button>
           </fieldset>
         ))}
+        {rules.length > 0 && (
+          <div className="admin-pagination">
+            <span>
+              Regola {Math.min(rulePage + 1, rules.length)} di {rules.length}
+            </span>
+            <button
+              type="button"
+              className="button-secondary"
+              disabled={currentRulePage === 0}
+              onClick={() => setRulePage(Math.max(0, currentRulePage - 1))}
+            >
+              Precedente
+            </button>
+            <button
+              type="button"
+              className="button-secondary"
+              disabled={currentRulePage >= rules.length - 1}
+              onClick={() => setRulePage(currentRulePage + 1)}
+            >
+              Successiva
+            </button>
+          </div>
+        )}
         <button
           type="button"
           className="button-secondary"
-          onClick={() =>
+          onClick={() => {
+            setRulePage(rules.length);
             change("commissionRules", [
               ...rules,
               {
@@ -401,8 +510,8 @@ export function TourCommercialEditor({
                 mode: "percent",
                 value: 0,
               },
-            ])
-          }
+            ]);
+          }}
         >
           Aggiungi regola commissione
         </button>

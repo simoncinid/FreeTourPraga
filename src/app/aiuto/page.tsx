@@ -1,3 +1,4 @@
+import { pageEdit } from "@/lib/visual-content";
 import Link from "next/link";
 import { ArrowUpRight, MessageCircle } from "lucide-react";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -45,13 +46,23 @@ export default async function Page() {
     <section className={`${ui.page} ${ui.help} section`}>
       <div className={`container-page ${ui.helpGrid}`}>
         <div className={ui.helpIntro}>
-          <p className={`${ui.eyebrow} uppercase-tag text-primary`}>
+          <p
+            {...pageEdit("aiuto", "subtitle")}
+            className={`${ui.eyebrow} uppercase-tag text-primary`}
+          >
             {page?.subtitle || "Assistenza"}
           </p>
-          <h1 className="display-xl">
+          <h1 {...pageEdit("aiuto", "title")} className="display-xl">
             {page?.title || "Come possiamo aiutarti?"}
           </h1>
-          <div className="body-md">
+          <div
+            {...pageEdit(
+              "aiuto",
+              page?.bodyHtml ? "bodyHtml" : "body",
+              page?.bodyHtml ? "html" : "text",
+            )}
+            className="body-md"
+          >
             {page?.bodyHtml ? (
               <RichContent html={page.bodyHtml} />
             ) : (

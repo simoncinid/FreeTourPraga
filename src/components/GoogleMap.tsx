@@ -9,7 +9,8 @@ export function GoogleMap({ tour }: { tour: Tour }) {
       <div className="grid gap-3 p-6">
         <h2 className="display-md">Il punto d’incontro</h2>
         <p className="body-md">
-          {tour.meetingPoint} · {tour.meetingAddress}
+          <span data-tour-field="meetingPoint">{tour.meetingPoint}</span> ·{" "}
+          <span data-tour-field="meetingAddress">{tour.meetingAddress}</span>
         </p>
       </div>
       <div className="aspect-[4/3] border-y md:aspect-[16/7]">

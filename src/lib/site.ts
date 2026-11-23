@@ -48,9 +48,18 @@ export const socialLinks = [
       process.env.NEXT_PUBLIC_FACEBOOK_URL ||
       "https://www.facebook.com/@FreeTourPraga",
   },
-  { label: "TikTok", url: process.env.NEXT_PUBLIC_TIKTOK_URL || "" },
-  { label: "YouTube", url: process.env.NEXT_PUBLIC_YOUTUBE_URL || "" },
-  { label: "LinkedIn", url: process.env.NEXT_PUBLIC_LINKEDIN_URL || "" },
+  {
+    label: "TikTok",
+    url: process.env.NEXT_PUBLIC_TIKTOK_URL || "https://www.tiktok.com/",
+  },
+  {
+    label: "YouTube",
+    url: process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://www.youtube.com/",
+  },
+  {
+    label: "LinkedIn",
+    url: process.env.NEXT_PUBLIC_LINKEDIN_URL || "https://www.linkedin.com/",
+  },
 ].filter((link) => Boolean(link.url));
 
 export const tripAdvisor = {

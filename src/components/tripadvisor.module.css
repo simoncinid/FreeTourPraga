@@ -430,15 +430,18 @@
   line-height: 1.55;
 }
 .writeReviewActions {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-grid;
+  grid-template-columns: 1fr;
   gap: 10px;
+  max-width: 100%;
 }
 .writeReviewBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   padding: 10px 18px;
   border-radius: 10px;
@@ -448,7 +451,7 @@
   font-weight: 500;
   line-height: 1.25;
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 .writeReviewBtn:hover {
   background: #008f5b;
@@ -457,6 +460,17 @@
 .writeReviewBtn:focus-visible {
   outline: 3px solid #00aa6c;
   outline-offset: 4px;
+}
+.writeReviewBtnGoogle {
+  background: #e2a008;
+  color: #1a1a1a !important;
+}
+.writeReviewBtnGoogle:hover {
+  background: #c98c00;
+  color: #1a1a1a !important;
+}
+.writeReviewBtnGoogle:focus-visible {
+  outline-color: #e2a008;
 }
 .writeReviewSlot {
   min-width: 0;
@@ -535,10 +549,6 @@
     text-align: center;
   }
   .writeReviewSlot .writeReviewActions {
-    justify-content: center;
-    width: 100%;
-  }
-  .writeReviewSlot .writeReviewBtn {
     width: min(100%, 420px);
   }
   .frontReview { top: 240px; }

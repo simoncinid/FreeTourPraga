@@ -1,4 +1,5 @@
 "use client";
+import { CONTENT_SECTION_STRUCTURE_ENABLED } from "@/lib/content-policy";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -246,50 +247,56 @@ export function BlogArticleEditor({
                           ? "Immagine"
                           : "Testo e immagine"}
                     </strong>
-                    <button
-                      type="button"
-                      disabled={locked || blockIndex === 0}
-                      className="underline disabled:opacity-40"
-                      onClick={() => {
-                        const next = [...article.blocks!];
-                        [next[blockIndex - 1], next[blockIndex]] = [
-                          next[blockIndex],
-                          next[blockIndex - 1],
-                        ];
-                        changeBlocks(index, next);
-                      }}
-                    >
-                      Sposta blocco su
-                    </button>
-                    <button
-                      type="button"
-                      disabled={
-                        locked || blockIndex === article.blocks!.length - 1
-                      }
-                      className="underline disabled:opacity-40"
-                      onClick={() => {
-                        const next = [...article.blocks!];
-                        [next[blockIndex + 1], next[blockIndex]] = [
-                          next[blockIndex],
-                          next[blockIndex + 1],
-                        ];
-                        changeBlocks(index, next);
-                      }}
-                    >
-                      Sposta blocco giù
-                    </button>
-                    <button
-                      type="button"
-                      className="text-red-700 underline"
-                      onClick={() =>
-                        changeBlocks(
-                          index,
-                          article.blocks!.filter((_, i) => i !== blockIndex),
-                        )
-                      }
-                    >
-                      Rimuovi blocco
-                    </button>
+                    {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                      <button
+                        type="button"
+                        disabled={locked || blockIndex === 0}
+                        className="underline disabled:opacity-40"
+                        onClick={() => {
+                          const next = [...article.blocks!];
+                          [next[blockIndex - 1], next[blockIndex]] = [
+                            next[blockIndex],
+                            next[blockIndex - 1],
+                          ];
+                          changeBlocks(index, next);
+                        }}
+                      >
+                        Sposta blocco su
+                      </button>
+                    )}
+                    {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                      <button
+                        type="button"
+                        disabled={
+                          locked || blockIndex === article.blocks!.length - 1
+                        }
+                        className="underline disabled:opacity-40"
+                        onClick={() => {
+                          const next = [...article.blocks!];
+                          [next[blockIndex + 1], next[blockIndex]] = [
+                            next[blockIndex],
+                            next[blockIndex + 1],
+                          ];
+                          changeBlocks(index, next);
+                        }}
+                      >
+                        Sposta blocco giù
+                      </button>
+                    )}
+                    {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                      <button
+                        type="button"
+                        className="text-red-700 underline"
+                        onClick={() =>
+                          changeBlocks(
+                            index,
+                            article.blocks!.filter((_, i) => i !== blockIndex),
+                          )
+                        }
+                      >
+                        Rimuovi blocco
+                      </button>
+                    )}
                   </div>
                   {block.type !== "image" && (
                     <>
@@ -335,53 +342,59 @@ export function BlogArticleEditor({
                 </div>
               ))}
               <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={locked || (article.blocks?.length ?? 0) >= 40}
-                  onClick={() =>
-                    changeBlocks(index, [
-                      ...(article.blocks ?? []),
-                      { type: "text", heading: "", text: "" },
-                    ])
-                  }
-                >
-                  Aggiungi testo
-                </button>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={locked || (article.blocks?.length ?? 0) >= 40}
-                  onClick={() =>
-                    changeBlocks(index, [
-                      ...(article.blocks ?? []),
-                      { type: "image", imageUrl: "", alt: "", caption: "" },
-                    ])
-                  }
-                >
-                  Aggiungi immagine
-                </button>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={locked || (article.blocks?.length ?? 0) >= 40}
-                  onClick={() =>
-                    changeBlocks(index, [
-                      ...(article.blocks ?? []),
-                      {
-                        type: "split",
-                        heading: "",
-                        text: "",
-                        imageUrl: "",
-                        alt: "",
-                        caption: "",
-                        imagePosition: "right",
-                      },
-                    ])
-                  }
-                >
-                  Aggiungi testo e immagine
-                </button>
+                {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={locked || (article.blocks?.length ?? 0) >= 40}
+                    onClick={() =>
+                      changeBlocks(index, [
+                        ...(article.blocks ?? []),
+                        { type: "text", heading: "", text: "" },
+                      ])
+                    }
+                  >
+                    Aggiungi testo
+                  </button>
+                )}
+                {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={locked || (article.blocks?.length ?? 0) >= 40}
+                    onClick={() =>
+                      changeBlocks(index, [
+                        ...(article.blocks ?? []),
+                        { type: "image", imageUrl: "", alt: "", caption: "" },
+                      ])
+                    }
+                  >
+                    Aggiungi immagine
+                  </button>
+                )}
+                {CONTENT_SECTION_STRUCTURE_ENABLED && (
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={locked || (article.blocks?.length ?? 0) >= 40}
+                    onClick={() =>
+                      changeBlocks(index, [
+                        ...(article.blocks ?? []),
+                        {
+                          type: "split",
+                          heading: "",
+                          text: "",
+                          imageUrl: "",
+                          alt: "",
+                          caption: "",
+                          imagePosition: "right",
+                        },
+                      ])
+                    }
+                  >
+                    Aggiungi testo e immagine
+                  </button>
+                )}
               </div>
             </div>
             <div className="grid gap-4 border-t pt-5">

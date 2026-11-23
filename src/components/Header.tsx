@@ -14,17 +14,34 @@ export async function Header() {
   ]);
   const items = siteNavigation(c, tours);
   function navigation(mobile = false) {
-    return items.map((item) =>
-      item.children ? (
+    return items.map((item) => {
+      if (!item.children) {
+        return (
+          <Link
+            key={item.href}
+            href={canonicalPath(item.href)}
+            className={mobile ? "px-3 py-3" : "nav-link"}
+          >
+            {item.label}
+          </Link>
+        );
+      }
+      const parentHref = canonicalPath(item.href);
+      const showParentInSubmenu = !item.children.some(
+        (child) => canonicalPath(child.href) === parentHref,
+      );
+      return (
         <NavHoverMenu
           key={item.label}
           label={item.label}
-          href={canonicalPath(item.href)}
+          href={parentHref}
           mobile={mobile}
         >
-          <Link href={canonicalPath(item.href)} className="px-3 py-3">
-            {item.label}
-          </Link>
+          {showParentInSubmenu && (
+            <Link href={parentHref} className="px-3 py-3">
+              {item.label}
+            </Link>
+          )}
           {item.children.map((child) => (
             <Link
               key={child.href}
@@ -35,19 +52,14 @@ export async function Header() {
             </Link>
           ))}
         </NavHoverMenu>
-      ) : (
-        <Link
-          key={item.href}
-          href={canonicalPath(item.href)}
-          className={mobile ? "px-3 py-3" : "nav-link"}
-        >
-          {item.label}
-        </Link>
-      ),
-    );
+      );
+    });
   }
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-navy text-on-dark shadow-[0_4px_18px_rgba(7,26,53,0.18)]">
+    <header
+      data-cms-navigation="true"
+      className="sticky top-0 z-30 border-b border-white/10 bg-navy text-on-dark shadow-[0_4px_18px_rgba(7,26,53,0.18)]"
+    >
       <div className="container-page relative flex h-[74px] items-center justify-between gap-4">
         <Link
           href="/"

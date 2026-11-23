@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-23",
+  "scope": "local_admin_layout",
+  "pages": [
+    "/admin/prenotazioni/FTP-PDC3H2VOV8",
+    "/admin/tour/citta-vecchia-ponte-carlo",
+    "/admin/calendario",
+    "/admin/affiliati",
+    "/admin/pre-tour"
+  ],
+  "desktopViewport": {
+    "width": 1366,
+    "height": 768,
+    "pageHeight": 768,
+    "outerHorizontalOverflow": false
+  },
+  "desktopMinWidth": 1100,
+  "longContent": "internal scrolling in individual panels",
+  "tourPanelsOpened": [
+    "information",
+    "commercial",
+    "operations",
+    "content",
+    "gallery",
+    "calendar"
+  ],
+  "calendarControlsRows": 2,
+  "calendarSelections": "multiple tours, all/none, presets, arbitrary dates, weekdays, times, capacity",
+  "localScreenshotsDirectory": "tmp/admin-layout-qa",
+  "functionalSuitesRunForRedesign": false,
+  "userDataSavedDuringReview": false,
+  "emailActionsTriggered": false,
+  "railwayDeployment": false
+}

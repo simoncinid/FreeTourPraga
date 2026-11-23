@@ -43,7 +43,9 @@ export function TourFacts({
             {tour.inclusions.length > 0 ? tour.inclusions.join(" · ") : "—"}
           </p>
           {tour.safetyNotes.map((n, i) => (
-            <p key={i}>{n}</p>
+            <p key={i} data-tour-field={`safetyNotes.${i}`}>
+              {n}
+            </p>
           ))}
         </>
       )}

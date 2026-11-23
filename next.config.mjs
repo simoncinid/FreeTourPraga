@@ -1,5 +1,7 @@
-const buildDir=process.env.NEXT_DIST_DIR||".next";
-const otherBuilds=[".next",".next-platform",".next-qa",".next-http"].filter(d=>d!==buildDir).map(d=>`./${d}/**`);
+const buildDir = process.env.NEXT_DIST_DIR || ".next";
+const otherBuilds = [".next", ".next-platform", ".next-qa", ".next-http"]
+  .filter((d) => d !== buildDir)
+  .map((d) => `./${d}/**`);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingExcludes: {
@@ -42,7 +44,7 @@ const nextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "same-origin" },
           {
             key: "Permissions-Policy",
@@ -54,7 +56,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.tripadvisor.it https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com https://www.tripadvisor.it; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src https://www.google.com https://www.tripadvisor.com https://www.tripadvisor.it https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`,
+            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.tripadvisor.it https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com https://www.tripadvisor.it; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src 'self' https://www.google.com https://www.tripadvisor.com https://www.tripadvisor.it https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`,
           },
         ],
       },

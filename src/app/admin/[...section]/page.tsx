@@ -39,6 +39,7 @@ export default async function Page({
   if (
     section[0] === "contenuti" &&
     section[1] &&
+    section[1] !== "articoli" &&
     !Object.hasOwn(contentSections, section[1]) &&
     !Object.hasOwn(pageLabels, section[1]) &&
     !Object.hasOwn(

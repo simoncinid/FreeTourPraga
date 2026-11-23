@@ -1,4 +1,5 @@
 "use client";
+import { siteEdit } from "@/lib/visual-content";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -20,7 +21,16 @@ export function HeroTourCta({
 
   return (
     <Link href={href} className={`button-primary ${styles.cta}`}>
-      <span className={styles.label}>{label}</span>
+      <span
+        {...siteEdit("home.primaryLabel")}
+        data-cms-href={JSON.stringify({
+          scope: "site",
+          path: ["home", "primaryHref"],
+        })}
+        className={styles.label}
+      >
+        {label}
+      </span>
       <span className={styles.thumbs} aria-hidden>
         {thumbs.map((tour, index) => (
           <span

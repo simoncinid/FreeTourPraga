@@ -370,7 +370,11 @@ test("official brochure import updates seven records once, retains bookings and 
   assert.equal(
     s.tours.find((t) => t.slug === "interni-castello-praga")!
       .operationalReviewRequired,
-    true,
+    false,
+  );
+  assert.equal(
+    s.tours.find((t) => t.slug === "interni-castello-praga")!.mapUrl,
+    "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7",
   );
   assert.deepEqual(s.tours[0].slots, before);
   castle.description = "Edited later";

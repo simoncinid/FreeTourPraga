@@ -1,4 +1,5 @@
 "use client";
+import { cms, type ContentBinding } from "@/lib/visual-content";
 
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
@@ -6,11 +7,13 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 export function NavHoverMenu({
   label,
+  binding,
   href,
   children,
   mobile = false,
 }: {
   label: string;
+  binding?: ContentBinding;
   href?: string;
   children: ReactNode;
   mobile?: boolean;
@@ -56,7 +59,9 @@ export function NavHoverMenu({
           aria-controls={id}
           onClick={() => setOpen(!open)}
         >
-          <span className="flex-1">{label}</span>
+          <span {...(binding ? cms(binding) : {})} className="flex-1">
+            {label}
+          </span>
           <ChevronDown
             size={16}
             aria-hidden

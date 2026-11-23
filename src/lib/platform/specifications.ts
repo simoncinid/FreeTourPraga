@@ -21,13 +21,17 @@ export function applySpecifications(s: PlatformState, now = Date.now()) {
     ),
   };
   content.globals.socialLinks = [
-    ...content.globals.socialLinks.filter(
-      (l) => !["instagram", "facebook"].includes(l.label.toLowerCase()),
-    ),
     { label: "Instagram", url: "https://www.instagram.com/freetours_praga/" },
     { label: "Facebook", url: "https://www.facebook.com/@FreeTourPraga" },
+    { label: "TikTok", url: "https://www.tiktok.com/" },
+    { label: "YouTube", url: "https://www.youtube.com/" },
+    { label: "LinkedIn", url: "https://www.linkedin.com/" },
   ];
   content.globals.instagramDirectUrl ||= "https://ig.me/m/freetours_praga";
+  content.globals.googleReviewUrl ||=
+    "https://g.page/r/CY2Houtn8d4XEBM/review";
+  content.globals.castleMeetingAddress ||=
+    "Terzo cortile del Castello di Praga, 119 00 Praha 1-Hradčany";
   content.answers = defaults.answers;
   content.globals.navigationVersion = 2;
   content.home.specialOffers = flyer.offers.map((o) => ({
@@ -102,15 +106,18 @@ export function applySpecifications(s: PlatformState, now = Date.now()) {
         slot.closed = true;
     if (item.slug === "interni-castello-praga") {
       t.operationalReviewRequired = !content.globals.castleMeetingAddress;
-      if (content.globals.castleMeetingAddress)
+      if (content.globals.castleMeetingAddress) {
         t.meetingAddress = content.globals.castleMeetingAddress;
+        t.mapUrl = "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7";
+        t.mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(t.meetingAddress)}&output=embed`;
+      }
     } else {
       t.meetingAddress = content.globals.address;
       t.meetingPoint = "Teatro degli Stati";
       t.operationalReviewRequired = false;
+      t.mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(t.meetingAddress)}`;
+      t.mapEmbedUrl = `${t.mapUrl}&output=embed`;
     }
-    t.mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(t.meetingAddress)}`;
-    t.mapEmbedUrl = `${t.mapUrl}&output=embed`;
     generateScheduledSlots(t, now);
     updated.push(t.slug);
   }

@@ -1,7 +1,38 @@
 "use client";
-import { useState } from "react";
+import { AdminNotice } from "./AdminNotice";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { parseCalendarTimes } from "@/lib/platform/calendar-times";
 import type { CatalogTour } from "@/lib/platform/model";
 import { pragueLocal } from "@/lib/platform/time";
+
+const MONTH_NAMES = [
+  "Gennaio",
+  "Febbraio",
+  "Marzo",
+  "Aprile",
+  "Maggio",
+  "Giugno",
+  "Luglio",
+  "Agosto",
+  "Settembre",
+  "Ottobre",
+  "Novembre",
+  "Dicembre",
+];
+
+function monthBounds(month: string) {
+  const [y, m] = month.split("-").map(Number);
+  const from = `${y}-${String(m).padStart(2, "0")}-01`;
+  const to = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  return { from, to };
+}
+
+function shiftMonth(month: string, delta: number) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7);
+}
+
 export function OperationalCalendar({
   tours,
   busy,
@@ -13,384 +44,332 @@ export function OperationalCalendar({
   fixedTourId?: string;
   save: (body: unknown) => Promise<unknown>;
 }) {
+  useEffect(() => {
+    const dismiss = (event: MouseEvent | KeyboardEvent) => {
+      const escape = "key" in event && event.key === "Escape";
+      if ("key" in event && !escape) return;
+      for (const popover of document.querySelectorAll<HTMLDetailsElement>(
+        ".calendar-tour-menu[open], .compact-popover[open]",
+      )) {
+        if (escape || !popover.contains(event.target as Node)) {
+          popover.open = false;
+          if (escape) popover.querySelector<HTMLElement>("summary")?.focus();
+        }
+      }
+    };
+    document.addEventListener("click", dismiss);
+    document.addEventListener("keydown", dismiss);
+    return () => {
+      document.removeEventListener("click", dismiss);
+      document.removeEventListener("keydown", dismiss);
+    };
+  }, []);
+
   const today = pragueLocal(new Date().toISOString()).slice(0, 10);
   const [month, setMonth] = useState(today.slice(0, 7));
-  const [ids, setIds] = useState<string[]>(fixedTourId ? [fixedTourId] : []);
-  const [from, setFrom] = useState(today),
-    [to, setTo] = useState(today),
-    [times, setTimes] = useState(""),
-    [capacity, setCapacity] = useState(25);
-  const [weekdays, setWeekdays] = useState([0, 1, 2, 3, 4, 5, 6]);
-  const [action, setAction] = useState("close"),
-    [detail, setDetail] = useState("");
-  const [message, setMessage] = useState("");
-  const [viewRange, setViewRange] = useState<{
-    from: string;
-    to: string;
-  } | null>(null);
-  const selected = tours.filter((t) => ids.includes(t.id));
-  const [year, mo] = month.split("-").map(Number),
-    days = new Date(Date.UTC(year, mo, 0)).getUTCDate();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const shift = (delta: number) => {
-    setViewRange(null);
-    setMonth(iso(new Date(Date.UTC(year, mo - 1 + delta, 1))).slice(0, 7));
-  };
-  const viewStart = viewRange?.from || `${month}-01`;
-  const viewEnd = viewRange?.to || `${month}-${String(days).padStart(2, "0")}`;
-  const viewDays = Math.max(
-    0,
-    Math.min(
-      367,
-      Math.round((Date.parse(viewEnd) - Date.parse(viewStart)) / 86400000) + 1,
-    ),
+  const [ids, setIds] = useState<string[]>(
+    fixedTourId ? [fixedTourId] : tours.map((t) => t.id),
   );
-  function filterView(start = from, end = to) {
-    if (
-      !start ||
-      !end ||
-      start > end ||
-      Date.parse(end) - Date.parse(start) > 366 * 86400000
-    ) {
-      setMessage("Scegli un intervallo valido, massimo un anno.");
+  const [message, setMessage] = useState("");
+  const [dayModal, setDayModal] = useState("");
+  const [action, setAction] = useState("close");
+  const [times, setTimes] = useState("");
+  const [capacity, setCapacity] = useState(25);
+  const dialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (fixedTourId) return;
+    if (!tours.length) return;
+    setIds((current) => {
+      if (!current.length) return tours.map((t) => t.id);
+      const valid = new Set(tours.map((t) => t.id));
+      const next = current.filter((id) => valid.has(id));
+      return next.length ? next : tours.map((t) => t.id);
+    });
+  }, [tours, fixedTourId]);
+
+  const selected = tours.filter((t) => ids.includes(t.id));
+  const allSelected = tours.length > 0 && ids.length === tours.length;
+  const viewRange = monthBounds(month);
+  const viewStart = viewRange.from;
+  const viewEnd = viewRange.to;
+  const [year, mo] = month.split("-").map(Number);
+  const monthTitle = `${MONTH_NAMES[mo - 1]} - ${year}`;
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const viewDays =
+    Math.round((Date.parse(viewEnd) - Date.parse(viewStart)) / 86400000) + 1;
+  const tourMenuLabel = allSelected
+    ? "Tutti i tour"
+    : ids.length === 1
+      ? tours.find((t) => t.id === ids[0])?.title || "1 tour"
+      : `${ids.length} tour`;
+
+  useEffect(() => {
+    const el = dialog.current;
+    if (!el) return;
+    if (dayModal) {
+      if (!el.open) el.showModal();
+    } else if (el.open) {
+      el.close();
+    }
+  }, [dayModal]);
+
+  function openDay(date: string) {
+    setDayModal(date);
+    setAction("close");
+    setTimes("");
+    setCapacity(25);
+    setMessage("");
+  }
+
+  async function applyDay() {
+    if (!dayModal || !ids.length) {
+      setMessage("Seleziona almeno un tour.");
       return;
     }
-    setMonth(start.slice(0, 7));
-    setViewRange({ from: start, to: end });
-    setDetail("");
-  }
-  function quick(kind: string) {
-    const [currentYear, currentMonth] = today.split("-").map(Number);
-    let start = today,
-      end = today;
-    if (kind === "yesterday")
-      start = end = iso(new Date(Date.parse(`${today}T12:00:00Z`) - 86400000));
-    if (kind === "month" || kind === "last") {
-      const offset = kind === "last" ? -1 : 0;
-      start = iso(
-        new Date(Date.UTC(currentYear, currentMonth - 1 + offset, 1)),
-      );
-      end = iso(new Date(Date.UTC(currentYear, currentMonth + offset, 0)));
+    const parsed = parseCalendarTimes(times);
+    if (!parsed.ok) {
+      setMessage(parsed.error);
+      return;
     }
-    if (kind === "year") {
-      start = `${currentYear}-01-01`;
-      end = `${currentYear}-12-31`;
-    }
-    setFrom(start);
-    setTo(end);
-    filterView(start, end);
-  }
-  async function apply(
-    dateFrom = from,
-    dateTo = to,
-    selectedTimes = times,
-    operation = action,
-    places = capacity,
-  ) {
     setMessage("");
     try {
       await save({
         tourIds: ids,
-        from: dateFrom,
-        to: dateTo,
-        weekdays,
-        times: selectedTimes.split(/[,\s]+/).filter(Boolean),
-        action: operation,
-        capacity: operation === "close" ? undefined : places,
+        from: dayModal,
+        to: dayModal,
+        weekdays: [0, 1, 2, 3, 4, 5, 6],
+        times: parsed.times,
+        action,
+        capacity: action === "close" ? undefined : capacity,
       });
-      setMessage(
-        "Calendario aggiornato. Le prenotazioni esistenti sono conservate.",
-      );
+      setDayModal("");
+      setMessage("");
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Operazione non riuscita");
     }
   }
+
+  const daySlots = dayModal
+    ? selected.flatMap((t) =>
+        t.slots
+          .filter((s) => pragueLocal(s.startsAt).slice(0, 10) === dayModal)
+          .map((s) => ({
+            ...s,
+            tourTitle: t.title,
+            time: pragueLocal(s.startsAt).slice(11, 16),
+          })),
+      )
+    : [];
+
   return (
-    <section className="card grid gap-5 p-6">
+    <section className="card operational-calendar">
       <h2 className="display-md">Calendario operativo</h2>
-      {!fixedTourId && (
-        <fieldset>
-          <legend>Tour su cui operare</legend>
+      <div className="calendar-toolbar">
+        <div className="calendar-month-nav">
           <button
             type="button"
-            className="button-secondary"
-            onClick={() => setIds(tours.map((t) => t.id))}
+            aria-label="Mese precedente"
+            onClick={() => setMonth((m) => shiftMonth(m, -1))}
           >
-            Seleziona tutti
-          </button>{" "}
-          <button
-            type="button"
-            className="button-secondary"
-            onClick={() => setIds([])}
-          >
-            Deseleziona
+            <ChevronLeft size={18} />
           </button>
-          <select
-            multiple
-            aria-label="Tour selezionati"
-            className="text-input min-h-32 mt-3"
-            value={ids}
-            onChange={(e) =>
-              setIds(Array.from(e.target.selectedOptions, (o) => o.value))
-            }
+          <strong aria-live="polite">{monthTitle}</strong>
+          <button
+            type="button"
+            aria-label="Mese successivo"
+            onClick={() => setMonth((m) => shiftMonth(m, 1))}
           >
-            {tours.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
-        </fieldset>
-      )}
-      <p className="text-sm">
-        Ambito:{" "}
-        {selected.length
-          ? selected.map((t) => t.title).join(", ")
-          : "seleziona almeno un tour"}
-        . Le chiusure bloccano solo nuove prenotazioni.
-      </p>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          aria-label="Mese precedente"
-          onClick={() => shift(-1)}
-        >
-          ←
-        </button>
-        <input
-          aria-label="Mese calendario"
-          type="month"
-          value={month}
-          onChange={(e) => {
-            if (e.target.value) {
-              setMonth(e.target.value);
-              setViewRange(null);
-            }
-          }}
-        />
-        <button
-          type="button"
-          aria-label="Mese successivo"
-          onClick={() => shift(1)}
-        >
-          →
-        </button>
-      </div>
-      <p role="status">
-        Vista dal {viewStart} al {viewEnd}
-      </p>
-      <div className="grid grid-cols-7 gap-1">
-        {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((d) => (
-          <strong key={d}>{d}</strong>
-        ))}
-        {Array.from(
-          { length: (new Date(`${viewStart}T12:00:00Z`).getUTCDay() + 6) % 7 },
-          (_, i) => (
-            <span key={`b${i}`} />
-          ),
-        )}
-        {Array.from({ length: viewDays }, (_, i) => {
-          const date = iso(
-            new Date(Date.parse(`${viewStart}T12:00:00Z`) + i * 86400000),
-          );
-          const slots = selected.flatMap((t) =>
-            t.slots.filter(
-              (s) => pragueLocal(s.startsAt).slice(0, 10) === date,
-            ),
-          );
-          return (
-            <button
-              type="button"
-              className="rounded border p-2 text-sm"
-              key={date}
-              aria-label={`Giorno ${date}`}
-              onClick={() => {
-                setFrom(date);
-                setTo(date);
-                setWeekdays([0, 1, 2, 3, 4, 5, 6]);
-                setDetail(selected.length === 1 ? date : "");
-              }}
-            >
-              <strong>
-                {viewRange
-                  ? date.slice(5).split("-").reverse().join("/")
-                  : Number(date.slice(8))}
-              </strong>
-              <small className="block">
-                {slots.filter((s) => !s.closed).length} orari
-              </small>
-              <small className="block">
-                {slots.reduce((n, s) => n + s.reserved, 0)} pax
-              </small>
-            </button>
-          );
-        })}
-      </div>
-      {detail && selected.length === 1 && (
-        <div className="grid gap-3 rounded border p-4">
-          <h3>Partenze del {detail}</h3>
-          {selected[0].slots
-            .filter((s) => pragueLocal(s.startsAt).slice(0, 10) === detail)
-            .map((s) => (
-              <div key={s.id} className="flex flex-wrap items-center gap-3">
-                <span>
-                  {pragueLocal(s.startsAt).slice(11, 16)} · {s.reserved}/
-                  {s.capacity} · {s.closed ? "Chiuso" : "Aperto"}
-                </span>
-                <button
-                  disabled={busy}
-                  type="button"
-                  className="button-secondary"
-                  onClick={() =>
-                    void apply(
-                      detail,
-                      detail,
-                      pragueLocal(s.startsAt).slice(11, 16),
-                      s.closed ? "open" : "close",
-                      s.capacity,
-                    )
-                  }
-                >
-                  {s.closed ? "Riapri" : "Chiudi"}
-                </button>
-                <label>
-                  Posti
-                  <input
-                    aria-label={`Posti ${pragueLocal(s.startsAt).slice(11, 16)}`}
-                    type="number"
-                    min={Math.max(1, s.reserved)}
-                    max={10000}
-                    defaultValue={s.capacity}
-                    onBlur={(e) => {
-                      const n = Number(e.target.value);
-                      if (n !== s.capacity && n >= s.reserved && n > 0)
-                        void apply(
-                          detail,
-                          detail,
-                          pragueLocal(s.startsAt).slice(11, 16),
-                          "capacity",
-                          n,
-                        );
-                    }}
-                  />
-                </label>
-              </div>
-            ))}
-          <p>
-            Per aggiungere una partenza usa Apri qui sotto, con il nuovo orario.
-          </p>
+            <ChevronRight size={18} />
+          </button>
         </div>
-      )}
-      <div className="flex flex-wrap gap-2">
-        {[
-          ["today", "Oggi"],
-          ["yesterday", "Ieri"],
-          ["month", "Questo mese"],
-          ["last", "Mese scorso"],
-          ["year", "Intero anno"],
-        ].map(([k, l]) => (
+        {!fixedTourId && (
+          <details className="calendar-tour-menu">
+            <summary title={tourMenuLabel}>
+              <span className="table-cell-line">{tourMenuLabel}</span>
+            </summary>
+            <div
+              className="calendar-tour-menu-panel"
+              aria-label="Tour selezionati"
+            >
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={(e) =>
+                    setIds(e.target.checked ? tours.map((t) => t.id) : [])
+                  }
+                />
+                <span className="table-cell-line">Tutti i tour</span>
+              </label>
+              {tours.map((t) => (
+                <label key={t.id}>
+                  <input
+                    type="checkbox"
+                    checked={ids.includes(t.id)}
+                    onChange={(e) =>
+                      setIds(
+                        e.target.checked
+                          ? [...ids, t.id]
+                          : ids.filter((id) => id !== t.id),
+                      )
+                    }
+                  />
+                  <span className="table-cell-line" title={t.title}>
+                    {t.title}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
+      {message && <AdminNotice key={message} message={message} />}
+      <div className="calendar-workspace">
+        <div className="calendar-view">
+          <div className="calendar-month-grid grid grid-cols-7 gap-1">
+            {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((d) => (
+              <strong key={d}>{d}</strong>
+            ))}
+            {Array.from(
+              {
+                length:
+                  (new Date(`${viewStart}T12:00:00Z`).getUTCDay() + 6) % 7,
+              },
+              (_, i) => (
+                <span key={`b${i}`} />
+              ),
+            )}
+            {Array.from({ length: viewDays }, (_, i) => {
+              const date = iso(
+                new Date(Date.parse(`${viewStart}T12:00:00Z`) + i * 86400000),
+              );
+              const slots = selected.flatMap((t) =>
+                t.slots.filter(
+                  (s) => pragueLocal(s.startsAt).slice(0, 10) === date,
+                ),
+              );
+              return (
+                <button
+                  type="button"
+                  className="rounded border text-sm"
+                  key={date}
+                  aria-label={`Giorno ${date}`}
+                  onClick={() => openDay(date)}
+                >
+                  <strong>{Number(date.slice(8))}</strong>
+                  <small className="table-cell-line">
+                    {slots.filter((s) => !s.closed).length} orari
+                  </small>
+                  <small className="table-cell-line">
+                    {slots.reduce((n, s) => n + s.reserved, 0)} pax
+                  </small>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <dialog
+        ref={dialog}
+        className="calendar-day-modal"
+        onClose={() => setDayModal("")}
+        onCancel={(e) => {
+          e.preventDefault();
+          setDayModal("");
+        }}
+      >
+        <div className="calendar-day-modal-head">
+          <h3>
+            Operazioni del{" "}
+            {dayModal
+              ? dayModal.slice(0, 10).split("-").reverse().join("/")
+              : ""}
+          </h3>
           <button
-            key={k}
             type="button"
             className="button-secondary"
-            onClick={() => quick(k)}
+            onClick={() => setDayModal("")}
           >
-            {l}
+            Chiudi
           </button>
-        ))}
-      </div>
-      <div className="form-grid">
-        <label>
-          Dal
-          <input
-            className="text-input"
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-          />
-        </label>
-        <label>
-          Al
-          <input
-            className="text-input"
-            type="date"
-            min={from}
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-          />
-        </label>
-        <label>
-          Operazione
-          <select
-            className="text-input"
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-          >
-            <option value="close">Chiudi</option>
-            <option value="open">Apri / aggiungi orari</option>
-            <option value="capacity">Modifica capienza</option>
-          </select>
-        </label>
-        <label>
-          Orari (vuoto = tutti)
-          <input
-            className="text-input"
-            value={times}
-            placeholder="10:00, 14:30"
-            onChange={(e) => setTimes(e.target.value)}
-          />
-        </label>
-        {action !== "close" && (
+        </div>
+        {!ids.length && (
+          <p className="calendar-day-modal-hint">
+            Seleziona almeno un tour dal menu in alto per applicare modifiche.
+          </p>
+        )}
+        {daySlots.length > 0 && (
+          <ul className="calendar-day-modal-slots">
+            {daySlots.map((s) => (
+              <li key={s.id}>
+                <strong>{s.time}</strong>
+                <span className="table-cell-line">
+                  {s.tourTitle} · {s.reserved}/{s.capacity} ·{" "}
+                  {s.closed ? "Chiuso" : "Aperto"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="calendar-day-modal-form">
           <label>
-            Posti per orario
+            Operazione
+            <select
+              className="text-input"
+              value={action}
+              onChange={(e) => setAction(e.target.value)}
+            >
+              <option value="close">Chiudi partenze</option>
+              <option value="open">Apri / aggiungi orari</option>
+              <option value="capacity">Modifica capienza</option>
+            </select>
+          </label>
+          <label>
+            Orari
             <input
               className="text-input"
-              type="number"
-              min={1}
-              max={10000}
-              value={capacity}
-              onChange={(e) => setCapacity(Number(e.target.value))}
+              value={times}
+              placeholder="Tutti · oppure 10:00, 14:30 · 10:00-12:00"
+              onChange={(e) => setTimes(e.target.value)}
             />
           </label>
-        )}
-      </div>
-      <button
-        type="button"
-        className="button-secondary"
-        onClick={() => filterView()}
-      >
-        Filtra vista dal/al
-      </button>
-      <fieldset>
-        <legend>Giorni della settimana</legend>
-        <div className="flex flex-wrap gap-3">
-          {["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"].map((d, i) => (
-            <label key={d}>
+          <p className="calendar-day-modal-format">
+            Accetta tutti / Tutti / TUTTI, orari singoli o elenchi
+            (10:00, 14:30) e intervalli ogni 30 minuti (10:00-12:00).
+          </p>
+          {action !== "close" && (
+            <label>
+              Posti per orario
               <input
-                type="checkbox"
-                checked={weekdays.includes(i)}
-                onChange={(e) =>
-                  setWeekdays(
-                    e.target.checked
-                      ? [...weekdays, i]
-                      : weekdays.filter((x) => x !== i),
-                  )
-                }
+                className="text-input"
+                type="number"
+                min={1}
+                max={10000}
+                value={capacity}
+                onChange={(e) => setCapacity(Number(e.target.value))}
               />
-              {d}
             </label>
-          ))}
+          )}
         </div>
-      </fieldset>
-      <button
-        type="button"
-        disabled={busy || !ids.length || !weekdays.length || !from || !to}
-        className="button-primary"
-        onClick={() => void apply()}
-      >
-        Applica a {selected.length} tour dal {from} al {to}
-      </button>
-      {message && <p role="status">{message}</p>}
+        <div className="calendar-day-modal-actions">
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setDayModal("")}
+          >
+            Annulla
+          </button>
+          <button
+            type="button"
+            className="button-primary"
+            disabled={busy || !ids.length || !dayModal}
+            onClick={() => void applyDay()}
+          >
+            Applica a {selected.length} tour
+          </button>
+        </div>
+      </dialog>
     </section>
   );
 }

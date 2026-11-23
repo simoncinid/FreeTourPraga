@@ -9,9 +9,11 @@ import styles from "./tour-gallery.module.css";
 export function TourGallery({
   title,
   photos,
+  editPaths,
 }: {
   title: string;
   photos: TourPhoto[];
+  editPaths?: string[];
 }) {
   const [selected, setSelected] = useState(0);
   const [lastLoaded, setLastLoaded] = useState(photos[0]);
@@ -65,6 +67,8 @@ export function TourGallery({
         )}
         <Image
           key={active.url}
+          data-tour-field={editPaths?.[selected]}
+          data-tour-kind="image"
           src={active.url}
           alt={active.alt}
           fill
@@ -116,6 +120,8 @@ export function TourGallery({
             onClick={() => select(index)}
           >
             <Image
+              data-tour-field={editPaths?.[index]}
+              data-tour-kind="image"
               src={photo.url}
               alt=""
               fill

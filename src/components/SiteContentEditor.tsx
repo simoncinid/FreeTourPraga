@@ -1,4 +1,5 @@
 "use client";
+import { AdminNotice } from "./AdminNotice";
 import { ExperienceGroupsEditor } from "./ExperienceGroupsEditor";
 import { NavigationEditor } from "./NavigationEditor";
 import { SectionBlocksEditor } from "./SectionBlocksEditor";
@@ -259,7 +260,7 @@ export function SiteContentEditor({
       >
         <h2 className="display-md">{contentSections[section].label}</h2>
         <p className="text-sm">{contentSections[section].description}</p>
-        {notice && <p role="status">{notice}</p>}
+        {notice && <AdminNotice key={notice} message={notice} />}
         {"globals" in groups && fields("globals", groups.globals)}
         {"home" in groups &&
           section !== "homepage" &&
@@ -463,6 +464,19 @@ export function SiteContentEditor({
               }
               onUploading={setArticleUploading}
             />
+            <h3 className="border-t pt-5 text-lg font-bold">
+              Profili social (footer e Contatti)
+            </h3>
+            <p className="text-sm text-muted">
+              Inserisci gli URL ufficiali quando disponibili. Finché restano i
+              link generici delle piattaforme, le icone restano comunque
+              pubblicate.
+            </p>
+            {rows(
+              "socialLinks",
+              ["label", "url"],
+              ["Social", "URL profilo HTTPS"],
+            )}
           </>
         )}
         {section === "blog" && (

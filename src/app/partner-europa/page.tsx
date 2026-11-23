@@ -1,3 +1,4 @@
+import { partnerEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import Image from "next/image";
 import { readState } from "@/lib/platform/store";
@@ -21,6 +22,7 @@ export default async function Page() {
   return (
     <>
       <CollaborationPage
+        pageKey="partner-europa"
         eyebrow={page?.subtitle || "Partner Europa"}
         title="Partner Europa"
         titleLines={
@@ -36,7 +38,14 @@ export default async function Page() {
         benefits={page?.benefits ?? partnerBenefits}
       />
       <div className="container-page pb-8">
-        <SectionBlocks blocks={page?.contentBlocks} />
+        <SectionBlocks
+          binding={{
+            scope: "page",
+            key: "partner-europa",
+            path: ["contentBlocks"],
+          }}
+          blocks={page?.contentBlocks}
+        />
       </div>
       {partners.length > 0 && (
         <section className="container-page pb-16">
@@ -49,6 +58,7 @@ export default async function Page() {
               >
                 {p.imageUrl && (
                   <Image
+                    {...partnerEdit(p.id, "imageUrl", "image")}
                     src={p.imageUrl}
                     alt={p.name}
                     width={600}
@@ -56,11 +66,27 @@ export default async function Page() {
                     className="aspect-[3/2] w-full object-contain"
                   />
                 )}
-                <h3 className="display-md">{p.name}</h3>
-                <p className="whitespace-pre-wrap">{p.description}</p>
-                {p.email && <a href={`mailto:${p.email}`}>{p.email}</a>}
-                {p.phone && <a href={`tel:${p.phone}`}>{p.phone}</a>}
+                <h3 {...partnerEdit(p.id, "name")} className="display-md">
+                  {p.name}
+                </h3>
+                <p
+                  {...partnerEdit(p.id, "description")}
+                  className="whitespace-pre-wrap"
+                >
+                  {p.description}
+                </p>
+                {p.email && (
+                  <a {...partnerEdit(p.id, "email")} href={`mailto:${p.email}`}>
+                    {p.email}
+                  </a>
+                )}
+                {p.phone && (
+                  <a {...partnerEdit(p.id, "phone")} href={`tel:${p.phone}`}>
+                    {p.phone}
+                  </a>
+                )}
                 <a
+                  {...partnerEdit(p.id, "website", "link", p.website)}
                   href={`/api/platform/partner/${encodeURIComponent(p.id)}`}
                   target="_blank"
                   rel="noreferrer"

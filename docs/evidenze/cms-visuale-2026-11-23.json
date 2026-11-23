@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-23",
+  "status": "implemented_and_verified_locally",
+  "matrix": {
+    "rows": 111,
+    "completed": 105,
+    "open": 6,
+    "openIds": [
+      "D06",
+      "D07",
+      "N09",
+      "E03",
+      "E04",
+      "E11"
+    ]
+  },
+  "contractDecision": {
+    "sectionCreation": false,
+    "sectionReordering": false,
+    "sectionRemoval": false,
+    "codePreserved": true,
+    "existingContentPreserved": true,
+    "rowsExcluded": [
+      "E03",
+      "E04"
+    ]
+  },
+  "editor": {
+    "actualPublicPageInAdmin": true,
+    "doubleClickEditing": true,
+    "previewSizes": [
+      "desktop",
+      "tablet",
+      "mobile"
+    ],
+    "draftBeforePublish": true,
+    "adminOnlyPublishing": true,
+    "optimisticFieldConflicts": true,
+    "toursEditorReplaced": false,
+    "desktopViewportPixels": 1440,
+    "scaledToAvailableSpace": true,
+    "navigationInlineEditable": false,
+    "articleReferencesInlineEditable": false,
+    "offerFieldsEditableInCatalog": true,
+    "manualLineBreaksPreserved": true
+  },
+  "checks": {
+    "lint": true,
+    "typecheck": true,
+    "unitTests": 92,
+    "postgresTests": 92,
+    "productionBuild": true,
+    "httpSuite": true,
+    "browserSuite": true,
+    "visualBrowser": {
+      "checks": [
+        "Desktop reale a 1440 px; header solo navigabile; richiami blog non editabili e collegati all’articolo",
+        "A capo su tre righe conservati nella bozza, nel database e nella pagina pubblica",
+        "Replica pubblica in iframe: doppio clic titolo/foto/sezione esistente, bozza separata dalla pubblicazione e struttura fissa",
+        "Titoli modificati sulle dodici pagine pubbliche usando il layout reale; salvataggio conserva i contenuti fallback delle pagine inizialmente in bozza",
+        "Offerte: titolo, condizioni multilinea, nomi, prezzi numerici e pulsante modificabili dal Catalogo tour",
+        "Schede partner modificabili sulla pagina pubblica senza attivare click o cambiare statistiche",
+        "Blog e articoli: titolo, copertina, alt, testo ricco e foto interne all’HTML storico; formattazione, identità e URL conservati",
+        "Conflitti concorrenti: salvataggio rifiutato senza perdere la bozza; nessuna modifica ai tour",
+        "Permessi: pubblicazione visuale riservata agli amministratori"
+      ],
+      "errors": [],
+      "toursUnchanged": true,
+      "sectionStructureEnabled": false
+    },
+    "seo": {
+      "passed": 215,
+      "total": 215
+    },
+    "smtp": {
+      "localSTARTTLS": true,
+      "messages": 28,
+      "icsVerified": true,
+      "internetEmailSent": false
+    }
+  },
+  "localAvailability": {
+    "url": "http://localhost:3100/admin/contenuti/homepage",
+    "staffLoginVerified": true,
+    "previewFrameVerified": true,
+    "userContentChangedByTests": false
+  },
+  "railwayDeploymentInThisFollowUp": false,
+  "sourceNotes": "Le altre modifiche contemporanee ai dati iniziali e ai collegamenti del sito sono state conservate; questo rapporto riguarda il CMS visuale e la rettifica contrattuale delle sezioni."
+}

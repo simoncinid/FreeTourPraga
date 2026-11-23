@@ -1,3 +1,4 @@
+import { pageEdit } from "@/lib/visual-content";
 import { SocialLinks } from "@/components/SocialLinks";
 import { publicPage } from "@/lib/platform/public";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -12,15 +13,18 @@ export default async function Page() {
   return (
     <section className="section">
       <div className="container-page max-w-3xl">
-        <h1 className="display-xl mb-5">
+        <h1 {...pageEdit("social", "title")} className="display-xl mb-5">
           {page?.title || "Praga, anche sui social"}
         </h1>
-        <p className="body-md mb-8">
+        <p {...pageEdit("social", "body")} className="body-md mb-8">
           {page?.body ||
             "Scopri scorci della città, racconti dai tour e idee per il tuo prossimo viaggio. Seguici sui canali ufficiali di FreeTourPraga."}
         </p>
         <SocialLinks />
-        <SectionBlocks blocks={page?.contentBlocks} />
+        <SectionBlocks
+          binding={{ scope: "page", key: "social", path: ["contentBlocks"] }}
+          blocks={page?.contentBlocks}
+        />
       </div>
     </section>
   );

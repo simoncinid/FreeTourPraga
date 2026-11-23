@@ -3,7 +3,7 @@ export const contentSections = {
   homepage: {
     label: "Homepage",
     description:
-      "Apertura, sezioni, dati in evidenza e punti di forza della homepage.",
+      "Apertura, sezioni, punti di forza e URL dei profili social del footer.",
   },
   blog: {
     label: "Blog",
@@ -52,6 +52,8 @@ export const pageLabels = {
 export const contentFields = {
   homepage: {
     home: [
+      "specialOffersTitle",
+      "specialOffersCtaLabel",
       "heroImage",
       "heroImageMobile",
       "heroTitle",
@@ -91,7 +93,9 @@ export const contentFields = {
       "footerNote",
     ],
   },
-  navigazione: { globals: ["instagramDirectUrl"] },
+  navigazione: {
+    globals: ["instagramDirectUrl", "socialLinks"],
+  },
   recensioni: {
     globals: [
       "googleReviewUrl",

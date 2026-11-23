@@ -1,3 +1,4 @@
+import { siteEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import ui from "@/components/public-ui.module.css";
 import { Plus } from "lucide-react";
@@ -19,19 +20,29 @@ export default async function Page() {
     <section className={`${ui.page} ${ui.faq} section`}>
       <div className="container-page">
         <JsonLd data={faqJsonLd(faqs)} />
-        <p className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}>
+        <p
+          {...siteEdit("home.faqEyebrow")}
+          className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
+        >
           {c.home.faqEyebrow}
         </p>
-        <h1 className="display-xl mb-4 max-w-3xl">{c.home.faqTitle}</h1>
-        <p className="body-md mb-10 max-w-3xl">{c.home.faqBody}</p>
+        <h1
+          {...siteEdit("home.faqTitle")}
+          className="display-xl mb-4 max-w-3xl"
+        >
+          {c.home.faqTitle}
+        </h1>
+        <p {...siteEdit("home.faqBody")} className="body-md mb-10 max-w-3xl">
+          {c.home.faqBody}
+        </p>
         <div className="grid gap-4 md:grid-cols-2">
-          {faqs.map((f) => (
+          {faqs.map((f, index) => (
             <details key={f.q} className="card">
               <summary className="font-bold cursor-pointer">
-                <span>{f.q}</span>
+                <span {...siteEdit(`faqs.${index}.q`)}>{f.q}</span>
                 <Plus size={18} aria-hidden />
               </summary>
-              <p>{f.a}</p>
+              <p {...siteEdit(`faqs.${index}.a`)}>{f.a}</p>
             </details>
           ))}
         </div>
@@ -44,7 +55,10 @@ export default async function Page() {
             Scrivici, ti aiutiamo noi.
           </Link>
         </p>
-        <SectionBlocks blocks={editorial?.contentBlocks} />
+        <SectionBlocks
+          binding={{ scope: "page", key: "faq", path: ["contentBlocks"] }}
+          blocks={editorial?.contentBlocks}
+        />
       </div>
     </section>
   );

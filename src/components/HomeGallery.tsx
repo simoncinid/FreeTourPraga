@@ -19,6 +19,7 @@ export function HomeGallery({ items }: { items: SiteContent["gallery"] }) {
         {items.map((photo) => (
           <Link
             key={photo.title}
+            data-cms-reference="article"
             href={guidePath(photo)}
             className="card overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-card"
           >
