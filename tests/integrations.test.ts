@@ -62,7 +62,8 @@ test("cash checkout queues editable confirmation email and ICS", async () => {
     (j) => j.type === "email" && j.bookingPnr === booking.pnr && j.to === booking.email,
   );
   assert.equal(emails.length, 1);
-  assert.match(emails[0].subject!, /Confermata/);
+  assert.equal(emails[0].subject, "Citta Vecchia e Ponte Carlo senza stress");
+  assert.doesNotMatch(emails[0].subject!, /\{customerSubject\}/);
   assert.match(emails[0].html!, /Gestisci modifica o cancellazione/);
   assert.match(emails[0].calendar!, /STATUS:CONFIRMED/);
   assert.match(reservationIcs(state, booking), /STATUS:CONFIRMED/);
