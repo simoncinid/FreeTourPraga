@@ -298,7 +298,7 @@ try {
     caret: "initial",
   });
   await page.getByRole("button", { name: "Prenota ora", exact: true }).click();
-  await page.waitForURL("**/checkout");
+  await page.waitForURL("**/checkout", { waitUntil: "commit" });
   await page
     .getByLabel("Nome e cognome", { exact: true })
     .fill("Cliente QA V2");
@@ -310,7 +310,7 @@ try {
   await page
     .getByRole("button", { name: "Conferma prenotazione", exact: true })
     .click();
-  await page.waitForURL("**/prenotazione/confermata");
+  await page.waitForURL("**/prenotazione/confermata", { waitUntil: "commit" });
   await page.getByText("Confermata", { exact: true }).waitFor();
   await page.getByText(/Studenti fino a 26 anni/).waitFor();
   let after = await call("admin/state");
