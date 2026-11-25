@@ -11,9 +11,9 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
   timezoneId: "America/Los_Angeles",
 });
-await context.addInitScript(() =>
-  localStorage.setItem("ftp-consent", "essential"),
-);
+await context.addInitScript(() => {
+  if (window === window.top) localStorage.setItem("ftp-consent", "essential");
+});
 context.setDefaultTimeout(12000);
 const errors = [];
 const page = await context.newPage();
@@ -234,8 +234,10 @@ try {
   await page.goto(base + "/chi-siamo");
   await page.getByRole("heading", { name: "Pagina modificabile QA" }).waitFor();
   await page.goto(base + "/contatti");
-  await page.getByText("Altri punti d’incontro", {exact:true}).click();
-  await page.getByText("Sede ufficio — previo appuntamento", {exact:true}).waitFor();
+  await page.getByText("Altri punti d’incontro", { exact: true }).click();
+  await page
+    .getByText("Sede ufficio — previo appuntamento", { exact: true })
+    .waitFor();
   await page.getByLabel("Telefono", { exact: true }).fill("+39 333 1234567");
   await call("inquiry", {
     name: "Test telefono",
@@ -372,13 +374,22 @@ try {
     "confirmed",
   );
   await page.goto(base + "/admin/calendario");
-  await page.getByLabel("Tour selezionati").selectOption(tour.id);
+  const tourFilter = page.locator(".calendar-tour-menu");
+  await tourFilter.locator("summary").click();
+  await tourFilter
+    .getByRole("checkbox", { name: "Tutti i tour", exact: true })
+    .uncheck();
+  await tourFilter
+    .getByRole("checkbox", { name: tour.title, exact: true })
+    .check();
+  await tourFilter.locator("summary").click();
   await capture(page, {
     path: "tmp/specifications-qa/admin-calendario-operativo.png",
     fullPage: true,
     caret: "initial",
   });
   await page.goto(base + "/admin/tour/qa-v2-tour");
+  await page.getByRole("button", { name: "Calendario", exact: true }).click();
   await page.getByRole("heading", { name: "Calendario operativo" }).waitFor();
   pass(
     "API calendario: limite prenotati, modifica capienza, orario extra e chiusura senza cancellare prenotazioni; calendario dentro tour",
@@ -424,9 +435,9 @@ try {
   });
   const phone = await mobile.newPage();
   phone.on("pageerror", (e) => errors.push(e.message));
-  await phone.addInitScript(() =>
-    localStorage.setItem("ftp-consent", "essential"),
-  );
+  await phone.addInitScript(() => {
+    if (window === window.top) localStorage.setItem("ftp-consent", "essential");
+  });
   for (const path of [
     "/",
     "/tour",
