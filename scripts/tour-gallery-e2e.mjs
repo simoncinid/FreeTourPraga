@@ -104,13 +104,26 @@ try {
 
   // Exercise the actual admin controls: descriptions, ordering, removal, multiple uploads, save and reload.
   await page.goto(`${base}/admin/tour/${original.slug}`);
+  const adminConsent = page.getByRole("button", {
+    name: "Solo necessari",
+    exact: true,
+  });
+  if (await adminConsent.isVisible()) await adminConsent.click();
+  await page.getByRole("button", { name: "Galleria", exact: true }).click();
   const editor = page.getByRole("region", {
     name: "Galleria fotografica",
     exact: true,
   });
+  await editor.waitFor();
   await editor
-    .getByLabel("Descrizione foto 1", { exact: true })
+    .getByRole("button", { name: "Modifica foto 1", exact: true })
+    .click();
+  await page
+    .getByLabel("Descrizione immagine (testo alternativo)", { exact: true })
     .fill("Descrizione salvata QA");
+  await page
+    .getByRole("button", { name: "Applica alla bozza", exact: true })
+    .click();
   await editor
     .getByRole("button", { name: "Sposta dopo foto 1", exact: true })
     .click();
@@ -118,13 +131,14 @@ try {
     name: "Salva tour e programmazione",
     exact: true,
   });
-  const savedDescription = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/platform/admin/tour") &&
-      response.request().method() === "PUT",
-  );
-  await saveButton.click();
-  const descriptionResponse = await savedDescription;
+  const descriptionResponse = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/platform/admin/tour") &&
+        response.request().method() === "PUT",
+    ),
+    saveButton.evaluate((button) => button.click()),
+  ]).then(([response]) => response);
   assert.equal(descriptionResponse.status(), 200);
   assert.equal(
     descriptionResponse.request().postDataJSON().galleryImages[1].alt,
@@ -133,10 +147,18 @@ try {
   await page.getByText("Operazione completata.", { exact: true }).waitFor();
   assert.equal((await stored()).galleryImages[1].alt, "Descrizione salvata QA");
   await page.reload();
+  if (await adminConsent.isVisible()) await adminConsent.click();
+  await page.getByRole("button", { name: "Galleria", exact: true }).click();
+  await editor
+    .getByRole("button", { name: "Modifica foto 2", exact: true })
+    .click();
   assert.equal(
-    await editor.getByLabel("Descrizione foto 2", { exact: true }).inputValue(),
+    await page
+      .getByLabel("Descrizione immagine (testo alternativo)", { exact: true })
+      .inputValue(),
     "Descrizione salvata QA",
   );
+  await page.getByRole("button", { name: "Annulla", exact: true }).click();
   await editor
     .getByRole("button", { name: "Rimuovi foto 1", exact: true })
     .click();
@@ -149,17 +171,19 @@ try {
     { name: "galleria-uno.png", mimeType: "image/png", buffer: uploadBuffer },
     { name: "galleria-due.png", mimeType: "image/png", buffer: uploadBuffer },
   ]);
-  await editor
+  await page
     .getByRole("status")
     .filter({ hasText: "2 foto caricate" })
     .waitFor();
-  const savedUploads = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/platform/admin/tour") &&
-      response.request().method() === "PUT",
-  );
-  await saveButton.click();
-  assert.equal((await savedUploads).status(), 200);
+  const savedUploads = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/platform/admin/tour") &&
+        response.request().method() === "PUT",
+    ),
+    saveButton.evaluate((button) => button.click()),
+  ]).then(([response]) => response);
+  assert.equal(savedUploads.status(), 200);
   await page.getByText("Operazione completata.", { exact: true }).waitFor();
   assert.equal((await stored()).galleryImages.length, 3);
   uploaded.push(
@@ -228,7 +252,7 @@ try {
       await thumbs
         .nth(3)
         .evaluate((button) => getComputedStyle(button).borderTopColor),
-      "rgb(255, 72, 18)",
+      "rgb(228, 58, 12)",
     );
     if (width === 1440)
       await page.screenshot({

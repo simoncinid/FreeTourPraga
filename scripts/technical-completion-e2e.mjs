@@ -16,7 +16,19 @@ context.setDefaultTimeout(18000);
 const page = await context.newPage(),
   errors = [],
   checks = [];
-page.on("pageerror", (e) => errors.push(e.message));
+page.on("pageerror", (e) => {
+  errors.push(e.message);
+  console.error("Browser page error", page.url(), page.frames().map((frame) => frame.url()), e.stack);
+});
+await context.addInitScript(() => {
+  window.addEventListener("error", (event) => {
+    console.error("Browser frame error", location.href, event.message);
+  });
+});
+page.on("console", (message) => {
+  if (message.text().startsWith("Browser frame error"))
+    console.error(message.text());
+});
 const pass = (s) => {
   checks.push(s);
   console.log("PASS COMPLETION " + s);

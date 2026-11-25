@@ -424,15 +424,49 @@ const operatorLogin = await fetch(base + "/api/platform/login", {
 });
 assert.equal(operatorLogin.status, 200);
 const operatorCookie = operatorLogin.headers.get("set-cookie").split(";")[0];
-const forbiddenPublish = await fetch(
-  base + "/api/platform/admin/site-content",
-  {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", Cookie: operatorCookie },
-    body: JSON.stringify(cms),
-  },
+// Peer model: tutti gli account staff hanno gli stessi permessi.
+const peerPublish = await fetch(base + "/api/platform/admin/site-content", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json", Cookie: operatorCookie },
+  body: JSON.stringify(cms),
+});
+assert.equal(peerPublish.status, 200);
+const staffList = await fetch(base + "/api/platform/admin/staff", {
+  headers: { Cookie: cookie },
+});
+assert.equal(staffList.status, 200);
+const staffBody = await staffList.json();
+assert.ok(Array.isArray(staffBody.users) && staffBody.users.length >= 2);
+const created = await fetch(base + "/api/platform/admin/staff", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Cookie: cookie },
+  body: JSON.stringify({
+    email: "nuovo.staff@freetourpraga.local",
+    password: "NuovaPass!2026",
+    name: "Nuovo",
+  }),
+});
+assert.equal(created.status, 200);
+const createdUsers = (await created.json()).users;
+const newbie = createdUsers.find(
+  (u) => u.email === "nuovo.staff@freetourpraga.local",
 );
-assert.equal(forbiddenPublish.status, 403);
+assert.ok(newbie);
+const paused = await fetch(base + "/api/platform/admin/staff", {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json", Cookie: cookie },
+  body: JSON.stringify({ id: newbie.id, paused: true }),
+});
+assert.equal(paused.status, 200);
+const pausedLogin = await fetch(base + "/api/platform/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    email: "nuovo.staff@freetourpraga.local",
+    password: "NuovaPass!2026",
+  }),
+});
+assert.equal(pausedLogin.status, 403);
 const badContent = await fetch(base + "/api/platform/admin/site-content", {
   method: "PUT",
   headers: { "Content-Type": "application/json", Cookie: cookie },

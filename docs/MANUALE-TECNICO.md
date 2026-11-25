@@ -64,7 +64,7 @@ La build usa Webpack: Turbopack nel workspace incontrava collegamenti simbolici 
 
 ## Utenti e sicurezza
 
-`STAFF_USERS` contiene un array JSON di `{email, role, passwordHash}`. Ruoli operativi attivi: `admin` e `operator`. L'operatore gestisce prenotazioni e comunicazioni; solo admin modifica catalogo, contenuti, regole, partner, liquidazioni e foto. Non assegnare `guide`: l'accesso staff per quel ruolo non è abilitato; le guide si possono tracciare come affiliate.
+Gli account staff vivono in `AdminUser` (email, hash scrypt, cifratura reversibile della password per la sola visualizzazione del titolare, flag `paused`). `STAFF_USERS` resta solo seme iniziale se la tabella è vuota. Dal gestionale, `/admin/utenti` consente a ogni peer di elencare gli account, crearne di nuovi, metterli in pausa e aggiornare la propria password. Tutti gli account attivi hanno accesso completo (nessuna gerarchia admin/operator).
 
 Creare l'hash con `scripts/password-hash.mjs`, fornendo la password tramite stdin, non come argomento di shell. Il risultato è `salt:hash` scrypt. Conservare il JSON nel secret manager del provider, mai nel repository. Configurare `SESSION_SECRET` casuale di almeno 32 caratteri. La sessione dura 8 ore, è firmata HMAC ed è conservata in cookie HttpOnly, Secure in produzione, SameSite=Lax. Rimuovere un utente dalla configurazione invalida anche la sua sessione al controllo successivo; cambiare SESSION_SECRET invalida tutte le sessioni.
 

@@ -179,8 +179,8 @@ try {
     website: "https://example.com/",
     published: true,
   };
-  await call("admin/partner", partner, "PUT", 403, operator);
-  await call("admin/partner", partner, "PUT");
+  // Peer model: ogni account staff può gestire partner e contenuti.
+  await call("admin/partner", partner, "PUT", 200, operator);
   await call(
     "admin/page",
     {
@@ -201,7 +201,7 @@ try {
     "PUT",
   );
   pass(
-    "Autorizzazioni admin/operator, tour con quattro categorie e blocchi, menu gerarchico e partner persistiti",
+    "Account staff peer, tour con quattro categorie e blocchi, menu gerarchico e partner persistiti",
   );
   for (const path of [
     "/",

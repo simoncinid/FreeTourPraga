@@ -3,7 +3,13 @@ import { AdminNotice } from "./AdminNotice";
 import { RecordDrawer, recordsCss } from "./AdminRecords";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, LockOpen, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LockOpen,
+  Trash2,
+} from "lucide-react";
 import { parseCalendarTimes } from "@/lib/platform/calendar-times";
 import type { CatalogTour } from "@/lib/platform/model";
 import { pragueLocal } from "@/lib/platform/time";
@@ -137,7 +143,10 @@ export function OperationalCalendar({
   const [ruleId, setRuleId] = useState("");
   const [bulkOpen, setBulkOpen] = useState(false);
   const [newTime, setNewTime] = useState("10:00");
+  const [newTourId, setNewTourId] = useState("");
   const [slotCapacity, setSlotCapacity] = useState<Record<string, number>>({});
+  const [slotTourFilter, setSlotTourFilter] = useState("");
+  const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
 
   const [previousTours, setPreviousTours] = useState(tours);
   if (previousTours !== tours) {
@@ -199,6 +208,47 @@ export function OperationalCalendar({
     return slotsByDate.get(date) ?? [];
   }
   const daySlots = modalDates.flatMap(slotsOn);
+  const dayTourOptions = Array.from(
+    new Map(
+      daySlots.map((slot) => [slot.tourId, slot.tourTitle] as const),
+    ).entries(),
+  ).sort((a, b) => a[1].localeCompare(b[1], "it"));
+  const filteredDaySlots = slotTourFilter
+    ? daySlots.filter((slot) => slot.tourId === slotTourFilter)
+    : daySlots;
+  const daySlotsByTour = dayTourOptions
+    .map(([tourId, tourTitle]) => ({
+      tourId,
+      tourTitle,
+      slots: filteredDaySlots
+        .filter((slot) => slot.tourId === tourId)
+        .sort(
+          (a, b) =>
+            a.date.localeCompare(b.date) || a.time.localeCompare(b.time),
+        ),
+    }))
+    .filter((group) => group.slots.length > 0);
+  const [previousModalDates, setPreviousModalDates] = useState(modalDates);
+  if (previousModalDates !== modalDates) {
+    setPreviousModalDates(modalDates);
+    setSlotTourFilter("");
+    setExpandedSlotId(null);
+    setNewTourId(ids.length === 1 ? ids[0] : "");
+  }
+  /** Solo tour con almeno una partenza nel giorno/i aperti nel drawer. */
+  const addTourOptions = dayTourOptions.map(([id, title]) => ({
+    id,
+    title,
+  }));
+  const effectiveNewTourId =
+    newTourId && addTourOptions.some((tour) => tour.id === newTourId)
+      ? newTourId
+      : addTourOptions.length === 1
+        ? addTourOptions[0].id
+        : slotTourFilter &&
+            addTourOptions.some((tour) => tour.id === slotTourFilter)
+          ? slotTourFilter
+          : "";
   const lastEdit = selected
     .flatMap((tour) => [
       ...(tour.calendarLog ?? []),
@@ -684,133 +734,248 @@ export function OperationalCalendar({
             )}
 
             <section className="calendar-day-section" id="calendar-day-partenze">
-              <h4>Partenze del giorno</h4>
+              <div className="calendar-day-section-head">
+                <h4>Partenze del giorno</h4>
+                {dayTourOptions.length > 1 && (
+                  <label className="calendar-day-tour-filter">
+                    <select
+                      className="text-input"
+                      aria-label="Filtra per tour"
+                      value={slotTourFilter}
+                      onChange={(event) => {
+                        setSlotTourFilter(event.target.value);
+                        setExpandedSlotId(null);
+                      }}
+                    >
+                      <option value="">Tutti i tour</option>
+                      {dayTourOptions.map(([tourId, tourTitle]) => (
+                        <option key={tourId} value={tourId}>
+                          {tourTitle}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
               {daySlots.length === 0 ? (
                 <p className="calendar-program-hint">Nessun orario su questo giorno.</p>
+              ) : filteredDaySlots.length === 0 ? (
+                <p className="calendar-program-hint">
+                  Nessuna partenza per il tour selezionato.
+                </p>
               ) : (
-                <ul className="calendar-day-slots">
-                  {daySlots.map((slot) => {
-                    const free = slot.closed
-                      ? 0
-                      : Math.max(0, slot.capacity - slot.reserved);
-                    const status = slot.removed
-                      ? "rimosso"
-                      : slot.closed
-                        ? "chiuso"
-                        : "aperto";
-                    return (
-                      <li key={slot.id}>
-                        <div className="calendar-day-slot-head">
-                          <strong>
-                            {modalDates.length > 1
-                              ? `${slot.date.slice(8)}/${slot.date.slice(5, 7)} · `
-                              : ""}
-                            {slot.time}
-                          </strong>
-                          <div className="calendar-day-slot-tools">
-                            <span className={`calendar-day-status cal-${status === "aperto" ? "green" : status === "chiuso" ? "red" : "amber"}`}>
-                              {status}
+                <div className="calendar-day-slot-groups">
+                  {daySlotsByTour.map((group) => (
+                    <div key={group.tourId} className="calendar-day-slot-group">
+                      {dayTourOptions.length > 1 && !slotTourFilter && (
+                          <h5 className="calendar-day-slot-group-title">
+                            <span
+                              className="calendar-day-slot-group-name"
+                              title={group.tourTitle}
+                            >
+                              {group.tourTitle}
                             </span>
-                            {slot.closed && !slot.removed && (
-                              <button
-                                type="button"
-                                className="calendar-day-icon-btn calendar-day-icon-open"
-                                disabled={busy}
-                                aria-label="Riapri partenza"
-                                title="Riapri partenza"
-                                onClick={() =>
-                                  void run({
-                                    tourIds: [slot.tourId],
-                                    from: slot.date,
-                                    to: slot.date,
-                                    weekdays: [weekday(slot.date)],
-                                    times: [slot.time],
-                                    action: "open",
-                                    capacity: slot.capacity,
-                                  })
-                                }
-                              >
-                                <LockOpen size={16} />
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              className="calendar-day-icon-btn calendar-day-icon-danger"
-                              disabled={busy}
-                              aria-label="Elimina orario"
-                              title="Elimina orario"
-                              onClick={() =>
-                                void run({
-                                  tourIds: [slot.tourId],
-                                  from: slot.date,
-                                  to: slot.date,
-                                  weekdays: [weekday(slot.date)],
-                                  times: [slot.time],
-                                  action: "remove",
-                                })
+                            <span className="calendar-day-slot-group-count">
+                              {group.slots.length}{" "}
+                              {group.slots.length === 1
+                                ? "partenza"
+                                : "partenze"}
+                            </span>
+                          </h5>
+                        )}
+                      <ul className="calendar-day-slots">
+                        {group.slots.map((slot) => {
+                          const free = slot.closed
+                            ? 0
+                            : Math.max(0, slot.capacity - slot.reserved);
+                          const status = slot.removed
+                            ? "rimosso"
+                            : slot.closed
+                              ? "chiuso"
+                              : "aperto";
+                          const open = expandedSlotId === slot.id;
+                          const when =
+                            (modalDates.length > 1
+                              ? `${slot.date.slice(8)}/${slot.date.slice(5, 7)} · `
+                              : "") + slot.time;
+                          return (
+                            <li
+                              key={slot.id}
+                              className={
+                                open
+                                  ? "calendar-day-slot is-open"
+                                  : "calendar-day-slot"
                               }
                             >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                        <p className="calendar-day-slot-meta">
-                          {ids.length > 1 ? `${slot.tourTitle} · ` : ""}
-                          {slot.reserved}/{slot.capacity} prenotati · {free} liberi
-                          {slot.minParticipants && slot.reserved < slot.minParticipants
-                            ? ` · minimo ${slot.minParticipants}`
-                            : ""}
-                        </p>
-                        <div className="calendar-day-slot-capacity">
-                          <label>
-                            Posti
-                            <span className="calendar-day-slot-capacity-row">
-                              <input
-                                className="text-input"
-                                type="number"
-                                min={1}
-                                max={10000}
-                                value={slotCapacity[slot.id] ?? slot.capacity}
-                                onChange={(event) =>
-                                  setSlotCapacity((current) => ({
-                                    ...current,
-                                    [slot.id]: Number(event.target.value),
-                                  }))
-                                }
-                              />
                               <button
                                 type="button"
-                                className="button-primary"
-                                disabled={busy}
+                                className="calendar-day-slot-toggle"
+                                aria-expanded={open}
                                 onClick={() =>
-                                  void run({
-                                    tourIds: [slot.tourId],
-                                    from: slot.date,
-                                    to: slot.date,
-                                    weekdays: [weekday(slot.date)],
-                                    times: [slot.time],
-                                    action: "capacity",
-                                    capacity: slotCapacity[slot.id] ?? slot.capacity,
-                                  })
+                                  setExpandedSlotId(open ? null : slot.id)
                                 }
                               >
-                                Salva posti
+                                <span className="calendar-day-slot-toggle-main">
+                                  <strong>{when}</strong>
+                                  <span className="calendar-day-slot-meta">
+                                    {slot.reserved}/{slot.capacity} prenotati ·{" "}
+                                    {free} liberi
+                                    {slot.minParticipants &&
+                                    slot.reserved < slot.minParticipants
+                                      ? ` · minimo ${slot.minParticipants}`
+                                      : ""}
+                                  </span>
+                                </span>
+                                <span className="calendar-day-slot-toggle-side">
+                                  <span
+                                    className={`calendar-day-status cal-${status === "aperto" ? "green" : status === "chiuso" ? "red" : "amber"}`}
+                                  >
+                                    {status}
+                                  </span>
+                                  <ChevronDown
+                                    size={16}
+                                    className="calendar-day-slot-chevron"
+                                    aria-hidden
+                                  />
+                                </span>
                               </button>
-                            </span>
-                          </label>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                              {open && (
+                                <div className="calendar-day-slot-body">
+                                  <div className="calendar-day-slot-capacity">
+                                    <span className="calendar-day-slot-capacity-label">
+                                      Posti
+                                    </span>
+                                    <div className="calendar-day-slot-capacity-row">
+                                      <input
+                                        className="text-input"
+                                        type="number"
+                                        min={1}
+                                        max={10000}
+                                        aria-label="Posti"
+                                        value={
+                                          slotCapacity[slot.id] ??
+                                          slot.capacity
+                                        }
+                                        onChange={(event) =>
+                                          setSlotCapacity((current) => ({
+                                            ...current,
+                                            [slot.id]: Number(
+                                              event.target.value,
+                                            ),
+                                          }))
+                                        }
+                                      />
+                                      <button
+                                        type="button"
+                                        className="button-primary"
+                                        disabled={busy}
+                                        onClick={() =>
+                                          void run({
+                                            tourIds: [slot.tourId],
+                                            from: slot.date,
+                                            to: slot.date,
+                                            weekdays: [weekday(slot.date)],
+                                            times: [slot.time],
+                                            action: "capacity",
+                                            capacity:
+                                              slotCapacity[slot.id] ??
+                                              slot.capacity,
+                                          })
+                                        }
+                                      >
+                                        Salva posti
+                                      </button>
+                                      <div className="calendar-day-slot-tools">
+                                        {slot.closed && !slot.removed && (
+                                          <button
+                                            type="button"
+                                            className="calendar-day-icon-btn calendar-day-icon-open"
+                                            disabled={busy}
+                                            aria-label="Riapri partenza"
+                                            title="Riapri partenza"
+                                            onClick={() =>
+                                              void run({
+                                                tourIds: [slot.tourId],
+                                                from: slot.date,
+                                                to: slot.date,
+                                                weekdays: [
+                                                  weekday(slot.date),
+                                                ],
+                                                times: [slot.time],
+                                                action: "open",
+                                                capacity: slot.capacity,
+                                              })
+                                            }
+                                          >
+                                            <LockOpen size={16} />
+                                          </button>
+                                        )}
+                                        <button
+                                          type="button"
+                                          className="calendar-day-icon-btn calendar-day-icon-danger"
+                                          disabled={busy}
+                                          aria-label="Elimina orario"
+                                          title="Elimina orario"
+                                          onClick={() =>
+                                            void run({
+                                              tourIds: [slot.tourId],
+                                              from: slot.date,
+                                              to: slot.date,
+                                              weekdays: [
+                                                weekday(slot.date),
+                                              ],
+                                              times: [slot.time],
+                                              action: "remove",
+                                            })
+                                          }
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               )}
             </section>
 
-            <section className="calendar-day-section" id="calendar-day-aggiungi">
+            <section
+              className="calendar-day-section calendar-day-section-add"
+              id="calendar-day-aggiungi"
+            >
               <h4>Aggiungi un orario</h4>
               <p className="calendar-program-hint">
-                Crea una nuova partenza su {modalDates.length === 1 ? "questo giorno" : "i giorni selezionati"}.
+                Crea una nuova partenza su{" "}
+                {modalDates.length === 1
+                  ? "questo giorno"
+                  : "i giorni selezionati"}
+                , per un solo tour.
               </p>
+              <label>
+                Tour
+                <select
+                  className="text-input"
+                  value={effectiveNewTourId}
+                  onChange={(e) => setNewTourId(e.target.value)}
+                  required
+                >
+                  {addTourOptions.length !== 1 && (
+                    <option value="">Seleziona un tour</option>
+                  )}
+                  {addTourOptions.map((tour) => (
+                    <option key={tour.id} value={tour.id}>
+                      {tour.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <div className="calendar-program-range">
                 <label>
                   Orario
@@ -835,14 +1000,19 @@ export function OperationalCalendar({
               <button
                 type="button"
                 className="button-primary"
-                disabled={busy || !ids.length}
+                disabled={busy || !effectiveNewTourId}
                 onClick={() => {
+                  if (!effectiveNewTourId) {
+                    setMessage("Seleziona il tour per la nuova partenza.");
+                    return;
+                  }
                   const parsed = parseCalendarTimes(newTime);
                   if (!parsed.ok) {
                     setMessage(parsed.error);
                     return;
                   }
                   void run({
+                    tourIds: [effectiveNewTourId],
                     dates: modalDates,
                     from: modalDates[0],
                     to: modalDates[0],
@@ -856,7 +1026,10 @@ export function OperationalCalendar({
               </button>
             </section>
 
-            <section className="calendar-day-section" id="calendar-day-azione">
+            <section
+              className="calendar-day-section calendar-day-section-bulk"
+              id="calendar-day-azione"
+            >
               <h4>Azione su tutte le partenze</h4>
               <p className="calendar-program-hint">
                 Applica la stessa operazione a tutti gli orari del giorno (o solo a quelli indicati).

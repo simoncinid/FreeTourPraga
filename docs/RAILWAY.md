@@ -30,14 +30,14 @@ HTTPS è fornito dal dominio Railway. Il dominio inoltra alla porta **8080**, qu
 - `DATABASE_URL`: riferimento al database Railway sulla rete privata.
 - `PLATFORM_STORAGE=postgres`, `NODE_ENV=production`.
 - `SESSION_SECRET`, `BOOKING_LINK_SECRET`, `CRON_SECRET`: valori casuali distinti, almeno 32 caratteri.
-- `STAFF_USERS`: JSON con email, ruolo `admin`/`operator`, passwordHash scrypt. `node scripts/password-hash.mjs` legge la password da stdin. Non usare l’account locale in produzione.
+- `STAFF_USERS`: seme iniziale (JSON email + passwordHash scrypt) importato in `AdminUser` solo se la tabella è vuota. Dopo il primo avvio gli account si gestiscono da `/admin/utenti`. `node scripts/password-hash.mjs` legge la password da stdin. Non usare l’account locale in produzione.
 - `SITE_PREVIEW=true`: mantenere finché catalogo e servizi non sono validati.
 - Social: `NEXT_PUBLIC_INSTAGRAM_URL`, `NEXT_PUBLIC_FACEBOOK_URL` e gli altri canali effettivi.
 - TripAdvisor: profilo e codice widget ufficiale del sito precedente. Il widget recuperato è il certificato **2020**, esattamente come sul sito attuale; non è una certificazione per l’anno corrente. Il caricamento richiede il clic del visitatore.
 
 Dal sito usare “Area staff” nel footer, oppure aprire `/accesso`; dopo il login si entra in `/admin`. Sito e gestionale condividono il database PostgreSQL Railway.
 
-Le credenziali staff iniziali sono in `privato/railway-accesso.txt`, mai nel repository o nel container. Le password non sono recuperabili dal gestionale: per sostituirle generare un nuovo hash e aggiornare `STAFF_USERS`.
+Le credenziali staff iniziali sono in `privato/railway-accesso.txt`, mai nel repository o nel container. Dopo l’import iniziale, creazione/pausa/cambio password avvengono da **Account staff** nel gestionale (`/admin/utenti`).
 
 ## Pagamenti per tour — aggiornamento specifiche V2
 

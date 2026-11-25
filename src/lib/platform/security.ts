@@ -2,11 +2,11 @@ import {
   createHash,
   createHmac,
   randomBytes,
-  scryptSync,
   timingSafeEqual,
 } from "node:crypto";
 import { cookies } from "next/headers";
 import { transaction } from "./store";
+import { findStaffByEmail, verifyStaffPassword } from "./staff";
 export class HttpError extends Error {
   constructor(
     public status: number,
@@ -43,7 +43,7 @@ export type Session = {
   role: "admin" | "operator" | "guide";
   expires: number;
 };
-export function sessionToken(email: string, role: Session["role"]) {
+export function sessionToken(email: string, role: Session["role"] = "admin") {
   const payload = Buffer.from(
     JSON.stringify({ email, role, expires: Date.now() + 8 * 3600000 }),
   ).toString("base64url");
@@ -56,14 +56,11 @@ export async function session(): Promise<Session | null> {
     const [p, s] = token.split(".");
     if (!constantEqual(sign(p), s)) return null;
     const data = JSON.parse(Buffer.from(p, "base64url").toString()) as Session;
-    const users = JSON.parse(process.env.STAFF_USERS || "[]") as {
-      email: string;
-      role: string;
-    }[];
-    return data.expires > Date.now() &&
-      users.some((u) => u.email === data.email && u.role === data.role)
-      ? data
-      : null;
+    if (data.expires <= Date.now()) return null;
+    const user = await findStaffByEmail(data.email);
+    if (!user || user.paused) return null;
+    // Peer model: ogni account staff attivo ha accesso completo.
+    return { email: user.email, role: "admin", expires: data.expires };
   } catch {
     return null;
   }
@@ -78,12 +75,7 @@ export async function requireStaff(
   return s;
 }
 export function checkPassword(password: string, encoded: string) {
-  try {
-    const [salt, key] = encoded.split(":");
-    return constantEqual(scryptSync(password, salt, 64).toString("hex"), key);
-  } catch {
-    return false;
-  }
+  return verifyStaffPassword(password, encoded);
 }
 export function checkOrigin(request: Request) {
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {

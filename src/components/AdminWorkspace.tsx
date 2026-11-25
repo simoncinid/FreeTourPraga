@@ -14,6 +14,7 @@ import { jsonEqual } from "@/lib/json-equal";
 import { categoriesFor } from "@/lib/participant-pricing";
 import { OperationalCalendar } from "./OperationalCalendar";
 import { SupportTickets } from "./SupportTickets";
+import { StaffAccounts } from "./StaffAccounts";
 import { AffiliatesSection } from "./AffiliatesSection";
 import { PartnersManager } from "./PartnersManager";
 import { SectionBlocksEditor } from "./SectionBlocksEditor";
@@ -46,6 +47,7 @@ import {
   RefreshCw,
   LogOut,
   Plus,
+  UserCog,
 } from "lucide-react";
 import type {
   Affiliate,
@@ -54,10 +56,12 @@ import type {
   Reservation,
   Settings,
 } from "@/lib/platform/model";
+import type { StaffPublic } from "@/lib/platform/staff";
 import { pragueLocal } from "@/lib/platform/time";
 import { formatMoney } from "@/lib/format";
 type Data = Omit<PlatformState, "orders" | "rateLimits" | "events"> & {
   role: string;
+  staffUsers?: StaffPublic[];
   siteContent: SiteContent;
   integrations: Record<string, boolean>;
 };
@@ -66,6 +70,7 @@ const navigation = [
   ["prenotazioni", "Prenotazioni", Ticket],
   ["tour", "Tour e orari", MapIcon],
   ["calendario", "Calendario", CalendarDays],
+  ["utenti", "Account staff", UserCog],
   ["supporto", "Supporto", LifeBuoy],
   ["partner-europa", "Partner Europa", Users],
   ["affiliati", "Affiliati", Users],
@@ -304,27 +309,6 @@ export function AdminWorkspace() {
         <Link href="/accesso">Accedi</Link>
       </section>
     );
-  if (
-    data.role !== "admin" &&
-    [
-      "tour",
-      "affiliati",
-      "partner-europa",
-      "contenuti",
-      "impostazioni",
-      "sito",
-    ].includes(section)
-  )
-    return (
-      <section className="section container-page">
-        <h1 className="display-lg">
-          Questa sezione richiede un amministratore.
-        </h1>
-        <Link className="button-secondary mt-6" href="/admin">
-          Torna alla panoramica
-        </Link>
-      </section>
-    );
   const slot = (b: Reservation) => slotsByTour.get(b.tourSlug)?.get(b.slotId);
   const filtered = data.bookings.filter(
     (b) =>
@@ -464,38 +448,26 @@ export function AdminWorkspace() {
           <small className="mt-2 block text-xs">Spazio di gestione</small>
         </Link>
         <nav className="admin-nav admin-desktop-nav">
-          {phase1Navigation
-            .filter(
-              ([slug]) =>
-                data.role === "admin" ||
-                !["tour", "contenuti", "impostazioni", "sito"].includes(slug),
-            )
-            .map(([slug, label, Icon]) => (
-              <Link
-                key={slug}
-                href={`/admin${slug ? "/" + slug : ""}`}
-                className={section === slug ? "active" : ""}
-              >
-                <Icon size={18} />
-                {label}
-              </Link>
-            ))}
+          {phase1Navigation.map(([slug, label, Icon]) => (
+            <Link
+              key={slug}
+              href={`/admin${slug ? "/" + slug : ""}`}
+              className={section === slug ? "active" : ""}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          ))}
         </nav>
         <details className="admin-mobile-menu">
           <summary className="button-secondary">Apri menu gestionale</summary>
           <nav className="admin-nav mt-3">
-            {phase1Navigation
-              .filter(
-                ([slug]) =>
-                  data.role === "admin" ||
-                  !["tour", "contenuti", "impostazioni", "sito"].includes(slug),
-              )
-              .map(([slug, label, Icon]) => (
-                <Link key={slug} href={`/admin${slug ? "/" + slug : ""}`}>
-                  <Icon size={18} />
-                  {label}
-                </Link>
-              ))}
+            {phase1Navigation.map(([slug, label, Icon]) => (
+              <Link key={slug} href={`/admin${slug ? "/" + slug : ""}`}>
+                <Icon size={18} />
+                {label}
+              </Link>
+            ))}
           </nav>
         </details>
         <div className="admin-sidebar-footer">
@@ -976,6 +948,13 @@ export function AdminWorkspace() {
                   saveSite={(content) => mutate("site-content", content, "PUT")}
                   savePage={(body) => mutate("page", body, "PUT")}
                   onChromeChange={setContentChrome}
+                />
+              )}
+              {section === "utenti" && (
+                <StaffAccounts
+                  users={data.staffUsers ?? []}
+                  busy={busy}
+                  save={(body, method) => mutate("staff", body, method)}
                 />
               )}
               {section === "supporto" && (

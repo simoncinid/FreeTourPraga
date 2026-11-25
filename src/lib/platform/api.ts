@@ -21,13 +21,22 @@ import { audit, localMode, readState, transaction } from "./store";
 import {
   bearer,
   checkOrigin,
-  checkPassword,
   HttpError,
   jsonBody,
   rateLimit,
   requireStaff,
   sessionToken,
 } from "./security";
+import {
+  createStaffAccount,
+  findStaffByEmail,
+  listStaffAccounts,
+  setStaffPassword,
+  setStaffPaused,
+  StaffError,
+  toPublicStaff,
+  verifyStaffPassword,
+} from "./staff";
 import {
   affiliateSchema,
   checkoutSchema,
@@ -52,7 +61,6 @@ import {
 } from "./booking";
 import { runJobs, sendEmailTest } from "./providers";
 import { emailProvider } from "./email-delivery";
-import type { Session } from "./security";
 import { maintainPrivacy } from "./maintenance";
 import { uploadMedia } from "./media";
 import { mergeContentPages, siteContent } from "./content";
@@ -151,27 +159,17 @@ export async function platformApi(request: Request, path: string[]) {
       const body = z
         .object({ email: z.string().email(), password: z.string().max(200) })
         .parse(await jsonBody(request));
-      let users: {
-        email: string;
-        passwordHash: string;
-        role: Session["role"];
-      }[] = [];
-      try {
-        users = JSON.parse(process.env.STAFF_USERS || "[]");
-      } catch {
-        throw new HttpError(503, "Configurazione utenti non valida");
-      }
-      const user = users.find(
-        (u) => u.email.toLowerCase() === body.email.toLowerCase(),
-      );
-      const validPassword = checkPassword(
+      const user = await findStaffByEmail(body.email);
+      const validPassword = verifyStaffPassword(
         body.password,
         user?.passwordHash || `${"0".repeat(32)}:${"0".repeat(128)}`,
       );
-      if (!user || !["admin", "operator"].includes(user.role) || !validPassword)
+      if (!user || !validPassword)
         throw new HttpError(401, "Email o password non validi");
+      if (user.paused)
+        throw new HttpError(403, "Account in pausa: accesso non consentito");
       const response = ok({ ok: true });
-      response.cookies.set("ftp_session", sessionToken(user.email, user.role), {
+      response.cookies.set("ftp_session", sessionToken(user.email, "admin"), {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -296,6 +294,10 @@ export async function platformApi(request: Request, path: string[]) {
       if (route === "admin/state" && method === "GET") {
         const s = await readState();
         const content = siteContent(s.siteContent, s.pages);
+        const staffUsers = toPublicStaff(
+          await listStaffAccounts(),
+          user.email,
+        );
         return ok({
           ...s,
           rateLimits: undefined,
@@ -303,6 +305,7 @@ export async function platformApi(request: Request, path: string[]) {
           orders: undefined,
           bookings: s.bookings.map(({ tokenHash, ...b }) => b),
           role: user.role,
+          staffUsers,
           siteContent: content,
           pages: mergeContentPages(s.pages, content),
           integrations: {
@@ -799,6 +802,62 @@ export async function platformApi(request: Request, path: string[]) {
         });
         return ok({ ok: true });
       }
+      if (route === "admin/staff" && method === "GET") {
+        const users = await listStaffAccounts();
+        return ok({ users: toPublicStaff(users, user.email) });
+      }
+      if (route === "admin/staff" && method === "POST") {
+        const body = z
+          .object({
+            email: z.string().email().max(200),
+            password: z.string().min(8).max(200),
+            name: z.string().trim().min(1).max(80).optional(),
+          })
+          .parse(await jsonBody(request));
+        try {
+          const created = await createStaffAccount(body);
+          await transaction((s) => {
+            audit(s, user.email, "staff.create", created.email);
+          });
+          const users = await listStaffAccounts();
+          return ok({ users: toPublicStaff(users, user.email) });
+        } catch (e) {
+          if (e instanceof StaffError)
+            throw new HttpError(e.status, e.message);
+          throw e;
+        }
+      }
+      if (route === "admin/staff" && method === "PATCH") {
+        const body = z
+          .object({
+            id: z.string().min(1).max(80),
+            paused: z.boolean().optional(),
+            password: z.string().min(8).max(200).optional(),
+          })
+          .parse(await jsonBody(request));
+        try {
+          if (body.password !== undefined)
+            await setStaffPassword(body.id, body.password, user.email);
+          if (body.paused !== undefined)
+            await setStaffPaused(body.id, body.paused, user.email);
+          if (body.password === undefined && body.paused === undefined)
+            throw new HttpError(400, "Nessuna modifica richiesta");
+          await transaction((s) => {
+            audit(
+              s,
+              user.email,
+              body.password !== undefined ? "staff.password" : "staff.pause",
+              body.id,
+            );
+          });
+          const users = await listStaffAccounts();
+          return ok({ users: toPublicStaff(users, user.email) });
+        } catch (e) {
+          if (e instanceof StaffError)
+            throw new HttpError(e.status, e.message);
+          throw e;
+        }
+      }
       if (route === "admin/inquiry" && method === "PATCH") {
         const body = z
           .object({ id: z.string(), status: z.enum(["new", "handled"]) })
@@ -1205,7 +1264,7 @@ export async function platformApi(request: Request, path: string[]) {
         },
         { status: 400 },
       );
-    if (e instanceof HttpError)
+    if (e instanceof HttpError || e instanceof StaffError)
       return NextResponse.json({ error: e.message }, { status: e.status });
     console.error("Platform error", e instanceof Error ? e.name : "unknown");
     return NextResponse.json(
