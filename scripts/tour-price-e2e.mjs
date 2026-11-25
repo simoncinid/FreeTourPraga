@@ -145,10 +145,15 @@ try {
     paymentMethod: "cash",
     termsAccepted: true,
   });
-  await page.goto(base + "/admin/tour/qa-t12-price");
+  await page.goto(base + "/admin/tour/qa-t12-price", {
+    waitUntil: "domcontentloaded",
+  });
+  await page
+    .getByRole("button", { name: "Categorie e prezzi", exact: true })
+    .click();
   await page
     .getByRole("group", { name: "Categoria 2", exact: true })
-    .getByLabel("Prezzo unitario (CZK)", { exact: true })
+    .getByLabel(/^Prezzo \(CZK\)/)
     .fill("999");
   let saved = page.waitForResponse(
     (r) =>
@@ -160,7 +165,12 @@ try {
     .click();
   assert.equal((await saved).status(), 200);
   await verify(99900, "CZK");
-  await page.goto(base + "/admin/tour/qa-t12-price");
+  await page.goto(base + "/admin/tour/qa-t12-price", {
+    waitUntil: "domcontentloaded",
+  });
+  await page
+    .getByRole("button", { name: "Categorie e prezzi", exact: true })
+    .click();
   await page
     .getByRole("heading", { name: "Categorie e prezzi", exact: true })
     .locator("..")
