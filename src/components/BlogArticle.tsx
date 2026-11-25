@@ -82,10 +82,10 @@ export function BlogArticle({ guide }: { guide: GuideItem }) {
           <div className={styles.body}>
             {guide.intro && (
               <div
-                {...articleEdit(guide, "intro")}
+                {...articleEdit(guide, "introHtml", "html")}
                 className={`${styles.prose} ${styles.intro}`}
               >
-                <Paragraphs text={guide.intro} />
+                {guide.introHtml ? <RichContent html={guide.introHtml} /> : <Paragraphs text={guide.intro} />}
               </div>
             )}
             {(guide.blocks ?? []).map((block, index) => {
@@ -100,8 +100,8 @@ export function BlogArticle({ guide }: { guide: GuideItem }) {
                     <div
                       {...articleEdit(
                         guide,
-                        `blocks.${index}.${block.html ? "html" : "text"}`,
-                        block.html ? "html" : "text",
+                        `blocks.${index}.html`,
+                        "html",
                       )}
                     >
                       {block.html ? (
@@ -126,8 +126,8 @@ export function BlogArticle({ guide }: { guide: GuideItem }) {
                         {block.heading}
                       </h2>
                     )}
-                    <div {...articleEdit(guide, `blocks.${index}.text`)}>
-                      <Paragraphs text={block.text} />
+                    <div {...articleEdit(guide, `blocks.${index}.html`, "html")}>
+                      {block.html ? <RichContent html={block.html} /> : <Paragraphs text={block.text} />}
                     </div>
                   </div>
                   <ArticleImage block={block} guide={guide} index={index} />

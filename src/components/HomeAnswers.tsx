@@ -1,6 +1,7 @@
 "use client";
 import { siteEdit } from "@/lib/visual-content";
 
+import { SiteRichText } from "./SiteRichText";
 import { CardCarousel } from "./CardCarousel";
 import styles from "@/app/home.module.css";
 import type { SiteContent } from "@/lib/platform/content";
@@ -15,7 +16,7 @@ function chunkPairs(items: Answer[]) {
   return pages;
 }
 
-function AnswerCard({ item, index }: { item: Answer; index: number }) {
+function AnswerCard({ item, index, formattedText }: { item: Answer; index: number; formattedText?: SiteContent["formattedText"] }) {
   return (
     <article className={`card p-6 ${styles.answerCard}`}>
       <h3
@@ -24,12 +25,12 @@ function AnswerCard({ item, index }: { item: Answer; index: number }) {
       >
         {item.question}
       </h3>
-      <p {...siteEdit(`answers.${index}.answer`)}>{item.answer}</p>
+      <SiteRichText content={{ formattedText }} path={`answers.${index}.answer`} text={item.answer} />
     </article>
   );
 }
 
-export function HomeAnswers({ items }: { items: Answer[] }) {
+export function HomeAnswers({ items, formattedText }: { items: Answer[]; formattedText?: SiteContent["formattedText"] }) {
   if (!items.length) return null;
   const pages = chunkPairs(items);
 
@@ -41,6 +42,7 @@ export function HomeAnswers({ items }: { items: Answer[] }) {
             key={item.question}
             item={item}
             index={items.indexOf(item)}
+            formattedText={formattedText}
           />
         ))}
       </div>
@@ -58,6 +60,7 @@ export function HomeAnswers({ items }: { items: Answer[] }) {
                   key={item.question}
                   item={item}
                   index={items.indexOf(item)}
+            formattedText={formattedText}
                 />
               ))}
             </div>

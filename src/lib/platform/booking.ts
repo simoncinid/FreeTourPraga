@@ -4,7 +4,7 @@ import { selectedPrices } from "../participant-pricing";
 import { commissionFor } from "./commissions";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { checkoutSchema } from "./validation";
+import { checkoutSchema, publicCheckoutSchema } from "./validation";
 import { audit, readState, transaction } from "./store";
 import {
   hash,
@@ -14,12 +14,15 @@ import {
   verifyBookingManagementProof,
 } from "./security";
 import type { Job, Order, PlatformState, Reservation } from "./model";
-import { siteContent } from "./content";
+import { contentWhatsapp, siteContent } from "./content";
+import { formatMoney } from "../format";
 import { site } from "../site";
 import { reservationIcs } from "./calendar";
 import { bookingAdminRecipients, resolveAffiliate } from "./affiliates-wp";
 import { isClosed, isTourClosed } from "./scheduling";
+import { pragueLocal } from "./time";
 import {
+  bookingLeadMs,
   cancellationNote,
   freeTourNote,
   isFreeTour,
@@ -38,6 +41,43 @@ export function enqueue(
 ) {
   if (!s.jobs.some((j) => j.key === job.key))
     s.jobs.push({ ...job, id: randomUUID(), status: "queued", attempts: 0 });
+}
+export function noteLowSeats(s: PlatformState, lines: string[]) {
+  const fresh = lines.filter(Boolean).slice(0, 20);
+  if (!fresh.length) return;
+  s.notices ??= [];
+  const now = new Date().toISOString();
+  for (const text of fresh) {
+    if (s.notices.some((notice) => notice.text === text)) continue;
+    s.notices.unshift({ id: randomUUID(), text, at: now });
+  }
+  s.notices = s.notices.slice(0, 80);
+  const to = bookingAdminRecipients();
+  if (!to) return;
+  enqueue(s, {
+    key: `low-seats:${fresh[0]}`,
+    type: "email",
+    to,
+    subject: "Posti in esaurimento",
+    text: fresh.join("\n"),
+    html: `<p>${fresh.map((line) => line.replaceAll("&", "&amp;").replaceAll("<", "&lt;")).join("<br>")}</p>`,
+    runAt: now,
+  });
+}
+function lowSeatLine(
+  title: string,
+  slot: {
+    capacity: number;
+    reserved: number;
+    closed?: boolean;
+    startsAt: string;
+  },
+) {
+  if (slot.closed) return "";
+  const left = slot.capacity - slot.reserved;
+  if (left <= 0 || left > Math.max(2, Math.ceil(slot.capacity * 0.25)))
+    return "";
+  return `${title}: restano ${left} posti su ${slot.capacity} il ${pragueLocal(slot.startsAt).replace("T", " ").slice(0, 16)}`;
 }
 export function getReservation(s: PlatformState, pnr: string, token: string) {
   const b = s.bookings.find((b) => b.pnr === pnr);
@@ -93,9 +133,7 @@ function cantidadNinos(b: Reservation) {
   let cantidad = 0;
   for (const c of b.categorySnapshot) {
     if (
-      /minori|bambin|niñ|child|kid|infant|ninos/i.test(
-        `${c.id} ${c.label}`,
-      )
+      /minori|bambin|niñ|child|kid|infant|ninos/i.test(`${c.id} ${c.label}`)
     ) {
       ninos += c.quantity;
     } else {
@@ -128,7 +166,9 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
             ? "Pagamento gestito dal provider esterno."
             : b.paymentMethod === "bank_transfer"
               ? `Pagamento tramite bonifico. Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
-              : "Pagamento in contanti sul posto.";
+              : b.paymentMethod === "whatsapp"
+                ? "Saldo da concordare su WhatsApp."
+                : "Pagamento in contanti sul posto.";
   const affiliate = resolveAffiliate(s, b.affiliateCode, false);
   const afiliado =
     affiliate?.wpId != null
@@ -154,6 +194,7 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     cantidad: pax.cantidad,
     ninos: pax.ninos,
     totale: `${(b.totalCents / 100).toFixed(2)} ${b.currency ?? "EUR"}`,
+    rimborso: formatMoney(b.refundCents ?? 0, b.currency ?? "EUR"),
     totalPagar: formatTotalPagar(b),
     incontro: tour.meetingPoint,
     indirizzo: tour.meetingAddress,
@@ -187,6 +228,9 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     ]),
   );
   const template = customerTemplateForKind(settings.emailTemplates, kind);
+  const presenceNotice =
+    "Il nostro team ti contatterà via WhatsApp per chiederti di confermare la tua presenza.";
+  const presenceHtml = `<p style="padding:12px;background:#edf5f8"><strong>${presenceNotice}</strong></p>`;
   const text = renderEmailTemplate(
     template.text.replaceAll("EUR {totale}", "{totale}"),
     vars,
@@ -202,8 +246,13 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     bookingPnr: b.pnr,
     to: b.email,
     subject: renderEmailTemplate(template.subject, vars),
-    text,
-    html,
+    text: kind === "Confermata" ? `${presenceNotice}\n\n${text}` : text,
+    html:
+      kind === "Confermata"
+        ? /<body\b[^>]*>/i.test(html)
+          ? html.replace(/<body\b[^>]*>/i, (tag) => tag + presenceHtml)
+          : presenceHtml + html
+        : html,
     calendar: reservationIcs(s, b),
     runAt: new Date().toISOString(),
   });
@@ -291,25 +340,7 @@ function escapeHtml(value: string) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }
-export function releaseExpired(s: PlatformState) {
-  for (const o of s.orders) {
-    if (new Date(o.expiresAt).getTime() > Date.now()) continue;
-    for (const b of s.bookings.filter(
-      (b) =>
-        b.orderId === o.id &&
-        b.status === "pending" &&
-        b.paymentStatus !== "paid",
-    )) {
-      const { slot } = slotFor(s, b);
-      slot.reserved -= b.totalGuests;
-      b.status = "cancelled";
-      b.cancellationReason = "Pagamento non completato entro 30 minuti";
-      for (const j of s.jobs)
-        if (j.bookingPnr === b.pnr && j.status === "queued")
-          j.status = "failed";
-    }
-  }
-}
+export { releaseExpired } from "./payment-holds";
 export function quote(
   s: PlatformState,
   input: Pick<CheckoutInput, "items" | "affiliateCode">,
@@ -323,22 +354,19 @@ export function quote(
     ).size > 1
   )
     throw new HttpError(400, "Prenota separatamente i tour con valute diverse");
-  const discount =
-    new Set(input.items.map((x) => x.tourSlug)).size >= settings.minimumTours
-      ? settings.multiTourPercent
-      : 0;
   if (input.affiliateCode && !resolveAffiliate(s, input.affiliateCode))
     throw new HttpError(400, "Codice affiliato non valido");
-  return input.items.map((item) => {
+  const prices = input.items.map((item) => {
     const { tour, slot } = slotFor(s, item);
     const startsAt = new Date(slot.startsAt).getTime();
     if (
       !tour.published ||
+      tour.archivedAt ||
       slot.closed ||
       isTourClosed(tour, slot.startsAt) ||
       isClosed(s, slot.startsAt) ||
       tour.operationalReviewRequired ||
-      startsAt < Date.now() + tour.bookingCutoffHours * 3600000
+      startsAt < Date.now() + bookingLeadMs(tour)
     )
       throw new HttpError(409, "Partenza chiusa alle prenotazioni");
     if (!item.participants && tour.childMinAge === 0 && item.infants > 0)
@@ -380,23 +408,34 @@ export function quote(
     let unitAdult = units.adult;
     let unitChild = units.child;
     let unitInfant = units.infant;
-    const lastMinuteApplied =
+    const date = pragueLocal(slot.startsAt).slice(0, 10);
+    const seasonal = (tour.seasonalOffers ?? []).reduce(
+      (best, offer) =>
+        date >= offer.from && date <= offer.to
+          ? Math.max(best, offer.percent)
+          : best,
+      0,
+    );
+    const lastMinutePercent =
       tour.onlineDiscounts !== false &&
       settings.lastMinuteEnabled &&
       settings.lastMinuteDiscountPercent > 0 &&
       !units.fixedGroup &&
-      startsAt - Date.now() <= settings.lastMinuteHours * 3600000;
-    if (lastMinuteApplied) {
-      const factor = 1 - settings.lastMinuteDiscountPercent / 100;
+      startsAt - Date.now() <= settings.lastMinuteHours * 3600000
+        ? settings.lastMinuteDiscountPercent
+        : 0;
+    const percent = Math.max(seasonal, lastMinutePercent);
+    const lastMinuteApplied =
+      lastMinutePercent > 0 && lastMinutePercent >= seasonal;
+    if (percent > 0 && !units.fixedGroup) {
+      const factor = 1 - percent / 100;
       unitAdult = Math.round(unitAdult * factor);
       unitChild = Math.round(unitChild * factor);
       unitInfant = Math.round(unitInfant * factor);
     }
-    if (categoryPrices && lastMinuteApplied)
+    if (categoryPrices && percent > 0 && !units.fixedGroup)
       for (const c of categoryPrices.snapshot)
-        c.unitPriceCents = Math.round(
-          c.unitPriceCents * (1 - settings.lastMinuteDiscountPercent / 100),
-        );
+        c.unitPriceCents = Math.round(c.unitPriceCents * (1 - percent / 100));
     const subtotalCents = categoryPrices
       ? categoryPrices.snapshot.reduce(
           (n, c) => n + c.quantity * c.unitPriceCents,
@@ -405,10 +444,6 @@ export function quote(
       : item.adults * unitAdult +
         item.children * unitChild +
         item.infants * unitInfant;
-    const multiTourDiscount =
-      units.fixedGroup || tour.onlineDiscounts === false
-        ? 0
-        : Math.round((subtotalCents * discount) / 100);
     return {
       ...item,
       adults: categoryPrices ? guests : item.adults,
@@ -417,8 +452,7 @@ export function quote(
       currency: tour.currency ?? "EUR",
       categorySnapshot: categoryPrices?.snapshot,
       subtotalCents,
-      discountCents: multiTourDiscount,
-      totalCents: subtotalCents - multiTourDiscount,
+      fixedGroup: units.fixedGroup,
       paymentMethods: paymentMethodsFor(tour),
       paymentInstructions: paymentMethodsFor(tour).includes("bank_transfer")
         ? tour.paymentInstructions
@@ -437,14 +471,30 @@ export function quote(
           : "",
     };
   });
+  const paidTours = new Set(
+    prices
+      .filter((item) => item.subtotalCents > 0 && !item.fixedGroup)
+      .map((item) => item.tourSlug),
+  );
+  return prices.map(({ fixedGroup, ...item }) => {
+    const discountCents =
+      !fixedGroup && paidTours.size >= settings.minimumTours
+        ? Math.round((item.subtotalCents * settings.multiTourPercent) / 100)
+        : 0;
+    return {
+      ...item,
+      discountCents,
+      totalCents: item.subtotalCents - discountCents,
+    };
+  });
 }
 export async function createOrder(
-  input: CheckoutInput,
+  input: CheckoutInput | z.infer<typeof publicCheckoutSchema>,
   key: string,
   source = "site",
 ) {
   return transaction((s) => {
-    releaseExpired(s);
+    const method = "paymentMethod" in input ? input.paymentMethod : undefined;
     const fingerprint = hash(JSON.stringify(input));
     const previous = s.orders.find((o) => o.key === key);
     if (previous) {
@@ -465,14 +515,17 @@ export async function createOrder(
       );
     for (const item of prices) {
       const { tour } = slotFor(s, item);
-      if (!paymentMethodsFor(tour).includes(input.paymentMethod))
+      if (method && !paymentMethodsFor(tour).includes(method))
         throw new HttpError(
           400,
           `Metodo di pagamento non disponibile per ${tour.title}. Prenota separatamente tour senza metodi in comune.`,
         );
     }
     const token = secretToken();
-    const now = new Date().toISOString();
+    const createdAt = Date.now();
+    const now = new Date(createdAt).toISOString();
+    const totalCents = prices.reduce((n, x) => n + x.totalCents, 0);
+    const whatsapp = method === undefined && totalCents > 0;
     const order: Order = {
       id: randomUUID(),
       currency: prices[0].currency,
@@ -480,15 +533,26 @@ export async function createOrder(
       fingerprint,
       pnrs: [],
       token,
-      totalCents: prices.reduce((n, x) => n + x.totalCents, 0),
+      totalCents,
       createdAt: now,
-      expiresAt: new Date(Date.now() + 31 * 60000).toISOString(),
+      expiresAt: new Date(
+        whatsapp
+          ? Math.min(
+              createdAt + s.settings.paymentHoldMinutes * 60000,
+              ...prices
+                .filter((item) => item.totalCents > 0)
+                .map((item) => Date.parse(slotFor(s, item).slot.startsAt)),
+            )
+          : createdAt + 31 * 60000,
+      ).toISOString(),
     };
     s.orders.push(order);
     const affiliate = resolveAffiliate(s, input.affiliateCode);
     for (const item of prices) {
       const { slot, tour } = slotFor(s, item);
       slot.reserved += item.totalGuests;
+      noteLowSeats(s, [lowSeatLine(tour.title, slot)]);
+      const pending = whatsapp && item.totalCents > 0;
       const b: Reservation = {
         ...item,
         id: randomUUID(),
@@ -498,16 +562,15 @@ export async function createOrder(
         email: input.email,
         phone: input.phone,
         notes: input.notes,
-        paymentMethod: input.paymentMethod,
+        notesHtml: "notesHtml" in input ? input.notesHtml : undefined,
+        paymentMethod: pending ? "whatsapp" : (method ?? "cash"),
         paymentInstructions:
-          input.paymentMethod === "bank_transfer"
-            ? tour.paymentInstructions
-            : undefined,
+          method === "bank_transfer" ? tour.paymentInstructions : undefined,
         paymentStatus:
-          input.paymentMethod === "bank_transfer" && item.totalCents > 0
+          pending || (method === "bank_transfer" && item.totalCents > 0)
             ? "pending"
             : "not_required",
-        status: "confirmed",
+        status: pending ? "pending" : "confirmed",
         source,
         affiliateCode: affiliate?.code || "",
         ...commissionFor(
@@ -534,7 +597,7 @@ export async function createOrder(
       };
       s.bookings.push(b);
       order.pnrs.push(b.pnr);
-      if (!["civitatis", "getyourguide"].includes(source))
+      if (!pending && !["civitatis", "getyourguide"].includes(source))
         notification(s, b, "Confermata");
     }
     audit(s, source, "booking.create", order.id);
@@ -650,8 +713,7 @@ export async function moveReservation(
       isClosed(s, next.startsAt) ||
       tour.operationalReviewRequired ||
       !tour.published ||
-      new Date(next.startsAt).getTime() <
-        Date.now() + tour.bookingCutoffHours * 3600000
+      new Date(next.startsAt).getTime() < Date.now() + bookingLeadMs(tour)
     )
       throw new HttpError(409, "Partenza non disponibile");
     if (next.id === old.id) return b;
@@ -659,6 +721,7 @@ export async function moveReservation(
       throw new HttpError(409, "Posti insufficienti");
     old.reserved = Math.max(0, old.reserved - b.totalGuests);
     next.reserved += b.totalGuests;
+    noteLowSeats(s, [lowSeatLine(tour.title, next)]);
     b.slotId = next.id;
     b.expiresAt = new Date(
       new Date(next.startsAt).getTime() + 30 * 86400000,
@@ -668,6 +731,53 @@ export async function moveReservation(
     return b;
   });
 }
+function whatsappPayment(state: PlatformState, order: Order) {
+  const bookings = state.bookings.filter(
+    (booking) =>
+      booking.orderId === order.id &&
+      booking.status === "pending" &&
+      booking.paymentMethod === "whatsapp",
+  );
+  if (!bookings.length) return null;
+  const visits = bookings.map((booking) => {
+    const { tour, slot } = slotFor(state, booking);
+    const { fecha, hora } = pragueDateParts(slot.startsAt);
+    const people = booking.categorySnapshot
+      ? booking.categorySnapshot
+          .filter(({ quantity }) => quantity > 0)
+          .map(({ quantity, label }) => `${quantity} ${label}`)
+      : [
+          [booking.adults, "adulto", "adulti"],
+          [booking.children, "bambino", "bambini"],
+          [booking.infants, "infante", "infanti"],
+        ]
+          .filter(([quantity]) => Number(quantity) > 0)
+          .map(
+            ([quantity, singular, plural]) =>
+              `${quantity} ${quantity === 1 ? singular : plural}`,
+          );
+    return `il ${tour.title} per il giorno ${fecha} alle ore ${hora} per ${people.join(", ")} (${booking.pnr})`;
+  });
+  const amount = formatMoney(
+    bookings.reduce((sum, booking) => sum + booking.totalCents, 0),
+    order.currency,
+  );
+  const greeting = `Ciao sono ${bookings[0].name}, ho prenotato ${visits.join("; ")}.`;
+  const content = siteContent(state.siteContent, state.pages);
+  return {
+    expiresAt: order.expiresAt,
+    amount,
+    card: contentWhatsapp(
+      content,
+      `${greeting} Richiedo un link di pagamento online di ${amount} per saldare ${visits.length === 1 ? "il tour" : "i tour"}.`,
+    ),
+    office: contentWhatsapp(
+      content,
+      `${greeting} Richiedo un appuntamento presso il vostro ufficio per saldare il pagamento di ${amount}.`,
+    ),
+  };
+}
+
 // Anonymous checkout receipt: read-only, proof stays in this browser tab.
 // No customer account, recovery link or booking management endpoint.
 export async function orderConfirmation(proof: string) {
@@ -711,7 +821,7 @@ export async function orderConfirmation(proof: string) {
         ),
       };
     }),
-    settings: {},
+    payment: whatsappPayment(s, o),
   };
 }
 
@@ -786,8 +896,7 @@ export async function managedBooking(pnr: string, proof: string) {
             !isClosed(s, x.startsAt) &&
             !tour.operationalReviewRequired &&
             tour.published &&
-            new Date(x.startsAt).getTime() >
-              Date.now() + tour.bookingCutoffHours * 3600000 &&
+            new Date(x.startsAt).getTime() > Date.now() + bookingLeadMs(tour) &&
             x.capacity - x.reserved >= b.totalGuests),
       )
       .map((x) => ({

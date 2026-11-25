@@ -1,8 +1,4 @@
 "use client";
-import {
-  paymentMethodLabels,
-  type TourPaymentMethod,
-} from "@/lib/tour-payments";
 import ui from "./public-ui.module.css";
 import { ChevronUp, Compass, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -36,8 +32,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
     key: string;
     items: {
       currency?: "EUR" | "CZK";
-      paymentMethods: TourPaymentMethod[];
-      paymentInstructions?: string;
       subtotalCents: number;
       discountCents: number;
       totalCents: number;
@@ -52,7 +46,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
     multiTourPercent: 10,
     cancellationHours: 24,
   });
-  const [chosenPayment, setChosenPayment] = useState<TourPaymentMethod>("cash");
   const key = useRef("");
   useEffect(() => {
     fetch("/api/platform/catalog")
@@ -93,12 +86,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       });
     return () => abort.abort();
   }, [quoteKey]);
-  const availablePayments = (["cash", "bank_transfer"] as const).filter((m) =>
-    quote?.every((i) => i.paymentMethods.includes(m)),
-  );
-  const selectedPayment = availablePayments.includes(chosenPayment)
-    ? chosenPayment
-    : availablePayments[0];
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
@@ -115,7 +102,6 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
         email: f.get("email"),
         phone: String(f.get("phone")).replace(/[\s()-]/g, ""),
         notes: f.get("notes"),
-        paymentMethod: selectedPayment,
         termsAccepted: f.get("terms") === "on",
         whatsappConsent: false,
       };
@@ -285,50 +271,19 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 />
               </label>
               <label>
-                Note per la guida
+                Note
                 <textarea
                   name="notes"
                   maxLength={2000}
                   className="text-input"
                 />
               </label>
-              <fieldset className="grid gap-3">
-                <legend>Metodo di pagamento</legend>
-                {availablePayments.map((m) => (
-                  <label key={m}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={m}
-                      checked={selectedPayment === m}
-                      onChange={() => setChosenPayment(m)}
-                    />{" "}
-                    {paymentMethodLabels[m]}
-                  </label>
-                ))}
-                {quote && !availablePayments.length && (
-                  <p role="alert">
-                    I tour selezionati non hanno metodi di pagamento in comune.
-                    Prenotali separatamente.
-                  </p>
-                )}
-                {selectedPayment === "bank_transfer" &&
-                  quote?.map((i, index) => (
-                    <p key={index} className="whitespace-pre-wrap">
-                      {i.paymentInstructions}
-                    </p>
-                  ))}
-                <p>
-                  Le regole di cancellazione di ciascun tour sono riportate nel
-                  riepilogo.
-                </p>
-              </fieldset>
               <label className="flex items-start gap-3 text-sm">
                 <input name="terms" type="checkbox" required />
                 <span>
-                  Ho letto la{" "}
+                  Ho letto{" "}
                   <Link href="/privacy" className="underline">
-                    privacy
+                    l’informativa sul trattamento dei dati
                   </Link>{" "}
                   e accetto i{" "}
                   <Link href="/termini" className="underline">
@@ -339,7 +294,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
               </label>
               <button
                 type="submit"
-                disabled={busy || !quote || !selectedPayment}
+                disabled={busy || !quote}
                 className={`button-primary ${ui.reservationFormSubmit}`}
               >
                 {busy ? "Prenotazione in corso…" : "Conferma prenotazione"}
@@ -393,13 +348,12 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
                 </li>
               ))}
             </ul>
-            {rules.multiTourPercent > 0 &&
-              items.some((i) => i.eligibleForDiscounts !== false) && (
-                <p className="text-sm">
-                  Dove previsto, con almeno {rules.minimumTours} tour diversi,
-                  sconto automatico del {rules.multiTourPercent}%.
-                </p>
-              )}
+            {rules.multiTourPercent > 0 && subtotal > 0 && (
+              <p className="text-sm">
+                Con almeno {rules.minimumTours} tour a pagamento diversi, sconto
+                automatico del {rules.multiTourPercent}%.
+              </p>
+            )}
             <label className="text-sm">
               Codice partner
               <input
@@ -439,7 +393,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
             <button
               type="submit"
               form="reservation"
-              disabled={busy || !quote || !selectedPayment}
+              disabled={busy || !quote}
               className="button-primary"
             >
               {busy ? "Prenotazione in corso…" : "Conferma prenotazione"}

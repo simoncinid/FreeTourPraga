@@ -1,5 +1,9 @@
 import { publicSiteContent } from "@/lib/platform/public";
 import { tripAdvisor } from "@/lib/site";
+import {
+  loadTripadvisorScore,
+  tripadvisorReviews,
+} from "@/lib/tripadvisor-listing";
 import { TripAdvisorWidget } from "./TripAdvisorWidget";
 
 export async function TripAdvisorSection({
@@ -8,6 +12,16 @@ export async function TripAdvisorSection({
   layout?: "section" | "card";
 }) {
   const { globals: g } = await publicSiteContent();
+  const live = await loadTripadvisorScore().catch(() => null);
+  const reviews = tripadvisorReviews.map((review) => ({
+    author: review.author,
+    place: "Praga",
+    rating: review.rating,
+    date: review.date,
+    text: review.body,
+    avatarUrl: review.avatar,
+  }));
+
   return (
     <TripAdvisorWidget
       layout={layout}
@@ -16,9 +30,9 @@ export async function TripAdvisorSection({
         profileUrl: g.tripAdvisorUrl || tripAdvisor.profileUrl,
         title: g.tripAdvisorTitle,
         body: g.tripAdvisorBody,
-        rating: tripAdvisor.rating,
-        reviewCount: tripAdvisor.reviewCount,
-        reviews: tripAdvisor.reviews,
+        rating: live?.rating ?? tripAdvisor.rating,
+        reviewCount: live?.reviewCount ?? tripAdvisor.reviewCount,
+        reviews,
       }}
     />
   );

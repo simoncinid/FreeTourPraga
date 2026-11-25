@@ -28,12 +28,13 @@ export type CommissionRule = {
   value: number;
 };
 export type ContentSectionBlock =
-  | { type: "text"; heading: string; text: string }
+  | { type: "text"; heading: string; text: string; html?: string }
   | { type: "image"; imageUrl: string; alt: string; caption: string }
   | {
       type: "split";
       heading: string;
       text: string;
+      html?: string;
       imageUrl: string;
       alt: string;
       caption: string;
@@ -45,8 +46,16 @@ export type CalendarRule = {
   to: string;
   weekdays: number[];
   times: string[];
-  action: "open" | "close" | "capacity";
+  action: "open" | "close" | "capacity" | "remove";
   capacity?: number;
+  actor?: string;
+  at?: string;
+};
+export type SeasonalOffer = {
+  id: string;
+  from: string;
+  to: string;
+  percent: number;
 };
 export type Tour = {
   paymentMethods?: ("cash" | "bank_transfer")[];
@@ -58,6 +67,12 @@ export type Tour = {
   contentBlocks?: ContentSectionBlock[];
   commissionRules?: CommissionRule[];
   calendarRules?: CalendarRule[];
+  calendarLog?: { at: string; actor: string; from: string; to: string }[];
+  seasonalOffers?: SeasonalOffer[];
+  bookingCutoffMinutes?: number;
+  minParticipants?: number;
+  petsAllowed?: boolean;
+  architecturalBarriers?: boolean;
   freeGroupLimit?: number;
   freeGroupMode?: "fixed" | "contact" | "none";
   freeGroupPriceCents?: number;
@@ -65,6 +80,23 @@ export type Tour = {
   operatingDays?: string;
   departureTime?: string;
   onlineDiscounts?: boolean;
+  cardPreview?: {
+    title?: string;
+    description?: string;
+    itinerary?: string;
+    facts?: string[];
+    itineraryLabel?: string;
+    pricesLabel?: string;
+    bookLabel?: string;
+    detailsLabel?: string;
+  };
+  formattedCopy?: {
+    shortDescription?: string;
+    highlights?: (string | null)[];
+    inclusions?: (string | null)[];
+    exclusions?: (string | null)[];
+    safetyNotes?: (string | null)[];
+  };
   id: string;
   slug: string;
   title: string;
@@ -139,6 +171,8 @@ export type TourSlot = {
   capacity: number;
   reserved: number;
   closed?: boolean;
+  removed?: boolean;
+  calendarBase?: { capacity: number; closed?: boolean };
 };
 
 export type BookingFormInput = {

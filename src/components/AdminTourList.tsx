@@ -4,13 +4,23 @@ import Link from "next/link";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CatalogTour } from "@/lib/platform/model";
 import { tourHeadlinePrice } from "@/lib/participant-pricing";
-export function AdminTourList({ tours }: { tours: CatalogTour[] }) {
+export function AdminTourList({
+  tours,
+  busy,
+  update,
+}: {
+  tours: CatalogTour[];
+  busy: boolean;
+  update: (body: unknown, method: "PATCH" | "DELETE") => Promise<unknown>;
+}) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
-  const filtered = tours.filter((t) =>
-    `${t.title} ${t.category} ${t.slug}`
-      .toLocaleLowerCase("it")
-      .includes(query.toLocaleLowerCase("it")),
+  const filtered = tours.filter(
+    (t) =>
+      !t.archivedAt &&
+      `${t.title} ${t.category} ${t.slug}`
+        .toLocaleLowerCase("it")
+        .includes(query.toLocaleLowerCase("it")),
   );
   const pageSize = 8,
     count = Math.max(1, Math.ceil(filtered.length / pageSize)),
@@ -60,7 +70,9 @@ export function AdminTourList({ tours }: { tours: CatalogTour[] }) {
                     </Link>
                   </td>
                   <td className="tours-col-category">{t.category}</td>
-                  <td className="tours-col-price">{tourHeadlinePrice(t).text}</td>
+                  <td className="tours-col-price">
+                    {tourHeadlinePrice(t).text}
+                  </td>
                   <td className="tours-col-slots">{t.slots.length}</td>
                   <td className="tours-col-status">
                     <span
@@ -70,12 +82,52 @@ export function AdminTourList({ tours }: { tours: CatalogTour[] }) {
                     </span>
                   </td>
                   <td className="tours-col-actions">
-                    <Link
-                      className="button-secondary"
-                      href={`/admin/tour/${t.slug}`}
-                    >
-                      Modifica
-                    </Link>
+                    <div className="tour-directory-actions">
+                      <Link
+                        className="button-secondary"
+                        href={`/admin/tour/${t.slug}`}
+                      >
+                        Modifica
+                      </Link>
+                      <button
+                        type="button"
+                        className="button-secondary"
+                        disabled={busy}
+                        onClick={() =>
+                          void update(
+                            { id: t.id, published: !t.published },
+                            "PATCH",
+                          )
+                        }
+                      >
+                        {t.published ? "Nascondi" : "Mostra"}
+                      </button>
+                      <button
+                        type="button"
+                        className="button-secondary text-red-700"
+                        disabled={busy}
+                        onClick={() => {
+                          if (
+                            !window.confirm(
+                              `Archiviare «${t.title}»? Il tour sparirà dal sito e dall’elenco operativo. Lo storico delle prenotazioni e delle vendite sarà conservato.`,
+                            )
+                          )
+                            return;
+                          if (
+                            !window.confirm(
+                              `Confermi l’eliminazione definitiva di «${t.title}» dall’elenco operativo?`,
+                            )
+                          )
+                            return;
+                          void update(
+                            { id: t.id, archiveConfirmed: true },
+                            "DELETE",
+                          );
+                        }}
+                      >
+                        Elimina
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

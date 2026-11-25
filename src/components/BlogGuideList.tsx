@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CardCarousel } from "@/components/CardCarousel";
 import { guideImage } from "@/lib/guide-media";
 import { guidePath } from "@/lib/public-paths";
 import type { SiteContent } from "@/lib/platform/content";
@@ -12,8 +11,15 @@ import styles from "./blog-guide-list.module.css";
 
 type Guide = SiteContent["gallery"][number];
 
-export function BlogGuideList({ items }: { items: Guide[] }) {
+export function BlogGuideList({
+  items,
+  layout,
+}: {
+  items: Guide[];
+  layout: "list" | "grid";
+}) {
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("it");
@@ -38,15 +44,21 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
         <input
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Cerca una guida o un consiglio…"
           aria-label="Cerca articoli"
         />
       </label>
 
       {filtered.length ? (
-        <CardCarousel key={query} label="Articoli del blog" autoPlay={false}>
-          {filtered.map((guide) => (
+        <div className={layout === "grid" ? styles.grid : styles.list}>
+          {(layout === "grid"
+            ? filtered.slice((page - 1) * 6, page * 6)
+            : filtered
+          ).map((guide) => (
             <Link
               key={guide.title}
               data-cms-reference="article"
@@ -58,7 +70,11 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
                   src={guideImage(guide)}
                   alt={guide.title}
                   fill
-                  sizes="(min-width: 768px) 33vw, 86vw"
+                  sizes={
+                    layout === "list"
+                      ? "(min-width: 768px) 240px, 27vw"
+                      : "(min-width: 768px) 33vw, 86vw"
+                  }
                   className="object-cover"
                 />
               </div>
@@ -75,11 +91,37 @@ export function BlogGuideList({ items }: { items: Guide[] }) {
               </div>
             </Link>
           ))}
-        </CardCarousel>
+        </div>
       ) : (
         <p className="card body-md p-8 text-center">
           Nessun articolo corrisponde a “{query.trim()}”.
         </p>
+      )}
+      {layout === "grid" && filtered.length > 6 && (
+        <nav
+          className="flex flex-wrap items-center justify-center gap-3"
+          aria-label="Pagine delle informazioni utili"
+        >
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Precedente
+          </button>
+          <span aria-live="polite">
+            Pagina {page} di {Math.ceil(filtered.length / 6)}
+          </span>
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={page * 6 >= filtered.length}
+            onClick={() => setPage(page + 1)}
+          >
+            Successiva
+          </button>
+        </nav>
       )}
     </div>
   );

@@ -34,6 +34,12 @@ export const defaultNavigation: NavigationItem[] = [
     ],
   },
 ];
+function correctUsefulLink<T extends { label: string; href: string }>(item: T): T {
+  if (item.label.trim().toLowerCase() === "informazioni utili" && /^\/blog\/?$/.test(item.href))
+    return { ...item, href: "/informazioni-utili" };
+  return item;
+}
+
 export function siteNavigation(
   content: SiteContent,
   tours: Pick<Tour, "title" | "slug" | "canonicalPath">[] = [],
@@ -49,13 +55,13 @@ export function siteNavigation(
       (n) => !/^\/(?:account|accesso|tour-privati)(?:[/?#]|$)/.test(n.href),
     )
     .map((n) => ({
-      ...n,
+      ...correctUsefulLink(n),
       children:
         n.href.replace(/\/$/, "") === "/tour" && n.children?.length === 0
           ? tours.map((t) => ({ label: t.title, href: tourPath(t) }))
           : n.children?.filter(
               (c) =>
                 !/^\/(?:account|accesso|tour-privati)(?:[/?#]|$)/.test(c.href),
-            ),
+            ).map(correctUsefulLink),
     }));
 }

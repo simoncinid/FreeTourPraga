@@ -48,11 +48,11 @@ function allowed(b: ContentBinding) {
       p,
     );
   if (b.scope === "article")
-    return /^(title|caption|imageUrl|imageAlt|intro|blocks|ctaEnabled|ctaLabel|ctaHref|seoTitle|seoDescription)(\.|$)/.test(
+    return /^(title|caption|imageUrl|imageAlt|intro|introHtml|blocks|ctaEnabled|ctaLabel|ctaHref|seoTitle|seoDescription)(\.|$)/.test(
       p,
     );
   return (
-    /^(home|answers|faqs)(\.|$)/.test(p) ||
+    /^(home|answers|faqs|formattedText)(\.|$)/.test(p) ||
     /^globals\.(brandName|description|email|phone|whatsappNumber|address|supportHours|footerText|footerNote|tripAdvisorUrl|tripAdvisorTitle|tripAdvisorBody|socialLinks|officeAddress|castleMeetingAddress|googleReviewUrl|instagramDirectUrl|navigation|navigationVersion)(\.|$)/.test(
       p,
     )

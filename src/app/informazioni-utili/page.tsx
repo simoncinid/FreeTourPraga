@@ -1,3 +1,4 @@
+import { RichContent } from "@/components/RichContent";
 import { pageEdit } from "@/lib/visual-content";
 import { publicPage } from "@/lib/platform/public";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -27,12 +28,12 @@ export default async function Page() {
           >
             {page?.title || "Informazioni utili"}
           </h1>
-          <p
-            {...pageEdit("informazioni-utili", "body")}
+          <div
+            {...pageEdit("informazioni-utili", "bodyHtml", "html")}
             className={`body-md ${ui.usefulLead}`}
           >
-            {page?.body || c.home.answersBody}
-          </p>
+            {page?.bodyHtml ? <RichContent html={page.bodyHtml} /> : page?.body || c.home.answersBody}
+          </div>
         </div>
         <SectionBlocks
           binding={{
@@ -42,7 +43,7 @@ export default async function Page() {
           }}
           blocks={page?.contentBlocks}
         />
-        <BlogGuideList items={c.gallery} />
+        <BlogGuideList items={c.gallery} layout="grid" />
         <div className={ui.usefulActions}>
           <Link href="/faq" className="button-primary">
             Domande frequenti

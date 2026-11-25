@@ -15,6 +15,7 @@ import {
 } from "./content";
 import { generateScheduledSlots } from "./scheduling";
 import type { PlatformState } from "./model";
+import { releaseExpired } from "./payment-holds";
 import { normalizeSettings } from "./email-templates";
 const runtime = globalThis as unknown as {
   platformPrisma?: PrismaClient;
@@ -70,11 +71,12 @@ function hydrate(state: PlatformState, generateSlots = true) {
   state.closedDates ??= [];
   state.ota ??= [];
   state.settings = normalizeSettings(state.settings || {});
+  releaseExpired(state);
   const bookedSlots = new Set(state.bookings.map(({ slotId }) => slotId));
   for (const tour of state.tours) {
     // Retain every referenced slot so old confirmations and cancellations still resolve.
     tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || bookedSlots.has(slot.id));
-    if (generateSlots) generateScheduledSlots(tour, undefined, bookedSlots);
+    if (generateSlots && !tour.archivedAt) generateScheduledSlots(tour, undefined, bookedSlots);
   }
   const content = siteContent(state.siteContent, state.pages);
   if (!state.siteContent) state.siteContent = content;

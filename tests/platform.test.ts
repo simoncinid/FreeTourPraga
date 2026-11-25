@@ -18,7 +18,7 @@ import {
   quote,
   releaseExpired,
 } from "../src/lib/platform/booking";
-import { checkoutSchema, tourSchema } from "../src/lib/platform/validation";
+import { checkoutSchema, publicCheckoutSchema, tourSchema } from "../src/lib/platform/validation";
 let temp: string;
 before(async () => {
   if (process.env.TEST_POSTGRES === "1") {
@@ -191,6 +191,49 @@ test("unpaid hold expiry releases inventory", async () => {
     assert.equal(s.tours[0].slots[0].reserved, before - 1);
   });
 });
+test("public mixed checkout confirms zero-price items and expires only unpaid seats", async () => {
+  const freeTour = "free-checkout-fixture";
+  const freeSlot = "free-checkout-fixture-1";
+  await transaction((s) => {
+    s.settings.paymentHoldMinutes = 90;
+    const [source] = s.tours;
+    s.tours.push({
+      ...source,
+      id: freeTour,
+      slug: freeTour,
+      basePriceCents: 0,
+      isFreeTour: true,
+      slots: [{ ...source.slots[2], id: freeSlot, tourId: freeTour, reserved: 0 }],
+    });
+  });
+  const freeInput = input(freeSlot, freeTour);
+  const freeOrder = await createOrder(publicCheckoutSchema.parse(freeInput), randomUUID());
+  assert.equal(freeOrder.totalCents, 0);
+  assert.equal((await orderConfirmation(freeOrder.token)).payment, null);
+  const normal = input("old-town-4");
+  const order = await createOrder(publicCheckoutSchema.parse({
+    ...normal,
+    items: [...normal.items, input(freeSlot, freeTour).items[0]],
+  }), randomUUID());
+  const receipt = await orderConfirmation(order.token);
+  assert.equal(order.totalCents, 2900);
+  assert.equal(Date.parse(order.expiresAt) - Date.parse(order.createdAt), 90 * 60000);
+  assert.deepEqual(receipt.bookings.map((booking) => booking.status), ["pending", "confirmed"]);
+  const state = await readState();
+  const freeBooking = state.bookings.find((booking) => booking.pnr === order.pnrs[1])!;
+  assert.match(state.jobs.find((job) =>
+    job.bookingPnr === freeBooking.pnr && job.to === freeBooking.email,
+  )!.text!, /via WhatsApp/);
+  assert.ok(state.jobs.every((job) => job.bookingPnr !== order.pnrs[0]));
+  releaseExpired(state, Date.parse(order.expiresAt) + 1);
+  const paidSlot = state.tours[0].slots.find(({ id }) => id === normal.items[0].slotId)!;
+  assert.equal(paidSlot.reserved, 0);
+  assert.equal(freeBooking.status, "confirmed");
+  assert.equal(state.tours.find((t) => t.slug === freeTour)!.slots.find(({ id }) => id === freeSlot)!.reserved, 2);
+  releaseExpired(state, Date.parse(order.expiresAt) + 1);
+  assert.equal(paidSlot.reserved, 0);
+});
+
 test("catalog validation preserves required operational fields", async () => {
   const s = await readState();
   assert.equal(tourSchema.parse(s.tours[0]).slug, s.tours[0].slug);

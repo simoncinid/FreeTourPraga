@@ -142,11 +142,85 @@ test("calendar ordered overrides survive regeneration and do not alter reservati
   assert.equal(t.slots[0].closed, false);
   assert.equal(t.slots[0].capacity, 9);
   assert.equal(t.slots[0].reserved, 5);
-  assert.throws(
-    () => calendarOperation(s, { ...op, action: "capacity", capacity: 4 }),
-    /prenotati/,
+  const low = calendarOperation(s, { ...op, action: "capacity", capacity: 4 });
+  assert.equal(t.slots[0].reserved, 5);
+  assert.equal(t.slots[0].capacity, 5);
+  assert.match(low.warnings.join(" "), /prenotati/);
+});
+test("restore drops the period exception and reapplies the base schedule", () => {
+  const { s, t } = fixture();
+  const op = {
+    tourIds: [t.id],
+    from: day,
+    to: day,
+    weekdays: [4],
+    times: ["15:00"],
+  };
+  calendarOperation(s, { ...op, action: "open", capacity: 12 });
+  calendarOperation(s, {
+    tourIds: [t.id],
+    from: day,
+    to: day,
+    weekdays: [4],
+    times: ["10:00"],
+    action: "close",
+  });
+  calendarOperation(s, { ...op, times: [], action: "restore" });
+  assert.equal(isTourClosed(t, pragueInstant(day + "T10:00")), false);
+  assert.equal(
+    t.slots.find((slot) => pragueLocalTime(slot.startsAt) === "10:00")?.capacity,
+    20,
+  );
+  assert.equal(
+    t.slots.some((slot) => pragueLocalTime(slot.startsAt) === "15:00"),
+    false,
   );
 });
+test("restoring an exception keeps a manually configured departure and its capacity", () => {
+  const { s, t } = fixture();
+  t.schedule = undefined;
+  const slot = { ...t.slots[0], id: "manual-base", capacity: 17, reserved: 3 };
+  t.slots = [slot];
+  const op = {
+    tourIds: [t.id],
+    from: day,
+    to: day,
+    weekdays: [4],
+    times: ["10:00"],
+  };
+  calendarOperation(s, { ...op, action: "capacity", capacity: 9 });
+  calendarOperation(s, { ...op, action: "remove" });
+  assert.equal(slot.closed, true);
+  assert.equal(slot.removed, true);
+  calendarOperation(s, { ...op, action: "restore" });
+  assert.equal(t.slots[0], slot);
+  assert.equal(slot.capacity, 17);
+  assert.equal(slot.closed, false);
+  assert.equal(slot.reserved, 3);
+});
+test("editing a saved rule recalculates its former scope and preserves overlapping rules", () => {
+  const { s, t } = fixture();
+  const op = { tourIds: [t.id], from: day, to: day, weekdays: [4] };
+  calendarOperation(s, { ...op, times: [], action: "capacity", capacity: 25 });
+  calendarOperation(s, { ...op, times: ["10:00"], action: "close" });
+  const ruleId = t.calendarRules!.at(-1)!.id;
+  t.slots[0].reserved = 5;
+  calendarOperation(s, { ...op, ruleId, times: ["14:00"], action: "close" });
+  assert.equal(t.calendarRules!.length, 2);
+  assert.equal(t.calendarRules!.at(-1)!.id, ruleId);
+  assert.equal(t.slots[0].closed, false);
+  assert.equal(t.slots[0].capacity, 25);
+  assert.equal(t.slots[0].reserved, 5);
+  assert.equal(t.slots[1].closed, true);
+});
+function pragueLocalTime(startsAt: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Prague",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(startsAt));
+}
 test("T22 public schedule copy follows actual openings rather than obsolete marketing strings", () => {
   const { s, t } = fixture();
   t.operatingDays = "Testo obsoleto";

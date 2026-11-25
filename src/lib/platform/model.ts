@@ -2,6 +2,7 @@ import type { SiteContent } from "./content";
 import type { ContentSectionBlock, CommissionRule, Tour } from "../types";
 export type CatalogTour = Tour & {
   published: boolean;
+  archivedAt?: string;
   adultMinAge: number;
   childMinAge: number;
   bookingCutoffHours: number;
@@ -38,7 +39,7 @@ export type Reservation = {
   discountCents: number;
   totalCents: number;
   paymentInstructions?: string;
-  paymentMethod: "cash" | "bank_transfer" | "stripe" | "ota";
+  paymentMethod: "cash" | "bank_transfer" | "stripe" | "ota" | "whatsapp";
   paymentStatus: "pending" | "paid" | "refunded" | "not_required" | "failed";
   status: "confirmed" | "pending" | "cancelled" | "present" | "no_show";
   source: string;
@@ -49,6 +50,7 @@ export type Reservation = {
   expiresAt: string;
   createdAt: string;
   notes: string;
+  notesHtml?: string;
   cancellationReason?: string;
   refundCents?: number;
   refundStatus?: string;
@@ -84,6 +86,7 @@ export type Job = {
   html?: string;
   calendar?: string;
   bcc?: string;
+  replyTo?: string;
   orderId?: string;
   amount?: number;
   status: "queued" | "running" | "sent" | "failed";
@@ -102,6 +105,7 @@ export type EmailTemplates = {
   confirmed: EmailKindTemplate;
   modified: EmailKindTemplate;
   cancelled: EmailKindTemplate;
+  refunded: EmailKindTemplate;
   admin: { subject: string; text: string };
 };
 export type Affiliate = {
@@ -131,6 +135,7 @@ export type ContentPage = {
 export type Settings = {
   multiTourPercent: number;
   minimumTours: number;
+  paymentHoldMinutes: number;
   cancellationHours: number;
   lateRefundPercent: number;
   retentionDays: number;
@@ -199,6 +204,15 @@ export type PlatformState = {
     action: string;
     target: string;
     at: string;
+  }[];
+  notices?: { id: string; text: string; at: string }[];
+  tickets?: {
+    id: string;
+    title: string;
+    body: string;
+    status: "open" | "working" | "done";
+    at: string;
+    updatedAt: string;
   }[];
   rateLimits: Record<string, { count: number; resetAt: number }>;
   events: string[];

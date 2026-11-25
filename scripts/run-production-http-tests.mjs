@@ -186,6 +186,8 @@ try {
       ["scripts/technical-completion-e2e.mjs"],
       testEnv,
     );
+    await resetTestLimits();
+    await run(process.execPath, ["scripts/visual-content-e2e.mjs"], testEnv);
   }
   await run(
     process.execPath,

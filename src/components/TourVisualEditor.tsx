@@ -1,4 +1,5 @@
 "use client";
+import { RichTextEditor } from "./RichTextEditor";
 import { useEffect, useRef, useState } from "react";
 import type { CatalogTour } from "@/lib/platform/model";
 import { readContentPath, writeContentPath } from "@/lib/visual-content";
@@ -100,7 +101,7 @@ export function TourVisualEditor({
       const path = node.dataset.tourField!,
         kind = node.dataset.tourKind || "text";
       const stored = readContentPath(source.current, path.split("."));
-      const text = String(stored ?? "");
+      const text = String(stored ?? (kind === "html" ? node.querySelector(".rich-content")?.innerHTML || node.innerHTML : ""));
       setNotice("");
       setValue(text);
       setEditing({ path, kind, value: text });
@@ -168,9 +169,22 @@ export function TourVisualEditor({
       return;
     writeContentPath(draft, path, next);
     changeRef.current(root, draft[root]);
-    if (editing.path === "descriptionHtml") {
-      const parsed = new DOMParser().parseFromString(value, "text/html");
-      changeRef.current("description", parsed.body.textContent || "");
+    if (editing.kind === "html") {
+      const parsed = new DOMParser().parseFromString(
+        value.replace(/<\/(?:p|div|h[1-6]|li)>|<br\s*\/?>/gi, "$&\n"),
+        "text/html",
+      );
+      const plain = parsed.body.textContent?.trim() || "";
+      if (editing.path === "descriptionHtml") changeRef.current("description", plain);
+      if (root === "formattedCopy" && path[1] in draft) {
+        writeContentPath(draft, path.slice(1), plain);
+        const field = path[1] as keyof CatalogTour;
+        changeRef.current(field, draft[field]);
+      }
+      if (root === "contentBlocks") {
+        writeContentPath(draft, [...path.slice(0, -1), "text"], plain);
+        changeRef.current(root, draft[root]);
+      }
     }
     setEditing(null);
     setNotice("Bozza aggiornata. Salva il tour per pubblicare.");
@@ -222,33 +236,7 @@ export function TourVisualEditor({
               required
             />
           ) : editing.kind === "html" ? (
-            <div
-              className="tour-rich-input"
-              role="textbox"
-              aria-label="Testo formattato"
-              contentEditable
-              suppressContentEditableWarning
-              dangerouslySetInnerHTML={{ __html: editing.value }}
-              onInput={(e) => setValue(e.currentTarget.innerHTML)}
-              onPaste={(event) => {
-                event.preventDefault();
-                const selection = window.getSelection();
-                if (!selection?.rangeCount) return;
-                const range = selection.getRangeAt(0),
-                  fragment = document.createDocumentFragment();
-                event.clipboardData
-                  .getData("text/plain")
-                  .replace(/\r\n?/g, "\n")
-                  .split("\n")
-                  .forEach((line, index) => {
-                    if (index) fragment.append(document.createElement("br"));
-                    fragment.append(document.createTextNode(line));
-                  });
-                range.deleteContents();
-                range.insertNode(fragment);
-                setValue(event.currentTarget.innerHTML);
-              }}
-            />
+              <RichTextEditor label="Testo formattato" html={value} onChange={setValue} />
           ) : (
             <label>
               {editing.kind === "number" ? "Valore (minuti)" : "Testo"}

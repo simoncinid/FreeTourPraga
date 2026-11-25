@@ -8,14 +8,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { QuickBooking } from "@/components/QuickBooking";
-import { ArrowUpRight, Pointer } from "lucide-react";
+import { ArrowUpRight, Languages, Pointer } from "lucide-react";
 import { Clock, Footprints, MapPin } from "@/components/FlatIcons";
+import { RichContent } from "./RichContent";
 import { minutesToLabel } from "@/lib/format";
 import type { Tour } from "@/lib/types";
 
 export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
   const [booking, setBooking] = useState(false);
-  const name = title || tour.title;
+  const preview = tour.cardPreview;
+  const name = preview?.title || title || tour.title;
+  const intensity = Math.min(
+    5,
+    Math.max(1, Math.round(tour.walkingDifficulty || 1)),
+  );
+  const intensityLabel = [
+    "Molto basso",
+    "Basso",
+    "Medio",
+    "Alto",
+    "Molto alto",
+  ][intensity - 1];
   const href = tourPath(tour);
   const price = tourHeadlinePrice(tour);
 
@@ -40,43 +53,91 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
           <Link href={href} className={`no-underline ${styles.tourCardTitle}`}>
             {name}
           </Link>
-          <p className={styles.tourCardDesc}>{tour.shortDescription}</p>
-          <div className={styles.tourCardMeta}>
-            <span className="flex items-center gap-2">
-              <Clock size={15} /> {minutesToLabel(tour.durationMinutes)}
-              <span aria-hidden>–</span>
-              <span>In italiano 🇮🇹</span>
-            </span>
-            <span className="flex items-center gap-2">
-              <MapPin size={15} /> {tour.meetingPoint}
-            </span>
-            <span
-              className="flex items-center gap-2"
-              aria-label={`Difficoltà a piedi: ${tour.walkingDifficulty} su 5`}
-            >
-              <Footprints size={15} /> {tour.walkingLabel || "A piedi"}{" "}
-              <span className="ml-1 flex gap-0.5">
+          {preview?.description || tour.formattedCopy?.shortDescription ? (
+            <div className={styles.tourCardDesc}>
+              <RichContent
+                html={
+                  (preview?.description ||
+                    tour.formattedCopy?.shortDescription)!
+                }
+              />
+            </div>
+          ) : (
+            <p className={styles.tourCardDesc}>{tour.shortDescription}</p>
+          )}
+          <details className={styles.tourCardItinerary}>
+            <summary className="underline">
+              {preview?.itineraryLabel || "Itinerario completo"}
+            </summary>
+            {preview?.itinerary ? (
+              <RichContent html={preview.itinerary} />
+            ) : tour.highlights.length ? (
+              <ul className="mt-2 list-disc pl-5">
+                {tour.highlights.map((stop, index) => (
+                  <li key={index}>
+                    {tour.formattedCopy?.highlights?.[index] ? (
+                      <RichContent
+                        html={tour.formattedCopy.highlights[index]!}
+                      />
+                    ) : (
+                      stop
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 whitespace-pre-wrap">{tour.description}</p>
+            )}
+          </details>
+          <ul className={styles.tourCardMeta}>
+            {preview?.facts ? (
+              preview.facts.filter(Boolean).map((fact, index) => (
+                <li className={styles.tourCardCustomFact} key={index}>
+                  <RichContent html={fact} />
+                </li>
+              ))
+            ) : (
+              <>
+                <li>
+                  <Clock size={20} aria-hidden />{" "}
+                  {tour.durationLabel || minutesToLabel(tour.durationMinutes)}
+                </li>
+                <li>
+                  <Languages size={20} aria-hidden /> {tour.language}
+                </li>
+                <li>
+                  <MapPin size={20} aria-hidden /> {tour.meetingPoint}
+                </li>
+              </>
+            )}
+            <li className={styles.tourCardIntensity}>
+              <span>Intensità · {intensityLabel}</span>
+              <span
+                className="flex gap-1"
+                role="img"
+                aria-label={`${intensity} su 5`}
+              >
                 {Array.from({ length: 5 }, (_, index) => (
                   <Footprints
                     key={index}
-                    size={13}
+                    size={18}
+                    aria-hidden
                     className={
-                      index < tour.walkingDifficulty
-                        ? "text-ink/70"
-                        : "text-hairline"
+                      index < intensity
+                        ? styles.intensityActive
+                        : styles.intensityInactive
                     }
-                    fill="currentColor"
                   />
                 ))}
               </span>
-            </span>
-          </div>
-          <details className={styles.tourCardItinerary}>
-            <summary className="underline">Itinerario completo</summary>
-            <p className="mt-2 whitespace-pre-wrap">{tour.description}</p>
-          </details>
+            </li>
+          </ul>
           <div className={styles.tourCardFacts}>
-            <TourFacts tour={tour} />
+            <TourFacts
+              tour={tour}
+              pricesOnly={preview?.facts !== undefined}
+              priceLabelText={preview?.pricesLabel}
+            />
           </div>
           <div className={styles.tourCardFooter}>
             <div className="flex items-center justify-between gap-3">
@@ -93,11 +154,11 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
                 onClick={() => setBooking(true)}
               >
                 <Pointer size={15} strokeWidth={2.25} aria-hidden />
-                Prenota
+                {preview?.bookLabel || "Prenota"}
               </button>
             </div>
             <Link href={href} className={styles.tourCardCtaWide}>
-              Scopri di più
+              {preview?.detailsLabel || "Scopri di più"}
               <ArrowUpRight
                 size={15}
                 className={styles.tourCardCtaArrow}

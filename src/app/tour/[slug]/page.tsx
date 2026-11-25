@@ -9,12 +9,11 @@ import type { Metadata } from "next";
 import { TourGallery } from "@/components/TourGallery";
 import { tourPhotos } from "@/lib/tour-gallery";
 import { notFound } from "next/navigation";
-import { Clock3, Users, MessageCircle } from "lucide-react";
+import { Check, Clock3, Info, PackageCheck, Ticket, Users, MessageCircle, X } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { TourMobileBooking } from "@/components/TourMobileBooking";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
-import { OfficialTripAdvisorWidget } from "@/components/OfficialTripAdvisorWidget";
 import { TourHighlights } from "@/components/TourHighlights";
 import { JsonLd } from "@/components/JsonLd";
 import panels from "@/components/tour-panels.module.css";
@@ -119,6 +118,7 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   const duration = tour.durationLabel || minutesToLabel(tour.durationMinutes);
   const highlights = tour.highlights.map((text, index) => ({
     text,
+    html: tour.formattedCopy?.highlights?.[index] ?? undefined,
     index,
     images: (tour.highlightGalleries?.[index] || []).slice(0, 4),
   }));
@@ -217,10 +217,8 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               <h2 className="display-md mb-4">Descrizione</h2>
               <div
                 className="body-md"
-                data-tour-field={
-                  tour.descriptionHtml ? "descriptionHtml" : "description"
-                }
-                data-tour-kind={tour.descriptionHtml ? "html" : "text"}
+                data-tour-field="descriptionHtml"
+                data-tour-kind="html"
               >
                 {tour.descriptionHtml ? (
                   <RichContent html={tour.descriptionHtml} />
@@ -256,41 +254,38 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             <section id="incontro">
               <h2 className="display-md mb-4">Informazioni utili</h2>
               <div className="grid gap-4 md:grid-cols-2">
-                <div className={`card p-6 ${panels.panelOrange}`}>
-                  <h3 className="display-sm mb-3">Incluso</h3>
-                  <TourInfoList items={tour.inclusions} field="inclusions" />
+                <div className={`card p-6 ${panels.practicalPanel}`}>
+                  <h3 className="display-sm mb-3 flex items-center gap-2"><PackageCheck aria-hidden /> Incluso</h3>
+                  <TourInfoList tour={tour} field="inclusions" />
                   {!!tour.exclusions?.length && (
                     <>
                       <h3 className="display-sm mb-3 mt-5">Non incluso</h3>
-                      <TourInfoList
-                        items={tour.exclusions}
-                        field="exclusions"
-                      />
+                      <TourInfoList tour={tour} field="exclusions" />
                     </>
                   )}
                 </div>
-                <div className={`card p-6 ${panels.panelBlue}`}>
-                  <h3 className="display-sm mb-3">Informazioni pratiche</h3>
-                  <ul className={`${panels.panelList} body-md mb-3`}>
+                <div className={`card p-6 ${panels.practicalPanel}`}>
+                  <h3 className="display-sm mb-3 flex items-center gap-2"><Info aria-hidden /> Informazioni pratiche</h3>
+                  <ul className={`${panels.practicalList} body-md mb-3`}>
                     {(tour.operatingDays || tour.departureTime) && (
                       <li>
-                        <strong>Partenze</strong> ·{" "}
+                        <Clock3 size={17} aria-hidden /> <span><strong>Partenze</strong> ·{" "}
                         {[tour.operatingDays, tour.departureTime]
                           .filter(Boolean)
-                          .join(" · ")}
+                          .join(" · ")}</span>
                       </li>
                     )}
                     <li>
-                      <strong>Durata</strong> · {duration}
+                      <Clock3 size={17} aria-hidden /> <span><strong>Durata</strong> · {duration}</span>
                     </li>
                     {!!tour.arrivalMinutes && (
                       <li>
-                        Arriva {tour.arrivalMinutes} minuti prima della
-                        partenza.
+                        <Clock3 size={17} aria-hidden /> <span>Arriva {tour.arrivalMinutes} minuti prima della partenza.</span>
                       </li>
                     )}
+                    {tour.fareRequirements && <li><Ticket size={17} aria-hidden /><span>{tour.fareRequirements}</span></li>}
                   </ul>
-                  <TourInfoList items={tour.safetyNotes} field="safetyNotes" />
+                  <TourInfoList tour={tour} field="safetyNotes" />
                 </div>
               </div>
             </section>
@@ -303,7 +298,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             <section id="recensioni">
               <h2 className="display-md mb-4">Recensioni</h2>
               <TripAdvisorSection layout="card" />
-              <OfficialTripAdvisorWidget />
             </section>
             <section
               className={`${panels.panelWhatsapp} rounded-xl p-7 text-on-dark`}
@@ -340,14 +334,26 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   );
 }
 
-function TourInfoList({ items, field }: { items: string[]; field: string }) {
+function TourInfoList({ tour, field }: {
+  tour: import("@/lib/types").Tour;
+  field: "inclusions" | "exclusions" | "safetyNotes";
+}) {
+  const Icon = field === "inclusions" ? Check : field === "exclusions" ? X : Info;
   return (
-    <ul className={`${panels.panelList} body-md`}>
-      {items.map((item, index) => (
-        <li key={index} data-tour-field={`${field}.${index}`}>
-          {item}
-        </li>
-      ))}
+    <ul className={`${panels.practicalList} body-md`}>
+      {(tour[field] ?? []).map((item, index) => {
+        const html = tour.formattedCopy?.[field]?.[index];
+        const ItemIcon = field === "safetyNotes" && /bigliett|tram|trasport/i.test(item) ? Ticket : Icon;
+        return (
+          <li key={index}>
+            <ItemIcon size={17} aria-hidden className={field === "inclusions" ? "text-success" : field === "exclusions" ? "text-red-700" : ""} />
+            <div data-tour-field={html ? `formattedCopy.${field}.${index}` : `${field}.${index}`}
+              data-tour-kind={html ? "html" : "text"}>
+              {html ? <RichContent html={html} /> : item}
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -299,8 +299,8 @@ export const trustPillars = [
 
 export const faqs = [
   {
-    q: "Posso pagare in contanti sul posto?",
-    a: "Sì. Puoi scegliere contanti sul posto oppure carta tramite link sicuro Stripe. Ricevi la conferma email con il riepilogo."
+    q: "Come posso pagare un tour?",
+    a: "Dopo aver inviato la prenotazione puoi richiedere su WhatsApp un link per pagare con carta o fissare un appuntamento in ufficio. Per l’appuntamento scrivici almeno 24 ore prima."
   },
   {
     q: "I gruppi sono davvero a numero chiuso?",
@@ -313,6 +313,34 @@ export const faqs = [
   {
     q: "La pagina Partner Europa e per chi?",
     a: "Hotel, travel blogger, scuole, gruppi e agenzie possono inviare richieste strutturate e attivare collaborazioni tracciabili."
+  },
+  {
+    q: "Il Free Tour richiede un pagamento online?",
+    a: "La prenotazione gratuita si conferma direttamente. Al termine del Free Tour puoi lasciare alla guida un’offerta libera."
+  },
+  {
+    q: "Quando è confermata la prenotazione di un tour a pagamento?",
+    a: "I posti restano riservati fino alla scadenza indicata nel riepilogo. Ricevi l’email di conferma dopo la registrazione del pagamento."
+  },
+  {
+    q: "Posso prenotare più tour insieme?",
+    a: "Sì. Aggiungi le partenze al carrello e completa una sola prenotazione. Il riepilogo mostra l’eventuale sconto multi-tour."
+  },
+  {
+    q: "In che lingua si svolgono i tour?",
+    a: "La lingua è indicata nella pagina di ogni tour, accanto alla durata e al prezzo."
+  },
+  {
+    q: "Come faccio a sapere a che ora presentarmi?",
+    a: "Consulta gli orari disponibili nella scheda del tour e segui l’anticipo indicato nelle informazioni pratiche o nell’email di conferma."
+  },
+  {
+    q: "Dove trovo le condizioni di cancellazione?",
+    a: "Trovi le condizioni nella sezione Cancellazione della scheda del tour e nel riepilogo della prenotazione."
+  },
+  {
+    q: "Mi contatterete prima della partenza?",
+    a: "Il nostro team ti contatterà via WhatsApp per chiederti di confermare la tua presenza."
   }
 ];
 

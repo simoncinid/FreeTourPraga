@@ -30,6 +30,7 @@ export type BlogBlock =
       type: "split";
       heading: string;
       text: string;
+      html?: string;
       imageUrl: string;
       alt: string;
       caption: string;
@@ -38,6 +39,7 @@ export type BlogBlock =
 
 export type SiteContent = {
   contentVersion?: 2;
+  formattedText?: Record<string, string>;
   globals: {
     brandName: string;
     description: string;
@@ -116,12 +118,13 @@ export type SiteContent = {
     imageUrl: string;
     imageAlt?: string;
     intro?: string;
+    introHtml?: string;
     blocks?: BlogBlock[];
     ctaEnabled?: boolean;
     ctaLabel: string;
     ctaHref: string;
   }[];
-  faqs: { q: string; a: string }[];
+  faqs: { q: string; a: string; answerHtml?: string }[];
   answers: { question: string; answer: string }[];
 };
 export function defaultSiteContent(): SiteContent {
@@ -373,7 +376,88 @@ export function siteContent(
     (link) => !/^\/account(?:[/?#]|$)/.test(link.href),
   );
   content.gallery = content.gallery.map(normalizeGalleryItem);
+  if (stored?.faqs && stored.faqs.length < 10) {
+    const legacyPayment = "Sì. Puoi scegliere contanti sul posto oppure carta tramite link sicuro Stripe. Ricevi la conferma email con il riepilogo.";
+    const questions = stored.faqs.map((item) => item.a === legacyPayment ? base.faqs[0] : item);
+    const present = new Set(questions.map(({ q }) => q));
+    content.faqs = [...questions, ...base.faqs.filter(({ q }) => !present.has(q))];
+  }
   return content;
+}
+
+export const aboutPageContent = {
+  subtitle: "Chi siamo",
+  title: "Chi siamo: la tua squadra di guide certificate a Praga in italiano",
+  body: "Da oltre 13 anni accompagniamo i viaggiatori italiani alla scoperta di Praga e della Repubblica Ceca. Con più di 100.000 clienti soddisfatti, siamo una realtà consolidata e tra le più esperte nella capitale boema per chi cerca visite guidate chiare, curate e in lingua italiana.\n\nOgni giorno mettiamo a disposizione la nostra preparazione per aiutarti a esplorare Praga oltre la superficie: non solo i monumenti più celebri, ma anche il contesto, le trasformazioni e i dettagli che danno identità a ciascun quartiere.",
+  seoTitle: "Chi Siamo | Guide Certificate a Praga in Italiano",
+  seoDescription:
+    "Scopri il nostro team di guide certificate a Praga in italiano: oltre 13 anni di esperienza e più di 100.000 viaggiatori accompagnati.",
+  benefits: [
+    {
+      title: "Chiarezza e trasparenza",
+      text: "Spieghiamo in modo semplice come funzionano i nostri tour, cosa è incluso e cosa aspettarsi lungo il percorso, così puoi organizzare il tuo viaggio senza sorprese.",
+    },
+    {
+      title: "Competenza locale",
+      text: "Le nostre guide conoscono a fondo la città, la sua storia e la vita quotidiana locale, con una padronanza perfetta dell'italiano.",
+    },
+    {
+      title: "Attenzione al gruppo",
+      text: "Curiamo ritmo, puntualità e qualità del racconto per rendere ogni visita piacevole, scorrevole e accessibile.",
+    },
+    {
+      title: "Siamo esperti di Praga",
+      text: "Viviamo e lavoriamo sul territorio, aggiornando costantemente itinerari, informazioni pratiche e approfondimenti per offrire letture affidabili e sempre attuali della città.",
+    },
+  ],
+  closing: {
+    heading: "Perché scegliere noi a Praga",
+    text: "Che si tratti del tuo primo avvicinamento al centro storico o di un approfondimento dedicato a quartieri, monumenti o periodi storici, il nostro obiettivo è farti vivere Praga con serenità e curiosità, dal punto d'incontro fino all'ultima tappa.",
+  },
+};
+
+function aboutContentPage(): ContentPage {
+  const copy = aboutPageContent;
+  return {
+    ...draftPage(
+      copy.title,
+      copy.subtitle,
+      copy.body,
+      copy.seoTitle,
+      copy.seoDescription,
+    ),
+    published: true,
+    benefits: copy.benefits.map((item) => ({ ...item })),
+    contentBlocks: [
+      { type: "text", heading: copy.closing.heading, text: copy.closing.text },
+    ],
+  };
+}
+
+function alignAboutPage(page: ContentPage, fresh: ContentPage): ContentPage {
+  const legacy =
+    page.title.includes("Non sei un semplice turista") ||
+    page.body.startsWith("Curiamo ogni dettaglio pratico");
+  if (legacy) return { ...fresh, published: true };
+  if (page.benefits?.length && page.contentBlocks?.length) return page;
+  const staleSeo =
+    !page.seoTitle.trim() ||
+    page.seoTitle === "Chi siamo" ||
+    page.seoDescription.startsWith("Guide certificate residenti");
+  return {
+    ...fresh,
+    ...page,
+    title: page.title.trim() || fresh.title,
+    subtitle: page.subtitle.trim() || fresh.subtitle,
+    body: page.body.trim() || fresh.body,
+    seoTitle: staleSeo ? fresh.seoTitle : page.seoTitle,
+    seoDescription: staleSeo ? fresh.seoDescription : page.seoDescription,
+    benefits: page.benefits?.length ? page.benefits : fresh.benefits,
+    contentBlocks: page.contentBlocks?.length
+      ? page.contentBlocks
+      : fresh.contentBlocks,
+    published: true,
+  };
 }
 
 function draftPage(
@@ -399,7 +483,6 @@ export function defaultContentPages(
 ): Record<string, ContentPage> {
   const h = content.home;
   const g = content.globals;
-  const pillars = h.pillars.map((p) => `• ${p.title}: ${p.text}`).join("\n");
   const faqBody = content.faqs.map((f) => `D: ${f.q}\nR: ${f.a}`).join("\n\n");
   const answersBody = content.answers
     .map((a) => `D: ${a.question}\nR: ${a.answer}`)
@@ -420,13 +503,7 @@ export function defaultContentPages(
       g.brandName,
       g.description,
     ),
-    "chi-siamo": draftPage(
-      h.trustTitle.replaceAll("\n", " "),
-      "Chi siamo",
-      `${h.trustBody}\n\n${pillars}`,
-      "Chi siamo",
-      "Guide certificate residenti a Praga, gruppi a numero chiuso e assistenza in italiano.",
-    ),
+    "chi-siamo": aboutContentPage(),
     "informazioni-utili": draftPage(
       h.answersTitle,
       "Informazioni utili",
@@ -524,6 +601,8 @@ export function mergeContentPages(
         benefits: page.benefits ?? defaults[key]?.benefits,
       };
   }
+  if (out["chi-siamo"] && defaults["chi-siamo"])
+    out["chi-siamo"] = alignAboutPage(out["chi-siamo"], defaults["chi-siamo"]);
   return out;
 }
 

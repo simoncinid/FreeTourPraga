@@ -15,6 +15,7 @@ export const EMAIL_PLACEHOLDERS = [
   "cantidad",
   "ninos",
   "totale",
+  "rimborso",
   "totalPagar",
   "incontro",
   "indirizzo",
@@ -204,6 +205,11 @@ export function defaultEmailTemplates(): EmailTemplates {
 <p style="text-align:center;padding-top:20px">{firma}</p>
 </div>`,
     },
+    refunded: {
+      subject: "Rimborso effettuato · {pnr} · {tour}",
+      text: "Ciao {nome},\n\nAbbiamo registrato il rimborso di {rimborso} per la prenotazione {pnr} ({tour}).\n\nAssistenza: {assistenza}\n{firma}",
+      html: "<p>Ciao {nome},</p><p>Abbiamo registrato il rimborso di <b>{rimborso}</b> per la prenotazione <b>{pnr}</b> ({tour}).</p><p>Assistenza: {assistenza}<br>{firma}</p>",
+    },
     admin: defaultAdminEmailTemplate(),
   };
 }
@@ -303,17 +309,21 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
     confirmed,
     modified: asTemplate(value.modified, defaults.modified),
     cancelled,
+    refunded: asTemplate(value.refunded, defaults.refunded),
     admin,
   };
 }
 
 export function normalizeSettings(
-  settings: Partial<Settings> & Record<string, unknown>,
+  settings: Partial<Omit<Settings, "emailTemplates">> & {
+    emailTemplates?: unknown;
+  } & Record<string, unknown>,
 ): Settings {
   const templates = normalizeEmailTemplates(settings.emailTemplates);
   return {
     multiTourPercent: Number(settings.multiTourPercent ?? 10),
     minimumTours: Number(settings.minimumTours ?? 2),
+    paymentHoldMinutes: settings.paymentHoldMinutes ?? 120,
     cancellationHours: Number(settings.cancellationHours ?? 24),
     lateRefundPercent: Number(settings.lateRefundPercent ?? 0),
     retentionDays: Number(settings.retentionDays ?? 730),
@@ -338,6 +348,7 @@ export function customerTemplateForKind(
   templates: EmailTemplates,
   kind: string,
 ): EmailKindTemplate {
+  if (/rimborso effettuato/i.test(kind)) return templates.refunded;
   if (/cancell/i.test(kind)) return templates.cancelled;
   if (/modific|aggiorn/i.test(kind)) return templates.modified;
   return templates.confirmed;

@@ -1,3 +1,4 @@
+import { SiteRichText } from "@/components/SiteRichText";
 import { siteEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { publicPage } from "@/lib/platform/public";
@@ -27,14 +28,9 @@ export default async function Page() {
         >
           {c.home.galleryTitle}
         </h1>
-        <p
-          {...siteEdit("home.galleryBody")}
-          className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`}
-        >
-          {c.home.galleryBody}
-        </p>
+        <SiteRichText content={c} path="home.galleryBody" text={c.home.galleryBody} className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`} />
         <div className={ui.blogList}>
-          <BlogGuideList items={c.gallery} />
+          <BlogGuideList items={c.gallery} layout="list" />
         </div>
         <SectionBlocks
           binding={{ scope: "page", key: "blog", path: ["contentBlocks"] }}

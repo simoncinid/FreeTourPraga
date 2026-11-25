@@ -58,8 +58,7 @@ export default async function Page() {
           <div
             {...pageEdit(
               "aiuto",
-              page?.bodyHtml ? "bodyHtml" : "body",
-              page?.bodyHtml ? "html" : "text",
+              "bodyHtml", "html",
             )}
             className="body-md"
           >

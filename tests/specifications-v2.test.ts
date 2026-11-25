@@ -240,7 +240,7 @@ test("bulk calendar operation validates every tour before touching any target", 
   assert.throws(
     () =>
       calendarOperation(s, {
-        tourIds: [s.tours[1].id, t.id],
+        tourIds: ["missing", t.id],
         from: "2027-07-01",
         to: "2027-07-01",
         weekdays: [0, 1, 2, 3, 4, 5, 6],
@@ -248,9 +248,21 @@ test("bulk calendar operation validates every tour before touching any target", 
         action: "capacity",
         capacity: 10,
       }),
-    /prenotati/,
+    /non trovato/,
   );
   assert.equal(JSON.stringify(s.tours), before);
+  const low = calendarOperation(s, {
+    tourIds: [t.id],
+    from: "2027-07-01",
+    to: "2027-07-01",
+    weekdays: [0, 1, 2, 3, 4, 5, 6],
+    times: [],
+    action: "capacity",
+    capacity: 10,
+  });
+  assert.equal(t.slots[0].reserved, 12);
+  assert.equal(t.slots[0].capacity, 12);
+  assert.match(low.warnings.join(" "), /prenotati/);
   assert.equal(
     calendarOperationSchema.safeParse({
       tourIds: [t.id],

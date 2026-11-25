@@ -19,6 +19,7 @@ export const contentSectionSchema = z.discriminatedUnion("type", [
     type: z.literal("text"),
     heading: z.string().max(250),
     text: z.string().max(20000),
+    html: z.string().max(100000).transform(sanitizeRichText).optional(),
   }),
   z.object({
     type: z.literal("image"),
@@ -30,6 +31,7 @@ export const contentSectionSchema = z.discriminatedUnion("type", [
     type: z.literal("split"),
     heading: z.string().max(250),
     text: z.string().max(20000),
+    html: z.string().max(100000).transform(sanitizeRichText).optional(),
     imageUrl: z.lazy(() => tourImageUrlSchema),
     alt: z.string().max(250),
     caption: z.string().max(1000),
@@ -51,6 +53,8 @@ export const commissionRuleSchema = z
 export const calendarOperationSchema = z
   .object({
     tourIds: z.array(z.string().max(200)).min(1).max(200),
+    dates: z.array(localDateSchema).min(1).max(366).optional(),
+    ruleId: z.string().uuid().optional(),
     from: localDateSchema,
     to: localDateSchema,
     weekdays: z
@@ -62,16 +66,24 @@ export const calendarOperationSchema = z
       .array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/))
       .max(20)
       .default([]),
-    action: z.enum(["open", "close", "capacity"]),
+    action: z.enum(["open", "close", "capacity", "restore", "remove"]),
     capacity: z.number().int().min(1).max(10000).optional(),
   })
+  .refine(
+    (v) => !v.ruleId || (v.tourIds.length === 1 && !v.dates && v.action !== "restore"),
+    "Seleziona un solo tour per modificare una regola",
+  )
   .refine(
     (v) =>
       v.from <= v.to && Date.parse(v.to) - Date.parse(v.from) <= 366 * 86400000,
     "Intervallo massimo un anno",
   )
   .refine(
-    (v) => v.action === "close" || v.capacity !== undefined,
+    (v) =>
+      v.action === "close" ||
+      v.action === "restore" ||
+      v.action === "remove" ||
+      v.capacity !== undefined,
     "Indica la capienza",
   );
 export const itemSchema = z.object({
@@ -106,11 +118,13 @@ export const checkoutSchema = z.object({
       "Usa il formato internazionale, es. +393331234567",
     ),
   notes: z.string().max(2000).default(""),
+  notesHtml: z.string().max(16000).transform(sanitizeRichText).optional(),
   paymentMethod: z.enum(["cash", "bank_transfer"]),
   affiliateCode: z.string().max(40).default(""),
   termsAccepted: z.literal(true),
   whatsappConsent: z.boolean().default(false),
 });
+export const publicCheckoutSchema = checkoutSchema.omit({ paymentMethod: true, notesHtml: true });
 const emailKindTemplateSchema = z.object({
   subject: text(200),
   text: z.string().trim().min(1).max(20000),
@@ -128,6 +142,7 @@ export const affiliateSchema = z.object({
 export const settingsSchema = z.object({
   multiTourPercent: z.number().min(0).max(100),
   minimumTours: z.number().int().min(2).max(10),
+  paymentHoldMinutes: z.number().int().min(5).max(1440).default(120),
   cancellationHours: z.number().min(0).max(720),
   lateRefundPercent: z.number().min(0).max(100),
   retentionDays: z.number().int().min(30).max(3650),
@@ -136,6 +151,7 @@ export const settingsSchema = z.object({
     confirmed: emailKindTemplateSchema,
     modified: emailKindTemplateSchema,
     cancelled: emailKindTemplateSchema,
+    refunded: emailKindTemplateSchema.optional(),
     admin: z.object({
       subject: text(200),
       text: z.string().trim().min(1).max(20000),
@@ -220,11 +236,24 @@ export const tourSchema = z.object({
         to: localDateSchema,
         weekdays: z.array(z.number().int().min(0).max(6)),
         times: z.array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)),
-        action: z.enum(["open", "close", "capacity"]),
+        action: z.enum(["open", "close", "capacity", "remove"]),
         capacity: z.number().int().min(1).max(10000).optional(),
+        actor: z.string().max(200).optional(),
+        at: z.string().datetime().optional(),
       }),
     )
     .max(1000)
+    .optional(),
+  calendarLog: z
+    .array(
+      z.object({
+        at: z.string().datetime(),
+        actor: z.string().max(200),
+        from: localDateSchema,
+        to: localDateSchema,
+      }),
+    )
+    .max(40)
     .optional(),
   freeGroupLimit: z.number().int().min(0).max(10000).optional(),
   freeGroupMode: z.enum(["fixed", "contact", "none"]).optional(),
@@ -233,6 +262,40 @@ export const tourSchema = z.object({
   operatingDays: z.string().max(250).optional(),
   departureTime: z.string().max(50).optional(),
   onlineDiscounts: z.boolean().optional(),
+  seasonalOffers: z
+    .array(
+      z
+        .object({
+          id: z.string().max(80),
+          from: localDateSchema,
+          to: localDateSchema,
+          percent: z.number().min(1).max(100),
+        })
+        .refine((v) => v.from <= v.to, "La fine precede l’inizio"),
+    )
+    .max(30)
+    .optional(),
+  bookingCutoffMinutes: z.number().int().min(0).max(59).optional(),
+  minParticipants: z.number().int().min(1).max(10000).optional(),
+  petsAllowed: z.boolean().optional(),
+  architecturalBarriers: z.boolean().optional(),
+  cardPreview: z.object({
+    title: z.string().max(200).optional(),
+    description: z.string().max(12000).transform(sanitizeRichText).optional(),
+    itinerary: z.string().max(30000).transform(sanitizeRichText).optional(),
+    facts: z.array(z.string().max(3000).transform(sanitizeRichText)).max(30).optional(),
+    itineraryLabel: z.string().max(80).optional(),
+    pricesLabel: z.string().max(80).optional(),
+    bookLabel: z.string().max(80).optional(),
+    detailsLabel: z.string().max(80).optional(),
+  }).optional(),
+  formattedCopy: z.object({
+    shortDescription: z.string().max(12000).transform(sanitizeRichText).optional(),
+    highlights: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
+    inclusions: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
+    exclusions: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
+    safetyNotes: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
+  }).optional(),
   id: text(),
   slug: z.string().regex(/^[a-z0-9-]+$/),
   title: text(),
@@ -370,6 +433,11 @@ export const tourSchema = z.object({
         capacity: z.number().int().min(1).max(10000),
         reserved: z.number().int().min(0),
         closed: z.boolean().optional(),
+        removed: z.boolean().optional(),
+        calendarBase: z.object({
+          capacity: z.number().int().min(1).max(10000),
+          closed: z.boolean().optional(),
+        }).optional(),
       }),
     )
     .max(5000),

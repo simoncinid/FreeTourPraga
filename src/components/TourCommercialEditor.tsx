@@ -1,4 +1,5 @@
 "use client";
+import { PriceInput } from "./PriceInput";
 import { useState } from "react";
 import { TourPackageSelect } from "./TourPackageSelect";
 import type { CatalogTour } from "@/lib/platform/model";
@@ -100,42 +101,14 @@ export function TourCommercialEditor({
               <div className="form-grid">
                 <label>
                   Prezzo ({t.currency ?? "EUR"}) *
-                  <input
-                    className="text-input"
-                    required
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={c.priceCents / 100}
-                    onChange={(e) =>
-                      setCategory(i, {
-                        priceCents: Math.round(Number(e.target.value) * 100),
-                      })
-                    }
-                  />
+                  <PriceInput required cents={c.priceCents}
+                    onChange={(priceCents) => setCategory(i, { priceCents: priceCents ?? 0 })} />
                 </label>
                 {t.currency === "CZK" && (
                   <label>
                     Equivalente indicativo in euro
-                    <input
-                      type="number"
-                      className="text-input"
-                      min="0"
-                      step="0.01"
-                      value={
-                        c.estimatedEuroCents === undefined
-                          ? ""
-                          : c.estimatedEuroCents / 100
-                      }
-                      onChange={(e) =>
-                        setCategory(i, {
-                          estimatedEuroCents:
-                            e.target.value === ""
-                              ? undefined
-                              : Math.round(Number(e.target.value) * 100),
-                        })
-                      }
-                    />
+                    <PriceInput optional cents={c.estimatedEuroCents}
+                      onChange={(estimatedEuroCents) => setCategory(i, { estimatedEuroCents })} />
                   </label>
                 )}
                 <label>
@@ -264,7 +237,7 @@ export function TourCommercialEditor({
             checked={t.onlineDiscounts !== false}
             onChange={(e) => change("onlineDiscounts", e.target.checked)}
           />{" "}
-          Consenti sconti automatici online su questo tour
+          Consenti offerte last-minute su questo tour
         </label>
       </section>
       <section
@@ -300,19 +273,8 @@ export function TourCommercialEditor({
         </label>
         <label>
           Tariffa per persona oltre soglia ({t.currency ?? "EUR"})
-          <input
-            className="text-input"
-            type="number"
-            min={0}
-            step="0.01"
-            value={(t.freeGroupPriceCents ?? 1200) / 100}
-            onChange={(e) =>
-              change(
-                "freeGroupPriceCents",
-                Math.round(Number(e.target.value) * 100),
-              )
-            }
-          />
+          <PriceInput cents={t.freeGroupPriceCents ?? 1200}
+            onChange={(value) => change("freeGroupPriceCents", value ?? 0)} />
         </label>
       </section>
       <section

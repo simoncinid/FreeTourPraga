@@ -1,104 +1,28 @@
 import { setDefaultResultOrder } from "node:dns";
-import nodemailer, { type Transporter } from "nodemailer";
+import { randomUUID } from "node:crypto";
 import { transaction } from "./store";
 import { releaseExpired } from "./booking";
+import { deliverEmail, emailProvider } from "./email-delivery";
 
-// Preferisci A/IPv4: evita timeout se compare un AAAA non raggiungibile.
-try {
-  setDefaultResultOrder("ipv4first");
-} catch {
-  /* Node senza setDefaultResultOrder */
-}
+setDefaultResultOrder("ipv4first");
 
-let sharedTransport: Transporter | null = null;
-
-function smtpTransport() {
-  if (!process.env.SMTP_HOST) throw new Error("SMTP non configurato");
-  if (sharedTransport) return sharedTransport;
-  const port = Number(process.env.SMTP_PORT || 587);
-  sharedTransport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    requireTLS: port !== 465,
-    auth: process.env.SMTP_USER
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      : undefined,
-    connectionTimeout: 25000,
-    greetingTimeout: 25000,
-    socketTimeout: 30000,
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 50,
-  });
-  return sharedTransport;
-}
-
-async function probeTcp(host: string, port: number, timeoutMs = 8000) {
-  const net = await import("node:net");
+export async function sendEmailTest(to: string) {
+  const provider = emailProvider();
   const started = Date.now();
-  return new Promise<{ ok: boolean; ms: number; error?: string }>((resolve) => {
-    const socket = net.connect({ host, port, family: 4 });
-    const done = (ok: boolean, error?: string) => {
-      socket.destroy();
-      resolve({ ok, ms: Date.now() - started, error });
-    };
-    socket.setTimeout(timeoutMs, () => done(false, "timeout"));
-    socket.once("connect", () => done(true));
-    socket.once("error", (e) => done(false, e.message));
-  });
-}
-
-export async function sendSmtpTest(to: string) {
-  const host = process.env.SMTP_HOST || "";
-  const port = Number(process.env.SMTP_PORT || 587);
-  const started = Date.now();
-  let egress: string | undefined;
   try {
-    egress = await fetch("https://api.ipify.org?format=json", {
-      signal: AbortSignal.timeout(5000),
-    })
-      .then((r) => r.json())
-      .then((j: { ip?: string }) => j.ip);
-  } catch {
-    egress = "unknown";
-  }
-  const probes = {
-    smtp: host ? await probeTcp(host, port) : { ok: false, ms: 0, error: "no host" },
-    p465: host ? await probeTcp(host, 465) : { ok: false, ms: 0, error: "no host" },
-    p2525: host ? await probeTcp(host, 2525) : { ok: false, ms: 0, error: "no host" },
-    https: host ? await probeTcp(host, 443) : { ok: false, ms: 0, error: "no host" },
-    googleDns: await probeTcp("8.8.8.8", 53),
-  };
-  try {
-    sharedTransport = null;
-    const transport = smtpTransport();
-    await transport.verify();
-    const info = await transport.sendMail({
-      from: process.env.SMTP_FROM,
+    const messageId = await deliverEmail({
+      id: randomUUID(),
       to,
-      subject: "FreeTourPraga SMTP test da web",
-      text: `Test SMTP dal servizio web Railway (${port}). Egress ${egress}. Tempo ${Date.now() - started}ms.`,
+      subject: "[TEST] FreeTourPraga · invio email",
+      text: "Email tecnica di collaudo FreeTourPraga. Nessuna prenotazione reale.",
     });
-    return {
-      ok: true as const,
-      port,
-      egress,
-      probes,
-      ms: Date.now() - started,
-      messageId: info.messageId,
-      response: info.response,
-    };
-  } catch (e) {
-    sharedTransport = null;
+    return { ok: true as const, provider, messageId, ms: Date.now() - started };
+  } catch (error) {
     return {
       ok: false as const,
-      port,
-      egress,
-      probes,
+      provider,
       ms: Date.now() - started,
-      host,
-      error: e instanceof Error ? `${e.name}: ${e.message}` : String(e),
+      error: error instanceof Error ? error.message : "Errore provider",
     };
   }
 }
@@ -132,34 +56,15 @@ export async function runJobs() {
         job.key.startsWith("wa:")
       )
         throw new Error("Reminder disattivati in Fase 1");
-      const transport = smtpTransport();
-      const { to, subject, text, html, bcc } = job;
-      await transport.sendMail({
-        from: process.env.SMTP_FROM,
-        to,
-        bcc: bcc || undefined,
-        subject,
-        text,
-        html: html || undefined,
-        attachments: job.calendar
-          ? [
-              {
-                filename: `${job.bookingPnr}.ics`,
-                content: job.calendar,
-                contentType: "text/calendar; charset=utf-8",
-              },
-            ]
-          : undefined,
-        messageId: `<${job.id}@freetourpraga.com>`,
-      });
+      const providerId = await deliverEmail(job);
       await transaction((s) => {
         const j = s.jobs.find((j) => j.id === job.id)!;
         j.status = "sent";
+        j.providerId = providerId;
         j.error = undefined;
       });
       results.push({ id: job.id, status: "sent" });
     } catch (e) {
-      sharedTransport = null;
       await transaction((s) => {
         const j = s.jobs.find((j) => j.id === job.id)!;
         j.status = j.attempts >= 5 ? "failed" : "queued";

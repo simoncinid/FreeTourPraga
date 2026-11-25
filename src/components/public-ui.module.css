@@ -26,11 +26,13 @@
     border-color 0.2s;
 }
 .page :global(.button-primary):hover {
-  box-shadow: 0 5px 18px rgb(var(--primary) / 0.1490);
+  box-shadow: 0 5px 18px rgb(var(--primary) / 0.149);
 }
 .page :global(.button-secondary):hover {
-  background: var(--surface-soft);
-  border-color: #a9afb7;
+  background: rgb(var(--primary-active));
+  border-color: transparent;
+  color: var(--on-primary);
+  box-shadow: 0 5px 18px rgb(var(--primary) / 0.149);
 }
 .page :global(.text-input) {
   border-radius: 6px;
@@ -267,7 +269,9 @@
   letter-spacing: 0;
   text-transform: none;
   text-decoration: none;
-  transition: background 0.2s ease, filter 0.2s ease;
+  transition:
+    background 0.2s ease,
+    filter 0.2s ease;
 }
 .tourCardCtaWide:hover {
   background: rgb(var(--primary-active));
@@ -568,15 +572,24 @@
   min-width: 0;
 }
 .aboutTitle {
-  font-size: clamp(38px, 4vw, 55px);
+  font-size: clamp(30px, 3.4vw, 44px);
   margin-bottom: 24px;
 }
 .aboutTitleRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   width: 100%;
+}
+.aboutHeading {
+  margin-top: 48px;
+  margin-bottom: 20px;
+}
+.aboutClose {
+  max-width: 48rem;
+  margin-top: 0;
+  margin-bottom: 12px;
 }
 .aboutTourCta {
   flex-shrink: 0;
@@ -640,40 +653,16 @@
 }
 @media (min-width: 1024px) {
   .about {
-    min-height: calc(100svh - var(--header-height, 74px));
-    height: calc(100svh - var(--header-height, 74px));
-    padding-block: clamp(20px, 3.2vh, 40px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .aboutInner {
-    height: 100%;
-    min-height: 0;
-    justify-content: center;
+    padding-block: clamp(28px, 4vh, 56px);
   }
   .aboutTitle {
     margin-bottom: 16px;
   }
   .aboutLead {
-    margin-bottom: 24px;
+    margin-bottom: 8px;
   }
   .aboutGrid {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: none;
     gap: 16px;
-    align-content: stretch;
-    grid-auto-rows: 1fr;
-  }
-  .aboutGrid > :global(.card) {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 22px 24px;
   }
 }
 .practical :global(.card) {
@@ -685,7 +674,7 @@
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgb(var(--primary) / 0.2000);
+  border: 1px solid rgb(var(--primary) / 0.2);
   border-radius: 50%;
   background: var(--primary-soft);
   font-size: 22px;
@@ -1782,26 +1771,64 @@ summary.contactRow {
   .partnerForm > label:has(input[type="checkbox"]),
   .partnerForm > label:has(input[name="company"]),
   .partnerForm > label:has(input[name="languages"]),
-  .partnerForm > label:has(input[name="portfolio"]) { grid-column: 1 / -1; }
-  .partnerForm h2 { font-size: 26px; margin-bottom: 2px; }
-  .partnerForm :global(.text-input) { min-height: 36px; height: 36px; padding: 6px 12px; margin-top: 4px; }
-  .partnerForm textarea:global(.text-input) { min-height: 64px; height: 64px; resize: vertical; }
-  .partnerForm :global(.form-grid) { gap: 12px; }
-  .partnerForm > button { min-height: 40px; padding-block: 8px; }
+  .partnerForm > label:has(input[name="portfolio"]) {
+    grid-column: 1 / -1;
+  }
+  .partnerForm h2 {
+    font-size: 26px;
+    margin-bottom: 2px;
+  }
+  .partnerForm :global(.text-input) {
+    min-height: 36px;
+    height: 36px;
+    padding: 6px 12px;
+    margin-top: 4px;
+  }
+  .partnerForm textarea:global(.text-input) {
+    min-height: 64px;
+    height: 64px;
+    resize: vertical;
+  }
+  .partnerForm :global(.form-grid) {
+    gap: 12px;
+  }
+  .partnerForm > button {
+    min-height: 40px;
+    padding-block: 8px;
+  }
 }
 @media (min-width: 1024px) and (max-height: 740px) {
-  .partner { padding-block: 16px; }
-  .partner h1 { font-size: clamp(32px, 2.8vw, 40px); margin-bottom: 14px; }
-  .partner :global(.body-md) { font-size: 14px; margin-bottom: 22px; }
-  .partnerBenefits { gap: 20px; }
+  .partner {
+    padding-block: 16px;
+  }
+  .partner h1 {
+    font-size: clamp(32px, 2.8vw, 40px);
+    margin-bottom: 14px;
+  }
+  .partner :global(.body-md) {
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+  .partnerBenefits {
+    gap: 20px;
+  }
   .partnerIcon {
     width: 32px;
     height: 32px;
     flex: 0 0 32px;
   }
-  .partnerForm { padding: 14px 16px; gap: 8px 12px; }
-  .partnerForm h2 { font-size: 24px; margin-bottom: 0; }
-  .partnerForm textarea:global(.text-input) { min-height: 56px; height: 56px; }
+  .partnerForm {
+    padding: 14px 16px;
+    gap: 8px 12px;
+  }
+  .partnerForm h2 {
+    font-size: 24px;
+    margin-bottom: 0;
+  }
+  .partnerForm textarea:global(.text-input) {
+    min-height: 56px;
+    height: 56px;
+  }
 }
 
 .meetingPanel {
@@ -1862,4 +1889,80 @@ summary.contactRow {
     overflow-y: auto;
     scrollbar-width: thin;
   }
+}
+
+.tourCardMeta > li {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  color: var(--ink);
+}
+
+.tourCardMeta > li > svg {
+  color: rgb(var(--primary));
+}
+
+.tourCardMeta .tourCardIntensity {
+  align-items: center;
+}
+
+.tourCardMeta .intensityActive {
+  color: #c55212;
+  fill: currentColor;
+}
+
+.tourCardMeta .intensityInactive {
+  color: #c9cdd2;
+  fill: currentColor;
+}
+
+.tourCardItinerary summary,
+.tourCardFacts summary {
+  cursor: pointer;
+}
+
+.tourCardMeta .tourCardCustomFact {
+  display: list-item;
+  list-style: disc inside;
+}
+
+.tourCardCustomFact > :global(.rich-content) {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.paymentDialog {
+  position: relative;
+  padding: 20px 24px 24px;
+}
+
+.paymentDialogBody {
+  display: grid;
+  gap: 16px;
+  padding-right: 28px;
+}
+
+.paymentDialogClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #111;
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+}
+
+.paymentDialogClose:hover {
+  background: #e5e7eb;
 }

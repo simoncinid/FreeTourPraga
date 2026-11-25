@@ -360,7 +360,13 @@
   align-self: start;
 }
 .showcaseBrand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
-.showcaseBrand > span { color: #216148; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.showcaseBrand > span {
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
 .showcaseTitle {
   font-family: var(--font-display), Arial, sans-serif;
   font-size: clamp(46px, 5.5vw, 76px);
@@ -368,9 +374,9 @@
   line-height: 1.08;
   letter-spacing: -.035em;
   margin-bottom: 24px;
-  color: #0a2c24;
+  color: #005d3e;
 }
-.showcaseTitle > span { color: #00aa6c; }
+.showcaseTitle > span { color: #005d3e; }
 .showcaseRating { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin: 8px 0 22px; }
 .showcaseRating > strong { font-family: var(--font-display), Arial, sans-serif; color: #005d3e; font-size: 72px; line-height: 1; letter-spacing: -.05em; }
 .showcaseRating > strong > span { font-family: var(--font-body), sans-serif; font-size: 20px; font-weight: 500; letter-spacing: 0; margin-left: 5px; color: #6a8075; }
@@ -461,16 +467,34 @@
   outline: 3px solid #00aa6c;
   outline-offset: 4px;
 }
-.writeReviewBtnGoogle {
-  background: #e2a008;
-  color: #1a1a1a !important;
+.writeReviewBtn.writeReviewBtnGoogle {
+  border: 1px solid #ffdc75;
+  background: linear-gradient(115deg, #ffcf55, #eba600, #df9700) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px #d99a0033;
+  transition: box-shadow 0.2s ease, color 0.2s ease;
 }
-.writeReviewBtnGoogle:hover {
-  background: #c98c00;
-  color: #1a1a1a !important;
+.writeReviewBtn.writeReviewBtnGoogle:hover {
+  background: linear-gradient(115deg, #ffd76a, #f0b000, #e8a200) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px #d99a0055;
 }
-.writeReviewBtnGoogle:focus-visible {
-  outline-color: #e2a008;
+.writeReviewBtn.writeReviewBtnGoogle:focus-visible {
+  outline-color: #eba600;
+}
+.tripadvisorIconBox {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: #fff;
+}
+.tripadvisorIconBox img {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 .writeReviewSlot {
   min-width: 0;
@@ -555,7 +579,7 @@
   .showcase { padding-block: 64px; }
 }
 @media (max-width: 479px) {
-  .showcaseBrand > span { font-size: 9px; letter-spacing: .08em; }
+  .showcaseBrand > span { font-size: 14px; letter-spacing: 0; }
   .showcaseTitle { font-size: 48px; }
   .reviewScene { height: 700px; }
   .destinationPhoto { width: 78%; left: 11%; bottom: 45px; }

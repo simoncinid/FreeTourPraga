@@ -1,4 +1,6 @@
 "use client";
+import { PriceInput } from "./PriceInput";
+import { RichTextEditor } from "./RichTextEditor";
 import { useState } from "react";
 import type { CatalogTour } from "@/lib/platform/model";
 import { ImageSourceField, uploadAdminImage } from "./ImageSourceField";
@@ -34,75 +36,38 @@ export function TourSettingsEditor({
       <label key={key} data-tour-setting={key}>
         {label}
         {required ? " *" : ""}
-        <input
-          className="text-input"
-          type={type}
-          value={String(
-            price
-              ? Number(t[key] ?? 0) / 100
-              : (t[key] ?? (key === "arrivalMinutes" ? 15 : "")),
-          )}
-          required={required}
-          min={type === "number" ? min : undefined}
-          max={max}
-          step={price ? "0.01" : undefined}
-          list={key === "category" ? "tour-category-options" : undefined}
-          onChange={(e) =>
-            change(
-              key,
-              price
-                ? Math.round(Number(e.target.value) * 100)
-                : type === "number"
-                  ? Number(e.target.value)
-                  : e.target.value,
-            )
-          }
-        />
+        {price ? (
+          <PriceInput cents={Number(t[key] ?? 0)} onChange={(value) => change(key, value ?? 0)} />
+        ) : (
+          <input
+            className="text-input"
+            type={type}
+            value={String(t[key] ?? (key === "arrivalMinutes" ? 15 : ""))}
+            required={required}
+            min={type === "number" ? min : undefined}
+            max={max}
+            list={key === "category" ? "tour-category-options" : undefined}
+            onChange={(e) => change(key, type === "number" ? Number(e.target.value) : e.target.value)}
+          />
+        )}
       </label>
     );
   };
   const textKeys = [
     ["shortDescription", "Descrizione breve"],
     ["description", "Descrizione completa"],
-    ...(t.descriptionHtml ? [["descriptionHtml", "HTML importato"]] : []),
     ["highlights", "Punti salienti"],
     ["inclusions", "Servizi inclusi"],
     ["exclusions", "Servizi esclusi"],
     ["safetyNotes", "Informazioni pratiche"],
     ["highlightGalleries", "Foto dei punti salienti"],
   ];
-  const textValue =
-    copy === "highlightGalleries"
-      ? (t.highlightGalleries || []).map((g) => g.join("\n")).join("\n\n")
-      : Array.isArray(t[copy as keyof CatalogTour])
-        ? (
-            t[
-              copy as "highlights" | "inclusions" | "exclusions" | "safetyNotes"
-            ] || []
-          ).join("\n")
-        : String(t[copy as keyof CatalogTour] || "");
-  function updateText(value: string) {
-    change(
-      copy as keyof CatalogTour,
-      copy === "highlightGalleries"
-        ? value
-            .split(/\n\s*\n/)
-            .map((g) =>
-              g
-                .split("\n")
-                .map((line) => line.trim())
-                .filter(Boolean)
-                .slice(0, 4),
-            )
-            .filter((g) => g.length)
-        : ["highlights", "inclusions", "exclusions", "safetyNotes"].includes(
-              copy,
-            )
-          ? value === ""
-            ? []
-            : value.split("\n")
-          : value,
-    );
+  const listFields = ["highlights", "inclusions", "exclusions", "safetyNotes"] as const;
+  const listField = listFields.find((field) => field === copy);
+  const list = listField ? t[listField] ?? [] : [];
+  function updateList(field: typeof listFields[number], texts: string[], formatting: (string | null)[]) {
+    change(field, texts);
+    change("formattedCopy", { ...t.formattedCopy, [field]: formatting });
   }
   return (
     <div
@@ -200,6 +165,13 @@ export function TourSettingsEditor({
             "number",
           )}
           {field(
+            "bookingCutoffMinutes",
+            "Minuti aggiuntivi di chiusura",
+            "number",
+            0,
+            59,
+          )}
+          {field(
             "arrivalMinutes",
             "Anticipo richiesto (min)",
             "number",
@@ -231,6 +203,7 @@ export function TourSettingsEditor({
           {field("meetingAddress", "Indirizzo")}
           {field("meetingInstructions", "Come riconoscere la guida")}
           {field("mapUrl", "Link Google Maps")}
+          {field("walkingDifficulty", "Livello di intensità (1–5)", "number", 1, 5)}
           <label>
             Giorni operativi
             <input
@@ -282,20 +255,53 @@ export function TourSettingsEditor({
             ))}
           </select>
         </div>
-        <label className={css.editor}>
-          {["highlights", "inclusions", "exclusions", "safetyNotes"].includes(
-            copy,
-          )
-            ? "Un elemento per riga"
-            : copy === "highlightGalleries"
-              ? "Gruppi separati da una riga vuota · massimo 4 URL per gruppo"
-              : "Contenuto"}
-          <textarea
-            className="text-input"
-            value={textValue}
-            onChange={(e) => updateText(e.target.value)}
-          />
-        </label>
+        {copy === "highlightGalleries" ? (
+          <label className={css.editor}>
+            Gruppi separati da una riga vuota · massimo 4 URL per gruppo
+            <textarea className="text-input"
+              value={(t.highlightGalleries || []).map((group) => group.join("\n")).join("\n\n")}
+              onChange={(event) => change("highlightGalleries", event.target.value.split(/\n\s*\n/)
+                .map((group) => group.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 4))
+                .filter((group) => group.length))} />
+          </label>
+        ) : listField ? (
+          <div className="grid gap-4">
+            {list.map((item, index) => (
+              <div key={index} className="grid gap-2 rounded border p-3">
+                <RichTextEditor label={`Voce ${index + 1}`} text={item} html={t.formattedCopy?.[listField]?.[index] ?? undefined}
+                  onChange={(html, plain) => updateList(
+                    listField,
+                    list.map((text, i) => i === index ? plain : text),
+                    list.map((_, i) => i === index ? html : t.formattedCopy?.[listField]?.[i] ?? null),
+                  )} />
+                <button type="button" className="button-secondary justify-self-start"
+                  onClick={() => {
+                    updateList(listField, list.filter((_, i) => i !== index),
+                      list.map((_, i) => t.formattedCopy?.[listField]?.[i] ?? null).filter((_, i) => i !== index));
+                    if (listField === "highlights" && t.highlightGalleries)
+                      change("highlightGalleries", t.highlightGalleries.filter((_, i) => i !== index));
+                    if (listField === "highlights" && t.itineraryGroups)
+                      change("itineraryGroups", t.itineraryGroups.map((group) => ({
+                        ...group, start: group.start > index ? group.start - 1 : group.start,
+                      })).filter((group, i, groups) => group.start < list.length - 1 &&
+                        groups.findIndex((item) => item.start === group.start) === i));
+                  }}>Rimuovi voce</button>
+              </div>
+            ))}
+            <button type="button" className="button-secondary justify-self-start" disabled={list.length >= 30}
+              onClick={() => updateList(listField, [...list, "Nuova voce"],
+                [...list.map((_, i) => t.formattedCopy?.[listField]?.[i] ?? null), null])}>Aggiungi voce</button>
+          </div>
+        ) : copy === "description" ? (
+          <RichTextEditor key={copy} label="Descrizione completa" html={t.descriptionHtml} text={t.description}
+            onChange={(html, plain) => { change("descriptionHtml", html); change("description", plain); }} />
+        ) : (
+          <RichTextEditor key={copy} label="Descrizione breve" html={t.formattedCopy?.shortDescription} text={t.shortDescription}
+            onChange={(html, plain) => {
+              change("shortDescription", plain);
+              change("formattedCopy", { ...t.formattedCopy, shortDescription: html });
+            }} />
+        )}
         {copy === "highlightGalleries" && (
           <div className={css.upload}>
             <label>

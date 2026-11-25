@@ -358,3 +358,24 @@
     transition: none !important;
   }
 }
+
+.practicalPanel {
+  border-color: #d4e3eb;
+  background: #f0f6f9;
+}
+
+.practicalList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.practicalList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.practicalList svg {
+  flex: 0 0 auto;
+  margin-top: 0.2em;
+}

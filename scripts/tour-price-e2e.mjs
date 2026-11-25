@@ -149,7 +149,7 @@ try {
     waitUntil: "domcontentloaded",
   });
   await page
-    .getByRole("button", { name: "Categorie e prezzi", exact: true })
+    .getByRole("button", { name: "Prezzi", exact: true })
     .click();
   await page
     .getByRole("group", { name: "Categoria 2", exact: true })
@@ -169,7 +169,7 @@ try {
     waitUntil: "domcontentloaded",
   });
   await page
-    .getByRole("button", { name: "Categorie e prezzi", exact: true })
+    .getByRole("button", { name: "Prezzi", exact: true })
     .click();
   await page
     .getByRole("heading", { name: "Categorie e prezzi", exact: true })

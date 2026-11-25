@@ -1,4 +1,5 @@
 "use client";
+import { RichTextEditor } from "./RichTextEditor";
 import { AdminNotice } from "./AdminNotice";
 import { ExperienceGroupsEditor } from "./ExperienceGroupsEditor";
 import { NavigationEditor } from "./NavigationEditor";
@@ -129,7 +130,10 @@ export function SiteContentEditor({
       <div className="grid gap-5">
         {list.map((item, i) => (
           <div key={i} className="grid gap-4 rounded-xl border p-5">
-            {fields.map((f, j) => (
+            {fields.map((f, j) => key === "faqs" && f === "a" ? (
+              <RichTextEditor key={f} label={names[j]} text={item.a} html={item.answerHtml}
+                onChange={(answerHtml, a) => update(list.map((x, k) => k === i ? { ...x, a, answerHtml } : x))} />
+            ) : (
               <Field
                 key={f}
                 label={names[j]}
@@ -209,6 +213,18 @@ export function SiteContentEditor({
               }))
             }
           />
+        );
+      }
+      if (/Body$|^footer(?:Text|Note)$|^description$/.test(key)) {
+        const formattedKey = `${group}-${key}`;
+        return (
+          <RichTextEditor key={key} label={labels[key] || key} html={c.formattedText?.[formattedKey]}
+            text={String((c[group] as unknown as Record<string, unknown>)[key] ?? "")}
+            onChange={(html, text) => setC((previous) => ({
+              ...previous,
+              [group]: { ...previous[group], [key]: text },
+              formattedText: { ...previous.formattedText, [formattedKey]: html },
+            }))} />
         );
       }
       return (

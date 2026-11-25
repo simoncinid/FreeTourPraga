@@ -1,7 +1,8 @@
+import { SiteRichText } from "@/components/SiteRichText";
 import { siteEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import ui from "@/components/public-ui.module.css";
-import { Plus } from "lucide-react";
+import { FaqAccordion } from "@/components/FaqAccordion";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
 import { JsonLd } from "@/components/JsonLd";
@@ -32,20 +33,8 @@ export default async function Page() {
         >
           {c.home.faqTitle}
         </h1>
-        <p {...siteEdit("home.faqBody")} className="body-md mb-10 max-w-3xl">
-          {c.home.faqBody}
-        </p>
-        <div className="grid gap-4 md:grid-cols-2">
-          {faqs.map((f, index) => (
-            <details key={f.q} className="card">
-              <summary className="font-bold cursor-pointer">
-                <span {...siteEdit(`faqs.${index}.q`)}>{f.q}</span>
-                <Plus size={18} aria-hidden />
-              </summary>
-              <p {...siteEdit(`faqs.${index}.a`)}>{f.a}</p>
-            </details>
-          ))}
-        </div>
+        <SiteRichText content={c} path="home.faqBody" text={c.home.faqBody} className="body-md mb-10 max-w-3xl" />
+        <FaqAccordion items={faqs} />
         <p className="mt-10 text-sm">
           Non hai trovato la risposta?{" "}
           <Link

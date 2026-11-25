@@ -9,6 +9,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addToCart } from "@/lib/cart";
+import { TourFacts } from "./TourFacts";
 import { formatMoney } from "@/lib/format";
 import {
   bookingDeadlineNote,
@@ -196,6 +197,7 @@ export function QuickBooking({
           </button>
         )}
       </header>
+      {inline && <TourFacts tour={currentTour} pricesOnly />}
       {!slots.length ? (
         <div className="quick-booking-empty">
           <p>Al momento non ci sono partenze prenotabili per questo tour.</p>
@@ -399,7 +401,7 @@ export function QuickBooking({
                 if (event.currentTarget.form?.reportValidity())
                   void submit("/tour");
               }}
-              className="button-secondary"
+              className={valid ? "button-primary" : "button-secondary"}
             >
               Aggiungi al carrello
             </button>

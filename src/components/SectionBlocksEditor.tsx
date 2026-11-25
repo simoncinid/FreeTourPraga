@@ -1,6 +1,7 @@
 "use client";
 import { CONTENT_SECTION_STRUCTURE_ENABLED } from "@/lib/content-policy";
 import type { ContentSectionBlock } from "@/lib/types";
+import { RichTextEditor } from "./RichTextEditor";
 import { ImageSourceField } from "./ImageSourceField";
 import { SectionBlocks } from "./SectionBlocks";
 import { RecordDrawer } from "./AdminRecords";
@@ -60,14 +61,8 @@ export function SectionBlocksEditor({
                   onChange={(e) => update(i, { heading: e.target.value })}
                 />
               </label>
-              <label>
-                Testo
-                <textarea
-                  className="text-input min-h-32"
-                  value={b.text}
-                  onChange={(e) => update(i, { text: e.target.value })}
-                />
-              </label>
+              <RichTextEditor label="Testo" text={b.text} html={b.html}
+                onChange={(html, text) => update(i, { html, text })} />
             </>
           )}
           {b.type !== "text" && (

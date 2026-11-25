@@ -66,7 +66,6 @@ const input = {
   email: "qa@example.com",
   phone: "+393331234567",
   notes: "Test isolato",
-  paymentMethod: "cash",
   affiliateCode: "QAHOTEL",
   termsAccepted: true,
   whatsappConsent: true,
@@ -131,7 +130,75 @@ assert.equal(receipt.bookings.length, 2);
 assert.equal(receipt.order.fingerprint, undefined);
 assert.equal(receipt.bookings[0].tokenHash, undefined);
 assert.equal(receipt.bookings[0].email, undefined);
+assert.ok(
+  receipt.bookings.every(
+    ({ status, paymentStatus }) =>
+      status === "pending" && paymentStatus === "pending",
+  ),
+);
+assert.match(
+  new URL(receipt.payment.card).searchParams.get("text"),
+  /QA Cliente.+link di pagamento/,
+);
+assert.match(
+  new URL(receipt.payment.office).searchParams.get("text"),
+  /appuntamento presso il vostro ufficio/,
+);
 const b = receipt.bookings[0];
+cookie = adminCookie;
+const awaitingPayment = await call(
+  "/api/platform/admin/state",
+  undefined,
+  "GET",
+);
+assert.equal(
+  awaitingPayment.jobs.filter((job) =>
+    receipt.order.pnrs.includes(job.bookingPnr),
+  ).length,
+  0,
+);
+const other = receipt.bookings[1];
+await call(
+  "/api/platform/admin/booking",
+  {
+    pnr: other.pnr,
+    action: "update",
+    adults: 2,
+    name: "QA Cliente aggiornato",
+    notes: "Partecipanti aggiornati",
+  },
+  "PATCH",
+);
+const updated = (
+  await call("/api/platform/admin/state", undefined, "GET")
+).bookings.find((b) => b.pnr === other.pnr);
+assert.equal(updated.totalGuests, 2);
+assert.equal(updated.totalCents, 7020);
+
+await call(
+  "/api/platform/admin/booking",
+  { pnr: b.pnr, action: "settle-order" },
+  "PATCH",
+);
+const settled = await call("/api/platform/admin/state", undefined, "GET");
+for (const booked of receipt.bookings) {
+  const confirmations = settled.jobs.filter(
+    (job) => job.bookingPnr === booked.pnr && job.to === input.email,
+  );
+  assert.equal(confirmations.length, 1);
+  assert.ok(confirmations[0].text.includes(booked.meetingPoint));
+  assert.match(confirmations[0].html, /via WhatsApp/);
+}
+cookie = "";
+receipt = await call("/api/platform/confirmation", { proof: token });
+assert.equal(receipt.payment, null);
+assert.ok(
+  receipt.bookings.every(
+    ({ status, paymentStatus }) =>
+      status === "confirmed" && paymentStatus === "paid",
+  ),
+);
+
 const originalSlot = input.items[0].slotId;
 const target = tours[0].slots.find(
   (s) =>
@@ -244,23 +311,6 @@ cookie = adminCookie;
 const after = (await call("/api/platform/catalog", undefined, "GET")).tours;
 assert.equal(after[0].slots.find((s) => s.id === originalSlot).reserved, 0);
 assert.equal(after[0].slots.find((s) => s.id === target.id).reserved, 0);
-const other = receipt.bookings[1];
-await call(
-  "/api/platform/admin/booking",
-  {
-    pnr: other.pnr,
-    action: "update",
-    adults: 2,
-    name: "QA Cliente aggiornato",
-    notes: "Partecipanti aggiornati",
-  },
-  "PATCH",
-);
-const updated = (
-  await call("/api/platform/admin/state", undefined, "GET")
-).bookings.find((b) => b.pnr === other.pnr);
-assert.equal(updated.totalGuests, 2);
-assert.equal(updated.totalCents, 7020);
 await call(
   "/api/platform/admin/booking",
   {
@@ -409,6 +459,36 @@ const refunded = (
   await call("/api/platform/admin/state", undefined, "GET")
 ).bookings.find((b) => b.pnr === other.pnr);
 assert.equal(refunded.paymentStatus, "refunded");
+const archiveTour = tours[1];
+await call(
+  "/api/platform/admin/tour",
+  { id: archiveTour.id, published: false },
+  "PATCH",
+);
+assert.ok(
+  !(await call("/api/platform/catalog", undefined, "GET")).tours.some(
+    ({ id }) => id === archiveTour.id,
+  ),
+);
+await call(
+  "/api/platform/admin/tour",
+  { id: archiveTour.id, published: true },
+  "PATCH",
+);
+await call(
+  "/api/platform/admin/tour",
+  { id: archiveTour.id, archiveConfirmed: true },
+  "DELETE",
+);
+const archivedState = await call("/api/platform/admin/state", undefined, "GET");
+assert.ok(
+  archivedState.tours.find(({ id }) => id === archiveTour.id).archivedAt,
+);
+assert.equal(
+  archivedState.bookings.find(({ pnr }) => pnr === other.pnr).paymentStatus,
+  "refunded",
+);
+
 const csv = await fetch(base + "/api/platform/admin/export", {
   headers: { Cookie: cookie },
 });

@@ -39,7 +39,7 @@ export function commissionMatured(
     !!slot &&
     Date.parse(slot.endsAt) <= now &&
     ["confirmed", "present"].includes(b.status) &&
-    (b.paymentMethod !== "bank_transfer" ||
+    (!["bank_transfer", "whatsapp"].includes(b.paymentMethod) ||
       b.totalCents === 0 ||
       b.paymentStatus === "paid") &&
     b.paymentStatus !== "refunded" &&

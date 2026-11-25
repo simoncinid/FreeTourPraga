@@ -1,6 +1,7 @@
+import { bookingLeadMs } from "../tour-rules";
 import { paymentMethodsFor } from "../tour-payments";
 import { tourHeadlinePrice } from "../participant-pricing";
-import { applyCalendarRule } from "./calendar-rules";
+import { applyCalendarRule, orderedCalendarRules } from "./calendar-rules";
 import type { CatalogTour, PlatformState } from "./model";
 import { pragueInstant, pragueLocal } from "./time";
 
@@ -10,14 +11,29 @@ export function isClosed(
 ) {
   return (state.closedDates ?? []).includes(pragueLocal(startsAt).slice(0, 10));
 }
-export function isTourClosed(tour: CatalogTour, startsAt: string) {
+export function onBaseSchedule(tour: CatalogTour, date: string, time: string) {
+  const schedule = tour.schedule;
+  if (!schedule?.enabled) return false;
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  return (
+    date >= schedule.from &&
+    date <= schedule.to &&
+    schedule.weekdays.includes(day) &&
+    schedule.times.includes(time)
+  );
+}
+function isLegacyTourClosed(tour: CatalogTour, startsAt: string) {
   const local = pragueLocal(startsAt);
-  let closed = (tour.closures ?? []).some(
+  return (tour.closures ?? []).some(
     (closure) =>
       closure.date === local.slice(0, 10) &&
       (!closure.times.length || closure.times.includes(local.slice(11, 16))),
   );
-  for (const rule of tour.calendarRules ?? []) {
+}
+export function isTourClosed(tour: CatalogTour, startsAt: string) {
+  const local = pragueLocal(startsAt);
+  let closed = isLegacyTourClosed(tour, startsAt);
+  for (const rule of orderedCalendarRules(tour.calendarRules)) {
     const date = local.slice(0, 10),
       time = local.slice(11, 16);
     if (
@@ -27,7 +43,7 @@ export function isTourClosed(tour: CatalogTour, startsAt: string) {
       (!rule.times.length || rule.times.includes(time))
     ) {
       if (rule.action === "open") closed = false;
-      if (rule.action === "close") closed = true;
+      if (rule.action === "close" || rule.action === "remove") closed = true;
     }
   }
   return closed;
@@ -39,10 +55,11 @@ export function generateScheduledSlots(
   bookedSlots?: ReadonlySet<string>,
 ) {
   for (const slot of tour.slots)
-    if (isTourClosed(tour, slot.startsAt)) slot.closed = true;
+    if (isLegacyTourClosed(tour, slot.startsAt)) slot.closed = true;
   const schedule = tour.schedule;
   if (!schedule?.enabled) {
-    for (const rule of tour.calendarRules ?? []) applyCalendarRule(tour, rule);
+    for (const rule of orderedCalendarRules(tour.calendarRules))
+      applyCalendarRule(tour, rule);
     return;
   }
   const today = pragueLocal(new Date(now).toISOString()).slice(0, 10);
@@ -89,7 +106,8 @@ export function generateScheduledSlots(
       });
     }
   }
-  for (const rule of tour.calendarRules ?? []) applyCalendarRule(tour, rule);
+  for (const rule of orderedCalendarRules(tour.calendarRules))
+    applyCalendarRule(tour, rule);
   tour.slots.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 export function publicTour(state: PlatformState, tour: CatalogTour) {
@@ -98,6 +116,8 @@ export function publicTour(state: PlatformState, tour: CatalogTour) {
   delete visible.commissionRules;
   delete visible.commissionPackageWith;
   delete visible.paymentInstructions;
+  delete visible.calendarLog;
+  delete visible.calendarRules;
   return {
     ...visible,
     paymentMethods: paymentMethodsFor(tour),
@@ -106,7 +126,7 @@ export function publicTour(state: PlatformState, tour: CatalogTour) {
       : {}),
     ...scheduleSummary(
       tour,
-      Date.now() + tour.bookingCutoffHours * 3600000,
+      Date.now() + bookingLeadMs(tour),
       state.closedDates,
     ),
     basePriceCents: price.priceCents,
@@ -124,10 +144,13 @@ export function publicTour(state: PlatformState, tour: CatalogTour) {
               !slot.closed &&
               !isTourClosed(tour, slot.startsAt) &&
               !isClosed(state, slot.startsAt) &&
-              Date.parse(slot.startsAt) >
-                Date.now() + tour.bookingCutoffHours * 3600000,
+              Date.parse(slot.startsAt) > Date.now() + bookingLeadMs(tour),
           )
-          .map((slot) => ({ ...slot, capacity: slot.capacity })),
+          .map((slot) => {
+            const visibleSlot = { ...slot };
+            delete visibleSlot.calendarBase;
+            return visibleSlot;
+          }),
   };
 }
 

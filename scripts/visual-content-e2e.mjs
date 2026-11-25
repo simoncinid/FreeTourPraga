@@ -53,22 +53,24 @@ async function change(b, value) {
       if (parent instanceof HTMLDetailsElement) parent.open = true;
   });
   await target(b).dblclick();
-  await page
-    .getByRole("dialog")
-    .getByLabel("Testo da modificare", { exact: true })
-    .fill(value);
+  const dialog = page.getByRole("dialog");
+  const editable = await target(b).getAttribute("data-cms-kind") === "html"
+    ? dialog.getByRole("textbox", { name: "Testo formattato", exact: true })
+    : dialog.getByLabel("Testo da modificare", { exact: true });
+  await editable.fill(value);
   await page
     .getByRole("button", { name: "Applica alla bozza", exact: true })
     .click();
 }
 async function publish() {
-  const saved = page.waitForResponse(
-    (r) =>
-      r.url().endsWith("/admin/visual-content") &&
-      r.request().method() === "POST",
-  );
-  await page.getByRole("button", { name: /^Salva modifiche/ }).click();
-  const response = await saved;
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/admin/visual-content") &&
+        r.request().method() === "POST",
+    ),
+    page.getByRole("button", { name: /^Salva \(\d+\)$/ }).click(),
+  ]);
   assert.equal(response.status(), 200, await response.text());
   await expect(
     page.getByText("Modifiche salvate nella pagina pubblica.", { exact: true }),
@@ -202,7 +204,7 @@ try {
     .getByRole("button", { name: "Applica alla bozza", exact: true })
     .click();
   await change(
-    binding("site", "home.contentBlocks.0.text"),
+    binding("site", "home.contentBlocks.0.html"),
     "Contenuto cambiato nella sezione fissa",
   );
   await publish();
@@ -349,7 +351,7 @@ try {
   await publish();
   await choose("/faq");
   await change(
-    binding("site", "faqs.0.a"),
+    binding("site", "faqs.0.answerHtml"),
     "Risposta modificata direttamente sulla FAQ",
   );
   await publish();
@@ -458,13 +460,15 @@ try {
   const changed = structuredClone(state.siteContent);
   changed.home.heroTitle = "Modifica di un’altra sessione";
   await call("admin/site-content", changed, "PUT");
-  const conflict = page.waitForResponse(
-    (r) =>
-      r.url().endsWith("/admin/visual-content") &&
-      r.request().method() === "POST",
-  );
-  await page.getByRole("button", { name: /^Salva modifiche/ }).click();
-  assert.equal((await conflict).status(), 409);
+  const [conflict] = await Promise.all([
+    page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/admin/visual-content") &&
+        r.request().method() === "POST",
+    ),
+    page.getByRole("button", { name: /^Salva \(\d+\)$/ }).click(),
+  ]);
+  assert.equal(conflict.status(), 409);
   await expect(target(hero)).toHaveText("Bozza da conservare in conflitto");
   page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("link", { name: "Tour e orari", exact: true }).click();

@@ -1,4 +1,5 @@
 import { cms, type ContentBinding } from "@/lib/visual-content";
+import { RichContent } from "./RichContent";
 import Image from "next/image";
 import type { ContentSectionBlock } from "@/lib/types";
 export function SectionBlocks({
@@ -13,7 +14,7 @@ export function SectionBlocks({
   return (
     <div className="grid gap-8">
       {blocks.map((b, i) => {
-        const field = (name: string, kind: "text" | "image" = "text") =>
+        const field = (name: string, kind: "text" | "image" | "html" = "text") =>
           binding
             ? cms(
                 { ...binding, path: [...binding.path, String(i), name] },
@@ -47,9 +48,9 @@ export function SectionBlocks({
                     {b.heading}
                   </h2>
                 )}
-                <p {...field("text")} className="body-md whitespace-pre-wrap">
-                  {b.text}
-                </p>
+                <div {...field("html", "html")} className="body-md whitespace-pre-wrap">
+                  {b.html ? <RichContent html={b.html} /> : b.text}
+                </div>
               </div>
             )}
             {b.type !== "text" && b.imageUrl && (

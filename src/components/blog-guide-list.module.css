@@ -135,3 +135,38 @@
     flex-basis: 180px;
   }
 }
+
+.grid,
+.list {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.list .article {
+  display: grid;
+  grid-template-columns: clamp(6rem, 27vw, 15rem) minmax(0, 1fr);
+  height: auto;
+}
+
+.list .articleMedia,
+.list .articleBody {
+  min-height: 9rem;
+}
+
+.list .articleBody {
+  min-width: 0;
+}
+
+.list .articleCaption {
+  -webkit-line-clamp: 3;
+}

@@ -28,8 +28,7 @@ export function ContentBlock({
           {...(pageKey
             ? pageEdit(
                 pageKey,
-                page.bodyHtml ? "bodyHtml" : "body",
-                page.bodyHtml ? "html" : "text",
+                "bodyHtml", "html",
               )
             : {})}
           className="body-md whitespace-pre-wrap"

@@ -33,6 +33,11 @@ const templates: { key: EditKey; name: string; description: string }[] = [
     description: "Conferma di cancellazione",
   },
   {
+    key: "refunded",
+    name: "Rimborso cliente",
+    description: "Conferma del rimborso registrato",
+  },
+  {
     key: "admin",
     name: "Avviso operativo · UWT",
     description: "Comunicazione a staff e portali",

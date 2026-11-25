@@ -4,6 +4,7 @@ import Link from "next/link";
 import { canonicalPath } from "@/lib/public-paths";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
+import { SiteRichText } from "./SiteRichText";
 import { SocialLinks } from "./SocialLinks";
 export async function Footer() {
   const c = await publicSiteContent();
@@ -20,12 +21,7 @@ export async function Footer() {
           >
             {g.brandName}
           </strong>
-          <p
-            {...siteEdit("globals.footerText")}
-            className="mt-4 text-sm text-white/85"
-          >
-            {g.footerText}
-          </p>
+          <SiteRichText content={c} path="globals.footerText" text={g.footerText} className="mt-4 text-sm text-white/85" />
         </div>
         <div>
           <h2 className="mb-4 font-normal text-white">Contatti</h2>
@@ -74,7 +70,7 @@ export async function Footer() {
       </div>
       <div className="border-t border-white/10 py-5">
         <div className="container-page flex flex-wrap items-center justify-between gap-4 text-sm text-white/80">
-          <p {...siteEdit("globals.footerNote")}>{g.footerNote}</p>
+          <SiteRichText content={c} path="globals.footerNote" text={g.footerNote} />
           <Link href="/accesso" className="underline underline-offset-4">
             Area staff
           </Link>

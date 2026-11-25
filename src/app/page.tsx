@@ -1,3 +1,4 @@
+import { SiteRichText } from "@/components/SiteRichText";
 import { siteEdit } from "@/lib/visual-content";
 import { MeetingPoints } from "@/components/MeetingPoints";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -117,12 +118,7 @@ export default async function HomePage() {
                 {h.heroTitle}
               </h1>
               <div className={styles.heroCtaBlock}>
-                <p
-                  {...siteEdit("home.heroBody")}
-                  className="body-md mb-8 !text-white/90"
-                >
-                  {h.heroBody}
-                </p>
+                <SiteRichText content={c} path="home.heroBody" text={h.heroBody} className="body-md mb-8 !text-white/90" />
                 <div className={styles.heroActions}>
                   <HeroTourCta
                     href={h.primaryHref}
@@ -213,12 +209,7 @@ export default async function HomePage() {
           <h2 {...siteEdit("home.toursTitle")} className="display-lg mb-3">
             {h.toursTitle}
           </h2>
-          <p
-            {...siteEdit("home.toursBody")}
-            className={`${styles.toursLead} body-md mb-8`}
-          >
-            {h.toursBody}
-          </p>
+          <SiteRichText content={c} path="home.toursBody" text={h.toursBody} className={`${styles.toursLead} body-md mb-8`} />
           {groups.length > 0 ? (
             <ExperienceRotator
               groups={groups}
@@ -259,12 +250,7 @@ export default async function HomePage() {
                 ),
               )}
             </h2>
-            <p
-              {...siteEdit("home.trustBody")}
-              className="body-md mt-5 !text-white/85"
-            >
-              {h.trustBody}
-            </p>
+            <SiteRichText content={c} path="home.trustBody" text={h.trustBody} className="body-md mt-5 !text-white/85" />
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {h.pillars.map((pillar, index) => {
@@ -280,12 +266,7 @@ export default async function HomePage() {
                       {pillar.title}
                     </h3>
                   </div>
-                  <p
-                    {...siteEdit(`home.pillars.${index}.text`)}
-                    className="body-sm mt-3 !text-white/80"
-                  >
-                    {pillar.text}
-                  </p>
+                  <SiteRichText content={c} path={`home.pillars.${index}.text`} text={pillar.text} className="body-sm mt-3 !text-white/80" />
                 </article>
               );
             })}
@@ -303,12 +284,7 @@ export default async function HomePage() {
           <h2 {...siteEdit("home.galleryTitle")} className="display-lg mb-3">
             {h.galleryTitle}
           </h2>
-          <p
-            {...siteEdit("home.galleryBody")}
-            className={`${styles.galleryLead} body-md mb-8`}
-          >
-            {h.galleryBody}
-          </p>
+          <SiteRichText content={c} path="home.galleryBody" text={h.galleryBody} className={`${styles.galleryLead} body-md mb-8`} />
           <HomeGallery items={c.gallery} />
         </div>
       </section>
@@ -316,10 +292,8 @@ export default async function HomePage() {
         <h2 {...siteEdit("home.answersTitle")} className="display-lg mb-3">
           {h.answersTitle}
         </h2>
-        <p {...siteEdit("home.answersBody")} className="mb-6">
-          {h.answersBody}
-        </p>
-        <HomeAnswers items={c.answers} />
+        <SiteRichText content={c} path="home.answersBody" text={h.answersBody} className="mb-6" />
+        <HomeAnswers items={c.answers} formattedText={c.formattedText} />
       </section>
       <MeetingPoints
         points={[
@@ -375,9 +349,7 @@ export default async function HomePage() {
                     ),
                   )}
               </h2>
-              <p {...siteEdit("home.partnerBody")} className="body-md">
-                {h.partnerBody}
-              </p>
+              <SiteRichText content={c} path="home.partnerBody" text={h.partnerBody} className="body-md" />
               <Link
                 href="/partner-europa"
                 className={`button-primary ${styles.partnerCta}`}

@@ -16,6 +16,8 @@ export type TripAdvisorReview = {
 };
 
 const AUTOPLAY_MS = 5000;
+const tripAdvisorMarkSrc =
+  "https://static.tacdn.com/img2/brand_refresh/Tripadvisor_logomark.svg";
 
 function WriteReviewCta({
   profileUrl,
@@ -34,6 +36,14 @@ function WriteReviewCta({
           target="_blank"
           rel="noreferrer"
         >
+          <span className={styles.tripadvisorIconBox}>
+            <Image unoptimized
+              src={tripAdvisorMarkSrc}
+              alt=""
+              width={16}
+              height={16}
+            />
+          </span>
           Scrivi una recensione su Tripadvisor
           <ArrowUpRight
             size={15}
@@ -46,9 +56,22 @@ function WriteReviewCta({
             className={`${styles.writeReviewBtn} ${styles.writeReviewBtnGoogle}`}
             href={googleReviewUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
-            Scrivi una recensione su Google
+            <span className={styles.tripadvisorIconBox}>
+              <Image unoptimized
+                src="https://www.google.com/favicon.ico"
+                alt=""
+                width={16}
+                height={16}
+              />
+            </span>
+            Recensisci su Google
+            <ArrowUpRight
+              size={15}
+              className={styles.reviewsButtonArrow}
+              aria-hidden
+            />
           </a>
         ) : null}
       </div>
@@ -243,7 +266,7 @@ export function TripAdvisorWidget({
         <div className={styles.showcaseCopy}>
           <div className={styles.showcaseBrand}>
             <TripAdvisorLogo className={styles.logo} />
-            <span>TripAdvisor / Le vostre storie</span>
+            <span>Tripadvisor</span>
           </div>
           <h2 id="reviews-title" className={styles.showcaseTitle}>
             <span {...siteEdit("globals.tripAdvisorTitle")}>
@@ -387,23 +410,13 @@ export function TripAdvisorWidget({
 
 function TripAdvisorLogo({ className }: { className?: string }) {
   return (
-    <svg
+    <Image unoptimized
       className={className}
-      viewBox="0 0 48 48"
-      role="img"
-      aria-label="TripAdvisor"
-    >
-      <circle cx="24" cy="24" r="24" fill="#00AA6C" />
-      <circle cx="17" cy="22" r="7.2" fill="#fff" />
-      <circle cx="31" cy="22" r="7.2" fill="#fff" />
-      <circle cx="17" cy="22" r="2.6" fill="#034B33" />
-      <circle cx="31" cy="22" r="2.6" fill="#034B33" />
-      <path
-        d="M24 31.8c-2.4 0-4.4-1.2-5.2-2.8.9 1.9 2.9 3.2 5.2 3.2s4.3-1.3 5.2-3.2c-.8 1.6-2.8 2.8-5.2 2.8z"
-        fill="#fff"
-        opacity="0.92"
-      />
-    </svg>
+      src={tripAdvisorMarkSrc}
+      alt="Tripadvisor"
+      width={48}
+      height={48}
+    />
   );
 }
 

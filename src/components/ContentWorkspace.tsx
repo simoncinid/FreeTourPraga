@@ -11,6 +11,7 @@ import {
 } from "@/lib/content-routing";
 import type { Tour } from "@/lib/types";
 import { siteNavigation } from "@/lib/navigation";
+import { RichTextEditor } from "./RichTextEditor";
 import { SectionBlocksEditor } from "./SectionBlocksEditor";
 
 import Link from "next/link";
@@ -120,12 +121,8 @@ function PageEditor({
               setPage((previous) => ({ ...previous, subtitle }))
             }
           />
-          <Input
-            label="Testo pagina"
-            value={page.body}
-            onChange={(body) => setPage((previous) => ({ ...previous, body }))}
-            multiline
-          />
+          <RichTextEditor label="Testo pagina" html={page.bodyHtml} text={page.body}
+            onChange={(bodyHtml, body) => setPage((previous) => ({ ...previous, bodyHtml, body }))} />
         </>
       )}
       {!seoOnly && page.benefits && (

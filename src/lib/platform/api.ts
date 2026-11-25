@@ -14,6 +14,7 @@ import { calendarOperationSchema } from "./validation";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
+import { sanitizeRichText } from "../rich-text";
 import { tourGalleryImages } from "../tour-gallery";
 import QRCode from "qrcode";
 import { audit, localMode, readState, transaction } from "./store";
@@ -30,6 +31,7 @@ import {
 import {
   affiliateSchema,
   checkoutSchema,
+  publicCheckoutSchema,
   pageSchema,
   settingsSchema,
   tourSchema,
@@ -48,7 +50,8 @@ import {
   quote,
   releaseExpired,
 } from "./booking";
-import { runJobs } from "./providers";
+import { runJobs, sendEmailTest } from "./providers";
+import { emailProvider } from "./email-delivery";
 import type { Session } from "./security";
 import { maintainPrivacy } from "./maintenance";
 import { uploadMedia } from "./media";
@@ -61,10 +64,12 @@ import {
   generateScheduledSlots,
   isClosed,
   isTourClosed,
+  onBaseSchedule,
   publicTour,
 } from "./scheduling";
 import { isFreeTour, tourPrices } from "../tour-rules";
 import { normalizeSettings } from "./email-templates";
+import { pragueLocal } from "./time";
 const ok = (data: unknown) =>
   NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 export async function platformApi(request: Request, path: string[]) {
@@ -193,7 +198,7 @@ export async function platformApi(request: Request, path: string[]) {
     }
     if (route === "checkout" && method === "POST") {
       await rateLimit(request, "checkout", 15);
-      const body = checkoutSchema.parse(await jsonBody(request));
+      const body = publicCheckoutSchema.parse(await jsonBody(request));
       const key = request.headers.get("idempotency-key");
       if (!key || key.length > 100)
         throw new HttpError(400, "Idempotency-Key richiesta");
@@ -265,6 +270,7 @@ export async function platformApi(request: Request, path: string[]) {
           type: "email",
           to:
             process.env.ADMIN_EMAIL || siteContent(s.siteContent).globals.email,
+          replyTo: body.email,
           subject: `Richiesta ${body.type}`,
           text: `${body.name}\n${body.email}\n${body.phone || ""}\n${body.message}`,
           runAt: new Date().toISOString(),
@@ -302,7 +308,8 @@ export async function platformApi(request: Request, path: string[]) {
           integrations: {
             database: !localMode(),
             stripe: false,
-            smtp: !!process.env.SMTP_HOST,
+            smtp: emailProvider() === "smtp",
+            emailProvider: emailProvider(),
             whatsapp: false,
             imap: false,
           },
@@ -391,12 +398,21 @@ export async function platformApi(request: Request, path: string[]) {
       }
       if (route === "admin/calendar/operation" && method === "POST") {
         const body = calendarOperationSchema.parse(await jsonBody(request));
+        let warnings: string[] = [];
         const tours = await transaction((s) => {
-          calendarOperation(s, body);
+          const ops = body.dates
+            ? [...new Set(body.dates)].map((date) => ({
+                ...body,
+                from: date,
+                to: date,
+                weekdays: [new Date(`${date}T12:00:00Z`).getUTCDay()],
+              }))
+            : [body];
+          warnings = ops.flatMap((op) => calendarOperation(s, op, user.email).warnings);
           audit(s, user.email, "calendar.operation", JSON.stringify(body));
           return s.tours.filter((t) => body.tourIds.includes(t.id));
         });
-        return ok({ ok: true, tours });
+        return ok({ ok: true, tours, warnings });
       }
       if (route === "admin/calendar/closure" && method === "POST") {
         const body = z
@@ -454,11 +470,12 @@ export async function platformApi(request: Request, path: string[]) {
             adults: z.number().int().min(1).max(100).optional(),
             children: z.number().int().min(0).max(100).optional(),
             infants: z.number().int().min(0).max(100).optional(),
-            action: z.enum(["cancel", "move", "update", "refund-record"]),
+            action: z.enum(["cancel", "move", "update", "refund-record", "settle-order"]),
             confirmRefund: z.boolean().optional(),
             reason: z.string().max(1000).optional(),
             slotId: z.string().optional(),
             notes: z.string().max(2000).optional(),
+            notesHtml: z.string().max(16000).transform(sanitizeRichText).optional(),
             status: z.enum(["confirmed", "present", "no_show"]).optional(),
             paymentStatus: z
               .enum(["paid", "pending", "not_required"])
@@ -466,6 +483,25 @@ export async function platformApi(request: Request, path: string[]) {
             notify: z.boolean().default(false),
           })
           .parse(await jsonBody(request));
+        if (body.action === "settle-order") {
+          return ok(await transaction((s) => {
+            const booking = s.bookings.find((b) => b.pnr === body.pnr);
+            if (booking?.paymentMethod !== "whatsapp" ||
+              (booking.status !== "pending" && booking.paymentStatus !== "paid"))
+              throw new HttpError(409, "Prenotazione non più in attesa di pagamento");
+            const pending = s.bookings.filter((b) =>
+              b.orderId === booking.orderId && b.status === "pending" &&
+              b.paymentMethod === "whatsapp",
+            );
+            for (const b of pending) {
+              b.paymentStatus = "paid";
+              b.status = "confirmed";
+              notification(s, b, "Confermata");
+              audit(s, user.email, "booking.payment-recorded", b.pnr);
+            }
+            return { ok: true };
+          }));
+        }
         if (body.action === "refund-record") {
           if (body.confirmRefund !== true)
             throw new HttpError(
@@ -526,7 +562,7 @@ export async function platformApi(request: Request, path: string[]) {
               nextInfants !== b.infants;
             if (changed) {
               if (
-                !["cash", "bank_transfer"].includes(b.paymentMethod) ||
+                !["cash", "bank_transfer", "whatsapp"].includes(b.paymentMethod) ||
                 b.paymentStatus === "paid"
               )
                 throw new HttpError(
@@ -612,10 +648,20 @@ export async function platformApi(request: Request, path: string[]) {
             if (body.name) b.name = body.name;
             if (body.email) b.email = body.email.toLowerCase();
             if (body.phone) b.phone = body.phone;
-            if (body.notes !== undefined) b.notes = body.notes;
+            if (body.notes !== undefined) {
+              if (body.notes !== b.notes && body.notesHtml === undefined) b.notesHtml = undefined;
+              b.notes = body.notes;
+            }
+            if (body.notesHtml !== undefined) b.notesHtml = body.notesHtml;
+            const pending = b.status === "pending" && b.paymentMethod === "whatsapp";
+            if (pending && (body.status || body.paymentStatus === "not_required"))
+              throw new HttpError(409, "Registra il pagamento per confermare la prenotazione");
             if (body.status) b.status = body.status;
             if (body.paymentStatus) b.paymentStatus = body.paymentStatus;
-            if (body.notify) notification(s, b, "Aggiornata");
+            if (pending && b.paymentStatus === "paid") {
+              b.status = "confirmed";
+              notification(s, b, "Confermata");
+            } else if (body.notify && !pending) notification(s, b, "Aggiornata");
             audit(s, user.email, "booking.update", b.pnr);
             return b;
           }),
@@ -646,7 +692,7 @@ export async function platformApi(request: Request, path: string[]) {
       }
       if (route === "admin/jobs/run" && method === "POST")
         return ok({ results: await runJobs() });
-      if (route === "admin/smtp/test" && method === "POST") {
+      if (["admin/smtp/test", "admin/email/test"].includes(route) && method === "POST") {
         if (user.role !== "admin") throw new HttpError(403, "Solo admin");
         let to = "simoncinidiego10@gmail.com";
         try {
@@ -657,10 +703,46 @@ export async function platformApi(request: Request, path: string[]) {
         } catch {
           /* body opzionale */
         }
-        if (!process.env.SMTP_HOST)
-          throw new HttpError(503, "SMTP non configurato");
-        const { sendSmtpTest } = await import("./providers");
-        return ok(await sendSmtpTest(to));
+        if (!emailProvider()) throw new HttpError(503, "Provider email non configurato");
+        return ok(await sendEmailTest(to));
+      }
+      if (route === "admin/tickets" && method === "POST") {
+        const body = z
+          .object({
+            title: z.string().trim().min(3).max(160),
+            body: z.string().trim().min(3).max(5000),
+          })
+          .parse(await jsonBody(request));
+        await transaction((s) => {
+          const now = new Date().toISOString();
+          s.tickets ??= [];
+          s.tickets.unshift({
+            id: randomUUID(),
+            title: body.title,
+            body: body.body,
+            status: "open",
+            at: now,
+            updatedAt: now,
+          });
+          audit(s, user.email, "ticket.open", body.title);
+        });
+        return ok({ ok: true });
+      }
+      if (route === "admin/tickets" && method === "PATCH") {
+        const body = z
+          .object({
+            id: z.string(),
+            status: z.enum(["open", "working", "done"]),
+          })
+          .parse(await jsonBody(request));
+        await transaction((s) => {
+          const ticket = (s.tickets ?? []).find((item) => item.id === body.id);
+          if (!ticket) throw new HttpError(404, "Ticket non trovato");
+          ticket.status = body.status;
+          ticket.updatedAt = new Date().toISOString();
+          audit(s, user.email, "ticket.update", ticket.id);
+        });
+        return ok({ ok: true });
       }
       if (route === "admin/inquiry" && method === "PATCH") {
         const body = z
@@ -774,6 +856,28 @@ export async function platformApi(request: Request, path: string[]) {
         return ok({ ok: true });
       }
 
+      if (route === "admin/tour" && ["PATCH", "DELETE"].includes(method)) {
+        const body = z.object({
+          id: z.string(),
+          published: z.boolean().optional(),
+          archiveConfirmed: z.literal(true).optional(),
+        }).parse(await jsonBody(request));
+        await transaction((s) => {
+          const tour = s.tours.find(({ id }) => id === body.id);
+          if (!tour || tour.archivedAt) throw new HttpError(404, "Tour non trovato");
+          if (method === "DELETE") {
+            if (!body.archiveConfirmed) throw new HttpError(400, "Conferma l’archiviazione");
+            tour.archivedAt = new Date().toISOString();
+            tour.published = false;
+            audit(s, user.email, "tour.archive", tour.slug);
+          } else {
+            if (body.published === undefined) throw new HttpError(400, "Indica lo stato di pubblicazione");
+            tour.published = body.published;
+            audit(s, user.email, tour.published ? "tour.publish" : "tour.hide", tour.slug);
+          }
+        });
+        return ok({ ok: true });
+      }
       if (section === "tour" && method === "PUT") {
         const input = tourSchema.parse(await jsonBody(request));
         if (
@@ -791,6 +895,7 @@ export async function platformApi(request: Request, path: string[]) {
             if (s.tours.some((t) => t.id !== input.id && t.slug === input.slug))
               throw new HttpError(409, "Slug già in uso");
             const old = s.tours.find((t) => t.id === input.id);
+            if (old?.archivedAt) throw new HttpError(409, "Tour archiviato");
             if (
               old &&
               !jsonEqual(old.calendarRules ?? [], input.calendarRules ?? [])
@@ -837,8 +942,15 @@ export async function platformApi(request: Request, path: string[]) {
               !input.isFreeTour
             )
               input.priceLabel = "";
-            if (old && input.description !== old.description)
+            if (old && input.description !== old.description && input.descriptionHtml === old.descriptionHtml)
               input.descriptionHtml = undefined;
+            if (old && input.formattedCopy) {
+              const formatted = input.formattedCopy;
+              for (const field of ["shortDescription", "highlights", "inclusions", "exclusions", "safetyNotes"] as const) {
+                if (!jsonEqual(old[field], input[field]) && jsonEqual(old.formattedCopy?.[field], formatted[field]))
+                  delete formatted[field];
+              }
+            }
             if (
               old &&
               old.slug !== input.slug &&
@@ -882,7 +994,7 @@ export async function platformApi(request: Request, path: string[]) {
             if (
               old?.slots.some(
                 (x) =>
-                  x.reserved > 0 && !input.slots.some((n) => n.id === x.id),
+                  s.bookings.some((b) => b.slotId === x.id) && !input.slots.some((n) => n.id === x.id),
               )
             )
               throw new HttpError(
@@ -896,23 +1008,55 @@ export async function platformApi(request: Request, path: string[]) {
               old?.highlightGalleries
             )
               input.highlightGalleries = old.highlightGalleries;
-            if (!jsonEqual(old?.schedule, input.schedule)) {
+            const scheduleChanged = !jsonEqual(old?.schedule, input.schedule);
+            const at = new Date().toISOString();
+            const calendarChanges: NonNullable<typeof input.calendarLog> = [];
+            const oldClosures = new Map((old?.closures ?? []).map(({ date, times }) => [date, times]));
+            const newClosures = new Map((input.closures ?? []).map(({ date, times }) => [date, times]));
+            for (const date of new Set([...oldClosures.keys(), ...newClosures.keys()])) {
+              if (!jsonEqual(oldClosures.get(date), newClosures.get(date)))
+                calendarChanges.push({ at, actor: user.email, from: date, to: date });
+            }
+            if (scheduleChanged) {
+              const schedules = [old?.schedule, input.schedule].filter((schedule) => schedule?.enabled);
+              const from = schedules.map((schedule) => schedule!.from).sort()[0];
+              const to = schedules.map((schedule) => schedule!.to).sort().at(-1);
+              if (from && to) calendarChanges.push({ at, actor: user.email, from, to });
+            }
+            input.calendarLog = calendarChanges.length
+              ? [...calendarChanges, ...(old?.calendarLog ?? [])].slice(0, 40)
+              : old?.calendarLog;
+            if (scheduleChanged) {
+              const now = Date.now();
+              const bookedSlots = new Set(s.bookings.map((booking) => booking.slotId));
               input.slots = input.slots.filter(
                 (slot) =>
                   slot.id.startsWith("extra:") ||
                   (!input.schedule?.enabled &&
                     !slot.id.startsWith("schedule:")) ||
-                  s.bookings.some((b) => b.slotId === slot.id) ||
-                  Date.parse(slot.startsAt) < Date.now(),
+                  bookedSlots.has(slot.id) ||
+                  slot.reserved > 0 ||
+                  Date.parse(slot.startsAt) <= now,
               );
-              for (const slot of input.slots)
+              for (const slot of input.slots) {
                 if (
-                  Date.parse(slot.startsAt) > Date.now() &&
-                  !slot.id.startsWith("extra:")
+                  Date.parse(slot.startsAt) <= now ||
+                  slot.id.startsWith("extra:") ||
+                  (!input.schedule?.enabled && !slot.id.startsWith("schedule:"))
                 )
+                  continue;
+                const local = pragueLocal(slot.startsAt);
+                if (onBaseSchedule(input, local.slice(0, 10), local.slice(11, 16))) {
+                  slot.closed = false;
+                  slot.capacity = Math.max(slot.reserved, input.schedule!.capacity);
+                } else {
                   slot.closed = true;
+                }
+              }
+              generateScheduledSlots(input, now, bookedSlots);
+            } else {
+              generateScheduledSlots(input);
             }
-            generateScheduledSlots(input);
             const index = s.tours.findIndex((t) => t.id === input.id);
             if (index < 0) s.tours.push(input);
             else s.tours[index] = input;
@@ -960,7 +1104,7 @@ export async function platformApi(request: Request, path: string[]) {
                 409,
                 "Conserva l'indirizzo storico della pagina pubblicata",
               );
-            if (previous && previous.body !== body.page.body)
+            if (previous && previous.body !== body.page.body && body.page.bodyHtml === previous.bodyHtml)
               body.page.bodyHtml = undefined;
             s.pages[body.key] = body.page;
           }

@@ -28,6 +28,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "dynamic-media-cdn.tripadvisor.com" },
+      { protocol: "https", hostname: "static.tacdn.com" },
       ...(process.env.MEDIA_PUBLIC_BASE
         ? [
             {
@@ -56,7 +58,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.tripadvisor.it https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com https://www.tripadvisor.it; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src 'self' https://www.google.com https://www.tripadvisor.com https://www.tripadvisor.it https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`,
+            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.googleadservices.com https://www.tripadvisor.com https://www.tripadvisor.it https://www.jscache.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.digitaloceanspaces.com https://images.unsplash.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.tripadvisor.com https://www.tripadvisor.it https://dynamic-media-cdn.tripadvisor.com https://static.tacdn.com; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; frame-src 'self' https://www.google.com https://www.tripadvisor.com https://www.tripadvisor.it https://td.doubleclick.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`,
           },
         ],
       },

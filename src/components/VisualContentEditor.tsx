@@ -1,4 +1,5 @@
 "use client";
+import { RichTextEditor } from "./RichTextEditor";
 import { AdminNotice } from "./AdminNotice";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -611,12 +612,18 @@ export function VisualContentEditor({
       const b = selection.binding,
         last = b.path.at(-1);
       const sibling =
-        last === "html" ? "text" : last === "bodyHtml" ? "body" : null;
-      if (sibling) {
-        const doc = new DOMParser().parseFromString(value, "text/html");
+        ({ html: "text", bodyHtml: "body", introHtml: "intro", answerHtml: "a" } as Record<string, string>)[last ?? ""];
+      const plainPath = b.scope === "site" && b.path[0] === "formattedText"
+        ? b.path[1].split("-")
+        : sibling ? [...b.path.slice(0, -1), sibling] : null;
+      if (plainPath) {
+        const doc = new DOMParser().parseFromString(
+          value.replace(/<\/(?:p|div|h[1-6]|li)>|<br\s*\/?>/gi, "$&\n"),
+          "text/html",
+        );
         put(
-          { ...b, path: [...b.path.slice(0, -1), sibling] },
-          doc.body.textContent || "",
+          { ...b, path: plainPath },
+          doc.body.textContent?.trim() || "",
         );
       }
     }
@@ -843,34 +850,7 @@ export function VisualContentEditor({
                 onNotice={setNotice}
               />
             ) : selection.kind === "html" ? (
-              <div
-                className={css.richEditor}
-                contentEditable
-                suppressContentEditableWarning
-                role="textbox"
-                aria-label="Testo formattato"
-                dangerouslySetInnerHTML={{ __html: selection.value }}
-                onInput={(e) => setValue(e.currentTarget.innerHTML)}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const text = e.clipboardData.getData("text/plain");
-                  const range = window.getSelection()?.getRangeAt(0);
-                  if (range) {
-                    range.deleteContents();
-                    const fragment = document.createDocumentFragment();
-                    text
-                      .replace(/\r\n?/g, "\n")
-                      .split("\n")
-                      .forEach((line, index) => {
-                        if (index)
-                          fragment.append(document.createElement("br"));
-                        fragment.append(document.createTextNode(line));
-                      });
-                    range.insertNode(fragment);
-                    setValue(e.currentTarget.innerHTML);
-                  }
-                }}
-              />
+              <RichTextEditor label="Testo formattato" html={value} onChange={setValue} />
             ) : selection.kind === "money" ? (
               <label>
                 Prezzo offerta ({selection.currency || "EUR"})

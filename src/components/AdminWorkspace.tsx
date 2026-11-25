@@ -5,12 +5,15 @@ import { AdminOverview } from "./AdminOverview";
 import { InquiriesManager } from "./InquiriesManager";
 import { AdminEmailCenter } from "./AdminEmailCenter";
 import { AdminNotice } from "./AdminNotice";
+import { RichTextEditor } from "./RichTextEditor";
+import { TourCardEditor } from "./TourCardEditor";
 import { AdminTourList } from "./AdminTourList";
 import { SlotDatePicker } from "./SlotDatePicker";
 import { Pencil } from "lucide-react";
 import { jsonEqual } from "@/lib/json-equal";
 import { categoriesFor } from "@/lib/participant-pricing";
 import { OperationalCalendar } from "./OperationalCalendar";
+import { SupportTickets } from "./SupportTickets";
 import { AffiliatesSection } from "./AffiliatesSection";
 import { PartnersManager } from "./PartnersManager";
 import { SectionBlocksEditor } from "./SectionBlocksEditor";
@@ -26,6 +29,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -38,6 +42,7 @@ import {
   Mail,
   Settings2,
   FileText,
+  LifeBuoy,
   RefreshCw,
   LogOut,
   Plus,
@@ -61,6 +66,7 @@ const navigation = [
   ["prenotazioni", "Prenotazioni", Ticket],
   ["tour", "Tour e orari", MapIcon],
   ["calendario", "Calendario", CalendarDays],
+  ["supporto", "Supporto", LifeBuoy],
   ["partner-europa", "Partner Europa", Users],
   ["affiliati", "Affiliati", Users],
   ["pre-tour", "Email", Mail],
@@ -83,7 +89,7 @@ const labels: Record<string, string> = {
   present: "Presente",
   no_show: "Assente",
   paid: "Pagato",
-  not_required: "Saldo sul posto",
+  not_required: "Pagamento non richiesto",
   refunded: "Rimborsato",
   failed: "Da verificare",
   queued: "In coda",
@@ -603,7 +609,7 @@ export function AdminWorkspace() {
               {section === "prenotazioni" &&
                 (detail === "nuova" ? (
                   <ManualBooking
-                    tours={data.tours}
+                    tours={data.tours.filter((t) => t.published && !t.archivedAt)}
                     busy={busy}
                     save={(input) => mutate("manual", input)}
                   />
@@ -768,13 +774,17 @@ export function AdminWorkspace() {
                         commissionPackageWith: [],
                         closures: [],
                         published: false,
+                        archivedAt: undefined,
                         slots: [],
                       }
                     }
                     calendar={(reconcile) =>
                       data.tours.some((t) => t.slug === detail) ? (
                         <OperationalCalendar
-                          tours={data.tours}
+                          refresh={load}
+                          tours={data.tours.filter((t) => !t.archivedAt)}
+                          closedDates={data.closedDates}
+                          notices={data.notices}
                           fixedTourId={
                             data.tours.find((t) => t.slug === detail)?.id
                           }
@@ -798,7 +808,7 @@ export function AdminWorkspace() {
                         </p>
                       )
                     }
-                    availableTours={data.tours}
+                    availableTours={data.tours.filter((t) => !t.archivedAt)}
                     defaults={data.settings}
                     categories={[
                       ...new Set(
@@ -820,11 +830,14 @@ export function AdminWorkspace() {
                     }}
                   />
                 ) : (
-                  <AdminTourList tours={data.tours} />
+                  <AdminTourList tours={data.tours} busy={busy} update={(body, method) => mutate("tour", body, method)} />
                 ))}
               {section === "calendario" && (
                 <OperationalCalendar
-                  tours={data.tours}
+                  refresh={load}
+                  tours={data.tours.filter((t) => !t.archivedAt)}
+                  closedDates={data.closedDates}
+                  notices={data.notices}
                   busy={busy}
                   save={async (body) => {
                     const result = await mutate("calendar/operation", body);
@@ -903,7 +916,7 @@ export function AdminWorkspace() {
                           </details>
                           {m.status === "review" && !m.pnr && (
                             <ManualBooking
-                              tours={data.tours}
+                              tours={data.tours.filter((t) => t.published && !t.archivedAt)}
                               busy={busy}
                               save={(booking) =>
                                 mutate("ota/approve", { id: m.id, booking })
@@ -962,6 +975,13 @@ export function AdminWorkspace() {
                   saveSite={(content) => mutate("site-content", content, "PUT")}
                   savePage={(body) => mutate("page", body, "PUT")}
                   onChromeChange={setContentChrome}
+                />
+              )}
+              {section === "supporto" && (
+                <SupportTickets
+                  tickets={data.tickets ?? []}
+                  busy={busy}
+                  save={(body, method) => mutate("tickets", body, method)}
                 />
               )}
               {section === "richieste" && (
@@ -1062,6 +1082,7 @@ function ManualBooking({
   const [tour, setTour] = useState(tours[0]?.slug || "");
   const [now] = useState(() => Date.now());
   const [message, setMessage] = useState("");
+  const [notes, setNotes] = useState({ html: "", text: "" });
   const selected = tours.find((t) => t.slug === tour);
   return (
     <form
@@ -1089,7 +1110,8 @@ function ManualBooking({
             },
           ],
           paymentMethod: "cash",
-          notes: f.get("notes"),
+          notes: notes.text,
+          notesHtml: notes.html || undefined,
           affiliateCode: "",
           termsAccepted: true,
           whatsappConsent: false,
@@ -1174,10 +1196,7 @@ function ManualBooking({
           ))}
         </div>
       )}
-      <label>
-        Note
-        <textarea name="notes" className="text-input" />
-      </label>
+      <RichTextEditor label="Note" html={notes.html} onChange={(html, text) => setNotes({ html, text })} />
       <label className="flex gap-3 text-sm">
         <input required type="checkbox" />
         Confermo che il cliente ha accettato le condizioni di prenotazione.
@@ -1202,6 +1221,7 @@ function BookingDetail({
 }) {
   const [editCustomer, setEditCustomer] = useState(false);
   const [notes, setNotes] = useState(b.notes);
+  const [notesHtml, setNotesHtml] = useState(b.notesHtml);
   const [name, setName] = useState(b.name),
     [email, setEmail] = useState(b.email),
     [phone, setPhone] = useState(b.phone);
@@ -1272,9 +1292,19 @@ function BookingDetail({
             {formatMoney(b.discountCents, b.currency)} · {b.source}
           </p>
           <div className="flex gap-3">
-            <Chip value={b.status} />
-            <Chip value={b.paymentStatus} />
+            {b.status === "pending" && b.paymentMethod === "whatsapp"
+              ? <span className="status-chip status-warning">In attesa di pagamento</span>
+              : <><Chip value={b.status} /><Chip value={b.paymentStatus} /></>}
           </div>
+          {b.status === "pending" && b.paymentMethod === "whatsapp" && (
+            <button type="button" className="button-primary" disabled={busy}
+              onClick={() => {
+                if (window.confirm("Il pagamento dell’intero ordine è stato ricevuto?"))
+                  void save({ pnr: b.pnr, action: "settle-order" });
+              }}>
+              Registra saldo dell’ordine
+            </button>
+          )}
         </div>
         {editCustomer && (
           <div className="form-grid">
@@ -1305,7 +1335,7 @@ function BookingDetail({
           </ul>
         )}
         {!b.categorySnapshot &&
-          ["cash", "bank_transfer"].includes(b.paymentMethod) &&
+          ["cash", "bank_transfer", "whatsapp"].includes(b.paymentMethod) &&
           b.paymentStatus !== "paid" && (
             <div className="form-grid">
               <Field
@@ -1336,7 +1366,8 @@ function BookingDetail({
           )}
         <details className="booking-notes">
           <summary>Note operative{notes ? " · presenti" : ""}</summary>
-          <Text label="Note operative" value={notes} onChange={setNotes} />
+          <RichTextEditor label="Note operative" text={notes} html={notesHtml}
+            onChange={(html, plain) => { setNotes(plain); setNotesHtml(html); }} />
         </details>
         <div className="form-grid">
           <label>
@@ -1370,7 +1401,7 @@ function BookingDetail({
                 setPayment(e.target.value as Reservation["paymentStatus"])
               }
             >
-              {["not_required", "paid", "pending"].map((x) => (
+              {(b.status === "pending" && b.paymentMethod === "whatsapp" ? ["pending", "paid"] : ["not_required", "paid", "pending"]).map((x) => (
                 <option key={x} value={x}>
                   {labels[x]}
                 </option>
@@ -1394,6 +1425,7 @@ function BookingDetail({
               pnr: b.pnr,
               action: "update",
               notes,
+              notesHtml,
               name,
               email,
               phone,
@@ -1537,18 +1569,27 @@ function TourEditor({
   }));
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const calendarDialog = useRef<HTMLDialogElement>(null);
   const set = (key: keyof CatalogTour, value: unknown) =>
     setT((p) => ({ ...p, [key]: value }));
+  useEffect(() => {
+    const el = calendarDialog.current;
+    if (!el) return;
+    if (calendarOpen && !el.open) el.showModal();
+    if (!calendarOpen && el.open) el.close();
+  }, [calendarOpen]);
   return (
     <div className="tour-admin-screen">
       <nav className="tour-admin-tabs" aria-label="Sezioni del tour">
         {[
           ["content", "Contenuto"],
-          ["categories", "Categorie e prezzi"],
-          ["rules", "Gruppi e pagamenti"],
-          ["operations", "Programmazione"],
+          ["card", "Anteprima"],
+          ["categories", "Prezzi"],
+          ["rules", "Gruppi"],
+          ["operations", "Orari"],
           ["commissions", "Commissioni"],
-          ["settings", "Dati e SEO"],
+          ["settings", "SEO"],
           ["sections", "Sezioni"],
           ["gallery", "Galleria"],
           ["calendar", "Calendario"],
@@ -1556,8 +1597,10 @@ function TourEditor({
           <button
             type="button"
             key={key}
-            aria-pressed={tab === key}
-            onClick={() => setTab(key)}
+            aria-pressed={key === "calendar" ? calendarOpen : tab === key}
+            onClick={() =>
+              key === "calendar" ? setCalendarOpen(true) : setTab(key)
+            }
           >
             {label}
           </button>
@@ -1565,7 +1608,7 @@ function TourEditor({
       </nav>
       <form
         className="tour-admin-form"
-        hidden={tab === "calendar"}
+        hidden={false}
         onInvalidCapture={(event) => {
           const input = event.target as HTMLInputElement;
           const panel =
@@ -1600,6 +1643,9 @@ function TourEditor({
         }}
       >
         <div className="tour-admin-panels">
+          <div className="tour-admin-pane" data-tour-panel="card" hidden={tab !== "card"}>
+            <TourCardEditor tour={t} onChange={(preview) => set("cardPreview", preview)} />
+          </div>
           <div
             data-tour-panel="content"
             className="tour-admin-pane"
@@ -1692,16 +1738,35 @@ function TourEditor({
           </button>
         </div>
       </form>
-      <div className="tour-admin-calendar" hidden={tab !== "calendar"}>
-        {calendar((updated) =>
+      <dialog
+        ref={calendarDialog}
+        className="calendar-day-modal tour-calendar-popup"
+        onClose={() => setCalendarOpen(false)}
+        onCancel={(event) => {
+          event.preventDefault();
+          setCalendarOpen(false);
+        }}
+      >
+        <div className="calendar-day-modal-head">
+          <h3>Calendario</h3>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={() => setCalendarOpen(false)}
+          >
+            Chiudi
+          </button>
+        </div>
+        {calendarOpen && calendar((updated) =>
           setT((current) => ({
             ...current,
             slots: updated.slots,
             calendarRules: updated.calendarRules,
+            calendarLog: updated.calendarLog,
             closures: updated.closures,
           })),
         )}
-      </div>
+      </dialog>
     </div>
   );
 }
@@ -1719,6 +1784,7 @@ function SettingsEditor({
     key:
       | "multiTourPercent"
       | "minimumTours"
+      | "paymentHoldMinutes"
       | "cancellationHours"
       | "lateRefundPercent"
       | "retentionDays",
@@ -1743,7 +1809,8 @@ function SettingsEditor({
       <h2 className="display-md">Regole commerciali</h2>
       <div className="form-grid">
         {field("multiTourPercent", "Sconto multi-tour (%)")}
-        {field("minimumTours", "Numero minimo di tour diversi")}
+        {field("minimumTours", "Numero minimo di tour a pagamento diversi")}
+        {field("paymentHoldMinutes", "Scadenza attesa pagamento (minuti)")}
         {field(
           "cancellationHours",
           "Cancellazione gratuita fino a (ore prima)",

@@ -1,6 +1,7 @@
 "use client";
 import { CONTENT_SECTION_STRUCTURE_ENABLED } from "@/lib/content-policy";
 
+import { RichTextEditor } from "./RichTextEditor";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ImageSourceField } from "./ImageSourceField";
@@ -88,13 +89,7 @@ export function BlogArticleEditor({
       articleIndex,
       (articles[articleIndex].blocks ?? []).map((block, i) =>
         i === blockIndex
-          ? ({
-              ...block,
-              ...patch,
-              ...(block.type === "text" && "text" in patch
-                ? { html: undefined }
-                : {}),
-            } as BlogBlock)
+          ? ({ ...block, ...patch } as BlogBlock)
           : block,
       ),
     );
@@ -224,13 +219,8 @@ export function BlogArticleEditor({
               (imageAlt) => update(index, { imageAlt }),
               "copertina",
             )}
-            <TextField
-              label="Introduzione dell’articolo (facoltativa)"
-              value={article.intro ?? ""}
-              onChange={(intro) => update(index, { intro })}
-              multiline
-              maxLength={20000}
-            />
+            <RichTextEditor label="Introduzione" text={article.intro} html={article.introHtml}
+              onChange={(html, intro) => update(index, { intro, introHtml: html })} />
             <div className="grid gap-4 border-t pt-5">
               <h3 className="text-lg font-bold">Contenuto dell’articolo</h3>
               {(article.blocks ?? []).map((block, blockIndex) => (
@@ -307,16 +297,8 @@ export function BlogArticleEditor({
                           updateBlock(index, blockIndex, { heading })
                         }
                       />
-                      <TextField
-                        label="Testo — separa i paragrafi con una riga vuota"
-                        value={block.text}
-                        onChange={(text) =>
-                          updateBlock(index, blockIndex, { text })
-                        }
-                        multiline
-                        required
-                        maxLength={20000}
-                      />
+                      <RichTextEditor label="Testo della sezione" text={block.text} html={block.html}
+                        onChange={(html, text) => updateBlock(index, blockIndex, { text, html })} />
                     </>
                   )}
                   {block.type !== "text" && (

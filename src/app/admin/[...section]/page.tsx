@@ -26,6 +26,7 @@ const allowed = [
   "report",
   "audit",
   "pre-tour",
+  "supporto",
 ];
 
 export default async function Page({

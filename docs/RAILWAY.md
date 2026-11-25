@@ -45,7 +45,11 @@ Dal gestionale, nella scheda del tour, scegliere contanti e/o bonifico. Contanti
 
 Stripe non è attivo nella versione corrente: `/api/stripe/webhook` restituisce 410 e le chiavi da sole non abilitano il checkout. La precedente procedura di attivazione tramite sole variabili è superata; non richiedere credenziali Stripe per completare il perimetro attuale.
 
-## Attivare SMTP (committente)
+## Attivare l'invio email
+
+Per Resend, verificare il dominio mittente con i record DNS del provider. Nel servizio **web** impostare `RESEND_API_KEY` come segreto e `RESEND_FROM=FreeTourPraga <info@freetourpraga.com>`, insieme ad `ADMIN_EMAIL` e `BOOKING_ADMIN_EMAILS`. Il worker usa lo stesso endpoint esistente e il servizio web invia via HTTPS.
+
+Per SMTP, lasciare vuota `RESEND_API_KEY` e impostare le variabili seguenti.
 
 In **web**, non nel worker, impostare:
 
@@ -61,9 +65,9 @@ Le conferme admin usano oggetto e corpo identici a Contact Form 7 (`Reserva free
 
 **Blocco SMTP Railway:** sui piani Free/Trial/Hobby le porte SMTP in uscita (25/465/587/2525) sono disabilitate. Diagnosi del 23/11/2026 dal runtime web: egress `152.55.176.205`, timeout su 587/465 verso `mail.freetourpraga.com`, mentre 443 verso lo stesso host è ok. Con `railway run` (rete diversa) l’SMTP funziona. Per usare l’SMTP dell’hosting serve **piano Pro** (poi ridistribuire web) oppure un relay transazionale HTTPS (Resend/SendGrid/Mailgun/Postmark). Vedi [Outbound Networking](https://docs.railway.com/networking/outbound-networking).
 
-Worker usa `PLATFORM_URL` e lo stesso `CRON_SECRET` di web. Ogni minuto richiede `/api/platform/cron?task=jobs`; `ENABLE_OTA=false` evita l’attivazione di integrazioni della Fase 2. Il worker scrive lo stato HTTP nei log; il gestionale mostra l’esito di ogni invio. Gli invii falliti si possono ritentare dal gestionale. Verificare recapito reale, cartella spam, allegato ICS e link di pagamento con una casella controllata prima del lancio.
+Worker usa `PLATFORM_URL` e lo stesso `CRON_SECRET` di web. Ogni minuto richiede `/api/platform/cron?task=jobs`; `ENABLE_OTA=false` evita l’attivazione di integrazioni della Fase 2. Il worker scrive lo stato HTTP nei log. Il gestionale consente di ritentare gli invii falliti. Lo stato «Inviata» indica l'accettazione del provider. Verificare il recapito e l'allegato ICS con una casella controllata prima del lancio.
 
-`railway run --service web node scripts/preflight.mjs` richiede il file locale di questo script e usa le variabili del servizio; il controllo è di configurazione e non invia messaggi o pagamenti. SMTP mancante produce esito non superato. Stripe non è un prerequisito del perimetro corrente.
+`railway run --service web node scripts/preflight.mjs` usa le variabili del servizio e controlla la configurazione senza inviare email. Stripe non è un prerequisito del perimetro corrente.
 
 ## Backup giornaliero
 

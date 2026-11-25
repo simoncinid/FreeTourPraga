@@ -25,7 +25,10 @@ export function TourOperationsEditor({
     [adding, setAdding] = useState(false),
     [help, setHelp] = useState(false),
     [date, setDate] = useState(today),
-    [times, setTimes] = useState("");
+    [times, setTimes] = useState(""),
+    [offerFrom, setOfferFrom] = useState(today),
+    [offerTo, setOfferTo] = useState(today),
+    [offerPercent, setOfferPercent] = useState(10);
   const schedule = t.schedule ?? {
     enabled: false,
     from: today,
@@ -56,7 +59,8 @@ export function TourOperationsEditor({
         {[
           ["schedule", "Programmazione"],
           ["closures", `Chiusure (${closures.length})`],
-          ["policy", "Percorso e cancellazione"],
+          ["offers", "Offerte"],
+          ["policy", "Dettagli e regole"],
         ].map(([key, label]) => (
           <button
             type="button"
@@ -295,6 +299,66 @@ export function TourOperationsEditor({
           onChange={paging.setPage}
         />
       </section>
+      <section hidden={tab !== "offers"} className={css.card}>
+        <header className={css.sectionHead}>
+          <div>
+            <h2>Offerte</h2>
+            <p>Sconto in percentuale, valido solo nel periodo indicato per questo tour.</p>
+          </div>
+        </header>
+        <ul>
+          {(t.seasonalOffers ?? []).map((offer) => (
+            <li key={offer.id}>
+              −{offer.percent}% dal {offer.from.split("-").reverse().join("/")} al{" "}
+              {offer.to.split("-").reverse().join("/")}{" "}
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() =>
+                  change(
+                    "seasonalOffers",
+                    (t.seasonalOffers ?? []).filter((item) => item.id !== offer.id),
+                  )
+                }
+              >
+                Rimuovi
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className={css.three}>
+          <label>
+            Dal
+            <input className="text-input" type="date" value={offerFrom} onChange={(e) => setOfferFrom(e.target.value)} />
+          </label>
+          <label>
+            Al
+            <input className="text-input" type="date" min={offerFrom} value={offerTo} onChange={(e) => setOfferTo(e.target.value)} />
+          </label>
+          <label>
+            Sconto %
+            <input className="text-input" type="number" min={1} max={100} value={offerPercent} onChange={(e) => setOfferPercent(Number(e.target.value))} />
+          </label>
+        </div>
+        <button
+          type="button"
+          className="button-primary"
+          disabled={!offerFrom || !offerTo || offerFrom > offerTo || offerPercent < 1}
+          onClick={() =>
+            change("seasonalOffers", [
+              ...(t.seasonalOffers ?? []),
+              {
+                id: crypto.randomUUID(),
+                from: offerFrom,
+                to: offerTo,
+                percent: offerPercent,
+              },
+            ])
+          }
+        >
+          Aggiungi offerta
+        </button>
+      </section>
       <section hidden={tab !== "policy"} className={css.card}>
         <header className={css.sectionHead}>
           <div>
@@ -349,6 +413,93 @@ export function TourOperationsEditor({
                   {value} su 5
                 </option>
               ))}
+            </select>
+          </label>
+        </div>
+        <h3 className={css.groupTitle}>Dettagli e regole operative</h3>
+        <div className={css.three}>
+          <label>
+            Prenotabile fino a (ore prima)
+            <input
+              className="text-input"
+              type="number"
+              min={0}
+              max={168}
+              value={t.bookingCutoffHours}
+              onChange={(e) => change("bookingCutoffHours", Number(e.target.value))}
+            />
+          </label>
+          <label>
+            Minuti aggiuntivi
+            <input
+              className="text-input"
+              type="number"
+              min={0}
+              max={59}
+              value={t.bookingCutoffMinutes ?? 0}
+              onChange={(e) =>
+                change("bookingCutoffMinutes", Number(e.target.value))
+              }
+            />
+          </label>
+          <label>
+            Minimo partecipanti per la partenza
+            <input
+              className="text-input"
+              type="number"
+              min={1}
+              max={10000}
+              value={t.minParticipants ?? ""}
+              onChange={(e) =>
+                change(
+                  "minParticipants",
+                  e.target.value ? Number(e.target.value) : undefined,
+                )
+              }
+            />
+          </label>
+          <label>
+            Animali
+            <select
+              className="text-input"
+              value={
+                t.petsAllowed === undefined ? "" : t.petsAllowed ? "yes" : "no"
+              }
+              onChange={(e) =>
+                change(
+                  "petsAllowed",
+                  e.target.value === "" ? undefined : e.target.value === "yes",
+                )
+              }
+            >
+              <option value="">Non indicato</option>
+              <option value="yes">Ammessi</option>
+              <option value="no">Non ammessi</option>
+            </select>
+          </label>
+          <label>
+            Barriere architettoniche
+            <select
+              className="text-input"
+              value={
+                t.architecturalBarriers === undefined
+                  ? ""
+                  : t.architecturalBarriers
+                    ? "yes"
+                    : "no"
+              }
+              onChange={(e) =>
+                change(
+                  "architecturalBarriers",
+                  e.target.value === ""
+                    ? undefined
+                    : e.target.value === "yes",
+                )
+              }
+            >
+              <option value="">Non indicato</option>
+              <option value="yes">Presenti</option>
+              <option value="no">Non segnalate</option>
             </select>
           </label>
         </div>

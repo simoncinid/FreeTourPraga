@@ -1,0 +1,392 @@
+.block {
+  --card-bg: #f3f3f5;
+  --rating-green: #00852b;
+  --button-green: #00e34d;
+
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: 16px;
+  align-items: stretch;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 0 8px;
+  box-sizing: border-box;
+  background: transparent;
+  color: #111;
+  font-family: Arial, Helvetica, sans-serif;
+  container-type: inline-size;
+}
+
+.block * {
+  box-sizing: border-box;
+}
+
+.summary {
+  height: 280px;
+  padding: 28px 20px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #111;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.logo {
+  display: block;
+  width: 148px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.scoreValue {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.count {
+  color: #858585;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.bubbles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bubbles > span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--rating-green);
+  flex-shrink: 0;
+}
+
+.partial,
+.empty {
+  border: 2px solid var(--rating-green);
+  background: transparent;
+}
+
+.reviewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  height: 46px;
+  margin-top: 18px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 50px;
+  background: var(--button-green);
+  color: #000;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.reviewButton:hover {
+  background: #00cc45;
+}
+
+.reviewCard {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  height: 280px;
+  margin-top: 0;
+  padding: 22px 50px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--card-bg);
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #e4e4e6;
+}
+
+.reviewContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.username {
+  display: block;
+  color: #111;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.date {
+  margin-top: 4px;
+  color: #858585;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.date a {
+  color: var(--rating-green);
+  text-decoration: none;
+}
+
+.smallBubbles {
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+
+.smallBubbles > span {
+  width: 16px;
+  height: 16px;
+}
+
+.smallBubbles > .partial,
+.smallBubbles > .empty {
+  border-width: 4px;
+}
+
+.reviewTitle {
+  margin: 0;
+  color: #111;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+}
+
+.reviewTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reviewText {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.3px;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 8px 24px #00000030;
+  cursor: pointer;
+}
+
+.arrow svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #292929;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.prev {
+  left: 8px;
+}
+
+.next {
+  right: 8px;
+}
+
+@media (max-width: 900px) {
+  .block {
+    grid-template-columns: 1fr;
+  }
+
+  .summary,
+  .reviewCard {
+    height: auto;
+  }
+
+  .reviewCard {
+    margin-top: 16px;
+  }
+
+  .reviewText {
+    -webkit-line-clamp: unset;
+    display: block;
+    overflow: visible;
+  }
+}
+
+.arrow:focus-visible {
+  outline: 4px solid #005bc7;
+  outline-offset: 4px;
+}
+
+@container (max-width: 650px) {
+  .summary {
+    height: auto;
+    min-height: 40.5cqw;
+    padding: 4cqw 3cqw;
+    border-radius: 3cqw;
+  }
+
+  .heading {
+    gap: 1.5cqw;
+    font-size: max(22px, 6.2cqw);
+    line-height: 1.2;
+  }
+
+  .logo {
+    width: 27.625cqw;
+    height: 5.375cqw;
+  }
+
+  .score {
+    gap: 1.75cqw;
+    margin-top: 2cqw;
+  }
+
+  .scoreValue {
+    font-size: max(28px, 7cqw);
+    line-height: 1.15;
+  }
+
+  .count {
+    font-size: max(15px, 3.8cqw);
+  }
+
+  .bubbles {
+    gap: 0.5cqw;
+  }
+
+  .bubbles > span {
+    width: max(16px, 6.4cqw);
+    height: max(16px, 6.4cqw);
+  }
+
+  .partial,
+  .empty {
+    border-width: 0.625cqw;
+  }
+
+  .reviewButton {
+    width: auto;
+    max-width: 100%;
+    height: max(46px, 10cqw);
+    margin-top: 4cqw;
+    padding: 0 5cqw;
+    font-size: max(15px, 4.2cqw);
+  }
+
+  .reviewCard {
+    margin-top: 16px;
+    padding: 22px 28px 24px;
+    gap: 14px;
+    border-radius: 20px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .username {
+    font-size: max(18px, 5cqw);
+    line-height: 1.25;
+  }
+
+  .date {
+    margin-top: 4px;
+    font-size: max(14px, 3.6cqw);
+    line-height: 1.3;
+  }
+
+  .smallBubbles {
+    margin-top: 4.25cqw;
+    margin-bottom: 1.75cqw;
+  }
+
+  .smallBubbles > span {
+    width: max(18px, 5.4cqw);
+    height: max(18px, 5.4cqw);
+  }
+
+  .reviewTitle,
+  .reviewText {
+    font-size: max(18px, 4.8cqw);
+    line-height: 1.4;
+  }
+
+  .arrow {
+    width: 8cqw;
+    height: 8cqw;
+  }
+
+  .arrow svg {
+    width: 4.25cqw;
+    height: 4.25cqw;
+  }
+
+  .prev {
+    left: -10px;
+  }
+
+  .next {
+    right: -10px;
+  }
+
+  .arrow:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { RichContent } from "./RichContent";
 import Image from "next/image";
 import { useEffect, useId, useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -7,6 +8,7 @@ import styles from "./tour-panels.module.css";
 
 type HighlightRow = {
   text: string;
+  html?: string;
   images: string[];
   index?: number;
 };
@@ -65,12 +67,11 @@ export function TourHighlights({ items }: { items: HighlightRow[] }) {
           <div key={row} className={styles.highlightRow}>
             <div className={styles.highlightCopy}>
               <CheckCircle2 className="shrink-0 text-primary" size={22} />
-              <span
-                className="body-md"
-                data-tour-field={`highlights.${item.index ?? row}`}
-              >
-                {item.text}
-              </span>
+              <div className="body-md"
+                data-tour-field={item.html ? `formattedCopy.highlights.${item.index ?? row}` : `highlights.${item.index ?? row}`}
+                data-tour-kind={item.html ? "html" : "text"}>
+                {item.html ? <RichContent html={item.html} /> : item.text}
+              </div>
             </div>
             {item.images.length > 0 && (
               <div className={styles.highlightThumbs}>

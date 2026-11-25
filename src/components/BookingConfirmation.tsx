@@ -1,7 +1,7 @@
 "use client";
 import ui from "./public-ui.module.css";
-import { CheckCircle2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CheckCircle2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import type { orderConfirmation } from "@/lib/platform/booking";
@@ -47,6 +47,12 @@ export function BookingConfirmation() {
       cancelled = true;
     };
   }, []);
+  const payment = receipt?.payment;
+  const paymentDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (payment && !paymentDialog.current?.open)
+      paymentDialog.current?.showModal();
+  }, [payment]);
   const cancelled = receipt?.bookings.every((b) => b.status === "cancelled");
   return (
     <section
@@ -70,15 +76,83 @@ export function BookingConfirmation() {
               ? "La tua prenotazione."
               : cancelled
                 ? "Prenotazione non attiva."
-                : "Grazie per aver scelto i nostri tour."}
+                : payment
+                  ? "Prenotazione in attesa di pagamento"
+                  : "Grazie per aver scelto i nostri tour."}
           </h1>
-          {receipt && (
-            <p className="mb-5">
-              Riceverai via email i dettagli della prenotazione. L’email include
-              il link per modificare o cancellare la singola prenotazione, senza
-              creare un account. Il metodo di pagamento è riportato nel
-              riepilogo.
-            </p>
+          {payment ? (
+            <>
+              <p className="mb-5">
+                I posti per i tour a pagamento sono riservati temporaneamente.
+                Riceverai una conferma per ogni tour dopo la registrazione del
+                saldo.
+              </p>
+              <button
+                type="button"
+                className="button-primary"
+                onClick={() => paymentDialog.current?.showModal()}
+              >
+                Opzioni di pagamento
+              </button>
+              <dialog
+                ref={paymentDialog}
+                aria-labelledby="payment-title"
+                className={`${ui.paymentDialog} card m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-auto backdrop:bg-black/50`}
+              >
+                <button
+                  type="button"
+                  className={ui.paymentDialogClose}
+                  aria-label="Chiudi"
+                  onClick={() => paymentDialog.current?.close()}
+                >
+                  <X size={22} strokeWidth={2.25} aria-hidden />
+                </button>
+                <div className={ui.paymentDialogBody}>
+                  <h2 className="display-md" id="payment-title">
+                    Completa il pagamento
+                  </h2>
+                  <p>
+                    Totale da saldare <strong>{payment.amount}</strong>.
+                  </p>
+                  <p className="text-sm">
+                    I posti sono riservati fino al{" "}
+                    {new Date(payment.expiresAt).toLocaleString("it-IT", {
+                      timeZone: "Europe/Prague",
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}{" "}
+                    (ora di Praga).
+                  </p>
+                  <a
+                    className="button-primary"
+                    href={payment.card}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Richiedi un link per pagare con carta su WhatsApp
+                  </a>
+                  <a
+                    className="button-secondary"
+                    href={payment.office}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Prenota su WhatsApp il pagamento in ufficio
+                  </a>
+                  <p className="text-sm">
+                    Per pagare in ufficio, scrivici su WhatsApp almeno 24 ore
+                    prima per concordare l’orario di arrivo.
+                  </p>
+                </div>
+              </dialog>
+            </>
+          ) : (
+            receipt &&
+            !cancelled && (
+              <p className="mb-5">
+                Riceverai un’email di conferma con i dettagli di ciascun tour.
+              </p>
+            )
           )}
         </div>
         <div className={ui.confirmationReceipt}>
@@ -105,7 +179,7 @@ export function BookingConfirmation() {
                     {
                       {
                         confirmed: "Confermata",
-                        pending: "In attesa",
+                        pending: "In attesa di pagamento",
                         cancelled: "Cancellata",
                         present: "Partecipazione registrata",
                         no_show: "Assente",
@@ -114,11 +188,17 @@ export function BookingConfirmation() {
                   </span>
                 </div>
                 <h2 className="display-md">{b.tourTitle}</h2>
-                <p className="whitespace-pre-wrap">
-                  {b.paymentMethod === "bank_transfer"
-                    ? `Bonifico · ${b.paymentStatus === "paid" ? "Pagamento registrato" : "In attesa del pagamento"}. Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
-                    : "Pagamento in contanti sul posto."}
-                </p>
+                {b.status !== "cancelled" && b.totalCents > 0 && (
+                  <p className="whitespace-pre-wrap">
+                    {b.paymentStatus === "paid"
+                      ? "Pagamento registrato."
+                      : b.paymentMethod === "whatsapp"
+                        ? "Saldo da concordare su WhatsApp."
+                        : b.paymentMethod === "bank_transfer"
+                          ? `Bonifico · Causale: ${b.pnr}. ${b.paymentInstructions || ""}`
+                          : "Pagamento in contanti sul posto."}
+                  </p>
+                )}
                 <p>
                   {new Date(b.startsAt).toLocaleString("it-IT", {
                     timeZone: "Europe/Prague",
@@ -151,12 +231,14 @@ export function BookingConfirmation() {
                   >
                     Apri le indicazioni
                   </a>
-                  <a
-                    href={`/api/calendar/booking/${b.pnr}?token=${proof}`}
-                    className="button-secondary"
-                  >
-                    Aggiungi al calendario
-                  </a>
+                  {b.status === "confirmed" && (
+                    <a
+                      href={`/api/calendar/booking/${b.pnr}?token=${proof}`}
+                      className="button-secondary"
+                    >
+                      Aggiungi al calendario
+                    </a>
+                  )}
                 </div>
               </article>
             ))}

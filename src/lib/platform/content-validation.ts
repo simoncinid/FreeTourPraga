@@ -35,6 +35,7 @@ export const blogBlockSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("split"),
+    html: z.string().max(100000).transform(sanitizeRichText).optional(),
     heading: optionalText(250),
     text: z.string().trim().min(1).max(20000),
     imageUrl: tourSchema.shape.imageUrl,
@@ -78,6 +79,7 @@ export const blogArticleSchema = z
     imageUrl: tourSchema.shape.imageUrl,
     imageAlt: optionalText(250),
     intro: optionalText(20000),
+    introHtml: z.string().max(100000).transform(sanitizeRichText).optional(),
     blocks: z.array(blogBlockSchema).max(40).default([]),
     ctaEnabled: z.boolean().default(false),
     ctaLabel: optionalText(250),
@@ -100,6 +102,10 @@ export const blogArticleSchema = z
     }
   });
 export const siteContentSchema = z.object({
+  formattedText: z.record(
+    z.string().regex(/^(?:home-[a-zA-Z]+Body|home-pillars-\d+-text|answers-\d+-answer|globals-(?:description|footerText|footerNote|tripAdvisorBody))$/),
+    z.string().max(100000).transform(sanitizeRichText),
+  ).optional(),
   contentVersion: z.literal(2).default(2),
   globals: z.object({
     navigationVersion: z.literal(2).optional(),
@@ -214,6 +220,6 @@ export const siteContentSchema = z.object({
       .max(6),
   }),
   gallery: z.array(blogArticleSchema).max(100),
-  faqs: z.array(z.object({ q: short, a: body })).max(50),
+  faqs: z.array(z.object({ q: short, a: body, answerHtml: z.string().max(30000).transform(sanitizeRichText).optional() })).max(50),
   answers: z.array(z.object({ question: short, answer: body })).max(30),
 });

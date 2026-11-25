@@ -311,7 +311,11 @@ try {
     .getByRole("button", { name: "Conferma prenotazione", exact: true })
     .click();
   await page.waitForURL("**/prenotazione/confermata", { waitUntil: "commit" });
-  await page.getByText("Confermata", { exact: true }).waitFor();
+  const paymentDialog = page.getByRole("dialog", { name: "Completa il pagamento" });
+  await paymentDialog.waitFor();
+  const cardLink = await paymentDialog.getByRole("link", { name: /pagare con carta/ }).getAttribute("href");
+  assert.match(new URL(cardLink).searchParams.get("text"), /Cliente QA V2.+Studenti fino a 26 anni/);
+  await paymentDialog.getByRole("button", { name: "Chiudi" }).click();
   await page.getByText(/Studenti fino a 26 anni/).waitFor();
   let after = await call("admin/state");
   const booking = after.bookings.find((b) => b.tourSlug === tour.slug);
@@ -319,6 +323,9 @@ try {
   assert.equal(booking.totalCents, 350000);
   assert.equal(booking.currency, "CZK");
   assert.equal(booking.categorySnapshot.length, 4);
+  assert.equal(booking.status, "pending");
+  await call("admin/booking", { pnr: booking.pnr, action: "settle-order" }, "PATCH");
+  after = await call("admin/state");
   const mail = after.jobs.find(
     (j) => j.bookingPnr === booking.pnr && j.to === booking.email,
   );
@@ -328,7 +335,7 @@ try {
     "Browser checkout CZK con adulti, studenti e over 65, prezzi server, email e snapshot delle categorie",
   );
   const date = tomorrow;
-  await call(
+  const reduced = await call(
     "admin/calendar/operation",
     {
       tourIds: [tour.id],
@@ -338,9 +345,11 @@ try {
       action: "capacity",
       capacity: 2,
     },
-    "POST",
-    409,
   );
+  assert.match(reduced.warnings.join(" "), /3 posti prenotati/);
+  const protectedSlot = reduced.tours[0].slots.find((slot) => slot.id === "qa-v2-slot");
+  assert.equal(protectedSlot.capacity, 3);
+  assert.equal(protectedSlot.reserved, 3);
   await call("admin/calendar/operation", {
     tourIds: [tour.id],
     from: date,
@@ -369,6 +378,10 @@ try {
   assert.equal(saved.slots.find((s) => s.id === "qa-v2-slot").reserved, 3);
   assert.equal(saved.slots.find((s) => s.id === "qa-v2-slot").capacity, 60);
   assert.ok(saved.slots.some((s) => s.closed));
+  assert.ok(saved.calendarLog[0].actor);
+  const publicTour = (await call("catalog")).tours.find((entry) => entry.id === tour.id);
+  assert.equal(publicTour.calendarLog, undefined);
+  assert.equal(publicTour.calendarRules, undefined);
   assert.equal(
     after.bookings.find((b) => b.pnr === booking.pnr).status,
     "confirmed",
@@ -405,11 +418,22 @@ try {
     });
   }).toPass({ timeout: 12000 });
   await expect(
-    page.locator(".tour-admin-calendar .operational-calendar"),
+    page.locator(".tour-calendar-popup .operational-calendar"),
   ).toBeVisible();
   pass(
     "API calendario: limite prenotati, modifica capienza, orario extra e chiusura senza cancellare prenotazioni; calendario dentro tour",
   );
+  await page.goto(base + "/admin/supporto");
+  await page.getByLabel("Oggetto").fill("Verifica calendario QA");
+  await page.getByLabel("Descrizione").fill("Controllo del flusso di assistenza del gestionale.");
+  await page.getByRole("button", { name: "Apri ticket" }).click();
+  const ticket = page.getByRole("listitem").filter({ hasText: "Verifica calendario QA" });
+  await expect(ticket.getByLabel("Stato")).toHaveValue("open");
+  await ticket.getByLabel("Stato").selectOption("working");
+  await expect(ticket.getByLabel("Stato")).toHaveValue("working");
+  await ticket.getByLabel("Stato").selectOption("done");
+  await expect(ticket.getByLabel("Stato")).toHaveValue("done");
+  pass("Ticket salvato e aggiornato fino alla risoluzione");
   // Reuse a visitor cookie for the same partner twice, plus an independent visitor.
   await context.addCookies([
     { name: "ftp_consent", value: "statistics", url: base },

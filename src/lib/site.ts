@@ -63,6 +63,7 @@ export const socialLinks = [
 ].filter((link) => Boolean(link.url));
 
 export const tripAdvisor = {
+  locationId: "7365510",
   profileUrl:
     process.env.NEXT_PUBLIC_TRIPADVISOR_URL ||
     "https://www.tripadvisor.it/Attraction_Review-g274707-d7365510-Reviews-Free_Tour_Praga-Prague_Bohemia.html",
