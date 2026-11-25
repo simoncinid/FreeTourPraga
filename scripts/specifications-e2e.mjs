@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 const base = process.env.TEST_URL || "http://localhost:3101";
 if (!/^http:\/\/(localhost|127\.0\.0\.1):3101$/.test(base))
   throw Error("Only isolated localhost:3101 is supported");
@@ -389,8 +389,24 @@ try {
     caret: "initial",
   });
   await page.goto(base + "/admin/tour/qa-v2-tour");
-  await page.getByRole("button", { name: "Calendario", exact: true }).click();
-  await page.getByRole("heading", { name: "Calendario operativo" }).waitFor();
+  const toolbar = page.getByRole("navigation", {
+    name: "Sezioni del tour",
+    exact: true,
+  });
+  const calendarTab = toolbar.getByRole("button", {
+    name: "Calendario",
+    exact: true,
+  });
+  await expect(async () => {
+    if ((await calendarTab.getAttribute("aria-pressed")) !== "true")
+      await calendarTab.click();
+    await expect(calendarTab).toHaveAttribute("aria-pressed", "true", {
+      timeout: 1000,
+    });
+  }).toPass({ timeout: 12000 });
+  await expect(
+    page.locator(".tour-admin-calendar .operational-calendar"),
+  ).toBeVisible();
   pass(
     "API calendario: limite prenotati, modifica capienza, orario extra e chiusura senza cancellare prenotazioni; calendario dentro tour",
   );
