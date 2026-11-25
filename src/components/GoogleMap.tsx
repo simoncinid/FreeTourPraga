@@ -12,6 +12,11 @@ export function GoogleMap({ tour }: { tour: Tour }) {
           <span data-tour-field="meetingPoint">{tour.meetingPoint}</span> ·{" "}
           <span data-tour-field="meetingAddress">{tour.meetingAddress}</span>
         </p>
+        {tour.meetingInstructions && (
+          <p className="body-md" data-tour-field="meetingInstructions">
+            {tour.meetingInstructions}
+          </p>
+        )}
       </div>
       <div className="aspect-[4/3] border-y md:aspect-[16/7]">
         <iframe

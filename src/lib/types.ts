@@ -14,6 +14,7 @@ export type PriceCategory = {
   id: string;
   label: string;
   priceCents: number;
+  estimatedEuroCents?: number;
   minAge?: number;
   maxAge?: number;
   description?: string;
@@ -81,11 +82,13 @@ export type Tour = {
   galleryImages?: TourPhoto[];
   meetingPoint: string;
   meetingAddress: string;
+  meetingInstructions?: string;
   mapUrl: string;
   mapEmbedUrl: string;
   latitude: number;
   longitude: number;
   durationMinutes: number;
+  durationLabel?: string;
   basePriceCents: number;
   childPriceCents: number;
   infantPriceCents: number;
@@ -96,6 +99,10 @@ export type Tour = {
   closures?: { date: string; times: string[] }[];
   walkingLabel?: string;
   cancellationHours?: number;
+  bookingCutoffHours?: number;
+  advanceBookingHours?: number;
+  fareRequirements?: string;
+  suggestedContribution?: string;
   lateRefundPercent?: number;
   reminderHours?: number;
   reminderTemplate?: string;
@@ -115,9 +122,11 @@ export type Tour = {
   seoDescription?: string;
   seoKeywords?: string[];
   highlights: string[];
+  itineraryGroups?: { title: string; start: number }[];
   /** Foto per ogni punto saliente, allineate a `highlights` (max 4 URL a riga). */
   highlightGalleries?: string[][];
   inclusions: string[];
+  exclusions?: string[];
   safetyNotes: string[];
   slots: TourSlot[];
 };

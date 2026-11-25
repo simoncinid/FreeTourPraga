@@ -1,17 +1,20 @@
-import { tourHeadlinePrice } from "@/lib/participant-pricing";
-import { TourFacts } from "@/components/TourFacts";
+import {
+  estimatedEuroPrice,
+  tourHeadlinePrice,
+} from "@/lib/participant-pricing";
 import { SectionBlocks } from "@/components/SectionBlocks";
-import { cancellationNote, freeTourNote, isFreeTour } from "@/lib/tour-rules";
+import { bookingDeadlineNote, cancellationNote } from "@/lib/tour-rules";
 import ui from "@/components/public-ui.module.css";
 import type { Metadata } from "next";
 import { TourGallery } from "@/components/TourGallery";
 import { tourPhotos } from "@/lib/tour-gallery";
 import { notFound } from "next/navigation";
-import { CheckCircle2, Clock3, Info, Users, MessageCircle } from "lucide-react";
+import { Clock3, Users, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { TourMobileBooking } from "@/components/TourMobileBooking";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
+import { OfficialTripAdvisorWidget } from "@/components/OfficialTripAdvisorWidget";
 import { TourHighlights } from "@/components/TourHighlights";
 import { JsonLd } from "@/components/JsonLd";
 import panels from "@/components/tour-panels.module.css";
@@ -23,7 +26,7 @@ import { publicTour } from "@/lib/platform/scheduling";
 import { tourGalleryImages } from "@/lib/tour-gallery";
 import { catalog } from "@/lib/platform/public";
 export const dynamic = "force-dynamic";
-import { minutesToLabel } from "@/lib/format";
+import { formatMoney, minutesToLabel } from "@/lib/format";
 import { absoluteUrl, site } from "@/lib/site";
 import { breadcrumbJsonLd, tourJsonLd } from "@/lib/seo";
 import { tourPath } from "@/lib/public-paths";
@@ -46,10 +49,9 @@ export async function generateMetadata({
     return { title: "Anteprima tour", robots: { index: false, follow: false } };
   if (!tour) return {};
   return {
-    title:
-      tour.importedFromWordpress && tour.seoTitle
-        ? { absolute: tour.seoTitle }
-        : tour.seoTitle || tour.title,
+    title: tour.seoTitle
+      ? { absolute: tour.seoTitle }
+      : tour.seoTitle || tour.title,
     description: tour.seoDescription || tour.shortDescription,
     keywords: [...site.keywords, ...(tour.seoKeywords || [])],
     alternates: {
@@ -111,6 +113,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   }
   if (!tour) notFound();
   const price = tourHeadlinePrice(tour);
+  const adultEuro = estimatedEuroPrice(
+    tour.priceCategories?.find(({ id }) => id === "adults")?.estimatedEuroCents,
+  );
+  const duration = tour.durationLabel || minutesToLabel(tour.durationMinutes);
+  const highlights = tour.highlights.map((text, index) => ({
+    text,
+    index,
+    images: (tour.highlightGalleries?.[index] || []).slice(0, 4),
+  }));
+  const groups =
+    tour.itineraryGroups?.filter(({ start }) => start < highlights.length) ??
+    [];
+  const bookingDeadline = bookingDeadlineNote(tour);
   const content = await publicSiteContent();
   const whatsappHref = (m: string) => contentWhatsapp(content, m);
 
@@ -128,9 +143,6 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
       />
       <div className="container-page">
         <div className="mb-7">
-          <p className="micro-label mb-3 text-primary">
-            Praga · {tour.category}
-          </p>
           <div
             className={`grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end ${ui.detailTitleRow}`}
           >
@@ -142,17 +154,27 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             </h1>
             <div className={ui.detailOffer}>
               <div className={ui.detailPrice}>
-                <span>{price.isFree ? "Free Tour" : "A partire da soli"}</span>
-                <strong>{price.text}</strong>
+                <span>{price.isFree ? "Prezzo" : "Tariffa intera adulti"}</span>
+                <strong>
+                  {adultEuro
+                    ? formatMoney(price.priceCents, tour.currency)
+                    : price.text}
+                </strong>
+                {adultEuro && <span>{adultEuro} a persona</span>}
+                {price.isFree && tour.suggestedContribution && (
+                  <span>Offerta consigliata {tour.suggestedContribution}</span>
+                )}
               </div>
               <div className={ui.detailMeta}>
                 <span>
                   <Clock3 size={15} aria-hidden />{" "}
                   <span
-                    data-tour-field="durationMinutes"
-                    data-tour-kind="number"
+                    data-tour-field={
+                      tour.durationLabel ? "durationLabel" : "durationMinutes"
+                    }
+                    data-tour-kind={tour.durationLabel ? "text" : "number"}
                   >
-                    {minutesToLabel(tour.durationMinutes)}
+                    {duration}
                   </span>
                 </span>
                 <span>
@@ -175,20 +197,24 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           )}
         />
 
-        <div className="mb-8 border-b border-hairline pb-4 text-sm font-semibold text-ink">
-          <a href="#esperienza" className="mr-7 border-b-2 border-primary pb-4">
-            Descrizione
-          </a>
-          <a href="#dettagli" className="mr-7">
-            Dettagli
-          </a>
-          <a href="#incontro">Punto d&apos;incontro</a>
-        </div>
+        <nav aria-label="Sezioni del tour" className={ui.tourSectionNav}>
+          {[
+            ["esperienza", "Descrizione"],
+            ["dettagli", "Itinerario"],
+            ["incontro", "Informazioni utili"],
+            ["cancellazione", "Cancellazione"],
+            ["punto-incontro", "Punto di incontro"],
+            ["recensioni", "Recensioni"],
+          ].map(([id, label]) => (
+            <a key={id} href={`#${id}`}>
+              {label}
+            </a>
+          ))}
+        </nav>
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-10">
-            <TourFacts tour={tour} />
             <section id="esperienza">
-              <h2 className="display-md mb-4">L&apos;esperienza</h2>
+              <h2 className="display-md mb-4">Descrizione</h2>
               <div
                 className="body-md"
                 data-tour-field={
@@ -205,69 +231,80 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             </section>
             <SectionBlocks blocks={tour.contentBlocks} tourEditable />
             <section id="dettagli" className={panels.highlightPanel}>
-              <h2 className="display-md mb-4">Cosa vedrai</h2>
-              <TourHighlights
-                items={tour.highlights.map((text, index) => ({
-                  text,
-                  images: (tour.highlightGalleries?.[index] || []).slice(0, 4),
-                }))}
-              />
+              <h2 className="display-md mb-4">Itinerario</h2>
+              {groups.length ? (
+                groups.map((group, index) => (
+                  <div key={group.start} className="mb-5 last:mb-0">
+                    <h3
+                      className="display-sm mb-3"
+                      data-tour-field={`itineraryGroups.${index}.title`}
+                    >
+                      {group.title}
+                    </h3>
+                    <TourHighlights
+                      items={highlights.slice(
+                        group.start,
+                        groups[index + 1]?.start,
+                      )}
+                    />
+                  </div>
+                ))
+              ) : (
+                <TourHighlights items={highlights} />
+              )}
             </section>
-            <section id="incontro" className="grid gap-4 md:grid-cols-2">
-              <div className={`card p-6 ${panels.panelOrange}`}>
-                <h2 className={`display-md mb-4 ${panels.panelTitleOneLine}`}>
-                  Incluso
-                </h2>
-                <ul className={panels.panelList}>
-                  {tour.inclusions.map((item, index) => (
-                    <li
-                      key={item}
-                      className={`${panels.panelTickItem} body-md`}
-                    >
-                      <CheckCircle2
-                        className={panels.panelTick}
-                        size={18}
-                        aria-hidden
+            <section id="incontro">
+              <h2 className="display-md mb-4">Informazioni utili</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className={`card p-6 ${panels.panelOrange}`}>
+                  <h3 className="display-sm mb-3">Incluso</h3>
+                  <TourInfoList items={tour.inclusions} field="inclusions" />
+                  {!!tour.exclusions?.length && (
+                    <>
+                      <h3 className="display-sm mb-3 mt-5">Non incluso</h3>
+                      <TourInfoList
+                        items={tour.exclusions}
+                        field="exclusions"
                       />
-                      <span data-tour-field={`inclusions.${index}`}>
-                        {item}
-                      </span>
+                    </>
+                  )}
+                </div>
+                <div className={`card p-6 ${panels.panelBlue}`}>
+                  <h3 className="display-sm mb-3">Informazioni pratiche</h3>
+                  <ul className={`${panels.panelList} body-md mb-3`}>
+                    {(tour.operatingDays || tour.departureTime) && (
+                      <li>
+                        <strong>Partenze</strong> ·{" "}
+                        {[tour.operatingDays, tour.departureTime]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </li>
+                    )}
+                    <li>
+                      <strong>Durata</strong> · {duration}
                     </li>
-                  ))}
-                </ul>
-              </div>
-              <div className={`card p-6 ${panels.panelBlue}`}>
-                <h2 className={`display-md mb-4 ${panels.panelTitleOneLine}`}>
-                  Informazioni pratiche
-                </h2>
-                <ul className={panels.panelList}>
-                  {tour.safetyNotes.map((note, index) => (
-                    <li
-                      key={note}
-                      className={`${panels.panelTickItem} body-md`}
-                    >
-                      <Info
-                        className={panels.panelInfo}
-                        size={18}
-                        aria-hidden
-                      />
-                      <span data-tour-field={`safetyNotes.${index}`}>
-                        {note}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                    {!!tour.arrivalMinutes && (
+                      <li>
+                        Arriva {tour.arrivalMinutes} minuti prima della
+                        partenza.
+                      </li>
+                    )}
+                  </ul>
+                  <TourInfoList items={tour.safetyNotes} field="safetyNotes" />
+                </div>
               </div>
             </section>
             <section id="cancellazione" className="card grid gap-3 p-6">
-              <h2 className="display-md">Prenotazione e cancellazione</h2>
-              {isFreeTour(tour) && (
-                <p className="body-md">{freeTourNote(tour)}</p>
-              )}
+              <h2 className="display-md">Cancellazione</h2>
               <p className="body-md">{cancellationNote(tour)}</p>
+              {bookingDeadline && <p className="body-md">{bookingDeadline}</p>}
             </section>
             <GoogleMap tour={tour} />
-            <TripAdvisorSection layout="card" />
+            <section id="recensioni">
+              <h2 className="display-md mb-4">Recensioni</h2>
+              <TripAdvisorSection layout="card" />
+              <OfficialTripAdvisorWidget />
+            </section>
             <section
               className={`${panels.panelWhatsapp} rounded-xl p-7 text-on-dark`}
             >
@@ -278,20 +315,20 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                   aria-hidden
                 />
                 <h2 className="display-md !mb-0 !text-on-dark">
-                  Hai un dubbio prima di prenotare?
+                  Hai dubbi o domande prima di prenotare?
                 </h2>
               </div>
               <p className="body-sm mb-5 !text-hairline-soft">
-                Scrivici: nel messaggio troveremo già il nome del tour, così
-                possiamo risponderti più rapidamente.
+                Il nostro team in italiano ti aiuta a organizzare la visita a
+                Praga.
               </p>
               <a
                 className="button-primary !bg-[var(--whatsapp)] !text-white hover:!bg-[#148a3e]"
                 href={whatsappHref(
-                  `Ciao FreeTourPraga, mi trovo nella pagina del tour ${tour.title} e vorrei un'informazione rapida sulla disponibilita.`,
+                  `Ciao FreeTourPraga, mi trovo nella pagina del tour ${tour.title} e vorrei un'informazione rapida sulla disponibilità.`,
                 )}
               >
-                Scrivi su WhatsApp
+                Scrivici su WhatsApp
               </a>
             </section>
           </div>
@@ -300,5 +337,17 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         </div>
       </div>
     </section>
+  );
+}
+
+function TourInfoList({ items, field }: { items: string[]; field: string }) {
+  return (
+    <ul className={`${panels.panelList} body-md`}>
+      {items.map((item, index) => (
+        <li key={index} data-tour-field={`${field}.${index}`}>
+          {item}
+        </li>
+      ))}
+    </ul>
   );
 }

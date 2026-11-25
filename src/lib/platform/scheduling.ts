@@ -33,7 +33,11 @@ export function isTourClosed(tour: CatalogTour, startsAt: string) {
   return closed;
 }
 /** Deterministic IDs keep reservations stable across reads and schedule refreshes. */
-export function generateScheduledSlots(tour: CatalogTour, now = Date.now()) {
+export function generateScheduledSlots(
+  tour: CatalogTour,
+  now = Date.now(),
+  bookedSlots?: ReadonlySet<string>,
+) {
   for (const slot of tour.slots)
     if (isTourClosed(tour, slot.startsAt)) slot.closed = true;
   const schedule = tour.schedule;
@@ -67,7 +71,7 @@ export function generateScheduledSlots(tour: CatalogTour, now = Date.now()) {
         // Existing inventory may contain manual closures/capacity overrides.
         // Only a saved explicit opening rule may reopen it.
         previous.capacity = Math.max(previous.reserved, previous.capacity);
-        if (!previous.reserved)
+        if (!previous.reserved && !bookedSlots?.has(previous.id))
           previous.endsAt = new Date(
             Date.parse(startsAt) + tour.durationMinutes * 60000,
           ).toISOString();

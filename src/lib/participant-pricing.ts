@@ -49,6 +49,15 @@ export function tourHeadlinePrice(tour: Tour) {
   };
 }
 
+export function estimatedEuroPrice(cents: number | undefined) {
+  if (cents === undefined) return "";
+  return `circa ${new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+  }).format(cents / 100)}`;
+}
+
 export function selectedPrices(
   tour: Tour,
   participants: ParticipantSelection[],

@@ -6,12 +6,15 @@ import TourDetailPage, {
 } from "@/app/tour/[slug]/page";
 import { catalog, publicPage, publicSiteContent } from "@/lib/platform/public";
 import { guidePath, tourPath } from "@/lib/public-paths";
+import { tourSlugForPath } from "@/lib/tour-page-paths";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ legacy: string[] }> };
 async function resolve(params: Props["params"]) {
-  const path = `/${(await params).legacy.join("/")}/`;
+  const pathname = `/${(await params).legacy.join("/")}`;
+  const path = `${pathname}/`;
+  const tourSlug = tourSlugForPath(pathname);
   const [tours, content, page] = await Promise.all([
     catalog(),
     publicSiteContent(),
@@ -19,7 +22,9 @@ async function resolve(params: Props["params"]) {
   ]);
   return {
     path,
-    tour: tours.find((tour) => tourPath(tour) === path),
+    tour: tours.find(
+      (tour) => tourPath(tour) === path || tour.slug === tourSlug,
+    ),
     article: content.gallery.find((article) => guidePath(article) === path),
     page,
   };

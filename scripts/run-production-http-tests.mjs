@@ -187,6 +187,15 @@ try {
       testEnv,
     );
   }
+  await run(
+    process.execPath,
+    ["--import", "tsx", "scripts/apply-tour-pages.ts", "--apply"],
+    {
+      ...env,
+      TOUR_PAGES_CONFIRM_DATABASE: databaseName,
+      TOUR_PAGES_BACKUP_DIR: smtpTemp,
+    },
+  );
   for (let i = 0; i < 5; i++) {
     const response = await fetch(
       "http://localhost:3101/api/platform/cron?task=jobs",

@@ -13,6 +13,9 @@ await context.addInitScript(() =>
   localStorage.setItem("ftp-consent", "essential"),
 );
 context.setDefaultTimeout(15000);
+await context.route(/^https:\/\/www\.google\.com\/maps/, (route) =>
+  route.abort(),
+);
 const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
@@ -45,12 +48,19 @@ async function verify(priceCents, currency) {
     }),
   });
   assert.equal(
-    (await card.getByLabel("Prezzo per persona").locator("strong").textContent()).replace(/\s+/g, " "),
+    (
+      await card
+        .getByLabel("Prezzo per persona")
+        .locator("strong")
+        .textContent()
+    ).replace(/\s+/g, " "),
     money(priceCents, currency),
   );
-  await page.goto(base + "/tour/qa-t12-price");
+  await page.goto(base + "/tour/qa-t12-price", {
+    waitUntil: "domcontentloaded",
+  });
   const offer = page
-    .getByText("A partire da soli", { exact: true })
+    .getByText("Tariffa intera adulti", { exact: true })
     .locator("..");
   assert.equal(
     (await offer.locator("strong").textContent()).replace(/\s+/g, " "),

@@ -80,7 +80,7 @@ test('preview blocks crawling while the technical production host redirects in o
     process.env.SITE_PREVIEW = 'false';
     const result = proxy(new NextRequest('https://preview.up.railway.app/castello-di-praga/?utm_source=qa&affiliates=5', { headers: { host: 'preview.up.railway.app' } }));
     assert.equal(result.status, 301);
-    assert.equal(result.headers.get('location'), 'https://it.freetourpraga.com/tour/castello/?utm_source=qa&affiliates=5');
+    assert.equal(result.headers.get('location'), 'https://it.freetourpraga.com/tour-castello-di-praga-mala-strana?utm_source=qa&affiliates=5');
   } finally {
     if (beforePreview === undefined) delete process.env.SITE_PREVIEW; else process.env.SITE_PREVIEW = beforePreview;
     if (beforeOrigin === undefined) delete process.env.NEXT_PUBLIC_SITE_URL; else process.env.NEXT_PUBLIC_SITE_URL = beforeOrigin;

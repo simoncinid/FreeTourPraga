@@ -34,7 +34,21 @@ export function cancellationNote(
   tour: Pick<Tour, "cancellationHours" | "lateRefundPercent">,
   defaults = { cancellationHours: 24, lateRefundPercent: 0 },
 ) {
-  return `Cancellazione gratuita fino a ${tour.cancellationHours ?? defaults.cancellationHours} ore prima della partenza. Dopo il termine: rimborso del ${tour.lateRefundPercent ?? defaults.lateRefundPercent}% dell’importo pagato.`;
+  const hours = tour.cancellationHours ?? defaults.cancellationHours;
+  const refund = tour.lateRefundPercent ?? defaults.lateRefundPercent;
+  if (hours === 0)
+    return "Puoi cancellare o modificare gratuitamente la prenotazione prima dell’inizio del tour.";
+  return `Cancellazione gratuita fino a ${hours} ore prima della partenza, con rimborso integrale degli importi pagati. Dopo il termine o in caso di mancata presentazione, ${refund ? `il rimborso è del ${refund}% dell’importo pagato` : "non è previsto alcun rimborso"}.`;
+}
+
+export function bookingDeadlineNote(tour: Tour) {
+  const cutoff = tour.bookingCutoffHours;
+  if (cutoff === undefined) return "";
+  if (tour.advanceBookingHours && tour.advanceBookingHours > cutoff)
+    return `Prenota con almeno ${tour.advanceBookingHours} ore di anticipo. Se ci sono ancora posti, puoi prenotare fino a ${cutoff} ore prima della partenza.`;
+  if (cutoff === 0)
+    return "Puoi prenotare prima dell’inizio del tour, salvo disponibilità.";
+  return `Prenotazioni online fino a ${cutoff} ore prima della partenza, salvo disponibilità.`;
 }
 
 export function freeTourNote(tour: Tour) {

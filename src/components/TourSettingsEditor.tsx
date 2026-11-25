@@ -67,6 +67,7 @@ export function TourSettingsEditor({
     ...(t.descriptionHtml ? [["descriptionHtml", "HTML importato"]] : []),
     ["highlights", "Punti salienti"],
     ["inclusions", "Servizi inclusi"],
+    ["exclusions", "Servizi esclusi"],
     ["safetyNotes", "Informazioni pratiche"],
     ["highlightGalleries", "Foto dei punti salienti"],
   ];
@@ -74,9 +75,11 @@ export function TourSettingsEditor({
     copy === "highlightGalleries"
       ? (t.highlightGalleries || []).map((g) => g.join("\n")).join("\n\n")
       : Array.isArray(t[copy as keyof CatalogTour])
-        ? (t[copy as "highlights" | "inclusions" | "safetyNotes"] || []).join(
-            "\n",
-          )
+        ? (
+            t[
+              copy as "highlights" | "inclusions" | "exclusions" | "safetyNotes"
+            ] || []
+          ).join("\n")
         : String(t[copy as keyof CatalogTour] || "");
   function updateText(value: string) {
     change(
@@ -92,8 +95,12 @@ export function TourSettingsEditor({
                 .slice(0, 4),
             )
             .filter((g) => g.length)
-        : ["highlights", "inclusions", "safetyNotes"].includes(copy)
-          ? value.split("\n")
+        : ["highlights", "inclusions", "exclusions", "safetyNotes"].includes(
+              copy,
+            )
+          ? value === ""
+            ? []
+            : value.split("\n")
           : value,
     );
   }
@@ -166,6 +173,20 @@ export function TourSettingsEditor({
           {field("category", "Categoria")}
           {field("language", "Lingua")}
           {field("durationMinutes", "Durata (min)", "number")}
+          {field("durationLabel", "Durata mostrata in scheda")}
+          {field(
+            "advanceBookingHours",
+            "Anticipo consigliato per prenotare (ore)",
+            "number",
+            0,
+            168,
+          )}
+          {field(
+            "fareRequirements",
+            "Documenti richiesti per la tariffa ridotta",
+          )}
+          {t.isFreeTour &&
+            field("suggestedContribution", "Offerta consigliata")}
           {field(
             "maxGuests",
             "Partecipanti per prenotazione",
@@ -208,6 +229,7 @@ export function TourSettingsEditor({
         <div className={css.three}>
           {field("meetingPoint", "Punto d’incontro")}
           {field("meetingAddress", "Indirizzo")}
+          {field("meetingInstructions", "Come riconoscere la guida")}
           {field("mapUrl", "Link Google Maps")}
           <label>
             Giorni operativi
@@ -244,7 +266,7 @@ export function TourSettingsEditor({
       <section
         data-settings-group="copy"
         hidden={group !== "copy"}
-        className={`${css.card} ${copy === "shortDescription" ? css.shortText : ["highlights", "inclusions", "safetyNotes"].includes(copy) ? css.listText : css.settingsCard}`}
+        className={`${css.card} ${copy === "shortDescription" ? css.shortText : ["highlights", "inclusions", "exclusions", "safetyNotes"].includes(copy) ? css.listText : css.settingsCard}`}
       >
         <div className={css.textControls}>
           <select
@@ -261,7 +283,9 @@ export function TourSettingsEditor({
           </select>
         </div>
         <label className={css.editor}>
-          {["highlights", "inclusions", "safetyNotes"].includes(copy)
+          {["highlights", "inclusions", "exclusions", "safetyNotes"].includes(
+            copy,
+          )
             ? "Un elemento per riga"
             : copy === "highlightGalleries"
               ? "Gruppi separati da una riga vuota · massimo 4 URL per gruppo"

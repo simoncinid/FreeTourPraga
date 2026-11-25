@@ -183,6 +183,7 @@ export const tourSchema = z.object({
             .max(80),
           label: text(150),
           priceCents: z.number().int().min(0).max(10000000),
+          estimatedEuroCents: z.number().int().min(0).max(10000000).optional(),
           minAge: z.number().int().min(0).max(120).optional(),
           maxAge: z.number().int().min(0).max(120).optional(),
           description: z.string().max(500).optional(),
@@ -261,6 +262,7 @@ export const tourSchema = z.object({
     .optional(),
   meetingPoint: text(),
   meetingAddress: text(),
+  meetingInstructions: z.string().max(500).optional(),
   mapUrl: z
     .string()
     .url()
@@ -284,6 +286,7 @@ export const tourSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   durationMinutes: z.number().int().min(15).max(1440),
+  durationLabel: z.string().max(80).optional(),
   basePriceCents: z.number().int().min(0).max(10000000),
   childPriceCents: z.number().int().min(0).max(10000000),
   infantPriceCents: z.number().int().min(0).max(10000000),
@@ -300,6 +303,9 @@ export const tourSchema = z.object({
     .optional(),
   walkingLabel: z.string().trim().min(1).max(80).optional(),
   cancellationHours: z.number().min(0).max(720).optional(),
+  advanceBookingHours: z.number().min(0).max(168).optional(),
+  fareRequirements: z.string().max(1000).optional(),
+  suggestedContribution: z.string().max(160).optional(),
   lateRefundPercent: z.number().min(0).max(100).optional(),
   reminderHours: z.number().min(1).max(168).optional(),
   reminderTemplate: z.string().max(10000).optional(),
@@ -326,11 +332,27 @@ export const tourSchema = z.object({
   seoDescription: z.string().max(500).optional(),
   seoKeywords: z.array(z.string()).optional(),
   highlights: z.array(text(1000)).max(30),
+  itineraryGroups: z
+    .array(
+      z.object({ title: text(160), start: z.number().int().min(0).max(29) }),
+    )
+    .max(10)
+    .refine(
+      (groups) =>
+        groups.every((group, index) =>
+          index === 0
+            ? group.start === 0
+            : group.start > groups[index - 1].start,
+        ),
+      "Indica in ordine l’inizio di ogni percorso",
+    )
+    .optional(),
   highlightGalleries: z
     .array(z.array(tourImageUrlSchema).max(4))
     .max(30)
     .optional(),
   inclusions: z.array(text(1000)).max(30),
+  exclusions: z.array(text(1000)).max(30).optional(),
   safetyNotes: z.array(text(1000)).max(30),
   published: z.boolean(),
   adultMinAge: z.number().int().min(1).max(99),

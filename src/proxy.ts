@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import routes from "@/content/wordpress-routes.json";
 import { canonicalPath } from "@/lib/public-paths";
+import { tourSlugForPath, updatedTourPath } from "@/lib/tour-page-paths";
 
 const redirects: Record<string, string> = routes.redirects;
 const ids: Record<string, string> = routes.wordpressIds;
@@ -32,6 +33,8 @@ export function proxy(request: NextRequest) {
   let target =
     (id && ids[id]) || redirects[path] || canonicalPath(url.pathname);
   if (target in redirects) target = redirects[target];
+  if (!url.searchParams.has("cms-tour"))
+    target = updatedTourPath(target) || target;
   const canonicalOrigin =
     process.env.NEXT_PUBLIC_SITE_URL || "https://it.freetourpraga.com";
   const publicHost = (request.headers.get("host") || url.host).split(":")[0];
@@ -88,6 +91,7 @@ export function proxy(request: NextRequest) {
   ]);
   if (
     !appRoots.has(url.pathname.split("/")[1] || "") &&
+    !tourSlugForPath(url.pathname) &&
     !routes.paths.includes(path) &&
     !gone.has(path)
   )

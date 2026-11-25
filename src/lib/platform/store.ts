@@ -70,10 +70,11 @@ function hydrate(state: PlatformState, generateSlots = true) {
   state.closedDates ??= [];
   state.ota ??= [];
   state.settings = normalizeSettings(state.settings || {});
+  const bookedSlots = new Set(state.bookings.map(({ slotId }) => slotId));
   for (const tour of state.tours) {
     // Retain every referenced slot so old confirmations and cancellations still resolve.
-    tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || state.bookings.some((b) => b.slotId === slot.id));
-    if (generateSlots) generateScheduledSlots(tour);
+    tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || bookedSlots.has(slot.id));
+    if (generateSlots) generateScheduledSlots(tour, undefined, bookedSlots);
   }
   const content = siteContent(state.siteContent, state.pages);
   if (!state.siteContent) state.siteContent = content;
@@ -92,13 +93,14 @@ async function readLocal(generateSlots = true) {
 // PostgreSQL row lock serializes requests across application instances and workers.
 export async function transaction<T>(
   work: (state: PlatformState) => T | Promise<T>,
+  { generateSlots = true } = {},
 ): Promise<T> {
   if (localMode()) {
     if (process.env.NODE_ENV === "production")
       throw new Error("Archivio locale vietato in produzione");
     const pending = (runtime.platformQueue ?? Promise.resolve()).then(
       async () => {
-        const state = await readLocal();
+        const state = await readLocal(generateSlots);
         const result = await work(state);
         await mkdir(dirname(file()), { recursive: true });
         const temp = `${file()}.${randomUUID()}.tmp`;
@@ -126,7 +128,7 @@ export async function transaction<T>(
       const row = await tx.platformState.findUniqueOrThrow({
         where: { id: "main" },
       });
-      const state = hydrate(row.data as unknown as PlatformState);
+      const state = hydrate(row.data as unknown as PlatformState, generateSlots);
       const result = await work(state);
       await tx.platformState.update({
         where: { id: "main" },

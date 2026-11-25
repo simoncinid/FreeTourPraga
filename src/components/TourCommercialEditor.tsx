@@ -114,6 +114,30 @@ export function TourCommercialEditor({
                     }
                   />
                 </label>
+                {t.currency === "CZK" && (
+                  <label>
+                    Equivalente indicativo in euro
+                    <input
+                      type="number"
+                      className="text-input"
+                      min="0"
+                      step="0.01"
+                      value={
+                        c.estimatedEuroCents === undefined
+                          ? ""
+                          : c.estimatedEuroCents / 100
+                      }
+                      onChange={(e) =>
+                        setCategory(i, {
+                          estimatedEuroCents:
+                            e.target.value === ""
+                              ? undefined
+                              : Math.round(Number(e.target.value) * 100),
+                        })
+                      }
+                    />
+                  </label>
+                )}
                 <label>
                   Età min
                   <input

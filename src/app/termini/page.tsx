@@ -39,25 +39,26 @@ export default async function Page() {
               </p>
               <h2 className="display-md">Prenotazione e pagamento</h2>
               <p>
-                I prezzi sono in euro e il riepilogo mostra il totale prima
-                della conferma. Il pagamento avviene in contanti sul posto.
+                Il prezzo e la valuta sono indicati nella scheda del tour. Il
+                riepilogo mostra il totale e i metodi di pagamento disponibili
+                prima della conferma.
               </p>
               <h2 className="display-md">Sconti e partecipanti</h2>
               <p>
-                Con almeno {s.minimumTours} tour diversi nel carrello si applica
-                automaticamente uno sconto del {s.multiTourPercent}%. Le fasce
-                d’età e le tariffe sono indicate nel tour. Anche gli infanti
-                occupano un posto nella capienza del gruppo.
+                Gli eventuali sconti sono indicati nel riepilogo. Le fasce d’età
+                e le tariffe sono indicate nella scheda del tour. Anche i
+                bambini che partecipano gratuitamente occupano un posto.
               </p>
               <h2 className="display-md">Modifiche e cancellazioni</h2>
               <p>
                 Puoi modificare o cancellare la singola prenotazione dal link
                 ricevuto via email, senza account, oppure contattare lo staff.
-                Le modifiche della partenza dipendono dai posti disponibili. La
-                cancellazione fino a {s.cancellationHours} ore prima dà diritto
-                al rimborso integrale dei pagamenti registrati; dopo questo
-                termine il rimborso previsto è del {s.lateRefundPercent}
-                %.
+                Le modifiche dipendono dai posti disponibili. La scheda del tour
+                e la conferma indicano il termine per la cancellazione gratuita
+                e il rimborso applicabile. Se la scheda non indica una politica
+                specifica, puoi cancellare fino a {s.cancellationHours} ore
+                prima per ricevere il rimborso integrale. Dopo questo termine il
+                rimborso è del {s.lateRefundPercent}%.
               </p>
               <p>
                 I rimborsi sono effettuati sul metodo di pagamento originale e
@@ -76,7 +77,7 @@ export default async function Page() {
                 .
               </p>
               <p className="text-sm">
-                Condizioni aggiornate al 6 novembre 2026.
+                Condizioni aggiornate al 25 novembre 2026.
               </p>
             </>
           )}

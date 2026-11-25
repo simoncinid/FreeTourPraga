@@ -26,10 +26,11 @@ export const publicSiteContent = cache(async () => {
 });
 export const catalog = cache(async () => {
   const s = await publicState();
+  const bookedSlots = new Set(s.bookings.map(({ slotId }) => slotId));
   return s.tours
     .filter((t) => t.published)
     .map((t) => {
-      generateScheduledSlots(t);
+      generateScheduledSlots(t, undefined, bookedSlots);
       return {
         ...publicTour(s, t),
         galleryImages: tourGalleryImages(t),
