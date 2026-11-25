@@ -9,9 +9,9 @@ const browser = await chromium.launch();
 const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
 });
-await context.addInitScript(() =>
-  localStorage.setItem("ftp-consent", "essential"),
-);
+await context.addInitScript(() => {
+  if (window === window.top) localStorage.setItem("ftp-consent", "essential");
+});
 context.setDefaultTimeout(15000);
 await context.route(/^https:\/\/www\.google\.com\/maps/, (route) =>
   route.abort(),
