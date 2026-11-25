@@ -151,6 +151,7 @@ export const settingsSchema = z.object({
     confirmed: emailKindTemplateSchema,
     modified: emailKindTemplateSchema,
     cancelled: emailKindTemplateSchema,
+    expired: emailKindTemplateSchema.optional(),
     refunded: emailKindTemplateSchema.optional(),
     admin: z.object({
       subject: text(200),

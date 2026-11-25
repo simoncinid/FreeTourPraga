@@ -84,7 +84,8 @@ const phase1Navigation = navigation.filter(
 );
 const labels: Record<string, string> = {
   confirmed: "Confermata",
-  pending: "In attesa",
+  pending: "Nuova",
+  awaiting_payment: "In attesa pagamento",
   cancelled: "Cancellata",
   present: "Presente",
   no_show: "Assente",
@@ -1292,19 +1293,44 @@ function BookingDetail({
             {formatMoney(b.discountCents, b.currency)} · {b.source}
           </p>
           <div className="flex gap-3">
-            {b.status === "pending" && b.paymentMethod === "whatsapp"
-              ? <span className="status-chip status-warning">In attesa di pagamento</span>
-              : <><Chip value={b.status} /><Chip value={b.paymentStatus} /></>}
+            <Chip value={b.status} />
+            <Chip value={b.paymentStatus} />
           </div>
           {b.status === "pending" && b.paymentMethod === "whatsapp" && (
-            <button type="button" className="button-primary" disabled={busy}
+            <button
+              type="button"
+              className="button-primary"
+              disabled={busy}
               onClick={() => {
-                if (window.confirm("Il pagamento dell’intero ordine è stato ricevuto?"))
-                  void save({ pnr: b.pnr, action: "settle-order" });
-              }}>
-              Registra saldo dell’ordine
+                if (
+                  window.confirm(
+                    "Il cliente ha inviato il messaggio WhatsApp? La prenotazione passerà in attesa pagamento e non scadrà più automaticamente.",
+                  )
+                )
+                  void save({ pnr: b.pnr, action: "awaiting-payment" });
+              }}
+            >
+              Messaggio ricevuto · in attesa pagamento
             </button>
           )}
+          {b.status === "awaiting_payment" &&
+            b.paymentMethod === "whatsapp" && (
+              <button
+                type="button"
+                className="button-primary"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Il pagamento dell’intero ordine è stato ricevuto?",
+                    )
+                  )
+                    void save({ pnr: b.pnr, action: "settle-order" });
+                }}
+              >
+                Registra saldo dell’ordine
+              </button>
+            )}
         </div>
         {editCustomer && (
           <div className="form-grid">
@@ -1375,13 +1401,16 @@ function BookingDetail({
             <select
               className="text-input"
               value={status}
-              disabled={b.status === "pending"}
+              disabled={["pending", "awaiting_payment"].includes(b.status)}
               onChange={(e) =>
                 setStatus(e.target.value as Reservation["status"])
               }
             >
               {[
                 ...(b.status === "pending" ? ["pending"] : []),
+                ...(b.status === "awaiting_payment"
+                  ? ["awaiting_payment"]
+                  : []),
                 "confirmed",
                 "present",
                 "no_show",
@@ -1401,7 +1430,12 @@ function BookingDetail({
                 setPayment(e.target.value as Reservation["paymentStatus"])
               }
             >
-              {(b.status === "pending" && b.paymentMethod === "whatsapp" ? ["pending", "paid"] : ["not_required", "paid", "pending"]).map((x) => (
+              {(
+                ["pending", "awaiting_payment"].includes(b.status) &&
+                b.paymentMethod === "whatsapp"
+                  ? ["pending", "paid"]
+                  : ["not_required", "paid", "pending"]
+              ).map((x) => (
                 <option key={x} value={x}>
                   {labels[x]}
                 </option>
@@ -1430,7 +1464,9 @@ function BookingDetail({
               email,
               phone,
               ...(!b.categorySnapshot ? { adults, children, infants } : {}),
-              ...(b.status !== "pending" ? { status } : {}),
+              ...(!["pending", "awaiting_payment"].includes(b.status)
+                ? { status }
+                : {}),
               paymentStatus: payment,
               notify,
             })
@@ -1810,7 +1846,10 @@ function SettingsEditor({
       <div className="form-grid">
         {field("multiTourPercent", "Sconto multi-tour (%)")}
         {field("minimumTours", "Numero minimo di tour a pagamento diversi")}
-        {field("paymentHoldMinutes", "Scadenza attesa pagamento (minuti)")}
+        {field(
+          "paymentHoldMinutes",
+          "Scadenza messaggio WhatsApp (minuti)",
+        )}
         {field(
           "cancellationHours",
           "Cancellazione gratuita fino a (ore prima)",
@@ -1819,9 +1858,11 @@ function SettingsEditor({
         {field("retentionDays", "Conservazione dati (giorni)")}
       </div>
       <p className="text-sm">
-        Le tariffe e le fasce d’età si gestiscono per ciascun tour. Listino
-        last-minute in <Link href="/admin/last-minute">Last minute</Link>. Testi
-        email in <Link href="/admin/pre-tour">Email</Link>.
+        La scadenza WhatsApp vale solo per le prenotazioni ancora «Nuove»: se
+        entro quel tempo non passano in «In attesa pagamento», i posti si
+        liberano e parte l’email di prenotazione scaduta. Listino last-minute in{" "}
+        <Link href="/admin/last-minute">Last minute</Link>. Testi email in{" "}
+        <Link href="/admin/pre-tour">Email</Link>.
       </p>
       <button className="button-primary" disabled={busy}>
         Salva regole

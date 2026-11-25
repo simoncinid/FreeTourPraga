@@ -21,7 +21,12 @@ export function reservationIcs(state: PlatformState, booking: Reservation) {
     location: tour.meetingAddress,
     url: tour.mapUrl,
     organizer: { name: contact.brandName, email: contact.email },
-    status: booking.status === "cancelled" ? "CANCELLED" : booking.status === "pending" ? "TENTATIVE" : "CONFIRMED",
+    status:
+      booking.status === "cancelled"
+        ? "CANCELLED"
+        : booking.status === "pending" || booking.status === "awaiting_payment"
+          ? "TENTATIVE"
+          : "CONFIRMED",
   });
   if (result.error || !result.value) throw result.error || Error("Calendario non disponibile");
   return result.value;

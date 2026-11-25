@@ -33,6 +33,11 @@ const templates: { key: EditKey; name: string; description: string }[] = [
     description: "Conferma di cancellazione",
   },
   {
+    key: "expired",
+    name: "Prenotazione scaduta",
+    description: "Avviso di prenotazione persa per mancato messaggio WhatsApp",
+  },
+  {
     key: "refunded",
     name: "Rimborso cliente",
     description: "Conferma del rimborso registrato",

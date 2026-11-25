@@ -205,6 +205,37 @@ export function defaultEmailTemplates(): EmailTemplates {
 <p style="text-align:center;padding-top:20px">{firma}</p>
 </div>`,
     },
+    expired: {
+      subject: "Prenotazione scaduta · {pnr} · {tour}",
+      text: [
+        "Ciao {nome},",
+        "",
+        "la tua prenotazione {pnr} per {tour} del {fecha} alle {hora} è scaduta.",
+        "",
+        "Non abbiamo ricevuto il tuo messaggio WhatsApp entro i tempi indicati, quindi i posti riservati sono stati liberati e la prenotazione non è più attiva.",
+        "",
+        "Partecipanti: {persone}",
+        "Importo della prenotazione: {totale}",
+        "",
+        "Se vuoi ancora partecipare, effettua una nuova prenotazione dal sito oppure scrivici per assistenza: {assistenza}",
+        "",
+        "Riferimento: {pnr}",
+        "",
+        "{firma}",
+      ].join("\n"),
+      html: `<div style="font-family:arial,sans-serif;margin:5px;color:#3c3c3c">
+<p>Ciao {nome},</p>
+<p>La tua prenotazione <b>{pnr}</b> per <b>{tour}</b> del <b>{fecha}</b> alle <b>{hora}</b> è scaduta.</p>
+<p>Non abbiamo ricevuto il tuo messaggio WhatsApp entro i tempi indicati, quindi i posti riservati sono stati liberati e la prenotazione non è più attiva.</p>
+<ul>
+<li style="margin-bottom:10px"><b>Partecipanti:</b> {persone}</li>
+<li style="margin-bottom:10px"><b>Importo:</b> {totale}</li>
+</ul>
+<p>Se vuoi ancora partecipare, effettua una nuova prenotazione dal sito oppure scrivici per assistenza: {assistenza}</p>
+<p>Riferimento: {pnr}</p>
+<p style="text-align:center;padding-top:20px">{firma}</p>
+</div>`,
+    },
     refunded: {
       subject: "Rimborso effettuato · {pnr} · {tour}",
       text: "Ciao {nome},\n\nAbbiamo registrato il rimborso di {rimborso} per la prenotazione {pnr} ({tour}).\n\nAssistenza: {assistenza}\n{firma}",
@@ -309,6 +340,7 @@ export function normalizeEmailTemplates(raw: unknown): EmailTemplates {
     confirmed,
     modified: asTemplate(value.modified, defaults.modified),
     cancelled,
+    expired: asTemplate(value.expired, defaults.expired),
     refunded: asTemplate(value.refunded, defaults.refunded),
     admin,
   };
@@ -349,6 +381,7 @@ export function customerTemplateForKind(
   kind: string,
 ): EmailKindTemplate {
   if (/rimborso effettuato/i.test(kind)) return templates.refunded;
+  if (/scadut|persa/i.test(kind)) return templates.expired;
   if (/cancell/i.test(kind)) return templates.cancelled;
   if (/modific|aggiorn/i.test(kind)) return templates.modified;
   return templates.confirmed;

@@ -174,12 +174,13 @@ export function BookingConfirmation() {
                 <div className="flex flex-wrap justify-between gap-3">
                   <strong>{b.pnr}</strong>
                   <span
-                    className={`status-chip ${b.status === "confirmed" ? "status-success" : b.status === "pending" ? "status-warning" : "status-muted"}`}
+                    className={`status-chip ${b.status === "confirmed" ? "status-success" : b.status === "pending" || b.status === "awaiting_payment" ? "status-warning" : "status-muted"}`}
                   >
                     {
                       {
                         confirmed: "Confermata",
-                        pending: "In attesa di pagamento",
+                        pending: "In attesa di messaggio WhatsApp",
+                        awaiting_payment: "In attesa di pagamento",
                         cancelled: "Cancellata",
                         present: "Partecipazione registrata",
                         no_show: "Assente",

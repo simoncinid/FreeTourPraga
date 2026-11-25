@@ -470,27 +470,67 @@ export async function platformApi(request: Request, path: string[]) {
             adults: z.number().int().min(1).max(100).optional(),
             children: z.number().int().min(0).max(100).optional(),
             infants: z.number().int().min(0).max(100).optional(),
-            action: z.enum(["cancel", "move", "update", "refund-record", "settle-order"]),
+            action: z.enum([
+              "cancel",
+              "move",
+              "update",
+              "refund-record",
+              "settle-order",
+              "awaiting-payment",
+            ]),
             confirmRefund: z.boolean().optional(),
             reason: z.string().max(1000).optional(),
             slotId: z.string().optional(),
             notes: z.string().max(2000).optional(),
             notesHtml: z.string().max(16000).transform(sanitizeRichText).optional(),
-            status: z.enum(["confirmed", "present", "no_show"]).optional(),
+            status: z
+              .enum(["confirmed", "present", "no_show", "awaiting_payment"])
+              .optional(),
             paymentStatus: z
               .enum(["paid", "pending", "not_required"])
               .optional(),
             notify: z.boolean().default(false),
           })
           .parse(await jsonBody(request));
+        if (body.action === "awaiting-payment") {
+          return ok(
+            await transaction((s) => {
+              const booking = s.bookings.find((b) => b.pnr === body.pnr);
+              if (
+                !booking ||
+                booking.paymentMethod !== "whatsapp" ||
+                booking.status !== "pending"
+              )
+                throw new HttpError(
+                  409,
+                  "Solo le prenotazioni WhatsApp nuove possono passare in attesa pagamento",
+                );
+              const held = s.bookings.filter(
+                (b) =>
+                  b.orderId === booking.orderId &&
+                  b.status === "pending" &&
+                  b.paymentMethod === "whatsapp",
+              );
+              for (const b of held) {
+                b.status = "awaiting_payment";
+                audit(s, user.email, "booking.awaiting-payment", b.pnr);
+              }
+              return { ok: true };
+            }),
+          );
+        }
         if (body.action === "settle-order") {
           return ok(await transaction((s) => {
             const booking = s.bookings.find((b) => b.pnr === body.pnr);
-            if (booking?.paymentMethod !== "whatsapp" ||
-              (booking.status !== "pending" && booking.paymentStatus !== "paid"))
+            if (
+              booking?.paymentMethod !== "whatsapp" ||
+              (!["pending", "awaiting_payment"].includes(booking.status) &&
+                booking.paymentStatus !== "paid")
+            )
               throw new HttpError(409, "Prenotazione non più in attesa di pagamento");
             const pending = s.bookings.filter((b) =>
-              b.orderId === booking.orderId && b.status === "pending" &&
+              b.orderId === booking.orderId &&
+              ["pending", "awaiting_payment"].includes(b.status) &&
               b.paymentMethod === "whatsapp",
             );
             for (const b of pending) {
@@ -653,15 +693,30 @@ export async function platformApi(request: Request, path: string[]) {
               b.notes = body.notes;
             }
             if (body.notesHtml !== undefined) b.notesHtml = body.notesHtml;
-            const pending = b.status === "pending" && b.paymentMethod === "whatsapp";
-            if (pending && (body.status || body.paymentStatus === "not_required"))
-              throw new HttpError(409, "Registra il pagamento per confermare la prenotazione");
+            const whatsappHold =
+              ["pending", "awaiting_payment"].includes(b.status) &&
+              b.paymentMethod === "whatsapp";
+            if (
+              whatsappHold &&
+              body.status &&
+              body.status !== "awaiting_payment"
+            )
+              throw new HttpError(
+                409,
+                "Registra il pagamento per confermare la prenotazione",
+              );
+            if (whatsappHold && body.paymentStatus === "not_required")
+              throw new HttpError(
+                409,
+                "Registra il pagamento per confermare la prenotazione",
+              );
             if (body.status) b.status = body.status;
             if (body.paymentStatus) b.paymentStatus = body.paymentStatus;
-            if (pending && b.paymentStatus === "paid") {
+            if (whatsappHold && b.paymentStatus === "paid") {
               b.status = "confirmed";
               notification(s, b, "Confermata");
-            } else if (body.notify && !pending) notification(s, b, "Aggiornata");
+            } else if (body.notify && !whatsappHold)
+              notification(s, b, "Aggiornata");
             audit(s, user.email, "booking.update", b.pnr);
             return b;
           }),

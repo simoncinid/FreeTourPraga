@@ -179,16 +179,50 @@ test("commission recorded server side and removed on cancellation", async () => 
     0,
   );
 });
-test("unpaid hold expiry releases inventory", async () => {
+test("unpaid hold expiry releases inventory and emails the guest", async () => {
   await transaction((s) => {
     const o = s.orders[0];
     const b = s.bookings.find((b) => b.orderId === o.id)!;
     b.status = "pending";
+    b.paymentMethod = "whatsapp";
     b.paymentStatus = "pending";
     o.expiresAt = new Date(0).toISOString();
     const before = s.tours[0].slots[0].reserved;
     releaseExpired(s);
     assert.equal(s.tours[0].slots[0].reserved, before - 1);
+    assert.equal(b.status, "cancelled");
+    const mail = s.jobs.find(
+      (job) =>
+        job.bookingPnr === b.pnr &&
+        job.to === b.email &&
+        job.key.includes(":Scaduta:"),
+    );
+    assert.ok(mail);
+    assert.match(mail!.subject!, /scaduta/i);
+    assert.match(mail!.text!, /posti riservati sono stati liberati/i);
+  });
+});
+test("awaiting_payment holds do not expire automatically", async () => {
+  const order = await createOrder(
+    publicCheckoutSchema.parse(input("old-town-4")),
+    randomUUID(),
+  );
+  await transaction((s) => {
+    const b = s.bookings.find((booking) => booking.orderId === order.id)!;
+    const o = s.orders.find((row) => row.id === order.id)!;
+    b.status = "awaiting_payment";
+    b.paymentMethod = "whatsapp";
+    b.paymentStatus = "pending";
+    o.expiresAt = new Date(0).toISOString();
+    const slot = s.tours[0].slots.find(({ id }) => id === b.slotId)!;
+    const before = slot.reserved;
+    releaseExpired(s);
+    assert.equal(b.status, "awaiting_payment");
+    assert.equal(slot.reserved, before);
+    // Cleanup so later fixtures keep predictable inventory.
+    slot.reserved = Math.max(0, slot.reserved - b.totalGuests);
+    b.status = "cancelled";
+    b.paymentStatus = "failed";
   });
 });
 test("public mixed checkout confirms zero-price items and expires only unpaid seats", async () => {

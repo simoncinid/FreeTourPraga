@@ -85,12 +85,13 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
           <>
             <article className="card mb-6 grid gap-4 p-6">
               <span
-                className={`status-chip ${booking.status === "confirmed" ? "status-success" : booking.status === "pending" ? "status-warning" : "status-muted"}`}
+                className={`status-chip ${booking.status === "confirmed" ? "status-success" : booking.status === "pending" || booking.status === "awaiting_payment" ? "status-warning" : "status-muted"}`}
               >
                 {
                   {
                     confirmed: "Confermata",
                     pending: "In attesa",
+                    awaiting_payment: "In attesa di pagamento",
                     cancelled: "Cancellata",
                     present: "Partecipazione registrata",
                     no_show: "Assente",

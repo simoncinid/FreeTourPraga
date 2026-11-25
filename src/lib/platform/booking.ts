@@ -627,7 +627,10 @@ export async function cancelReservation(
     const { slot } = slotFor(s, b);
     if (proof !== undefined && new Date(slot.startsAt).getTime() <= Date.now())
       throw new HttpError(409, "Il tour è già iniziato: contatta lo staff.");
-    if (proof !== undefined && !["confirmed", "pending"].includes(b.status))
+    if (
+      proof !== undefined &&
+      !["confirmed", "pending", "awaiting_payment"].includes(b.status)
+    )
       throw new HttpError(409, "Questa prenotazione non è più cancellabile.");
     const settings = normalizeSettings(s.settings);
     const free =
@@ -735,7 +738,7 @@ function whatsappPayment(state: PlatformState, order: Order) {
   const bookings = state.bookings.filter(
     (booking) =>
       booking.orderId === order.id &&
-      booking.status === "pending" &&
+      ["pending", "awaiting_payment"].includes(booking.status) &&
       booking.paymentMethod === "whatsapp",
   );
   if (!bookings.length) return null;
@@ -876,7 +879,9 @@ export async function managedBooking(pnr: string, proof: string) {
       beforeStart &&
       tour.published &&
       !tour.operationalReviewRequired,
-    canCancel: ["confirmed", "pending"].includes(b.status) && beforeStart,
+    canCancel:
+      ["confirmed", "pending", "awaiting_payment"].includes(b.status) &&
+      beforeStart,
     cancellationHours: hours,
     refundPreviewCents:
       b.paymentStatus === "paid"

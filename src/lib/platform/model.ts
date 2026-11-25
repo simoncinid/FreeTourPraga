@@ -41,7 +41,13 @@ export type Reservation = {
   paymentInstructions?: string;
   paymentMethod: "cash" | "bank_transfer" | "stripe" | "ota" | "whatsapp";
   paymentStatus: "pending" | "paid" | "refunded" | "not_required" | "failed";
-  status: "confirmed" | "pending" | "cancelled" | "present" | "no_show";
+  status:
+    | "confirmed"
+    | "pending"
+    | "awaiting_payment"
+    | "cancelled"
+    | "present"
+    | "no_show";
   source: string;
   affiliateCode: string;
   commissionCents: number;
@@ -105,6 +111,7 @@ export type EmailTemplates = {
   confirmed: EmailKindTemplate;
   modified: EmailKindTemplate;
   cancelled: EmailKindTemplate;
+  expired: EmailKindTemplate;
   refunded: EmailKindTemplate;
   admin: { subject: string; text: string };
 };

@@ -3,7 +3,13 @@ export type AgeBand = "adults" | "children" | "infants";
 export type PaymentMethod = "cash" | "bank_transfer" | "stripe";
 
 export type BookingStatus =
-  "pending" | "confirmed" | "cancelled" | "modified" | "no_show" | "present";
+  | "pending"
+  | "awaiting_payment"
+  | "confirmed"
+  | "cancelled"
+  | "modified"
+  | "no_show"
+  | "present";
 
 export type PaymentStatus =
   "not_required" | "pending" | "paid" | "failed" | "refunded";
