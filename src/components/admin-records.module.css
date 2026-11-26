@@ -133,7 +133,11 @@
   flex-shrink: 0;
 }
 .danger {
-  color: #b05c50;
+  color: #c62828;
+  border-color: #c62828;
+}
+.danger:hover:not(:disabled) {
+  background: #fff5f5;
 }
 .badge {
   display: inline-block;

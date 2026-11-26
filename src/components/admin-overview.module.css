@@ -399,8 +399,10 @@
   .metricArrow {
     display: none;
   }
-  .values strong {
+  .values strong,
+  .metric:first-child .values strong {
     font-size: 20px;
+    font-weight: 500;
   }
   .values {
     min-height: 48px;

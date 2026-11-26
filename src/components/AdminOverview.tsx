@@ -358,13 +358,6 @@ export function AdminOverview({
           <footer className={recordsCss.drawerFooter}>
             <button
               type="button"
-              className="button-secondary"
-              onClick={() => setSelected(null)}
-            >
-              Chiudi
-            </button>
-            <button
-              type="button"
               className="button-primary"
               disabled={busy}
               onClick={() =>

@@ -97,12 +97,12 @@ export function RecordDrawer({
           </div>
           <button
             type="button"
-            className={css.icon}
+            className="admin-modal-close"
             aria-label="Chiudi pannello"
             disabled={locked}
             onClick={close}
           >
-            <X size={19} />
+            <X size={18} />
           </button>
         </header>
         {children}

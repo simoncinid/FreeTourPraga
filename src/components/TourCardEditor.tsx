@@ -19,8 +19,9 @@ export function TourCardEditor({
     <section className="card grid gap-5 p-6">
       <h2 className="display-md">Card di anteprima</h2>
       <p>
-        Le personalizzazioni si applicano alla card. I campi vuoti usano i dati
-        del tour.
+        Titolo, descrizione breve e itinerario aggiornano anche il contenuto del
+        tour (scheda Contenuto). Gli altri campi valgono solo per la card; se
+        restano vuoti, la card riusa i dati del tour.
       </p>
       <div className="form-grid">
         {(

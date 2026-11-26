@@ -179,7 +179,7 @@ export function BlogArticleEditor({
               </button>
               <button
                 type="button"
-                className="text-red-700 underline"
+                className="button-secondary button-danger"
                 onClick={() => {
                   if (
                     window.confirm(
@@ -276,7 +276,7 @@ export function BlogArticleEditor({
                     {CONTENT_SECTION_STRUCTURE_ENABLED && (
                       <button
                         type="button"
-                        className="text-red-700 underline"
+                        className="button-secondary button-danger"
                         onClick={() =>
                           changeBlocks(
                             index,

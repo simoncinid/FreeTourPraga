@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { commissionMatured } from "@/lib/platform/commissions";
 import type { Affiliate, CatalogTour, Reservation } from "@/lib/platform/model";
 import { formatMoney } from "@/lib/format";
@@ -309,11 +309,12 @@ function AffiliateEditor({
         <h2>{editing ? `Modifica ${initial!.name}` : "Nuovo affiliato"}</h2>
         <button
           type="button"
-          className="button-secondary"
+          className="admin-modal-close"
           disabled={busy}
+          aria-label="Chiudi"
           onClick={onCancel}
         >
-          Chiudi
+          <X size={18} />
         </button>
       </div>
       <div className="affiliate-modal-grid">

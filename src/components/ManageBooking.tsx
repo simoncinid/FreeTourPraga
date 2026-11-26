@@ -236,7 +236,7 @@ export function ManageBooking({ pnr, proof }: { pnr: string; proof: string }) {
                     <input type="checkbox" required disabled={busy} />
                     Confermo di voler cancellare questa prenotazione.
                   </label>
-                  <button disabled={busy} className="button-secondary">
+                  <button disabled={busy} className="button-secondary button-danger">
                     Conferma cancellazione
                   </button>
                 </form>

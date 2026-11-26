@@ -22,7 +22,10 @@ export function TourSettingsEditor({
   const [group, setGroup] = useState("identity"),
     [copy, setCopy] = useState("shortDescription"),
     [upload, setUpload] = useState(false),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [categoryNew, setCategoryNew] = useState(
+      () => !categories.includes(t.category) && Boolean(t.category),
+    );
   const field = (
     key: keyof CatalogTour,
     label: string,
@@ -135,7 +138,57 @@ export function TourSettingsEditor({
         <div className={css.three}>
           {field("title", "Titolo")}
           {field("slug", "Indirizzo pagina (slug)")}
-          {field("category", "Categoria")}
+          <label data-tour-setting="category">
+            Categoria *
+            <select
+              className="text-input"
+              value={
+                categoryNew ||
+                !categories.length ||
+                !String(t.category ?? "").trim() ||
+                !categories.includes(String(t.category ?? ""))
+                  ? "__new__"
+                  : String(t.category ?? "")
+              }
+              onChange={(e) => {
+                if (e.target.value === "__new__") {
+                  setCategoryNew(true);
+                  if (categories.includes(String(t.category ?? ""))) {
+                    change("category", "");
+                  }
+                  return;
+                }
+                setCategoryNew(false);
+                change("category", e.target.value);
+              }}
+              required
+            >
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+              <option value="__new__">+ Nuova categoria…</option>
+            </select>
+          </label>
+          {(categoryNew ||
+            !categories.length ||
+            !String(t.category ?? "").trim() ||
+            !categories.includes(String(t.category ?? ""))) && (
+            <label data-tour-setting="category-new">
+              Nome nuova categoria *
+              <input
+                className="text-input"
+                value={String(t.category ?? "")}
+                required
+                placeholder="Es. Gli essenziali"
+                onChange={(e) => {
+                  setCategoryNew(true);
+                  change("category", e.target.value);
+                }}
+              />
+            </label>
+          )}
           {field("language", "Lingua")}
           {field("durationMinutes", "Durata (min)", "number")}
           {field("durationLabel", "Durata mostrata in scheda")}
@@ -179,15 +232,11 @@ export function TourSettingsEditor({
             240,
           )}
         </div>
-        <datalist id="tour-category-options">
-          {categories.map((item) => (
-            <option key={item} value={item} />
-          ))}
-        </datalist>
         <p className={css.hint}>
-          La categoria comparirà come tab in homepage se almeno un tour
-          pubblicato la utilizza. Salva la scheda prima di intervenire sul
-          calendario.
+          Le categorie non hanno una gestione separata: scegline una esistente
+          o creane una nuova qui (o in «Nuovo tour»). Comparirà come tab in
+          homepage se almeno un tour pubblicato la utilizza. Salva la scheda
+          prima di intervenire sul calendario.
         </p>
       </section>
       <section
@@ -274,7 +323,7 @@ export function TourSettingsEditor({
                     list.map((text, i) => i === index ? plain : text),
                     list.map((_, i) => i === index ? html : t.formattedCopy?.[listField]?.[i] ?? null),
                   )} />
-                <button type="button" className="button-secondary justify-self-start"
+                <button type="button" className="button-secondary button-danger justify-self-start"
                   onClick={() => {
                     updateList(listField, list.filter((_, i) => i !== index),
                       list.map((_, i) => t.formattedCopy?.[listField]?.[i] ?? null).filter((_, i) => i !== index));

@@ -301,8 +301,8 @@ export const tourSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
   title: text(),
   category: text(),
-  shortDescription: text(1000),
-  description: text(20000),
+  shortDescription: z.string().trim().max(1000),
+  description: z.string().trim().max(20000),
   descriptionHtml: z
     .string()
     .max(100000)
@@ -442,6 +442,22 @@ export const tourSchema = z.object({
       }),
     )
     .max(5000),
+}).superRefine((v, ctx) => {
+  if (!v.published) return;
+  if (!v.shortDescription.trim()) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["shortDescription"],
+      message: "Completa la descrizione breve prima di pubblicare",
+    });
+  }
+  if (!v.description.trim()) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["description"],
+      message: "Completa la descrizione prima di pubblicare",
+    });
+  }
 });
 export const pageSchema = z.object({
   benefits: z

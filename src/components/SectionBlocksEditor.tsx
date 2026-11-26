@@ -127,6 +127,7 @@ export function SectionBlocksEditor({
               </button>
               <button
                 type="button"
+                className="button-secondary button-danger"
                 onClick={() => onChange(blocks.filter((_, j) => j !== i))}
               >
                 Rimuovi blocco

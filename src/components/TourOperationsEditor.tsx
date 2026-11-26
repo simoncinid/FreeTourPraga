@@ -313,7 +313,7 @@ export function TourOperationsEditor({
               {offer.to.split("-").reverse().join("/")}{" "}
               <button
                 type="button"
-                className="button-secondary"
+                className="button-secondary button-danger"
                 onClick={() =>
                   change(
                     "seasonalOffers",

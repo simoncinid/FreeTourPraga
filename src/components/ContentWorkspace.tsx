@@ -157,7 +157,7 @@ function PageEditor({
               />
               <button
                 type="button"
-                className="button-secondary"
+                className="button-secondary button-danger"
                 onClick={() =>
                   setPage((p) => ({
                     ...p,

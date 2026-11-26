@@ -81,12 +81,12 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="grid gap-2 text-sm">
+    <div className="rich-text-editor grid gap-2 text-sm">
       <span id={labelId}>{label}</span>
       <div
         role="group"
         aria-label="Formattazione del testo"
-        className="flex flex-wrap items-center gap-2"
+        className="rich-text-toolbar flex flex-wrap items-center gap-2"
       >
         <select
           aria-label="Stile paragrafo"

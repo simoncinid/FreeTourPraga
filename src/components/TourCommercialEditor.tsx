@@ -172,6 +172,7 @@ export function TourCommercialEditor({
                 </button>
                 <button
                   type="button"
+                  className="button-secondary button-danger"
                   disabled={categories.length === 1}
                   onClick={() =>
                     change(
@@ -449,6 +450,7 @@ export function TourCommercialEditor({
             </label>
             <button
               type="button"
+              className="button-secondary button-danger"
               onClick={() =>
                 change(
                   "commissionRules",

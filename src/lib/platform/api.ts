@@ -974,6 +974,7 @@ export async function platformApi(request: Request, path: string[]) {
         const body = z.object({
           id: z.string(),
           published: z.boolean().optional(),
+          category: z.string().trim().min(1).max(80).optional(),
           archiveConfirmed: z.literal(true).optional(),
         }).parse(await jsonBody(request));
         await transaction((s) => {
@@ -985,9 +986,16 @@ export async function platformApi(request: Request, path: string[]) {
             tour.published = false;
             audit(s, user.email, "tour.archive", tour.slug);
           } else {
-            if (body.published === undefined) throw new HttpError(400, "Indica lo stato di pubblicazione");
-            tour.published = body.published;
-            audit(s, user.email, tour.published ? "tour.publish" : "tour.hide", tour.slug);
+            if (body.published === undefined && body.category === undefined)
+              throw new HttpError(400, "Indica lo stato di pubblicazione o la categoria");
+            if (body.published !== undefined) {
+              tour.published = body.published;
+              audit(s, user.email, tour.published ? "tour.publish" : "tour.hide", tour.slug);
+            }
+            if (body.category !== undefined) {
+              tour.category = body.category;
+              audit(s, user.email, "tour.category", `${tour.slug}:${body.category}`);
+            }
           }
         });
         return ok({ ok: true });

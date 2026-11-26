@@ -413,12 +413,12 @@ export function AdminEmailCenter({
               </div>
               <button
                 type="button"
-                className={css.icon}
+                className="admin-modal-close"
                 aria-label="Chiudi pannello email"
                 disabled={busy}
                 onClick={close}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </header>
             {editing ? (
@@ -557,13 +557,6 @@ export function AdminEmailCenter({
                   />
                 </label>
                 <footer className={css.drawerFooter}>
-                  <button
-                    type="button"
-                    className="button-secondary"
-                    onClick={close}
-                  >
-                    Chiudi
-                  </button>
                   {job.status === "failed" && (
                     <button
                       type="button"

@@ -2,6 +2,7 @@
 import { RichTextEditor } from "./RichTextEditor";
 import { AdminNotice } from "./AdminNotice";
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { siteNavigation } from "@/lib/navigation";
 import { ImageSourceField } from "./ImageSourceField";
@@ -763,10 +764,11 @@ export function VisualContentEditor({
             <h3>SEO e collegamenti</h3>
             <button
               type="button"
-              className="button-secondary"
+              className="admin-modal-close"
+              aria-label="Chiudi"
               onClick={() => setSettings(false)}
             >
-              Chiudi
+              <X size={18} />
             </button>
           </div>
           <div className={css.seoModalContent}>

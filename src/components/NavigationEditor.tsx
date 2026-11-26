@@ -64,6 +64,7 @@ export function NavigationEditor({
             </button>
             <button
               type="button"
+              className="button-secondary button-danger"
               onClick={() => onChange(items.filter((_, j) => i !== j))}
             >
               Rimuovi voce
@@ -153,6 +154,7 @@ export function NavigationEditor({
                     </button>
                     <button
                       type="button"
+                      className="button-secondary button-danger"
                       onClick={() =>
                         onChange(
                           items.map((x, k) =>

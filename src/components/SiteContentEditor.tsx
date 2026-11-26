@@ -159,7 +159,7 @@ export function SiteContentEditor({
               </button>
               <button
                 type="button"
-                className="underline text-sm"
+                className="button-secondary button-danger"
                 onClick={() => update(list.filter((_, j) => j !== i))}
               >
                 Rimuovi
@@ -437,6 +437,7 @@ export function SiteContentEditor({
                     </label>
                     <button
                       type="button"
+                      className="button-secondary button-danger"
                       onClick={() =>
                         setC((p) => ({
                           ...p,

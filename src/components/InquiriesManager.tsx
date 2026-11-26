@@ -184,14 +184,6 @@ export function InquiriesManager({
             </span>
             <button
               type="button"
-              className="button-secondary"
-              disabled={busy}
-              onClick={() => setSelected(null)}
-            >
-              Chiudi
-            </button>
-            <button
-              type="button"
               className="button-primary"
               disabled={busy}
               onClick={() =>

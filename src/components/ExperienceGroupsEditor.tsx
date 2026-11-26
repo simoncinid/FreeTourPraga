@@ -100,6 +100,7 @@ export function ExperienceGroupsEditor({
                       ),
                     )
                   }
+                  className="button-secondary button-danger"
                 >
                   Rimuovi esperienza
                 </button>
@@ -141,6 +142,7 @@ export function ExperienceGroupsEditor({
               </button>
               <button
                 type="button"
+                className="button-secondary button-danger"
                 onClick={() => onChange(groups.filter((_, j) => i !== j))}
               >
                 Rimuovi gruppo

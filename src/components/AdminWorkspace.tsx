@@ -29,11 +29,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -48,6 +50,13 @@ import {
   LogOut,
   Plus,
   UserCog,
+  Menu,
+  X,
+  Download,
+  ChevronDown,
+  ChevronLeft,
+  CalendarClock,
+  Trash2,
 } from "lucide-react";
 import type {
   Affiliate,
@@ -173,6 +182,112 @@ function Chip({ value }: { value: string }) {
     </span>
   );
 }
+function statusChipClass(value: string) {
+  return `status-chip ${["paid", "confirmed", "present", "sent", "imported"].includes(value) ? "status-success" : ""}`;
+}
+function StatusMenu({
+  value,
+  disabled,
+  busy,
+  onChange,
+}: {
+  value: string;
+  disabled?: boolean;
+  busy?: boolean;
+  onChange: (status: "confirmed" | "present" | "no_show" | "awaiting_payment") => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const options = [
+    ...(value === "awaiting_payment" ? (["awaiting_payment"] as const) : []),
+    "confirmed",
+    "present",
+    "no_show",
+  ] as const;
+  const locked =
+    disabled || busy || value === "cancelled" || value === "pending";
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const place = () => {
+      const r = triggerRef.current!.getBoundingClientRect();
+      const width = 168;
+      const left = Math.min(
+        Math.max(8, r.right - width),
+        window.innerWidth - width - 8,
+      );
+      setPos({ top: r.bottom + 6, left });
+    };
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || panelRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+  return (
+    <div className={`status-menu${open ? " is-open" : ""}`} ref={rootRef}>
+      <button
+        type="button"
+        ref={triggerRef}
+        className={`${statusChipClass(value)} status-menu-trigger`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={locked}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!locked) setOpen((v) => !v);
+        }}
+      >
+        <span>{labels[value] || value}</span>
+        {!locked && <ChevronDown size={12} className="status-menu-caret" />}
+      </button>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={panelRef}
+            className="status-menu-panel"
+            role="listbox"
+            style={{ top: pos.top, left: pos.left }}
+          >
+            {options.map((opt) => (
+              <button
+                type="button"
+                key={opt}
+                role="option"
+                aria-selected={opt === value}
+                className={opt === value ? "is-active" : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setOpen(false);
+                  if (opt !== value) onChange(opt);
+                }}
+              >
+                {labels[opt]}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
+}
 const adminTimeFormatter = new Intl.DateTimeFormat("it-IT", {
   timeZone: "Europe/Prague",
   dateStyle: "short",
@@ -180,6 +295,151 @@ const adminTimeFormatter = new Intl.DateTimeFormat("it-IT", {
 });
 function time(value: string) {
   return adminTimeFormatter.format(new Date(value));
+}
+function slugifyTourTitle(title: string) {
+  const base = title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return base || "nuovo-tour";
+}
+function uniqueTourSlug(base: string, tours: CatalogTour[]) {
+  let slug = base,
+    n = 2;
+  while (tours.some((t) => t.slug === slug)) slug = `${base}-${n++}`;
+  return slug;
+}
+function blankTour(
+  source: CatalogTour,
+  title: string,
+  category: string,
+  slug: string,
+): CatalogTour {
+  const t = structuredClone(source);
+  const name = title.trim() || "Nuovo tour";
+  const cat = category.trim() || "Nuovi";
+  const short =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vitae nisl at arcu blandit facilisis.";
+  const long =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae nisi vitae nisl aliquet tincidunt. Sed euismod, nisl sit amet tincidunt tincidunt, nisl nisl aliquam nisl, vitae aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.";
+  const highlights = [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+    "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+  ];
+  const inclusions = [
+    "Lorem ipsum guida locale in italiano",
+    "Consectetur adipiscing elit per tutto il percorso",
+    "Tempor incididunt con assistenza in loco",
+  ];
+  const exclusions = [
+    "Biglietti di ingresso non inclusi (lorem ipsum)",
+    "Trasporti e pasti a carico del partecipante",
+    "Mance e spese personali",
+  ];
+  const safetyNotes = [
+    "Indossare scarpe comode: lorem ipsum dolor sit amet.",
+    "Il tour si svolge a piedi con pause regolari.",
+    "In caso di maltempo il percorso può essere adattato.",
+  ];
+  return {
+    ...t,
+    id: crypto.randomUUID(),
+    slug,
+    title: name,
+    category: cat,
+    shortDescription: short,
+    description: long,
+    descriptionHtml: `<p>${long}</p><p>${short}</p>`,
+    highlights,
+    inclusions,
+    exclusions,
+    safetyNotes,
+    itineraryGroups: [
+      { title: "Inizio percorso (lorem)", start: 0 },
+      { title: "Tappa centrale (ipsum)", start: 2 },
+    ],
+    highlightGalleries: highlights.map(() => []),
+    galleryImages: t.galleryImages?.length
+      ? t.galleryImages.slice(0, 4).map((photo, i) => ({
+          ...photo,
+          alt: photo.alt || `Foto esempio ${i + 1} — ${name}`,
+        }))
+      : undefined,
+    contentBlocks: [
+      {
+        type: "text",
+        heading: "Panoramica del tour",
+        text: long,
+        html: `<p>${long}</p>`,
+      },
+      {
+        type: "text",
+        heading: "Cosa sappiamo già",
+        text: short,
+        html: `<p>${short}</p>`,
+      },
+    ],
+    slots: [],
+    calendarRules: [],
+    calendarLog: [],
+    closures: [],
+    seasonalOffers: [],
+    commissionRules: [],
+    commissionPackageWith: [],
+    published: false,
+    archivedAt: undefined,
+    canonicalPath: undefined,
+    sourceUrl: undefined,
+    sourceUpdatedAt: undefined,
+    importedFromWordpress: false,
+    operationalReviewRequired: false,
+    schedule: undefined,
+    meetingPoint: "Punto d’incontro lorem ipsum",
+    meetingAddress: "Via Lorem Ipsum 1, 110 00 Praha 1",
+    meetingInstructions:
+      "La guida indossa un ombrello arancione. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    durationLabel: "circa 2 ore (lorem)",
+    walkingLabel: "Passo tranquillo",
+    fareRequirements:
+      "Documento d’identità richiesto per eventuali riduzioni (lorem ipsum).",
+    suggestedContribution: t.isFreeTour
+      ? "Offerta libera consigliata: lorem ipsum"
+      : t.suggestedContribution,
+    priceLabel: t.isFreeTour ? "Offerta libera" : t.priceLabel || "",
+    guide: "Guida lorem ipsum",
+    language: t.language || "Italiano",
+    cardPreview: {
+      title: name,
+      description: short,
+      itinerary: highlights.join(" · "),
+      facts: [
+        "Durata esempio: 2 ore",
+        "Lingua: Italiano",
+        `Categoria: ${cat}`,
+      ],
+      itineraryLabel: "Itinerario",
+      pricesLabel: "Prezzi",
+      bookLabel: "Prenota",
+      detailsLabel: "Dettagli",
+    },
+    formattedCopy: {
+      shortDescription: `<p>${short}</p>`,
+      highlights: highlights.map((item) => `<p>${item}</p>`),
+      inclusions: inclusions.map((item) => `<p>${item}</p>`),
+      exclusions: exclusions.map((item) => `<p>${item}</p>`),
+      safetyNotes: safetyNotes.map((item) => `<p>${item}</p>`),
+    },
+    seoTitle: `${name} | Free Tour Praga`,
+    seoDescription: short.slice(0, 160),
+    seoKeywords: [cat, "Praga", "tour", "lorem", "ipsum"],
+    rating: 0,
+    reviewCount: 0,
+  };
 }
 export function AdminWorkspace() {
   const router = useRouter();
@@ -219,7 +479,16 @@ export function AdminWorkspace() {
     ),
     [partnerTo, setPartnerTo] = useState(() =>
       new Date().toISOString().slice(0, 10),
-    );
+    ),
+    [mobileMenuOpen, setMobileMenuOpen] = useState(false),
+    [adminMobile, setAdminMobile] = useState(false),
+    [bookingsFiltersOpen, setBookingsFiltersOpen] = useState(false),
+    [expandedBookingId, setExpandedBookingId] = useState<string | null>(null),
+    [tourCreateOpen, setTourCreateOpen] = useState(false),
+    [newTourTitle, setNewTourTitle] = useState(""),
+    [newTourCategory, setNewTourCategory] = useState(""),
+    [newTourCategoryNew, setNewTourCategoryNew] = useState(false);
+  const tourCreateDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const next = searchParams.get("affiliate") || "";
     setAffiliateFilter(next);
@@ -228,6 +497,37 @@ export function AdminWorkspace() {
   useEffect(() => {
     if (section !== "contenuti") setContentChrome(null);
   }, [section]);
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setExpandedBookingId(null);
+    setBookingsFiltersOpen(false);
+    setTourCreateOpen(false);
+  }, [section, detail]);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const sync = () => setAdminMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    const el = tourCreateDialog.current;
+    if (!el) return;
+    if (tourCreateOpen && !el.open) el.showModal();
+    if (!tourCreateOpen && el.open) el.close();
+  }, [tourCreateOpen]);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.classList.add("admin-mobile-menu-open");
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.classList.remove("admin-mobile-menu-open");
+    };
+  }, [mobileMenuOpen]);
   const slotsByTour = useMemo(
     () =>
       new Map(
@@ -323,7 +623,7 @@ export function AdminWorkspace() {
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
-  const BOOKINGS_PAGE_SIZE = 8;
+  const BOOKINGS_PAGE_SIZE = adminMobile ? 20 : 8;
   const bookingsSorted = filtered.slice().reverse();
   const bookingsPageCount = Math.max(
     1,
@@ -339,33 +639,65 @@ export function AdminWorkspace() {
   );
   const table = (rows: Reservation[]) => (
     <>
-      <div className="grid gap-4 md:hidden">
-        {rows.map((b) => (
-          <article className="card grid gap-3 p-5" key={b.id}>
-            <div className="flex justify-between gap-3">
-              <Link
-                className="font-bold underline"
-                href={`/admin/prenotazioni/${b.pnr}`}
-              >
-                {b.pnr}
-              </Link>
-              <Chip value={b.status} />
-            </div>
-            <strong>{b.name}</strong>
-            <p>{data.tours.find((t) => t.slug === b.tourSlug)?.title}</p>
-            <p className="text-sm">
-              {slot(b) ? time(slot(b)!.startsAt) : b.slotId} · {b.totalGuests}{" "}
-              partecipanti
-            </p>
-            <div className="flex justify-between">
-              <strong>{formatMoney(b.totalCents, b.currency)}</strong>
-              <Chip value={b.paymentStatus} />
-            </div>
-          </article>
-        ))}
+      <div className="bookings-mobile-list">
+        {rows.map((b) => {
+          const open = expandedBookingId === b.id;
+          return (
+            <article
+              className={`bookings-mobile-item${open ? " is-open" : ""}`}
+              key={b.id}
+            >
+              <div className="bookings-mobile-item-head">
+                <button
+                  type="button"
+                  className="bookings-mobile-item-toggle"
+                  aria-expanded={open}
+                  onClick={() =>
+                    setExpandedBookingId((id) => (id === b.id ? null : b.id))
+                  }
+                >
+                  <span className="bookings-mobile-item-name">{b.name}</span>
+                </button>
+                <StatusMenu
+                  value={b.status}
+                  busy={busy}
+                  disabled={
+                    b.status === "cancelled" ||
+                    (["pending", "awaiting_payment"].includes(b.status) &&
+                      b.paymentMethod === "whatsapp")
+                  }
+                  onChange={(status) =>
+                    void mutate(
+                      "booking",
+                      { pnr: b.pnr, action: "update", status },
+                      "PATCH",
+                    )
+                  }
+                />
+              </div>
+              {open && (
+                <Link
+                  className="bookings-mobile-item-body"
+                  href={`/admin/prenotazioni/${b.pnr}`}
+                >
+                  <strong>{b.pnr}</strong>
+                  <p>{data.tours.find((t) => t.slug === b.tourSlug)?.title}</p>
+                  <p className="text-sm">
+                    {slot(b) ? time(slot(b)!.startsAt) : b.slotId} ·{" "}
+                    {b.totalGuests} partecipanti
+                  </p>
+                  <div className="flex justify-between gap-3">
+                    <strong>{formatMoney(b.totalCents, b.currency)}</strong>
+                    <Chip value={b.paymentStatus} />
+                  </div>
+                </Link>
+              )}
+            </article>
+          );
+        })}
         {!rows.length && <p>Nessuna prenotazione presente.</p>}
       </div>
-      <div className="table-wrap hidden md:block">
+      <div className="table-wrap bookings-desktop-table">
         <table className="data-table bookings-table">
           <colgroup>
             <col className="bookings-col-pnr" />
@@ -425,7 +757,22 @@ export function AdminWorkspace() {
                   <td>{b.totalGuests}</td>
                   <td>{formatMoney(b.totalCents, b.currency)}</td>
                   <td>
-                    <Chip value={b.status} />
+                    <StatusMenu
+                      value={b.status}
+                      busy={busy}
+                      disabled={
+                        b.status === "cancelled" ||
+                        (["pending", "awaiting_payment"].includes(b.status) &&
+                          b.paymentMethod === "whatsapp")
+                      }
+                      onChange={(status) =>
+                        void mutate(
+                          "booking",
+                          { pnr: b.pnr, action: "update", status },
+                          "PATCH",
+                        )
+                      }
+                    />
                   </td>
                   <td>
                     <Chip value={b.paymentStatus} />
@@ -440,8 +787,61 @@ export function AdminWorkspace() {
     </>
   );
   const booking = detail ? data.bookings.find((b) => b.pnr === detail) : null;
+  const logout = async () => {
+    await fetch("/api/platform/logout", { method: "POST" });
+    router.replace("/accesso");
+  };
   return (
     <div className="admin-shell">
+      <header
+        className={`admin-mobile-header${mobileMenuOpen ? " is-open" : ""}`}
+      >
+        <div className="admin-mobile-header-bar">
+          <Link
+            href="/admin"
+            className="admin-brand"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            FreeTour<span className="site-brand-accent">Praga</span>
+          </Link>
+          <button
+            type="button"
+            className="admin-mobile-menu-toggle"
+            aria-label={mobileMenuOpen ? "Chiudi menu" : "Apri menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+        {mobileMenuOpen && (
+          <div className="admin-mobile-panel">
+            <nav className="admin-mobile-nav">
+              {phase1Navigation.map(([slug, label, Icon]) => (
+                <Link
+                  key={slug}
+                  href={`/admin${slug ? "/" + slug : ""}`}
+                  className={section === slug ? "active" : ""}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Icon size={18} />
+                  {label}
+                </Link>
+              ))}
+            </nav>
+            <div className="admin-mobile-panel-footer">
+              <button
+                type="button"
+                className="admin-sidebar-logout"
+                onClick={logout}
+              >
+                <LogOut size={16} />
+                Esci
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
       <aside className="admin-sidebar">
         <Link href="/admin" className="admin-brand">
           FreeTour<span className="site-brand-accent">Praga</span>
@@ -459,17 +859,6 @@ export function AdminWorkspace() {
             </Link>
           ))}
         </nav>
-        <details className="admin-mobile-menu">
-          <summary className="button-secondary">Apri menu gestionale</summary>
-          <nav className="admin-nav mt-3">
-            {phase1Navigation.map(([slug, label, Icon]) => (
-              <Link key={slug} href={`/admin${slug ? "/" + slug : ""}`}>
-                <Icon size={18} />
-                {label}
-              </Link>
-            ))}
-          </nav>
-        </details>
         <div className="admin-sidebar-footer">
           <Link href="/" className="button-secondary admin-sidebar-site">
             Vai al sito
@@ -477,10 +866,7 @@ export function AdminWorkspace() {
           <button
             type="button"
             className="admin-sidebar-logout"
-            onClick={async () => {
-              await fetch("/api/platform/logout", { method: "POST" });
-              router.replace("/accesso");
-            }}
+            onClick={logout}
           >
             <LogOut size={16} />
             Esci
@@ -490,10 +876,35 @@ export function AdminWorkspace() {
       <div
         className={`admin-main min-w-0${["", "prenotazioni", "tour", "calendario", "affiliati", "contenuti", "pre-tour", "richieste", "partner-europa"].includes(section) ? " admin-compact" : ""}${section === "calendario" ? " admin-calendar-page" : ""}${section === "affiliati" ? " admin-affiliates-page" : ""}${section === "prenotazioni" && !detail ? " admin-bookings-page" : ""}${section === "contenuti" ? " admin-contents-page" : ""}`}
       >
-        <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
-          <div>
+        <header
+          className={`mb-7 flex items-center justify-between gap-4${adminMobile ? " admin-header-mobile" : " flex-wrap"}`}
+        >
+          <div className="min-w-0">
             <h1 className="display-lg">
-              {navigation.find((n) => n[0] === section)?.[1] || "Gestione"}
+              {section === "prenotazioni" && detail && detail !== "nuova" ? (
+                <>
+                  <Link
+                    href="/admin/prenotazioni"
+                    className="booking-page-back-title"
+                  >
+                    <ChevronLeft size={22} />
+                    Prenotazioni
+                  </Link>
+                  <span className="booking-page-title-desktop">
+                    Prenotazioni
+                  </span>
+                </>
+              ) : section === "tour" && detail ? (
+                <>
+                  <Link href="/admin/tour" className="tour-page-back-title">
+                    <ChevronLeft size={22} />
+                    Tour e orari
+                  </Link>
+                  <span className="tour-page-title-desktop">Tour e orari</span>
+                </>
+              ) : (
+                navigation.find((n) => n[0] === section)?.[1] || "Gestione"
+              )}
             </h1>
           </div>
           <div className="admin-header-actions">
@@ -515,15 +926,83 @@ export function AdminWorkspace() {
                 Nuovo affiliato
               </button>
             )}
-            {section !== "contenuti" && (
-              <button
-                onClick={() => load().catch((e) => setMessage(e.message))}
-                className="button-secondary"
-              >
-                <RefreshCw size={16} />
-                Aggiorna
-              </button>
+            {section === "prenotazioni" && !detail && (
+              <>
+                <Link
+                  href="/admin/prenotazioni/nuova"
+                  className="bookings-header-icon bookings-header-add"
+                  aria-label="Nuova prenotazione"
+                >
+                  <Plus size={20} />
+                </Link>
+                <a
+                  href="/api/platform/admin/export"
+                  download
+                  className="bookings-header-icon bookings-header-download"
+                  aria-label="Esporta CSV"
+                >
+                  <Download size={20} />
+                </a>
+              </>
             )}
+            {section === "tour" &&
+              (adminMobile ? (
+                <button
+                  type="button"
+                  className="tours-header-add"
+                  aria-label="Crea un tour"
+                  onClick={() => {
+                    setNewTourTitle("");
+                    {
+                      const cats = [
+                        ...new Set(
+                          data.tours
+                            .map((t) => t.category.trim())
+                            .filter(Boolean),
+                        ),
+                      ].sort((a, b) => a.localeCompare(b, "it"));
+                      setNewTourCategoryNew(!cats.length);
+                      setNewTourCategory(cats[0] || "");
+                    }
+                    setTourCreateOpen(true);
+                  }}
+                >
+                  <Plus size={20} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="button-primary"
+                  onClick={() => {
+                    setNewTourTitle("");
+                    {
+                      const cats = [
+                        ...new Set(
+                          data.tours
+                            .map((t) => t.category.trim())
+                            .filter(Boolean),
+                        ),
+                      ].sort((a, b) => a.localeCompare(b, "it"));
+                      setNewTourCategoryNew(!cats.length);
+                      setNewTourCategory(cats[0] || "");
+                    }
+                    setTourCreateOpen(true);
+                  }}
+                >
+                  <Plus size={16} />
+                  Crea un tour
+                </button>
+              ))}
+            {section !== "contenuti" &&
+              !(adminMobile && (section === "tour" || section === "prenotazioni")) && (
+                <button
+                  onClick={() => load().catch((e) => setMessage(e.message))}
+                  className="button-secondary"
+                >
+                  <RefreshCw size={16} />
+                  Aggiorna
+                </button>
+              )}
             {section === "contenuti" && contentChrome && (
               <>
                 <button
@@ -545,12 +1024,6 @@ export function AdminWorkspace() {
                   Apri ↗
                 </a>
               </>
-            )}
-            {section === "tour" && (
-              <Link className="button-primary" href="/admin/tour/nuovo">
-                <Plus size={16} />
-                Crea un tour
-              </Link>
             )}
           </div>
         </header>
@@ -595,89 +1068,106 @@ export function AdminWorkspace() {
                   />
                 ) : (
                   <div className="bookings-workspace">
-                    <div className="card mb-4 grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-5">
-                      <Field
-                        label="Cerca nome, PNR, email"
-                        value={search}
-                        onChange={(v) => {
-                          setSearch(v);
-                          setBookingsPage(0);
-                        }}
-                      />
-                      <label>
-                        Tour
-                        <select
-                          className="text-input"
-                          value={tourFilter}
-                          onChange={(e) => {
-                            setTourFilter(e.target.value);
-                            setSlotFilter("");
+                    <details
+                      className="bookings-filters card mb-4"
+                      open={adminMobile ? bookingsFiltersOpen : true}
+                      onToggle={(e) => {
+                        if (adminMobile)
+                          setBookingsFiltersOpen(e.currentTarget.open);
+                      }}
+                    >
+                      <summary className="bookings-filters-summary">
+                        <span>
+                          {bookingsFiltersOpen ? "Chiudi filtri" : "Apri filtri"}
+                        </span>
+                        <ChevronDown size={16} />
+                      </summary>
+                      <div className="bookings-filters-body grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-5">
+                        <Field
+                          label="Cerca nome, PNR, email"
+                          value={search}
+                          onChange={(v) => {
+                            setSearch(v);
                             setBookingsPage(0);
                           }}
-                        >
-                          <option value="">Tutti i tour</option>
-                          {data.tours.map((t) => (
-                            <option key={t.id} value={t.slug}>
-                              {t.title}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <Field
-                        label="Data"
-                        value={dateFilter}
-                        onChange={(v) => {
-                          setDateFilter(v);
-                          setBookingsPage(0);
-                        }}
-                        type="date"
-                      />
-                      <label>
-                        Partenza
-                        <select
-                          className="text-input"
-                          value={slotFilter}
-                          onChange={(e) => {
-                            setSlotFilter(e.target.value);
-                            setBookingsPage(0);
-                          }}
-                        >
-                          <option value="">Tutti gli orari</option>
-                          {data.tours
-                            .filter((t) => !tourFilter || t.slug === tourFilter)
-                            .flatMap((t) => t.slots)
-                            .map((s) => (
-                              <option value={s.id} key={s.id}>
-                                {time(s.startsAt)}
+                        />
+                        <label>
+                          Tour
+                          <select
+                            className="text-input"
+                            value={tourFilter}
+                            onChange={(e) => {
+                              setTourFilter(e.target.value);
+                              setSlotFilter("");
+                              setBookingsPage(0);
+                            }}
+                          >
+                            <option value="">Tutti i tour</option>
+                            {data.tours.map((t) => (
+                              <option key={t.id} value={t.slug}>
+                                {t.title}
                               </option>
                             ))}
-                        </select>
-                      </label>
-                      <label>
-                        Affiliato
-                        <select
-                          className="text-input"
-                          value={affiliateFilter}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setAffiliateFilter(value);
+                          </select>
+                        </label>
+                        <Field
+                          label="Data"
+                          value={dateFilter}
+                          onChange={(v) => {
+                            setDateFilter(v);
                             setBookingsPage(0);
-                            const url = value
-                              ? `/admin/prenotazioni?affiliate=${encodeURIComponent(value)}`
-                              : "/admin/prenotazioni";
-                            router.replace(url);
                           }}
-                        >
-                          <option value="">Tutti gli affiliati</option>
-                          {data.affiliates.map((a) => (
-                            <option key={a.code} value={a.code}>
-                              {a.name} ({a.code})
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <div className="mb-4 flex flex-wrap gap-3">
+                          type="date"
+                        />
+                        <label>
+                          Partenza
+                          <select
+                            className="text-input"
+                            value={slotFilter}
+                            onChange={(e) => {
+                              setSlotFilter(e.target.value);
+                              setBookingsPage(0);
+                            }}
+                          >
+                            <option value="">Tutti gli orari</option>
+                            {data.tours
+                              .filter(
+                                (t) => !tourFilter || t.slug === tourFilter,
+                              )
+                              .flatMap((t) => t.slots)
+                              .map((s) => (
+                                <option value={s.id} key={s.id}>
+                                  {time(s.startsAt)}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+                        <label>
+                          Affiliato
+                          <select
+                            className="text-input"
+                            value={affiliateFilter}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setAffiliateFilter(value);
+                              setBookingsPage(0);
+                              const url = value
+                                ? `/admin/prenotazioni?affiliate=${encodeURIComponent(value)}`
+                                : "/admin/prenotazioni";
+                              router.replace(url);
+                            }}
+                          >
+                            <option value="">Tutti gli affiliati</option>
+                            {data.affiliates.map((a) => (
+                              <option key={a.code} value={a.code}>
+                                {a.name} ({a.code})
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    </details>
+                    <div className="bookings-page-actions mb-4 flex flex-wrap gap-3">
                       <Link
                         className="button-primary"
                         href="/admin/prenotazioni/nuova"
@@ -731,25 +1221,13 @@ export function AdminWorkspace() {
                   <TourEditor
                     key={detail}
                     tour={
-                      data.tours.find((t) => t.slug === detail) || {
-                        ...structuredClone(data.tours[0]),
-                        id: crypto.randomUUID(),
-                        slug: "nuovo-tour",
-                        title: "Nuovo tour",
-                        canonicalPath: undefined,
-                        sourceUrl: undefined,
-                        sourceUpdatedAt: undefined,
-                        importedFromWordpress: false,
-                        operationalReviewRequired: false,
-                        schedule: undefined,
-                        calendarRules: [],
-                        commissionRules: [],
-                        commissionPackageWith: [],
-                        closures: [],
-                        published: false,
-                        archivedAt: undefined,
-                        slots: [],
-                      }
+                      data.tours.find((t) => t.slug === detail) ||
+                      blankTour(
+                        data.tours[0],
+                        "Nuovo tour",
+                        "Nuovi",
+                        uniqueTourSlug("nuovo-tour", data.tours),
+                      )
                     }
                     calendar={(reconcile) =>
                       data.tours.some((t) => t.slug === detail) ? (
@@ -1047,6 +1525,121 @@ export function AdminWorkspace() {
           )}
         </div>
       </div>
+      <dialog
+        ref={tourCreateDialog}
+        className="tour-create-modal"
+        onClose={() => setTourCreateOpen(false)}
+        onCancel={(e) => {
+          e.preventDefault();
+          setTourCreateOpen(false);
+        }}
+      >
+        <form
+          className="tour-create-modal-form"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const title = newTourTitle.trim();
+            if (!title) return;
+            if (!data.tours[0]) {
+              setMessage("Crea prima un tour di base nel sistema.");
+              return;
+            }
+            const slug = uniqueTourSlug(
+              slugifyTourTitle(title),
+              data.tours,
+            );
+            const tour = blankTour(
+              data.tours[0],
+              title,
+              newTourCategory || "Nuovi",
+              slug,
+            );
+            const result = await mutate("tour", tour, "PUT");
+            if (result) {
+              setTourCreateOpen(false);
+              setNewTourTitle("");
+              setNewTourCategory("");
+              setNewTourCategoryNew(false);
+              setMessage(`Bozza «${tour.title}» creata. Aprila da Modifica per completarla.`);
+            }
+          }}
+        >
+          <div className="tour-create-modal-head">
+            <h2>Nuovo tour</h2>
+            <button
+              type="button"
+              className="admin-modal-close"
+              disabled={busy}
+              aria-label="Chiudi"
+              onClick={() => setTourCreateOpen(false)}
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <label>
+            Titolo
+            <input
+              className="text-input"
+              value={newTourTitle}
+              onChange={(e) => setNewTourTitle(e.target.value)}
+              placeholder="Es. Tour del Castello"
+              required
+              autoFocus
+            />
+          </label>
+          <label>
+            Categoria
+            <select
+              className="text-input"
+              value={newTourCategoryNew ? "__new__" : newTourCategory}
+              onChange={(e) => {
+                if (e.target.value === "__new__") {
+                  setNewTourCategoryNew(true);
+                  setNewTourCategory("");
+                  return;
+                }
+                setNewTourCategoryNew(false);
+                setNewTourCategory(e.target.value);
+              }}
+              required
+            >
+              {[
+                ...new Set(
+                  data.tours.map((t) => t.category.trim()).filter(Boolean),
+                ),
+              ]
+                .sort((a, b) => a.localeCompare(b, "it"))
+                .map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              <option value="__new__">+ Nuova categoria…</option>
+            </select>
+          </label>
+          {newTourCategoryNew && (
+            <label className="tour-create-category-new">
+              Nome nuova categoria
+              <input
+                className="text-input"
+                value={newTourCategory}
+                onChange={(e) => setNewTourCategory(e.target.value)}
+                placeholder="Es. Gli essenziali"
+                required
+              />
+            </label>
+          )}
+          <button
+            type="submit"
+            className="button-primary tour-create-submit"
+            disabled={
+              busy || !newTourTitle.trim() || !newTourCategory.trim()
+            }
+          >
+            Crea bozza
+          </button>
+        </form>
+      </dialog>
     </div>
   );
 }
@@ -1176,12 +1769,16 @@ function ManualBooking({
           ))}
         </div>
       )}
-      <RichTextEditor label="Note" html={notes.html} onChange={(html, text) => setNotes({ html, text })} />
+      <RichTextEditor
+        label="Note"
+        html={notes.html}
+        onChange={(html, text) => setNotes({ html, text })}
+      />
       <label className="flex gap-3 text-sm">
         <input required type="checkbox" />
         Confermo che il cliente ha accettato le condizioni di prenotazione.
       </label>
-      <button disabled={busy} className="button-primary">
+      <button disabled={busy} className="button-primary manual-booking-submit">
         Registra e invia conferma
       </button>
       {message && <AdminNotice key={message} message={message} />}
@@ -1234,20 +1831,142 @@ function BookingDetail({
   );
   const [reason, setReason] = useState("");
   const [confirmRefund, setConfirmRefund] = useState(false);
+  const [actionModal, setActionModal] = useState<"move" | "cancel" | null>(
+    null,
+  );
+  const pnrRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    const el = pnrRef.current;
+    if (!el) return;
+    const fit = () => {
+      let size = 18;
+      el.style.fontSize = `${size}px`;
+      while (size > 11 && el.scrollWidth > el.clientWidth) {
+        size -= 0.5;
+        el.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [b.pnr]);
+  useEffect(() => {
+    if (!actionModal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActionModal(null);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.classList.add("booking-action-modal-open");
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.classList.remove("booking-action-modal-open");
+    };
+  }, [actionModal]);
+  const moveFields = (
+    <div className="booking-move-fields">
+      <div>
+        <span className="admin-field-label">Data</span>
+        <SlotDatePicker
+          days={days}
+          value={days.includes(moveDay) ? moveDay : ""}
+          onChange={(day) => {
+            setMoveDay(day);
+            setSlot(
+              availableSlots.find(
+                (s) => pragueLocal(s.startsAt).slice(0, 10) === day,
+              )?.id || "",
+            );
+          }}
+          triggerClassName="text-input admin-date-trigger"
+        />
+      </div>
+      <label>
+        Partenza
+        <select
+          className="text-input"
+          value={daySlots.some((s) => s.id === slotId) ? slotId : ""}
+          onChange={(e) => setSlot(e.target.value)}
+        >
+          <option value="" disabled>
+            Scegli orario
+          </option>
+          {daySlots.map((s) => (
+            <option key={s.id} value={s.id}>
+              {pragueLocal(s.startsAt).slice(11, 16)} · {s.capacity - s.reserved}{" "}
+              posti
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+  const cancelFields = (
+    <div className="grid gap-4">
+      <Text label="Motivo" value={reason} onChange={setReason} />
+      <p className="text-sm">
+        Si applica la policy di rimborso configurata; i posti vengono liberati.
+      </p>
+    </div>
+  );
   return (
     <div className="booking-editor">
-      <Link href="/admin/prenotazioni" className="underline">
+      <Link
+        href="/admin/prenotazioni"
+        className="underline booking-back-desktop"
+      >
         ← Prenotazioni
       </Link>
       <div className="card booking-record grid gap-5 p-6">
         <div className="booking-summary">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="display-md">
-              {b.pnr} · {b.name}
-            </h2>
+          <div className="booking-summary-top">
+            <div className="booking-summary-titles">
+              <div className="booking-summary-name-row">
+                <h2 className="display-md booking-customer-name">{b.name}</h2>
+                <div className="booking-detail-actions">
+                  <button
+                    type="button"
+                    className="booking-detail-icon"
+                    aria-label={
+                      editCustomer
+                        ? "Chiudi modifica cliente"
+                        : "Modifica dati cliente"
+                    }
+                    aria-expanded={editCustomer}
+                    onClick={() => setEditCustomer(!editCustomer)}
+                  >
+                    <Pencil size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className="booking-detail-icon"
+                    aria-label="Sposta orario"
+                    disabled={b.status === "cancelled"}
+                    onClick={() => setActionModal("move")}
+                  >
+                    <CalendarClock size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className="booking-detail-icon booking-detail-icon-danger"
+                    aria-label="Cancellazione"
+                    disabled={b.status === "cancelled"}
+                    onClick={() => setActionModal("cancel")}
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
+              </div>
+              <p className="booking-detail-pnr" ref={pnrRef}>
+                {b.pnr}
+              </p>
+              <h2 className="display-md booking-summary-desktop-title">
+                {b.pnr} · {b.name}
+              </h2>
+            </div>
             <button
               type="button"
-              className="button-secondary"
+              className="button-secondary booking-edit-desktop"
               aria-label={
                 editCustomer
                   ? "Chiudi modifica cliente"
@@ -1369,12 +2088,30 @@ function BookingDetail({
               />
             </div>
           )}
-        <details className="booking-notes">
+        <details className="booking-notes booking-notes-desktop">
           <summary>Note operative{notes ? " · presenti" : ""}</summary>
-          <RichTextEditor label="Note operative" text={notes} html={notesHtml}
-            onChange={(html, plain) => { setNotes(plain); setNotesHtml(html); }} />
+          <RichTextEditor
+            label="Note operative"
+            text={notes}
+            html={notesHtml}
+            onChange={(html, plain) => {
+              setNotes(plain);
+              setNotesHtml(html);
+            }}
+          />
         </details>
-        <div className="form-grid">
+        <label className="booking-notes-mobile grid gap-1 text-sm">
+          Note operative
+          <textarea
+            className="text-input min-h-28"
+            value={notes}
+            onChange={(e) => {
+              setNotes(e.target.value);
+              setNotesHtml("");
+            }}
+          />
+        </label>
+        <div className="form-grid booking-status-row">
           <label>
             Partecipazione
             <select
@@ -1431,7 +2168,7 @@ function BookingDetail({
           Invia notifica al cliente
         </label>
         <button
-          className="button-primary"
+          className="button-primary booking-save"
           disabled={busy || b.status === "cancelled"}
           onClick={() =>
             save({
@@ -1485,44 +2222,9 @@ function BookingDetail({
             </button>
           </div>
         )}
-        <div className="card grid gap-4 p-6">
+        <div className="card grid gap-4 p-6 booking-side-move">
           <h2 className="display-md">Sposta su un’altra partenza</h2>
-          <div className="booking-move-fields">
-            <div>
-              <span className="admin-field-label">Data</span>
-              <SlotDatePicker
-                days={days}
-                value={days.includes(moveDay) ? moveDay : ""}
-                onChange={(day) => {
-                  setMoveDay(day);
-                  setSlot(
-                    availableSlots.find(
-                      (s) => pragueLocal(s.startsAt).slice(0, 10) === day,
-                    )?.id || "",
-                  );
-                }}
-                triggerClassName="text-input admin-date-trigger"
-              />
-            </div>
-            <label>
-              Partenza
-              <select
-                className="text-input"
-                value={daySlots.some((s) => s.id === slotId) ? slotId : ""}
-                onChange={(e) => setSlot(e.target.value)}
-              >
-                <option value="" disabled>
-                  Scegli orario
-                </option>
-                {daySlots.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {pragueLocal(s.startsAt).slice(11, 16)} ·{" "}
-                    {s.capacity - s.reserved} posti
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+          {moveFields}
           <button
             className="button-secondary"
             disabled={
@@ -1535,14 +2237,10 @@ function BookingDetail({
             Sposta e notifica
           </button>
         </div>
-        <details className="card p-6">
+        <details className="card p-6 booking-side-cancel">
           <summary>Cancellazione prenotazione</summary>
           <div className="mt-4 grid gap-4">
-            <Text label="Motivo" value={reason} onChange={setReason} />
-            <p className="text-sm">
-              Si applica la policy di rimborso configurata; i posti vengono
-              liberati.
-            </p>
+            {cancelFields}
             <button
               disabled={busy || reason.length < 2 || b.status === "cancelled"}
               className="button-secondary"
@@ -1553,8 +2251,98 @@ function BookingDetail({
           </div>
         </details>
       </aside>
+      {actionModal && (
+        <div
+          className="booking-action-modal"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActionModal(null);
+          }}
+        >
+          <div
+            className="booking-action-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              actionModal === "move"
+                ? "Sposta su un’altra partenza"
+                : "Cancellazione prenotazione"
+            }
+          >
+            <div className="booking-action-modal-head">
+              <h2 className="display-md">
+                {actionModal === "move"
+                  ? "Sposta su un’altra partenza"
+                  : "Cancellazione prenotazione"}
+              </h2>
+              <button
+                type="button"
+                className="admin-modal-close"
+                aria-label="Chiudi"
+                onClick={() => setActionModal(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="booking-action-modal-body">
+              {actionModal === "move" ? moveFields : cancelFields}
+            </div>
+            <div className="booking-action-modal-foot">
+              {actionModal === "move" ? (
+                <button
+                  className="button-primary booking-action-modal-submit"
+                  disabled={
+                    busy ||
+                    b.status !== "confirmed" ||
+                    !daySlots.some((s) => s.id === slotId)
+                  }
+                  onClick={async () => {
+                    await save({ pnr: b.pnr, action: "move", slotId });
+                    setActionModal(null);
+                  }}
+                >
+                  Sposta e notifica
+                </button>
+              ) : (
+                <button
+                  disabled={
+                    busy || reason.length < 2 || b.status === "cancelled"
+                  }
+                  className="button-primary booking-action-modal-submit"
+                  onClick={async () => {
+                    await save({ pnr: b.pnr, action: "cancel", reason });
+                    setActionModal(null);
+                  }}
+                >
+                  Cancella e notifica
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function htmlToPlain(html: string) {
+  const parsed = new DOMParser().parseFromString(html || "", "text/html");
+  return parsed.body.textContent?.replace(/\s+/g, " ").trim() || "";
+}
+function htmlToLines(html: string) {
+  const parsed = new DOMParser().parseFromString(html || "", "text/html");
+  const nodes = [
+    ...parsed.body.querySelectorAll("p, li, h1, h2, h3, h4, div"),
+  ];
+  const lines = (nodes.length ? nodes : [parsed.body])
+    .map((node) => ({
+      plain: (node.textContent || "").replace(/\s+/g, " ").trim(),
+      html: node === parsed.body ? `<p>${(node.textContent || "").trim()}</p>` : (node as HTMLElement).outerHTML,
+    }))
+    .filter((line) => line.plain);
+  if (lines.length) return lines;
+  const plain = htmlToPlain(html);
+  return plain ? [{ plain, html: `<p>${plain}</p>` }] : [];
 }
 function TourEditor({
   tour,
@@ -1659,7 +2447,67 @@ function TourEditor({
       >
         <div className="tour-admin-panels">
           <div className="tour-admin-pane" data-tour-panel="card" hidden={tab !== "card"}>
-            <TourCardEditor tour={t} onChange={(preview) => set("cardPreview", preview)} />
+            <TourCardEditor
+              tour={t}
+              onChange={(preview) =>
+                setT((current) => {
+                  const next = {
+                    ...current,
+                    cardPreview: preview,
+                  };
+                  if (preview.title?.trim()) {
+                    next.title = preview.title.trim();
+                  }
+                  if (preview.description != null) {
+                    const plain = htmlToPlain(preview.description);
+                    if (plain) {
+                      next.shortDescription = plain;
+                      next.description = plain;
+                      next.descriptionHtml = preview.description;
+                      next.formattedCopy = {
+                        ...current.formattedCopy,
+                        shortDescription: preview.description,
+                      };
+                      next.seoDescription = plain.slice(0, 160);
+                    } else {
+                      next.shortDescription = "";
+                      next.description = "";
+                      next.descriptionHtml = undefined;
+                      next.formattedCopy = {
+                        ...current.formattedCopy,
+                        shortDescription: undefined,
+                      };
+                    }
+                  }
+                  if (preview.itinerary != null) {
+                    const lines = htmlToLines(preview.itinerary);
+                    if (lines.length) {
+                      next.highlights = lines.map((line) => line.plain);
+                      next.formattedCopy = {
+                        ...next.formattedCopy,
+                        highlights: lines.map((line) => line.html),
+                      };
+                      next.highlightGalleries = lines.map(
+                        (_, index) =>
+                          current.highlightGalleries?.[index] ?? [],
+                      );
+                      if (!current.itineraryGroups?.length) {
+                        next.itineraryGroups = [
+                          { title: "Itinerario", start: 0 },
+                        ];
+                      }
+                    } else {
+                      next.highlights = [];
+                      next.formattedCopy = {
+                        ...next.formattedCopy,
+                        highlights: [],
+                      };
+                    }
+                  }
+                  return next;
+                })
+              }
+            />
           </div>
           <div
             data-tour-panel="content"
@@ -1766,10 +2614,11 @@ function TourEditor({
           <h3>Calendario</h3>
           <button
             type="button"
-            className="button-secondary"
+            className="admin-modal-close"
+            aria-label="Chiudi"
             onClick={() => setCalendarOpen(false)}
           >
-            Chiudi
+            <X size={18} />
           </button>
         </div>
         {calendarOpen && calendar((updated) =>
