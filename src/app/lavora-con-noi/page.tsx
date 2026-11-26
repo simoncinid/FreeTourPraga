@@ -17,6 +17,7 @@ export default async function Page() {
   return (
     <>
       <CollaborationPage
+        formatted={page}
         pageKey="lavora-con-noi"
         eyebrow={data.subtitle}
         title={data.title}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { canonicalPath } from "@/lib/public-paths";
 import { publicSiteContent } from "@/lib/platform/public";
 import { contentWhatsapp } from "@/lib/platform/content";
-import { SiteRichText } from "./SiteRichText";
+import { SiteInlineText, SiteRichText } from "./SiteRichText";
 import { SocialLinks } from "./SocialLinks";
 export async function Footer() {
   const c = await publicSiteContent();
@@ -19,7 +19,7 @@ export async function Footer() {
             {...siteEdit("globals.brandName")}
             className="font-display text-2xl"
           >
-            {g.brandName}
+            <SiteInlineText content={c} path="globals.brandName">{g.brandName}</SiteInlineText>
           </strong>
           <SiteRichText content={c} path="globals.footerText" text={g.footerText} className="mt-4 text-sm text-white/85" />
         </div>
@@ -30,15 +30,15 @@ export async function Footer() {
               WhatsApp · {g.supportHours}
             </a>
             <a {...siteEdit("globals.email")} href={`mailto:${g.email}`}>
-              {g.email}
+              <SiteInlineText content={c} path="globals.email">{g.email}</SiteInlineText>
             </a>
             <a
               {...siteEdit("globals.phone")}
               href={`tel:${g.phone.replaceAll(" ", "")}`}
             >
-              {g.phone}
+              <SiteInlineText content={c} path="globals.phone">{g.phone}</SiteInlineText>
             </a>
-            <p {...siteEdit("globals.address")}>{g.address}</p>
+            <p {...siteEdit("globals.address")}><SiteInlineText content={c} path="globals.address">{g.address}</SiteInlineText></p>
           </div>
           <div className="mt-5">
             <SocialLinks compact />

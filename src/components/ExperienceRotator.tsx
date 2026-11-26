@@ -1,5 +1,6 @@
 "use client";
-import { siteEdit } from "@/lib/visual-content";
+import type { SiteContent } from "@/lib/platform/content";
+import { SiteInlineText, siteInlineEdit } from "./SiteRichText";
 
 import { CardCarousel } from "./CardCarousel";
 import Link from "next/link";
@@ -24,9 +25,11 @@ const IDLE_RESUME_MS = 3000;
 
 export function ExperienceRotator({
   groups,
+  formattedText,
   intervalSeconds = 5,
 }: {
   groups: ExperienceGroup[];
+  formattedText?: SiteContent["formattedText"];
   intervalSeconds?: number;
 }) {
   const [index, setIndex] = useState(0);
@@ -175,11 +178,15 @@ export function ExperienceRotator({
           >
             <span
               {...(group.editIndex !== undefined
-                ? siteEdit(`home.groups.${group.editIndex}.title`)
+                ? siteInlineEdit(`home.groups.${group.editIndex}.title`)
                 : {})}
               className={styles.experienceMenuValue}
             >
-              {group.title}
+              {group.editIndex === undefined ? group.title : (
+              <SiteInlineText content={{ formattedText }} path={`home.groups.${group.editIndex}.title`}>
+                {group.title}
+              </SiteInlineText>
+            )}
             </span>
             <ChevronDown
               size={16}
@@ -234,11 +241,15 @@ export function ExperienceRotator({
       >
         <h3
           {...(group.editIndex !== undefined
-            ? siteEdit(`home.groups.${group.editIndex}.title`)
+            ? siteInlineEdit(`home.groups.${group.editIndex}.title`)
             : {})}
           className="display-md mb-6"
         >
-          {group.title}
+          {group.editIndex === undefined ? group.title : (
+              <SiteInlineText content={{ formattedText }} path={`home.groups.${group.editIndex}.title`}>
+                {group.title}
+              </SiteInlineText>
+            )}
         </h3>
         <CardCarousel
           key={group.title}

@@ -37,6 +37,7 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
       totalCents: number;
       cancellationHours: number;
       lateRefundPercent: number;
+      cancellationClause: string;
       bookingNote: string;
       lastMinuteApplied?: boolean;
     }[];
@@ -220,12 +221,8 @@ export function ReservationFlow({ mode }: { mode: "cart" | "checkout" }) {
               {quote?.[items.indexOf(i)] && (
                 <div className="mt-3 grid gap-2 text-sm">
                   <p>{quote[items.indexOf(i)].bookingNote}</p>
-                  <p>
-                    Cancellazione gratuita fino a{" "}
-                    {quote[items.indexOf(i)].cancellationHours} ore prima. Dopo
-                    il termine: rimborso del{" "}
-                    {quote[items.indexOf(i)].lateRefundPercent}% dell’importo
-                    pagato.
+                  <p className="whitespace-pre-wrap">
+                    {quote[items.indexOf(i)].cancellationClause}
                   </p>
                 </div>
               )}

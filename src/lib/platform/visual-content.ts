@@ -42,17 +42,17 @@ export const visualPatchSchema = z.object({
 function allowed(b: ContentBinding) {
   const p = b.path.join(".");
   if (b.scope === "partner")
-    return /^(name|description|imageUrl|email|phone|website)$/.test(p);
+    return /^(?:(?:name|description|imageUrl|email|phone|website)|formattedText\.(?:name|description|email|phone))$/.test(p);
   if (b.scope === "page")
-    return /^(title|subtitle|body|bodyHtml|seoTitle|seoDescription|contentBlocks|benefits)(\.|$)/.test(
+    return /^(title|titleHtml|subtitle|subtitleHtml|body|bodyHtml|seoTitle|seoDescription|contentBlocks|benefits)(\.|$)/.test(
       p,
     );
   if (b.scope === "article")
-    return /^(title|caption|imageUrl|imageAlt|intro|introHtml|blocks|ctaEnabled|ctaLabel|ctaHref|seoTitle|seoDescription)(\.|$)/.test(
+    return /^(title|titleHtml|caption|captionHtml|imageUrl|imageAlt|intro|introHtml|blocks|ctaEnabled|ctaLabel|ctaHref|kicker|backLabel|footerBackLabel|formattedText|hiddenText|seoTitle|seoDescription)(\.|$)/.test(
       p,
     );
   return (
-    /^(home|answers|faqs|formattedText)(\.|$)/.test(p) ||
+    /^(home|answers|faqs|formattedText|hiddenText)(\.|$)/.test(p) ||
     /^globals\.(brandName|description|email|phone|whatsappNumber|address|supportHours|footerText|footerNote|tripAdvisorUrl|tripAdvisorTitle|tripAdvisorBody|socialLinks|officeAddress|castleMeetingAddress|googleReviewUrl|instagramDirectUrl|navigation|navigationVersion)(\.|$)/.test(
       p,
     )

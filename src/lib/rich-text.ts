@@ -1,8 +1,58 @@
 import sanitizeHtml from "sanitize-html";
 
+/** True when HTML (or plain) contains visible text after stripping tags. */
+export function richHasText(value?: string | null) {
+  if (!value) return false;
+  return Boolean(
+    value
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+}
+
+/** Prefer rich HTML when it has visible text; otherwise plain. */
+export function richOrPlain(html?: string | null, plain?: string | null) {
+  return richHasText(html) ? String(html) : plain || "";
+}
+
+const fontSizeNames = [
+  "xx-small",
+  "small",
+  "medium",
+  "large",
+  "x-large",
+  "xx-large",
+  "xxx-large",
+] as const;
+
+/** Convert legacy <font> (execCommand) into <span style="…"> before sanitize strips them. */
+export function normalizeLegacyFonts(html: string) {
+  if (!html.includes("<font")) return html;
+  return html.replace(
+    /<font\b([^>]*)>([\s\S]*?)<\/font>/gi,
+    (_match, attrs: string, inner: string) => {
+      const styles: string[] = [];
+      const face = /\bface\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
+      const color = /\bcolor\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
+      const size = /\bsize\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
+      const faceValue = face?.[1] || face?.[2] || face?.[3];
+      const colorValue = color?.[1] || color?.[2] || color?.[3];
+      const sizeValue = Number(size?.[1] || size?.[2] || size?.[3] || "");
+      if (faceValue) styles.push(`font-family: ${faceValue}`);
+      if (colorValue) styles.push(`color: ${colorValue}`);
+      if (sizeValue >= 1 && sizeValue <= 7)
+        styles.push(`font-size: ${fontSizeNames[sizeValue - 1]}`);
+      if (!styles.length) return inner;
+      return `<span style="${styles.join("; ")}">${inner}</span>`;
+    },
+  );
+}
+
 /** Text formatting and links only; no WordPress classes, forms, scripts or embeds. */
 export function sanitizeRichText(html: string) {
-  return sanitizeHtml(html, {
+  return sanitizeHtml(normalizeLegacyFonts(html), {
     allowedTags: [
       "p",
       "h1",
@@ -54,8 +104,18 @@ export function sanitizeRichText(html: string) {
         "text-decoration": [/^(?:none|(?:underline|line-through)(?: (?:underline|line-through))?)$/],
         "text-decoration-line": [/^(?:none|(?:underline|line-through)(?: (?:underline|line-through))?)$/],
         "text-align": [/^(?:left|right|center|justify|start|end)$/],
-        color: [/^#[a-f\d]{3,8}$/i, /^rgba?\([\d.,%\s]+\)$/],
-        "background-color": [/^#[a-f\d]{3,8}$/i, /^rgba?\([\d.,%\s]+\)$/],
+        color: [
+          /^#[a-f\d]{3,8}$/i,
+          /^rgba?\([\d.,%\s]+\)$/i,
+          /^hsla?\([\d.,%\s]+\)$/i,
+          /^[a-z]+$/i,
+        ],
+        "background-color": [
+          /^#[a-f\d]{3,8}$/i,
+          /^rgba?\([\d.,%\s]+\)$/i,
+          /^hsla?\([\d.,%\s]+\)$/i,
+          /^[a-z]+$/i,
+        ],
       },
     },
     allowedSchemes: ["https", "http", "mailto", "tel"],

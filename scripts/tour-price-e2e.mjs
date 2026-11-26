@@ -61,7 +61,7 @@ async function verify(priceCents, currency) {
   });
   const offer = page
     .getByText("Tariffa intera adulti", { exact: true })
-    .locator("..");
+    .locator("xpath=ancestor::div[1]");
   assert.equal(
     (await offer.locator("strong").textContent()).replace(/\s+/g, " "),
     money(priceCents, currency),
@@ -172,10 +172,7 @@ try {
     .getByRole("button", { name: "Prezzi", exact: true })
     .click();
   await page
-    .getByRole("heading", { name: "Categorie e prezzi", exact: true })
-    .locator("..")
-    .locator("select")
-    .first()
+    .getByRole("combobox", { name: /^Valuta/ })
     .selectOption("EUR");
   saved = page.waitForResponse(
     (r) =>

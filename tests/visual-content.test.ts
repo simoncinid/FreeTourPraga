@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { tourSchema } from "../src/lib/platform/validation";
 import { initialState } from "../src/lib/platform/store";
 import {
   applyVisualPatches,
@@ -189,4 +190,63 @@ test("visual content preserves manual newlines and numeric offer prices", () => 
     s.siteContent!.home.specialOffersTitle,
     "Offerte\nservizio clienti",
   );
+});
+
+test("editorial formatting survives publication independently of plain titles", () => {
+  const state = initialState();
+  const site = siteContent(state.siteContent, state.pages);
+  state.siteContent = site;
+  const article = site.gallery[0];
+  const page = state.pages["chi-siamo"];
+  const initialTitle = site.home.heroTitle;
+  const styledTitle = '<span style="font-family:Georgia;color:#334455">T</span>OUR GUIDATI';
+  const styledBody = '<h2 style="text-align:center">Titolo</h2><ol><li>Voce</li></ol>';
+  applyVisualPatches(state, {
+    patches: [
+      { binding: { scope: "site", path: ["formattedText", "home-heroTitle"] }, value: styledTitle },
+      { binding: { scope: "site", path: ["home", "heroTitle"] }, expected: initialTitle, value: "TOUR GUIDATI" },
+      { binding: { scope: "article", key: article.id, path: ["titleHtml"] }, value: styledTitle },
+      { binding: { scope: "page", key: "chi-siamo", path: ["titleHtml"] }, value: styledTitle },
+      { binding: { scope: "page", key: "chi-siamo", path: ["bodyHtml"] }, expected: page.bodyHtml, value: styledBody },
+    ],
+  });
+  assert.equal(state.siteContent!.home.heroTitle, "TOUR GUIDATI");
+  assert.equal(state.siteContent!.formattedText?.["home-heroTitle"], styledTitle);
+  assert.equal(state.siteContent!.gallery[0].titleHtml, styledTitle);
+  assert.equal(state.pages["chi-siamo"].titleHtml, styledTitle);
+  assert.equal(state.pages["chi-siamo"].bodyHtml, styledBody);
+});
+
+test("style on previously plain labels persists alongside the operational text", () => {
+  const state = initialState();
+  state.siteContent = siteContent(state.siteContent, state.pages);
+  const article = state.siteContent.gallery[0];
+  const styled = '<span style="color:#1847bc">Selezione</span>';
+  const partner = {
+    id: "formatting-partner", name: "Partner", description: "Descrizione",
+    imageUrl: "", email: "partner@example.com", phone: "", website: "https://example.com",
+    published: true,
+  };
+  state.partners = [partner];
+  applyVisualPatches(state, {
+    patches: [
+      { binding: { scope: "site", path: ["formattedText", "home-primaryLabel"] }, value: styled },
+      { binding: { scope: "article", key: article.id, path: ["formattedText", "kicker"] }, value: styled },
+      { binding: { scope: "partner", key: partner.id, path: ["formattedText", "email"] }, value: styled },
+    ],
+  });
+  assert.equal(state.siteContent.formattedText?.["home-primaryLabel"], styled);
+  assert.equal(state.siteContent.gallery[0].formattedText?.kicker, styled);
+  assert.equal(state.partners[0].formattedText?.email, styled);
+  assert.equal(state.partners[0].email, partner.email);
+
+  const tour = tourSchema.parse({
+    ...state.tours[0],
+    detailCopy: { headingEscluso: "Non incluso" },
+    hiddenText: ["detailCopy.headingEscluso"],
+    formattedCopy: { labels: { "detailCopy-headingEscluso": styled } },
+  });
+  assert.equal(tour.detailCopy?.headingEscluso, "Non incluso");
+  assert.deepEqual(tour.hiddenText, ["detailCopy.headingEscluso"]);
+  assert.equal(tour.formattedCopy?.labels?.["detailCopy-headingEscluso"], styled);
 });

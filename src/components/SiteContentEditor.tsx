@@ -15,6 +15,7 @@ import {
   type StructuredContentSection,
 } from "@/lib/content-sections";
 import type { SiteContent } from "@/lib/platform/content";
+import { blockEnterSubmit } from "@/lib/form-guards";
 function Field({
   label,
   value,
@@ -96,15 +97,20 @@ export function SiteContentEditor({
   section,
   busy,
   save,
+  createSignal = 0,
+  onCreateHandled,
 }: {
   initial: SiteContent;
   section: StructuredContentSection;
   busy: boolean;
   save: (content: SiteContent) => Promise<unknown>;
+  createSignal?: number;
+  onCreateHandled?: () => void;
 }) {
   const [c, setC] = useState(initial),
     [notice, setNotice] = useState(""),
     [articleUploading, setArticleUploading] = useState(false);
+  const articlesMode = section === "blog";
   function rows(
     key:
       "faqs" | "answers" | "socialLinks" | "navigation" | "stats" | "pillars",
@@ -262,9 +268,57 @@ export function SiteContentEditor({
     );
   }
   const groups = contentFields[section];
+  if (articlesMode) {
+    return (
+      <form
+        id="articles-editor-form"
+        className="articles-workspace"
+        onKeyDown={blockEnterSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!busy && !articleUploading) save(c);
+        }}
+      >
+        <fieldset
+          disabled={busy || articleUploading}
+          className="articles-workspace-inner"
+        >
+          {notice && <AdminNotice key={notice} message={notice} />}
+          {/* <details className="articles-intro">
+            <summary>Introduzione elenco articoli</summary>
+            <div className="articles-intro-body">
+              {fields("home", contentFields.blog.home)}
+            </div>
+          </details> */}
+          <BlogArticleEditor
+            content={c}
+            articles={c.gallery}
+            onChange={(gallery) =>
+              setC((previous) => ({ ...previous, gallery }))
+            }
+            busy={busy}
+            onUploading={setArticleUploading}
+            createSignal={createSignal}
+            onCreateHandled={onCreateHandled}
+            publish={() => save(c)}
+          />
+        </fieldset>
+        <div className="articles-workspace-footer">
+          <button
+            type="submit"
+            className="button-primary"
+            disabled={busy || articleUploading}
+          >
+            Pubblica articoli
+          </button>
+        </div>
+      </form>
+    );
+  }
   return (
     <form
       className="grid gap-6"
+      onKeyDown={blockEnterSubmit}
       onSubmit={(event) => {
         event.preventDefault();
         if (!busy && !articleUploading) save(c);
@@ -496,16 +550,6 @@ export function SiteContentEditor({
             )}
           </>
         )}
-        {section === "blog" && (
-          <BlogArticleEditor
-            articles={c.gallery}
-            onChange={(gallery) =>
-              setC((previous) => ({ ...previous, gallery }))
-            }
-            busy={busy}
-            onUploading={setArticleUploading}
-          />
-        )}
         {section === "faq" && (
           <>
             <h3 className="border-t pt-5 text-lg font-bold">
@@ -539,7 +583,11 @@ export function SiteContentEditor({
           </>
         )}
       </fieldset>
-      <button className="button-primary" disabled={busy || articleUploading}>
+      <button
+        type="submit"
+        className="button-primary"
+        disabled={busy || articleUploading}
+      >
         Pubblica {contentSections[section].label.toLowerCase()}
       </button>
     </form>

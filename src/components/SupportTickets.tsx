@@ -138,6 +138,11 @@ export function SupportTickets({
 }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [files, setFiles] = useState<
+    { name: string; url: string; kind: "image" | "video" }[]
+  >([]);
+  const [uploading, setUploading] = useState(false);
+  const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [mobile, setMobile] = useState(false);
@@ -173,11 +178,58 @@ export function SupportTickets({
     if (!composeOpen && el.open) el.close();
   }, [composeOpen]);
 
+  async function addFiles(list: FileList | null) {
+    if (!list?.length) return;
+    setNotice("");
+    setUploading(true);
+    try {
+      const next = [...files];
+      for (const file of Array.from(list)) {
+        if (next.length >= 4) {
+          setNotice("Puoi allegare al massimo 4 file.");
+          break;
+        }
+        const kind = file.type.startsWith("video/") ? "video" : "image";
+        const response = await fetch("/api/platform/admin/media", {
+          method: "POST",
+          headers: {
+            "content-type": file.type || "application/octet-stream",
+            "x-upload-kind": "support",
+            "x-file-name": encodeURIComponent(file.name),
+          },
+          body: file,
+        });
+        const payload = (await response.json().catch(() => ({}))) as {
+          url?: string;
+          name?: string;
+          kind?: "image" | "video";
+          error?: string;
+        };
+        if (!response.ok || !payload.url)
+          throw Error(payload.error || "Allegato non caricato");
+        next.push({
+          name: payload.name || file.name,
+          url: payload.url,
+          kind: payload.kind || kind,
+        });
+      }
+      setFiles(next);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Allegato non caricato");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function submitTicket() {
-    void save({ title, body }, "POST").then((result) => {
+    void save(
+      { title, body, attachments: files },
+      "POST",
+    ).then((result) => {
       if (result) {
         setTitle("");
         setBody("");
+        setFiles([]);
         onComposeChange?.(false);
       }
     });
@@ -259,6 +311,17 @@ export function SupportTickets({
               {open && (
                 <div className="support-item-body">
                   <p>{ticket.body}</p>
+                  {ticket.attachments?.length ? (
+                    <ul className="support-attachments">
+                      {ticket.attachments.map((file) => (
+                        <li key={file.url}>
+                          <a href={file.url} target="_blank" rel="noreferrer">
+                            {file.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   {mobile && (
                     <label>
                       Stato
@@ -337,6 +400,39 @@ export function SupportTickets({
               onChange={(e) => setBody(e.target.value)}
             />
           </label>
+          <label className="support-file-field">
+            Screenshot o video breve
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+              multiple
+              disabled={busy || uploading || files.length >= 4}
+              onChange={(event) => {
+                void addFiles(event.target.files);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          {files.length ? (
+            <ul className="support-attachments">
+              {files.map((file) => (
+                <li key={file.url}>
+                  <span>{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFiles((current) =>
+                        current.filter((item) => item.url !== file.url),
+                      )
+                    }
+                  >
+                    Rimuovi
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {notice ? <p role="status">{notice}</p> : null}
           <button
             type="button"
             className="button-primary"

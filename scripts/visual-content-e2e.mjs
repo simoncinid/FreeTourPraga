@@ -56,7 +56,7 @@ async function change(b, value) {
   const dialog = page.getByRole("dialog");
   const editable = await target(b).getAttribute("data-cms-kind") === "html"
     ? dialog.getByRole("textbox", { name: "Testo formattato", exact: true })
-    : dialog.getByLabel("Testo da modificare", { exact: true });
+    : dialog.getByRole("textbox", { name: "Testo", exact: true });
   await editable.fill(value);
   await page
     .getByRole("button", { name: "Applica alla bozza", exact: true })
@@ -135,7 +135,7 @@ try {
   );
   await page.goto(base + "/admin/contenuti/homepage");
   frame = page.frameLocator('iframe[title^="Pagina pubblica modificabile:"]');
-  await target(binding("site", "home.heroTitle")).waitFor();
+  await target(binding("site", "formattedText.home-heroTitle")).waitFor();
   await expect(
     page.getByLabel("Pagina da modificare", { exact: true }),
   ).toBeEnabled();
@@ -181,10 +181,10 @@ try {
     "Desktop reale a 1440 px; header solo navigabile; richiami blog non editabili e collegati all’articolo",
   );
   await change(
-    binding("site", "home.heroTitle"),
+    binding("site", "formattedText.home-heroTitle"),
     "QA homepage\nseconda riga\nterza riga",
   );
-  await expect(target(binding("site", "home.heroTitle"))).toHaveText(
+  await expect(target(binding("site", "formattedText.home-heroTitle"))).toHaveText(
     "QA homepage\nseconda riga\nterza riga",
   );
   assert.equal(
@@ -222,12 +222,12 @@ try {
     }),
   );
   assert.equal(state.siteContent.home.contentBlocks.length, 1);
-  await expect(target(binding("site", "home.heroTitle"))).toHaveCSS(
+  await expect(target(binding("site", "formattedText.home-heroTitle"))).toHaveCSS(
     "white-space",
     "pre-wrap",
   );
   assert.equal(
-    await target(binding("site", "home.heroTitle")).textContent(),
+    await target(binding("site", "formattedText.home-heroTitle")).textContent(),
     "QA homepage\nseconda riga\nterza riga",
   );
   const publicPage = await context.newPage();
@@ -276,16 +276,16 @@ try {
   ]) {
     await choose(path);
     await change(
-      binding("page", "title", key),
+      binding("page", "titleHtml", key),
       `QA visuale ${key}\nSeconda riga\n\nQuarta riga`,
     );
     await publish();
     await expect(frame.locator("h1")).toContainText(`QA visuale ${key}`);
     assert.equal(
-      await target(binding("page", "title", key)).textContent(),
+      await target(binding("page", "titleHtml", key)).textContent(),
       `QA visuale ${key}\nSeconda riga\n\nQuarta riga`,
     );
-    await expect(target(binding("page", "title", key))).toHaveCSS(
+    await expect(target(binding("page", "titleHtml", key))).toHaveCSS(
       "white-space",
       "pre-wrap",
     );
@@ -295,16 +295,16 @@ try {
   );
   await choose("/tour");
   await change(
-    binding("site", "home.specialOffersTitle"),
+    binding("site", "formattedText.home-specialOffersTitle"),
     "Offerte QA\nservizio clienti",
   );
   await change(
-    binding("site", "home.specialOffersNote"),
+    binding("site", "formattedText.home-specialOffersNote"),
     "Prima condizione\nSeconda condizione\nTerza condizione",
   );
-  await change(binding("site", "home.specialOffers.0.label"), "Coppia tour QA");
+  await change(binding("site", "formattedText.home-specialOffers-0-label"), "Coppia tour QA");
   await change(
-    binding("site", "home.specialOffersCtaLabel"),
+    binding("site", "formattedText.home-specialOffersCtaLabel"),
     "Chiedi le offerte QA",
   );
   await target(binding("site", "home.specialOffers.0.priceCents")).dblclick();
@@ -325,7 +325,7 @@ try {
     state.siteContent.home.specialOffersNote,
     "Prima condizione\nSeconda condizione\nTerza condizione",
   );
-  await expect(target(binding("site", "home.specialOffersNote"))).toHaveCSS(
+  await expect(target(binding("site", "formattedText.home-specialOffersNote"))).toHaveCSS(
     "white-space",
     "pre-wrap",
   );
@@ -347,7 +347,7 @@ try {
     "Schede partner modificabili sulla pagina pubblica senza attivare click o cambiare statistiche",
   );
   await choose("/blog");
-  await change(binding("site", "home.galleryTitle"), "QA blog visuale");
+  await change(binding("site", "formattedText.home-galleryTitle"), "QA blog visuale");
   await publish();
   await choose("/faq");
   await change(
@@ -358,7 +358,7 @@ try {
   const articleKey = article.id;
   const articlePath = article.canonicalPath || `/blog/${article.slug}`;
   await choose(articlePath);
-  await change(binding("article", "title", articleKey), "QA articolo visuale");
+  await change(binding("article", "titleHtml", articleKey), "QA articolo visuale");
   await publish();
   await target(binding("article", "imageUrl", articleKey)).dblclick();
   await page
@@ -437,7 +437,7 @@ try {
   assert.ok(historical);
   await choose(historical[1].canonicalPath);
   await change(
-    binding("page", "title", historical[0]),
+    binding("page", "titleHtml", historical[0]),
     "QA pagina storica visuale",
   );
   await publish();
@@ -455,7 +455,7 @@ try {
     beforeTours,
     "visual editing must not alter any tour or its inventory",
   );
-  const hero = binding("site", "home.heroTitle");
+  const hero = binding("site", "formattedText.home-heroTitle");
   await change(hero, "Bozza da conservare in conflitto");
   const changed = structuredClone(state.siteContent);
   changed.home.heroTitle = "Modifica di un’altra sessione";

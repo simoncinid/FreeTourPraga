@@ -234,22 +234,56 @@
 }
 .drawerHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: start;
-  gap: 16px;
+  flex-direction: column;
+  gap: 6px;
   border-bottom: 1px solid #e6edf3;
   padding-bottom: 16px;
   flex-shrink: 0;
 }
+.drawerTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
 .drawerHeader p {
   font-size: 11px;
   color: #8a9aa9;
-  margin-bottom: 6px;
+  margin: 0;
+  min-width: 0;
+}
+.drawerTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
 }
 .drawerHeader h2 {
   font-size: 20px;
-  line-height: 1.35;
+  line-height: 1.25;
   color: #14324b;
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.drawerTitleActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.drawerTitleActions .icon:disabled {
+  opacity: 0.4;
+}
+.drawerTitleActions a.icon {
+  color: inherit;
+  text-decoration: none;
 }
 .facts {
   display: grid;
@@ -571,7 +605,8 @@
     gap: 0;
     position: relative;
   }
-  .drawer:has(:global(.calendar-day-panel)) .drawerHeader > div:first-child {
+  .drawer:has(:global(.calendar-day-panel)) .drawerTopRow p,
+  .drawer:has(:global(.calendar-day-panel)) .drawerTitleRow {
     display: none;
   }
   .drawer:has(:global(.calendar-day-panel)) .drawerHeader {
@@ -584,18 +619,28 @@
     border: 0;
     min-height: 0;
     width: auto;
+    gap: 0;
   }
   .drawerHeader {
     padding-bottom: 8px;
-    gap: 8px;
+    gap: 4px;
   }
   .drawerHeader p {
-    margin-bottom: 2px;
     font-size: 10px;
   }
   .drawerHeader h2 {
     font-size: 16px;
     line-height: 1.2;
+  }
+  .drawerHeaderWithActions .drawerTitleRow {
+    gap: 6px;
+  }
+  .drawerHeaderWithActions .drawerTitleActions {
+    gap: 4px;
+  }
+  .drawerHeaderWithActions .drawerTitleActions .icon {
+    width: 26px;
+    height: 26px;
   }
   .drawerFooter {
     padding-top: 8px;
@@ -777,7 +822,28 @@
     display: none;
   }
 }
+.drawer:has(:global(.articles-drawer-body)) {
+  width: min(720px, 100vw);
+}
+.drawer:has(:global(.articles-drawer-body)) .drawerShell {
+  overflow: hidden;
+}
+@media (max-width: 700px) {
+  .drawer:has(:global(.articles-drawer-body)) {
+    width: 100vw;
+    height: 90dvh;
+    max-height: 90dvh;
+    inset: auto 0 0 0;
+    border-left: 0;
+    border-top: 1px solid #dce4ec;
+    border-radius: 16px 16px 0 0;
+  }
+}
 .formGrid[hidden],
 .media[hidden] {
   display: none !important;
+}
+
+.drawer:has(:global(.article-visual-workspace)) {
+  width: min(1200px, 100vw);
 }

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Plus, Trash2, Info } from "lucide-react";
 import type { CatalogTour } from "@/lib/platform/model";
 import { pragueLocal } from "@/lib/platform/time";
-import { isFreeTour } from "@/lib/tour-rules";
 import {
   RecordDrawer,
   RecordPager,
@@ -11,6 +10,7 @@ import {
   recordsCss as records,
 } from "./AdminRecords";
 import css from "./tour-edit-panels.module.css";
+import { CountInput } from "./CountInput";
 export function TourOperationsEditor({
   tour: t,
   change,
@@ -25,10 +25,7 @@ export function TourOperationsEditor({
     [adding, setAdding] = useState(false),
     [help, setHelp] = useState(false),
     [date, setDate] = useState(today),
-    [times, setTimes] = useState(""),
-    [offerFrom, setOfferFrom] = useState(today),
-    [offerTo, setOfferTo] = useState(today),
-    [offerPercent, setOfferPercent] = useState(10);
+    [times, setTimes] = useState("");
   const schedule = t.schedule ?? {
     enabled: false,
     from: today,
@@ -54,13 +51,22 @@ export function TourOperationsEditor({
   ].sort((a, b) => a.date.localeCompare(b.date));
   const { area: pagingArea, ...paging } = useRecordPagination(closures.length);
   return (
-    <div className={css.workspace}>
-      <nav className={css.subnav} aria-label="Programmazione e policy">
+    <div
+      className={css.workspace}
+      onInvalidCapture={(event) => {
+        const input = event.target as HTMLInputElement;
+        if (tab !== "schedule" && input.closest("[data-tour-schedule]")) {
+          event.preventDefault();
+          setTab("schedule");
+          requestAnimationFrame(() => input.reportValidity());
+        }
+      }}
+    >
+      <nav className={css.subnav} aria-label="Opzioni degli orari">
         {[
           ["schedule", "Programmazione"],
           ["closures", `Chiusure (${closures.length})`],
-          ["offers", "Offerte"],
-          ["policy", "Dettagli e regole"],
+          ["summary", "Sigla e riepilogo"],
         ].map(([key, label]) => (
           <button
             type="button"
@@ -72,7 +78,7 @@ export function TourOperationsEditor({
           </button>
         ))}
       </nav>
-      <section hidden={tab !== "schedule"} className={css.card}>
+      <section data-tour-schedule hidden={tab !== "schedule"} className={css.card}>
         <header className={css.sectionHead}>
           <div>
             <h2>Programmazione settimanale</h2>
@@ -124,14 +130,13 @@ export function TourOperationsEditor({
               </label>
               <label>
                 Posti per partenza *
-                <input
-                  className="text-input"
-                  type="number"
-                  required
+                <CountInput
+                  value={schedule.capacity}
                   min={1}
                   max={10000}
-                  value={schedule.capacity}
-                  onChange={(e) => update({ capacity: Number(e.target.value) })}
+                  placeholder="Es. 25"
+                  required
+                  onChange={(capacity) => update({ capacity })}
                 />
               </label>
             </div>
@@ -299,237 +304,54 @@ export function TourOperationsEditor({
           onChange={paging.setPage}
         />
       </section>
-      <section hidden={tab !== "offers"} className={css.card}>
+      <section hidden={tab !== "summary"} className={css.card}>
         <header className={css.sectionHead}>
-          <div>
-            <h2>Offerte</h2>
-            <p>Sconto in percentuale, valido solo nel periodo indicato per questo tour.</p>
-          </div>
-        </header>
-        <ul>
-          {(t.seasonalOffers ?? []).map((offer) => (
-            <li key={offer.id}>
-              −{offer.percent}% dal {offer.from.split("-").reverse().join("/")} al{" "}
-              {offer.to.split("-").reverse().join("/")}{" "}
-              <button
-                type="button"
-                className="button-secondary button-danger"
-                onClick={() =>
-                  change(
-                    "seasonalOffers",
-                    (t.seasonalOffers ?? []).filter((item) => item.id !== offer.id),
-                  )
-                }
-              >
-                Rimuovi
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className={css.three}>
-          <label>
-            Dal
-            <input className="text-input" type="date" value={offerFrom} onChange={(e) => setOfferFrom(e.target.value)} />
-          </label>
-          <label>
-            Al
-            <input className="text-input" type="date" min={offerFrom} value={offerTo} onChange={(e) => setOfferTo(e.target.value)} />
-          </label>
-          <label>
-            Sconto %
-            <input className="text-input" type="number" min={1} max={100} value={offerPercent} onChange={(e) => setOfferPercent(Number(e.target.value))} />
-          </label>
-        </div>
-        <button
-          type="button"
-          className="button-primary"
-          disabled={!offerFrom || !offerTo || offerFrom > offerTo || offerPercent < 1}
-          onClick={() =>
-            change("seasonalOffers", [
-              ...(t.seasonalOffers ?? []),
-              {
-                id: crypto.randomUUID(),
-                from: offerFrom,
-                to: offerTo,
-                percent: offerPercent,
-              },
-            ])
-          }
-        >
-          Aggiungi offerta
-        </button>
-      </section>
-      <section hidden={tab !== "policy"} className={css.card}>
-        <header className={css.sectionHead}>
-          <div>
-            <h2>Tipo di tour e percorso</h2>
-            <p>
-              Le regole per i gruppi e la capienza sono configurabili nelle
-              tariffe del tour.
-            </p>
-          </div>
+          <h2>Sigla e riepilogo pubblico</h2>
         </header>
         <div className={css.three}>
-          <label>
-            Tipo di tour
-            <select
-              className="text-input"
-              value={isFreeTour(t) ? "free" : "paid"}
-              onChange={(e) => {
-                const free = e.target.value === "free";
-                change("isFreeTour", free);
-                change("priceLabel", free ? "Offerta libera" : "");
-                if (free) {
-                  change("basePriceCents", 0);
-                  change("childPriceCents", 0);
-                  change("infantPriceCents", 0);
-                }
-              }}
-            >
-              <option value="paid">A pagamento</option>
-              <option value="free">Free tour · offerta libera</option>
-            </select>
-          </label>
-          <label>
-            Tipo di percorso
+          <label data-tour-setting="code">
+            Sigla calendario
             <input
               className="text-input"
-              value={t.walkingLabel ?? "A piedi"}
-              maxLength={80}
-              onChange={(e) => change("walkingLabel", e.target.value)}
+              value={String(t.code ?? "")}
+              maxLength={6}
+              placeholder="FT, CM, PRIV…"
+              onChange={(e) =>
+                change("code", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+              }
             />
           </label>
           <label>
-            Intensità del percorso
-            <select
+            Giorni operativi
+            <input
               className="text-input"
-              value={t.walkingDifficulty}
-              onChange={(e) =>
-                change("walkingDifficulty", Number(e.target.value))
+              value={t.operatingDays || ""}
+              disabled={
+                t.schedule?.enabled ||
+                !!t.calendarRules?.length ||
+                !!t.slots.length
               }
-            >
-              {[1, 2, 3, 4, 5].map((value) => (
-                <option key={value} value={value}>
-                  {value} su 5
-                </option>
-              ))}
-            </select>
+              onChange={(e) => change("operatingDays", e.target.value)}
+            />
+          </label>
+          <label>
+            Orario mostrato
+            <input
+              className="text-input"
+              value={t.departureTime || ""}
+              disabled={
+                t.schedule?.enabled ||
+                !!t.calendarRules?.length ||
+                !!t.slots.length
+              }
+              onChange={(e) => change("departureTime", e.target.value)}
+            />
           </label>
         </div>
-        <h3 className={css.groupTitle}>Dettagli e regole operative</h3>
-        <div className={css.three}>
-          <label>
-            Prenotabile fino a (ore prima)
-            <input
-              className="text-input"
-              type="number"
-              min={0}
-              max={168}
-              value={t.bookingCutoffHours}
-              onChange={(e) => change("bookingCutoffHours", Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Minuti aggiuntivi
-            <input
-              className="text-input"
-              type="number"
-              min={0}
-              max={59}
-              value={t.bookingCutoffMinutes ?? 0}
-              onChange={(e) =>
-                change("bookingCutoffMinutes", Number(e.target.value))
-              }
-            />
-          </label>
-          <label>
-            Minimo partecipanti per la partenza
-            <input
-              className="text-input"
-              type="number"
-              min={1}
-              max={10000}
-              value={t.minParticipants ?? ""}
-              onChange={(e) =>
-                change(
-                  "minParticipants",
-                  e.target.value ? Number(e.target.value) : undefined,
-                )
-              }
-            />
-          </label>
-          <label>
-            Animali
-            <select
-              className="text-input"
-              value={
-                t.petsAllowed === undefined ? "" : t.petsAllowed ? "yes" : "no"
-              }
-              onChange={(e) =>
-                change(
-                  "petsAllowed",
-                  e.target.value === "" ? undefined : e.target.value === "yes",
-                )
-              }
-            >
-              <option value="">Non indicato</option>
-              <option value="yes">Ammessi</option>
-              <option value="no">Non ammessi</option>
-            </select>
-          </label>
-          <label>
-            Barriere architettoniche
-            <select
-              className="text-input"
-              value={
-                t.architecturalBarriers === undefined
-                  ? ""
-                  : t.architecturalBarriers
-                    ? "yes"
-                    : "no"
-              }
-              onChange={(e) =>
-                change(
-                  "architecturalBarriers",
-                  e.target.value === ""
-                    ? undefined
-                    : e.target.value === "yes",
-                )
-              }
-            >
-              <option value="">Non indicato</option>
-              <option value="yes">Presenti</option>
-              <option value="no">Non segnalate</option>
-            </select>
-          </label>
-        </div>
-        <h3 className={css.groupTitle}>Policy di cancellazione</h3>
-        <div className={css.three}>
-          {(
-            [
-              [
-                "cancellationHours",
-                "Cancellazione gratuita (ore prima)",
-                0,
-                720,
-                24,
-              ],
-              ["lateRefundPercent", "Rimborso dopo il termine (%)", 0, 100, 0],
-            ] as const
-          ).map(([key, label, min, max, fallback]) => (
-            <label key={key}>
-              {label}
-              <input
-                className="text-input"
-                type="number"
-                min={min}
-                max={max}
-                value={t[key] ?? fallback}
-                onChange={(e) => change(key, Number(e.target.value))}
-              />
-            </label>
-          ))}
-        </div>
+        <p className={css.hint}>
+          Giorni e orario sono modificabili qui solo per tour senza partenze;
+          negli altri casi derivano dalla programmazione.
+        </p>
       </section>
       {adding && (
         <RecordDrawer

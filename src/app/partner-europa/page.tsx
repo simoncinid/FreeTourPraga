@@ -1,3 +1,4 @@
+import { InlineCopy } from "@/components/RichInline";
 import { partnerEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import Image from "next/image";
@@ -22,6 +23,7 @@ export default async function Page() {
   return (
     <>
       <CollaborationPage
+        formatted={page}
         pageKey="partner-europa"
         eyebrow={page?.subtitle || "Partner Europa"}
         title="Partner Europa"
@@ -67,22 +69,22 @@ export default async function Page() {
                   />
                 )}
                 <h3 {...partnerEdit(p.id, "name")} className="display-md">
-                  {p.name}
+                  <InlineCopy html={p.formattedText?.name}>{p.name}</InlineCopy>
                 </h3>
                 <p
                   {...partnerEdit(p.id, "description")}
                   className="whitespace-pre-wrap"
                 >
-                  {p.description}
+                  <InlineCopy html={p.formattedText?.description}>{p.description}</InlineCopy>
                 </p>
                 {p.email && (
                   <a {...partnerEdit(p.id, "email")} href={`mailto:${p.email}`}>
-                    {p.email}
+                    <InlineCopy html={p.formattedText?.email}>{p.email}</InlineCopy>
                   </a>
                 )}
                 {p.phone && (
                   <a {...partnerEdit(p.id, "phone")} href={`tel:${p.phone}`}>
-                    {p.phone}
+                    <InlineCopy html={p.formattedText?.phone}>{p.phone}</InlineCopy>
                   </a>
                 )}
                 <a

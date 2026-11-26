@@ -1,3 +1,6 @@
+import { RichContent } from "@/components/RichContent";
+import type { ContentPage } from "@/lib/platform/model";
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { TripAdvisorOfficial } from "@/components/TripAdvisorOfficial";
 import { aboutPageContent } from "@/lib/platform/content";
@@ -16,7 +19,7 @@ export default async function Page() {
   const copy = aboutPageContent;
   const title = page?.title || copy.title;
   const body = page?.body || copy.body;
-  const points = page?.benefits?.length ? page.benefits : copy.benefits;
+  const points: NonNullable<ContentPage["benefits"]> = page?.benefits?.length ? page.benefits : copy.benefits;
   const closingIndex = Math.max(
     0,
     page?.contentBlocks?.findIndex((block) => block.type === "text") ?? 0,
@@ -28,14 +31,14 @@ export default async function Page() {
     <section className={`${ui.page} ${ui.about} section`}>
       <div className={`container-page ${ui.aboutInner}`}>
         <p
-          {...pageEdit("chi-siamo", "subtitle")}
+          {...pageEdit("chi-siamo", "subtitleHtml", "inline")}
           className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
         >
-          {page?.subtitle || copy.subtitle}
+          <InlineCopy html={page?.subtitleHtml}>{page?.subtitle || copy.subtitle}</InlineCopy>
         </p>
         <h1 className={`display-xl ${ui.aboutTitle}`}>
           <span className={ui.aboutTitleRow}>
-            <span {...pageEdit("chi-siamo", "title")}>{title}</span>
+            <span {...pageEdit("chi-siamo", "titleHtml", "inline")}><InlineCopy html={page?.titleHtml}>{title}</InlineCopy></span>
             <Link
               href="/tour"
               className={`button-primary ${ui.aboutTourCta}`}
@@ -46,11 +49,11 @@ export default async function Page() {
           </span>
         </h1>
         <div
-          {...pageEdit("chi-siamo", "body", "text")}
+          {...pageEdit("chi-siamo", "bodyHtml", "html")}
           className={`body-md whitespace-pre-wrap ${ui.aboutLead}`}
         >
-          {body}
-        </div>
+            {page?.bodyHtml ? <RichContent html={page.bodyHtml} /> : body}
+          </div>
 
         <h2 className={`title-md ${ui.aboutHeading}`}>Dicono di noi</h2>
         <TripAdvisorOfficial />
@@ -63,34 +66,34 @@ export default async function Page() {
               <article key={`${point.title}-${index}`} className="card p-6">
                 <Icon className="mb-4 text-primary" size={26} />
                 <h3
-                  {...pageEdit("chi-siamo", `benefits.${index}.title`)}
+                  {...pageEdit("chi-siamo", `benefits.${index}.titleHtml`, "inline")}
                   className="title-md"
                 >
-                  {point.title}
+                  <InlineCopy html={point.titleHtml}>{point.title}</InlineCopy>
                 </h3>
-                <p
-                  {...pageEdit("chi-siamo", `benefits.${index}.text`)}
+                <div
+                  {...pageEdit("chi-siamo", `benefits.${index}.html`, "html")}
                   className="body-sm mt-3"
                 >
-                  {point.text}
-                </p>
+                  {point.html ? <RichContent html={point.html} /> : point.text}
+                </div>
               </article>
             );
           })}
         </div>
 
         <h2
-          {...pageEdit("chi-siamo", `contentBlocks.${closingIndex}.heading`)}
+          {...pageEdit("chi-siamo", `contentBlocks.${closingIndex}.headingHtml`, "inline")}
           className={`title-md ${ui.aboutHeading}`}
         >
-          {closing?.heading || copy.closing.heading}
+          <InlineCopy html={closing?.headingHtml}>{closing?.heading || copy.closing.heading}</InlineCopy>
         </h2>
-        <p
-          {...pageEdit("chi-siamo", `contentBlocks.${closingIndex}.text`)}
+        <div
+          {...pageEdit("chi-siamo", `contentBlocks.${closingIndex}.html`, "html")}
           className={`body-md ${ui.aboutClose}`}
         >
-          {closing?.text || copy.closing.text}
-        </p>
+          {closing?.html ? <RichContent html={closing.html} /> : closing?.text || copy.closing.text}
+        </div>
       </div>
     </section>
   );

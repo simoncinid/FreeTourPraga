@@ -15,6 +15,7 @@ import "./globals.css";
 import { BackToTop } from "@/components/BackToTop";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ConsentAndTracking } from "@/components/ConsentAndTracking";
+import { RemovedContentStyles } from "@/components/RemovedContentStyles";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { site, whatsappHref } from "@/lib/site";
@@ -93,6 +94,7 @@ export default async function RootLayout({
         <a className="skip-link" href="#contenuto">
           Vai al contenuto
         </a>
+        <RemovedContentStyles fields={c.hiddenText ?? []} />
         <Header />
         <JsonLd
           data={[organizationJsonLd(c.globals), websiteJsonLd(c.globals)]}

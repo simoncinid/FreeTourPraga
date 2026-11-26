@@ -1,8 +1,44 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import css from "./admin-records.module.css";
 export { css as recordsCss };
+
+function FitOneLineTitle({
+  children,
+  maxPx = 20,
+  minPx = 11,
+}: {
+  children: ReactNode;
+  maxPx?: number;
+  minPx?: number;
+}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      let size = maxPx;
+      el.style.fontSize = `${size}px`;
+      while (size > minPx && el.scrollWidth > el.clientWidth + 0.5) {
+        size -= 0.5;
+        el.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    if (el.parentElement) ro.observe(el.parentElement);
+    return () => ro.disconnect();
+  }, [children, maxPx, minPx]);
+  return <h2 ref={ref}>{children}</h2>;
+}
 export function useRecordPagination(total: number) {
   const [element, setElement] = useState<HTMLDivElement | null>(null);
   const [page, setPage] = useState(0),
@@ -75,12 +111,14 @@ export function RecordDrawer({
   subtitle,
   close,
   locked = false,
+  actions,
   children,
 }: {
   title: ReactNode;
   subtitle: string;
   close: () => void;
   locked?: boolean;
+  actions?: ReactNode;
   children: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -97,20 +135,29 @@ export function RecordDrawer({
       }}
     >
       <div className={css.drawerShell}>
-        <header className={css.drawerHeader}>
-          <div>
+        <header
+          className={`${css.drawerHeader}${actions ? ` ${css.drawerHeaderWithActions}` : ""}`}
+        >
+          <div className={css.drawerTopRow}>
             <p>{subtitle}</p>
-            <h2>{title}</h2>
+            <button
+              type="button"
+              className="admin-modal-close"
+              aria-label="Chiudi pannello"
+              disabled={locked}
+              onClick={close}
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            className="admin-modal-close"
-            aria-label="Chiudi pannello"
-            disabled={locked}
-            onClick={close}
-          >
-            <X size={18} />
-          </button>
+          <div className={css.drawerTitleRow}>
+            <FitOneLineTitle maxPx={actions ? 18 : 20} minPx={11}>
+              {title}
+            </FitOneLineTitle>
+            {actions ? (
+              <div className={css.drawerTitleActions}>{actions}</div>
+            ) : null}
+          </div>
         </header>
         {children}
       </div>

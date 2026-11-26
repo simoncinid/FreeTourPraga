@@ -65,6 +65,7 @@ export function applyTourPages(state: PlatformState, now = Date.now()) {
       isFreeTour: slug === "free-tour-praga",
       priceLabel: slug === "free-tour-praga" ? "Offerta libera" : "",
       lateRefundPercent: 0,
+      cancellationClause: "",
       onlineDiscounts: false,
       operationalReviewRequired: false,
     });

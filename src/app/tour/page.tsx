@@ -1,3 +1,5 @@
+import { RichContent } from "@/components/RichContent";
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { SpecialOffers } from "@/components/SpecialOffers";
@@ -59,13 +61,13 @@ export default async function TourListingPage() {
         </Suspense>
         <div className="mb-8">
           <p className="micro-label mb-2 text-muted">Catalogo tour</p>
-          <h1 {...pageEdit("catalogo", "title")} className="display-xl mb-4">
-            {content?.title || "Tour guidati in italiano a Praga"}
+          <h1 {...pageEdit("catalogo", "titleHtml", "inline")} className="display-xl mb-4">
+            <InlineCopy html={content?.titleHtml}>{content?.title || "Tour guidati in italiano a Praga"}</InlineCopy>
           </h1>
-          <p {...pageEdit("catalogo", "body")} className="body-md max-w-2xl">
-            {content?.body ||
+          <div {...pageEdit("catalogo", "bodyHtml", "html")} className="body-md max-w-2xl">
+            {content?.bodyHtml ? <RichContent html={content.bodyHtml} /> : content?.body ||
               "Filtra per esperienza, controlla i posti e prenota con conferma email automatica."}
-          </p>
+          </div>
         </div>
         <TourFilters tours={tours} />
         <SectionBlocks

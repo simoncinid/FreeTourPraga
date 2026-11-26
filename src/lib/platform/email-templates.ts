@@ -1,5 +1,6 @@
 import type { EmailKindTemplate, EmailTemplates, Settings } from "./model";
 import { UWT_ADMIN_SUBJECT } from "./cf7-mail-map";
+import { DEFAULT_CANCELLATION_CLAUSE } from "../tour-rules";
 
 export const EMAIL_PLACEHOLDERS = [
   "kind",
@@ -24,6 +25,7 @@ export const EMAIL_PLACEHOLDERS = [
   "nota",
   "cancellazione",
   "manageUrl",
+  "whatsappModifica",
   "calendarUrl",
   "assistenza",
   "telefonoContatto",
@@ -104,6 +106,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "{cancellazione}",
         "",
         "Gestisci modifica o cancellazione: {manageUrl}",
+        "Richiedi modifica o annullo su WhatsApp: {whatsappModifica}",
         "Aggiungi al calendario: {calendarUrl}",
         "",
         "Assistenza: {assistenza}",
@@ -129,7 +132,7 @@ export function defaultEmailTemplates(): EmailTemplates {
 <p>{pagamento}</p>
 <p>{nota}</p>
 <p>{cancellazione}</p>
-<p><a href="{manageUrl}">Gestisci modifica o cancellazione</a> · <a href="{calendarUrl}">Aggiungi al calendario</a></p>
+<p><a href="{manageUrl}">Gestisci modifica o cancellazione</a> · <a href="{whatsappModifica}">Richiedi modifica o annullo su WhatsApp</a> · <a href="{calendarUrl}">Aggiungi al calendario</a></p>
 <p style="text-align:center;padding-top:20px">{firma}<br/>
 <a href="{siteUrl}">{brand}</a></p>
 </div>`,
@@ -153,6 +156,7 @@ export function defaultEmailTemplates(): EmailTemplates {
         "{cancellazione}",
         "",
         "Gestisci questa prenotazione: {manageUrl}",
+        "Richiedi modifica o annullo su WhatsApp: {whatsappModifica}",
         "Calendario: {calendarUrl}",
         "Assistenza: {assistenza}",
         "{firma}",
@@ -170,7 +174,7 @@ export function defaultEmailTemplates(): EmailTemplates {
 </ul>
 <p>{incontro} · {indirizzo}<br/><a href="{mappa}">Mappa »</a></p>
 <p>{cancellazione}</p>
-<p><a href="{manageUrl}">Gestisci modifica o cancellazione</a> · <a href="{calendarUrl}">Aggiungi al calendario</a></p>
+<p><a href="{manageUrl}">Gestisci modifica o cancellazione</a> · <a href="{whatsappModifica}">Richiedi modifica o annullo su WhatsApp</a> · <a href="{calendarUrl}">Aggiungi al calendario</a></p>
 <p style="text-align:center;padding-top:20px">{firma}</p>
 </div>`,
     },
@@ -352,12 +356,18 @@ export function normalizeSettings(
   } & Record<string, unknown>,
 ): Settings {
   const templates = normalizeEmailTemplates(settings.emailTemplates);
+  const clause =
+    typeof settings.cancellationClause === "string" &&
+    settings.cancellationClause.trim()
+      ? settings.cancellationClause.trim()
+      : DEFAULT_CANCELLATION_CLAUSE;
   return {
     multiTourPercent: Number(settings.multiTourPercent ?? 10),
     minimumTours: Number(settings.minimumTours ?? 2),
     paymentHoldMinutes: settings.paymentHoldMinutes ?? 120,
     cancellationHours: Number(settings.cancellationHours ?? 24),
     lateRefundPercent: Number(settings.lateRefundPercent ?? 0),
+    cancellationClause: clause,
     retentionDays: Number(settings.retentionDays ?? 730),
     emailFooter:
       typeof settings.emailFooter === "string" && settings.emailFooter.trim()

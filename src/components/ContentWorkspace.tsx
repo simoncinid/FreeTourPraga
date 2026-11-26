@@ -11,6 +11,7 @@ import {
 } from "@/lib/content-routing";
 import type { Tour } from "@/lib/types";
 import { siteNavigation } from "@/lib/navigation";
+import { InlineRichField } from "./InlineRichField";
 import { RichTextEditor } from "./RichTextEditor";
 import { SectionBlocksEditor } from "./SectionBlocksEditor";
 
@@ -24,6 +25,7 @@ import {
 } from "@/lib/content-sections";
 import type { ContentPage, EuropeanPartner } from "@/lib/platform/model";
 import type { SiteContent } from "@/lib/platform/content";
+import { blockEnterSubmit } from "@/lib/form-guards";
 
 function Input({
   label,
@@ -85,6 +87,7 @@ function PageEditor({
   return (
     <form
       className="card grid gap-5 p-6"
+      onKeyDown={blockEnterSubmit}
       onSubmit={(event) => {
         event.preventDefault();
         if (uploading) return;
@@ -107,18 +110,20 @@ function PageEditor({
         </p>
       ) : (
         <>
-          <Input
+          <InlineRichField
             label="Titolo pagina"
-            value={page.title}
-            onChange={(title) =>
-              setPage((previous) => ({ ...previous, title }))
+            text={page.title}
+            html={page.titleHtml}
+            onChange={(titleHtml, title) =>
+              setPage((previous) => ({ ...previous, title, titleHtml }))
             }
           />
-          <Input
+          <InlineRichField
             label="Sopratitolo pagina"
-            value={page.subtitle}
-            onChange={(subtitle) =>
-              setPage((previous) => ({ ...previous, subtitle }))
+            text={page.subtitle}
+            html={page.subtitleHtml}
+            onChange={(subtitleHtml, subtitle) =>
+              setPage((previous) => ({ ...previous, subtitle, subtitleHtml }))
             }
           />
           <RichTextEditor label="Testo pagina" html={page.bodyHtml} text={page.body}
@@ -130,27 +135,28 @@ function PageEditor({
           <legend>Punti di forza</legend>
           {page.benefits.map((b, i) => (
             <div key={i} className="grid gap-2 rounded border p-3">
-              <Input
+              <InlineRichField
                 label={`Titolo punto ${i + 1}`}
-                value={b.title}
-                onChange={(title) =>
+                text={b.title}
+                html={b.titleHtml}
+                onChange={(titleHtml, title) =>
                   setPage((p) => ({
                     ...p,
                     benefits: p.benefits?.map((v, j) =>
-                      j === i ? { ...v, title } : v,
+                      j === i ? { ...v, title, titleHtml } : v,
                     ),
                   }))
                 }
               />
-              <Input
+              <RichTextEditor
                 label={`Testo punto ${i + 1}`}
-                value={b.text}
-                multiline
-                onChange={(text) =>
+                text={b.text}
+                html={b.html}
+                onChange={(html, text) =>
                   setPage((p) => ({
                     ...p,
                     benefits: p.benefits?.map((v, j) =>
-                      j === i ? { ...v, text } : v,
+                      j === i ? { ...v, text, html } : v,
                     ),
                   }))
                 }
@@ -221,7 +227,11 @@ function PageEditor({
           Usa questi testi nella pagina pubblica
         </label>
       )}
-      <button className="button-primary" disabled={busy || uploading}>
+      <button
+        type="submit"
+        className="button-primary"
+        disabled={busy || uploading}
+      >
         {seoOnly ? "Salva SEO" : "Salva pagina"}
       </button>
     </form>
@@ -239,6 +249,8 @@ export function ContentWorkspace({
   savePage,
   saveVisual,
   onChromeChange,
+  articlesCreateSignal = 0,
+  onArticleCreated,
 }: {
   content: SiteContent;
   tours: Pick<Tour, "title" | "slug" | "canonicalPath">[];
@@ -250,6 +262,8 @@ export function ContentWorkspace({
   saveSite: (content: SiteContent) => Promise<unknown>;
   savePage: (body: unknown) => Promise<unknown>;
   onChromeChange?: (chrome: VisualContentChrome | null) => void;
+  articlesCreateSignal?: number;
+  onArticleCreated?: () => void;
 }) {
   const section: ContentSection = contentEditorSection(detail, pages);
   const pageKey =
@@ -271,6 +285,8 @@ export function ContentWorkspace({
         section="blog"
         busy={busy}
         save={saveSite}
+        createSignal={articlesCreateSignal}
+        onCreateHandled={onArticleCreated}
       />
     );
   if (!["identita", "navigazione", "recensioni"].includes(section))

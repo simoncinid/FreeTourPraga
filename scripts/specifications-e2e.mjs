@@ -410,29 +410,29 @@ try {
     name: "Calendario",
     exact: true,
   });
-  await expect(async () => {
-    if ((await calendarTab.getAttribute("aria-pressed")) !== "true")
-      await calendarTab.click();
-    await expect(calendarTab).toHaveAttribute("aria-pressed", "true", {
-      timeout: 1000,
-    });
-  }).toPass({ timeout: 12000 });
+  await calendarTab.click();
+  await expect(page).toHaveURL(/\/admin\/calendario\?tour=qa-v2-tour$/);
+  await expect(page.locator(".operational-calendar")).toBeVisible();
+  await tourFilter.locator("summary").click();
   await expect(
-    page.locator(".tour-calendar-popup .operational-calendar"),
-  ).toBeVisible();
+    tourFilter.getByRole("checkbox", { name: tour.title, exact: true }),
+  ).toBeChecked();
   pass(
     "API calendario: limite prenotati, modifica capienza, orario extra e chiusura senza cancellare prenotazioni; calendario dentro tour",
   );
   await page.goto(base + "/admin/supporto");
+  await page.getByRole("button", { name: "Apri ticket" }).click();
+  const compose = page.getByRole("dialog");
   await page.getByLabel("Oggetto").fill("Verifica calendario QA");
   await page.getByLabel("Descrizione").fill("Controllo del flusso di assistenza del gestionale.");
-  await page.getByRole("button", { name: "Apri ticket" }).click();
-  const ticket = page.getByRole("listitem").filter({ hasText: "Verifica calendario QA" });
-  await expect(ticket.getByLabel("Stato")).toHaveValue("open");
-  await ticket.getByLabel("Stato").selectOption("working");
-  await expect(ticket.getByLabel("Stato")).toHaveValue("working");
-  await ticket.getByLabel("Stato").selectOption("done");
-  await expect(ticket.getByLabel("Stato")).toHaveValue("done");
+  await compose.getByRole("button", { name: "Apri ticket" }).click();
+  const ticket = page.getByRole("article").filter({ hasText: "Verifica calendario QA" });
+  const statusOptions = page.getByRole("listbox");
+  await ticket.getByRole("button", { name: "Aperto", exact: true }).click();
+  await statusOptions.getByRole("option", { name: "In lavorazione" }).click();
+  await ticket.getByRole("button", { name: "In lavorazione" }).click();
+  await statusOptions.getByRole("option", { name: "Risolto" }).click();
+  await expect(ticket.getByRole("button", { name: "Risolto" })).toBeVisible();
   pass("Ticket salvato e aggiornato fino alla risoluzione");
   // Reuse a visitor cookie for the same partner twice, plus an independent visitor.
   await context.addCookies([

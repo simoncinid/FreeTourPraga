@@ -2,14 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { guideImage } from "@/lib/guide-media";
 import { guidePath } from "@/lib/public-paths";
 import type { SiteContent } from "@/lib/platform/content";
+import { scrollWindowToTop } from "@/lib/scroll-window";
 import styles from "./blog-guide-list.module.css";
 
 type Guide = SiteContent["gallery"][number];
+
+const PAGE_SIZE = {
+  list: 5,
+  grid: 6,
+} as const;
 
 export function BlogGuideList({
   items,
@@ -20,6 +26,7 @@ export function BlogGuideList({
 }) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const pageSize = PAGE_SIZE[layout];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("it");
@@ -36,6 +43,18 @@ export function BlogGuideList({
       return haystack.includes(q);
     });
   }, [items, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const visible = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
+  function goToPage(next: number) {
+    setPage(next);
+    scrollWindowToTop();
+  }
 
   return (
     <div className={styles.wrap}>
@@ -55,10 +74,7 @@ export function BlogGuideList({
 
       {filtered.length ? (
         <div className={layout === "grid" ? styles.grid : styles.list}>
-          {(layout === "grid"
-            ? filtered.slice((page - 1) * 6, page * 6)
-            : filtered
-          ).map((guide) => (
+          {visible.map((guide) => (
             <Link
               key={guide.title}
               data-cms-reference="article"
@@ -94,32 +110,33 @@ export function BlogGuideList({
         </div>
       ) : (
         <p className="card body-md p-8 text-center">
-          Nessun articolo corrisponde a “{query.trim()}”.
+          {query.trim()
+            ? `Nessun articolo corrisponde a “${query.trim()}”.`
+            : "Nessuna guida in questo elenco."}
         </p>
       )}
-      {layout === "grid" && filtered.length > 6 && (
-        <nav
-          className="flex flex-wrap items-center justify-center gap-3"
-          aria-label="Pagine delle informazioni utili"
-        >
+      {filtered.length > pageSize && (
+        <nav className={styles.pagination} aria-label="Pagine degli articoli">
           <button
             type="button"
             className="button-secondary"
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            aria-label="Pagina precedente"
+            disabled={currentPage === 1}
+            onClick={() => goToPage(currentPage - 1)}
           >
-            Precedente
+            <ChevronLeft size={16} />
           </button>
           <span aria-live="polite">
-            Pagina {page} di {Math.ceil(filtered.length / 6)}
+            Pagina {currentPage} di {totalPages}
           </span>
           <button
             type="button"
             className="button-secondary"
-            disabled={page * 6 >= filtered.length}
-            onClick={() => setPage(page + 1)}
+            aria-label="Pagina successiva"
+            disabled={currentPage >= totalPages}
+            onClick={() => goToPage(currentPage + 1)}
           >
-            Successiva
+            <ChevronRight size={16} />
           </button>
         </nav>
       )}

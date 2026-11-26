@@ -4,6 +4,7 @@ import { RichContent } from "./RichContent";
 import Image from "next/image";
 import { useEffect, useId, useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { richHasText } from "@/lib/rich-text";
 import styles from "./tour-panels.module.css";
 
 type HighlightRow = {
@@ -13,7 +14,7 @@ type HighlightRow = {
   index?: number;
 };
 
-export function TourHighlights({ items }: { items: HighlightRow[] }) {
+export function TourHighlights({ items, editable = false }: { items: HighlightRow[]; editable?: boolean }) {
   const titleId = useId();
   const [open, setOpen] = useState<{
     row: number;
@@ -68,9 +69,15 @@ export function TourHighlights({ items }: { items: HighlightRow[] }) {
             <div className={styles.highlightCopy}>
               <CheckCircle2 className="shrink-0 text-primary" size={22} />
               <div className="body-md"
-                data-tour-field={item.html ? `formattedCopy.highlights.${item.index ?? row}` : `highlights.${item.index ?? row}`}
-                data-tour-kind={item.html ? "html" : "text"}>
-                {item.html ? <RichContent html={item.html} /> : item.text}
+                data-tour-field={`formattedCopy.highlights.${item.index ?? row}`}
+                data-tour-kind="html">
+                <RichContent
+                  html={
+                    item.html && richHasText(item.html)
+                      ? item.html
+                      : `<p>${item.text}</p>`
+                  }
+                />
               </div>
             </div>
             {item.images.length > 0 && (
@@ -87,6 +94,7 @@ export function TourHighlights({ items }: { items: HighlightRow[] }) {
                       data-tour-field={`highlightGalleries.${item.index ?? row}.${index}`}
                       data-tour-kind="image"
                       src={src}
+                      unoptimized={editable}
                       alt=""
                       fill
                       sizes="96px"

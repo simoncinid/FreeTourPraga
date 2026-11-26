@@ -463,7 +463,12 @@ test("self-service move deadline is enforced inside the booking transaction", as
   const o = await createOrder(input("old-town-4"), randomUUID());
   await transaction((s) => {
     const b = s.bookings.find((b) => b.orderId === o.id)!;
-    b.policy = { cancellationHours: 48, lateRefundPercent: 0 };
+    b.policy = {
+      cancellationHours: 48,
+      lateRefundPercent: 0,
+      cancellationClause:
+        "Cancellazione gratuita fino a 48 ore prima della partenza.",
+    };
     const { slot } = s.tours
       .flatMap((t) => t.slots.map((slot) => ({ slot })))
       .find((x) => x.slot.id === b.slotId)!;
@@ -499,7 +504,12 @@ test("cash refunds are handed to staff rather than sent to Stripe", async () => 
   await transaction((s) => {
     const b = s.bookings.find((b) => b.orderId === o.id)!;
     b.paymentStatus = "paid";
-    b.policy = { cancellationHours: 0, lateRefundPercent: 100 };
+    b.policy = {
+      cancellationHours: 0,
+      lateRefundPercent: 100,
+      cancellationClause:
+        "Puoi cancellare o modificare gratuitamente prima dell’inizio del tour.",
+    };
   });
   await cancelReservation(o.pnrs[0], "Rimborso contanti", "qa-staff");
   const s = await readState();

@@ -6,6 +6,29 @@
   min-height: 0;
   height: 100%;
 }
+.articleToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.articleHint {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+.articleActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex: 0 1 auto;
+}
 .toolbar {
   display: flex;
   align-items: center;
@@ -41,14 +64,6 @@
   font-size: 13px !important;
   min-width: 0;
   flex: 1;
-}
-.discardButton {
-  width: auto !important;
-  min-height: 30px !important;
-  height: 30px !important;
-  padding: 0 10px !important;
-  font-size: 11px !important;
-  flex-shrink: 0;
 }
 .devices {
   display: flex;
@@ -202,11 +217,13 @@
   text-decoration: underline;
 }
 .dialog {
+  position: fixed;
   border: 0;
   border-radius: 18px;
   padding: 0;
   width: min(680px, calc(100vw - 32px));
   max-height: 88vh;
+  overflow: visible;
   box-shadow: 0 24px 80px #0004;
 }
 .dialog::backdrop {
@@ -217,6 +234,8 @@
   padding: 28px;
   display: grid;
   gap: 20px;
+  max-height: 88vh;
+  overflow: auto;
 }
 .dialogBody > p {
   font-size: 13px;

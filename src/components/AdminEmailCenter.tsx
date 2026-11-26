@@ -14,6 +14,7 @@ import type { Job, Settings } from "@/lib/platform/model";
 import { EMAIL_PLACEHOLDERS } from "@/lib/platform/email-templates";
 import { formatMoney } from "@/lib/format";
 import css from "./admin-email-center.module.css";
+import { blockEnterSubmit } from "@/lib/form-guards";
 
 type TemplateKey = keyof Settings["emailTemplates"];
 type EditKey = TemplateKey | "footer";
@@ -561,6 +562,7 @@ export function AdminEmailCenter({
         >
           <form
             className={css.drawerForm}
+            onKeyDown={blockEnterSubmit}
             onSubmit={async (event) => {
               event.preventDefault();
               if (editing && !busy) {
@@ -682,7 +684,11 @@ export function AdminEmailCenter({
                   >
                     Annulla
                   </button>
-                  <button className="button-primary" disabled={busy}>
+                  <button
+                    type="submit"
+                    className="button-primary"
+                    disabled={busy}
+                  >
                     {busy ? "Salvataggio…" : "Salva template"}
                   </button>
                 </footer>

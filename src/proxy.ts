@@ -69,6 +69,7 @@ export function proxy(request: NextRequest) {
     "carrello",
     "checkout",
     "chi-siamo",
+    "cms-articolo",
     "contatti",
     "diventa-un-partner",
     "faq",

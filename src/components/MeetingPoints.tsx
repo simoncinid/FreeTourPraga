@@ -1,4 +1,5 @@
 "use client";
+import { InlineCopy } from "./RichInline";
 import { siteEdit } from "@/lib/visual-content";
 
 import { useState } from "react";
@@ -7,6 +8,7 @@ import styles from "./public-ui.module.css";
 export type MeetingPoint = {
   label: string;
   address: string;
+  addressHtml?: string;
   mapUrl: string;
   binding?: string;
 };
@@ -48,7 +50,7 @@ export function MeetingPoints({ points }: { points: MeetingPoint[] }) {
                   {...(p.binding ? siteEdit(p.binding) : {})}
                   className="block"
                 >
-                  {p.address}
+                  <InlineCopy html={p.addressHtml}>{p.address}</InlineCopy>
                 </small>
               </span>
             </label>

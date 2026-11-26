@@ -25,10 +25,12 @@ export function TourFacts({
   tour,
   compact = false,
   pricesOnly = false,
+  section = "all",
 }: {
   tour: Tour;
   compact?: boolean;
   pricesOnly?: boolean;
+  section?: "all" | "ops" | "prices";
 }) {
   const prices = (
     <ul aria-label="Prezzi per persona">
@@ -44,9 +46,11 @@ export function TourFacts({
     </ul>
   );
 
+  const showOps = !pricesOnly && section !== "prices";
+  const showPrices = section !== "ops";
   return (
     <div className="tour-facts body-md grid gap-2">
-      {!pricesOnly && (
+      {showOps && (
         <ul className="grid list-disc gap-2 pl-5">
           {tour.operatingDays && (
             <li>
@@ -115,7 +119,7 @@ export function TourFacts({
           )}
         </ul>
       )}
-      {prices}
+      {showPrices ? prices : null}
     </div>
   );
 }

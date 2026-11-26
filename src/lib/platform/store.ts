@@ -74,6 +74,8 @@ function hydrate(state: PlatformState, generateSlots = true) {
   releaseExpired(state);
   const bookedSlots = new Set(state.bookings.map(({ slotId }) => slotId));
   for (const tour of state.tours) {
+    // Clausola tour vuota → usa la globale (tour esistenti e nuovi).
+    if (typeof tour.cancellationClause !== "string") tour.cancellationClause = "";
     // Retain every referenced slot so old confirmations and cancellations still resolve.
     tour.slots = tour.slots.filter((slot) => !slot.id.startsWith("schedule:") || Date.parse(slot.startsAt) >= Date.now() - 86400000 || bookedSlots.has(slot.id));
     if (generateSlots && !tour.archivedAt) generateScheduledSlots(tour, undefined, bookedSlots);
@@ -160,13 +162,27 @@ export function audit(
   actor: string,
   action: string,
   target: string,
+  meta?: {
+    before?: string;
+    after?: string;
+    tour?: string;
+    when?: string;
+    booking?: string;
+  },
 ) {
+  const clip = (value: string | undefined, max: number) =>
+    value?.replace(/\s+/g, " ").trim().slice(0, max) || undefined;
   s.audit.unshift({
     id: randomUUID(),
     actor,
     action,
-    target,
+    target: target.slice(0, 500),
     at: new Date().toISOString(),
+    ...(clip(meta?.before, 2000) ? { before: clip(meta?.before, 2000) } : {}),
+    ...(clip(meta?.after, 2000) ? { after: clip(meta?.after, 2000) } : {}),
+    ...(clip(meta?.tour, 300) ? { tour: clip(meta?.tour, 300) } : {}),
+    ...(clip(meta?.when, 80) ? { when: clip(meta?.when, 80) } : {}),
+    ...(clip(meta?.booking, 40) ? { booking: clip(meta?.booking, 40) } : {}),
   });
   s.audit = s.audit.slice(0, 10000);
 }

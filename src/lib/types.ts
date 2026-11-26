@@ -12,7 +12,12 @@ export type BookingStatus =
   | "present";
 
 export type PaymentStatus =
-  "not_required" | "pending" | "paid" | "failed" | "refunded";
+  | "not_required"
+  | "pending"
+  | "contacted"
+  | "paid"
+  | "failed"
+  | "refunded";
 
 export type TourPhoto = { url: string; alt: string };
 
@@ -34,16 +39,18 @@ export type CommissionRule = {
   value: number;
 };
 export type ContentSectionBlock =
-  | { type: "text"; heading: string; text: string; html?: string }
-  | { type: "image"; imageUrl: string; alt: string; caption: string }
+  | { type: "text"; heading: string; headingHtml?: string; text: string; html?: string }
+  | { type: "image"; imageUrl: string; alt: string; caption: string; captionHtml?: string }
   | {
       type: "split";
       heading: string;
+      headingHtml?: string;
       text: string;
       html?: string;
       imageUrl: string;
       alt: string;
       caption: string;
+      captionHtml?: string;
       imagePosition: "left" | "right";
     };
 export type CalendarRule = {
@@ -64,6 +71,7 @@ export type SeasonalOffer = {
   percent: number;
 };
 export type Tour = {
+  hiddenText?: string[];
   paymentMethods?: ("cash" | "bank_transfer")[];
   paymentInstructions?: string;
   /** Explicit eligible companion tours; multiple rows alone never imply a package. */
@@ -97,11 +105,41 @@ export type Tour = {
     detailsLabel?: string;
   };
   formattedCopy?: {
+    labels?: Record<string, string>;
+    title?: string;
     shortDescription?: string;
+    meetingPoint?: string;
+    meetingAddress?: string;
+    meetingInstructions?: string;
+    fareRequirements?: string;
+    cancellationClause?: string;
     highlights?: (string | null)[];
     inclusions?: (string | null)[];
     exclusions?: (string | null)[];
     safetyNotes?: (string | null)[];
+  };
+  /** Etichette e copy UI della pagina dettaglio tour (fallback ai testi italiani fissi). */
+  detailCopy?: {
+    priceLabel?: string;
+    pricePersonLabel?: string;
+    guidePrefix?: string;
+    navDescrizione?: string;
+    navItinerario?: string;
+    navInfo?: string;
+    navCancellazione?: string;
+    navIncontro?: string;
+    navRecensioni?: string;
+    headingDescrizione?: string;
+    headingItinerario?: string;
+    headingInfo?: string;
+    headingIncluso?: string;
+    headingEscluso?: string;
+    headingPratiche?: string;
+    headingCancellazione?: string;
+    headingRecensioni?: string;
+    whatsappTitle?: string;
+    whatsappBody?: string;
+    whatsappCta?: string;
   };
   id: string;
   slug: string;
@@ -137,6 +175,8 @@ export type Tour = {
   closures?: { date: string; times: string[] }[];
   walkingLabel?: string;
   cancellationHours?: number;
+  /** Clausola testo libero; vuota → usa la clausola globale. */
+  cancellationClause?: string;
   bookingCutoffHours?: number;
   advanceBookingHours?: number;
   fareRequirements?: string;
@@ -156,11 +196,15 @@ export type Tour = {
   rating: number;
   reviewCount: number;
   language: string;
+  /** Sigla operativa (FT, CM, …). Vuota = dedotta da titolo e slug. */
+  code?: string;
+  /** Nome della guida mostrato in card. Vuoto = riga Guida nascosta (la lingua è già in meta). */
+  guide?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string[];
   highlights: string[];
-  itineraryGroups?: { title: string; start: number }[];
+  itineraryGroups?: { title: string; titleHtml?: string; start: number }[];
   /** Foto per ogni punto saliente, allineate a `highlights` (max 4 URL a riga). */
   highlightGalleries?: string[][];
   inclusions: string[];

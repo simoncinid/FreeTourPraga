@@ -18,6 +18,7 @@ export const contentSectionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
     heading: z.string().max(250),
+    headingHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
     text: z.string().max(20000),
     html: z.string().max(100000).transform(sanitizeRichText).optional(),
   }),
@@ -26,15 +27,18 @@ export const contentSectionSchema = z.discriminatedUnion("type", [
     imageUrl: z.lazy(() => tourImageUrlSchema),
     alt: z.string().max(250),
     caption: z.string().max(1000),
+    captionHtml: z.string().max(12000).transform(sanitizeRichText).optional(),
   }),
   z.object({
     type: z.literal("split"),
     heading: z.string().max(250),
+    headingHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
     text: z.string().max(20000),
     html: z.string().max(100000).transform(sanitizeRichText).optional(),
     imageUrl: z.lazy(() => tourImageUrlSchema),
     alt: z.string().max(250),
     caption: z.string().max(1000),
+    captionHtml: z.string().max(12000).transform(sanitizeRichText).optional(),
     imagePosition: z.enum(["left", "right"]),
   }),
 ]);
@@ -145,6 +149,7 @@ export const settingsSchema = z.object({
   paymentHoldMinutes: z.number().int().min(5).max(1440).default(120),
   cancellationHours: z.number().min(0).max(720),
   lateRefundPercent: z.number().min(0).max(100),
+  cancellationClause: z.string().trim().min(1).max(4000),
   retentionDays: z.number().int().min(30).max(3650),
   emailFooter: text(1000),
   emailTemplates: z.object({
@@ -281,7 +286,7 @@ export const tourSchema = z.object({
   petsAllowed: z.boolean().optional(),
   architecturalBarriers: z.boolean().optional(),
   cardPreview: z.object({
-    title: z.string().max(200).optional(),
+    title: z.string().max(2000).transform(sanitizeRichText).optional(),
     description: z.string().max(12000).transform(sanitizeRichText).optional(),
     itinerary: z.string().max(30000).transform(sanitizeRichText).optional(),
     facts: z.array(z.string().max(3000).transform(sanitizeRichText)).max(30).optional(),
@@ -290,15 +295,60 @@ export const tourSchema = z.object({
     bookLabel: z.string().max(80).optional(),
     detailsLabel: z.string().max(80).optional(),
   }).optional(),
+  hiddenText: z.array(z.string().max(300).regex(/^[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*$/)).max(500).optional(),
   formattedCopy: z.object({
+    labels: z.record(
+      z.string().regex(/^(?:detailCopy-[a-zA-Z]+|cardPreview-(?:itineraryLabel|pricesLabel|bookLabel|detailsLabel)|durationLabel|guide)$/),
+      z.string().max(12000).transform(sanitizeRichText),
+    ).optional(),
+    title: z.string().max(6000).transform(sanitizeRichText).optional(),
     shortDescription: z.string().max(12000).transform(sanitizeRichText).optional(),
+    meetingPoint: z.string().max(6000).transform(sanitizeRichText).optional(),
+    meetingAddress: z.string().max(6000).transform(sanitizeRichText).optional(),
+    meetingInstructions: z.string().max(12000).transform(sanitizeRichText).optional(),
+    fareRequirements: z.string().max(6000).transform(sanitizeRichText).optional(),
+    cancellationClause: z.string().max(12000).transform(sanitizeRichText).optional(),
     highlights: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
     inclusions: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
     exclusions: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
     safetyNotes: z.array(z.string().max(6000).transform(sanitizeRichText).nullable()).max(80).optional(),
   }).optional(),
+  detailCopy: z
+    .object({
+      priceLabel: z.string().max(120).optional(),
+      pricePersonLabel: z.string().max(80).optional(),
+      guidePrefix: z.string().max(80).optional(),
+      navDescrizione: z.string().max(80).optional(),
+      navItinerario: z.string().max(80).optional(),
+      navInfo: z.string().max(80).optional(),
+      navCancellazione: z.string().max(80).optional(),
+      navIncontro: z.string().max(80).optional(),
+      navRecensioni: z.string().max(80).optional(),
+      headingDescrizione: z.string().max(120).optional(),
+      headingItinerario: z.string().max(120).optional(),
+      headingInfo: z.string().max(120).optional(),
+      headingIncluso: z.string().max(120).optional(),
+      headingEscluso: z.string().max(120).optional(),
+      headingPratiche: z.string().max(120).optional(),
+      headingCancellazione: z.string().max(120).optional(),
+      headingRecensioni: z.string().max(120).optional(),
+      whatsappTitle: z.string().max(250).optional(),
+      whatsappBody: z.string().max(1000).optional(),
+      whatsappCta: z.string().max(120).optional(),
+    })
+    .optional(),
   id: text(),
   slug: z.string().regex(/^[a-z0-9-]+$/),
+  code: z
+    .string()
+    .trim()
+    .max(6)
+    .transform((value) => value.toUpperCase())
+    .refine(
+      (value) => value === "" || /^[A-Z0-9]{2,6}$/.test(value),
+      "Sigla di 2-6 caratteri",
+    )
+    .optional(),
   title: text(),
   category: text(),
   shortDescription: z.string().trim().max(1000),
@@ -367,6 +417,7 @@ export const tourSchema = z.object({
     .optional(),
   walkingLabel: z.string().trim().min(1).max(80).optional(),
   cancellationHours: z.number().min(0).max(720).optional(),
+  cancellationClause: z.string().max(4000).optional(),
   advanceBookingHours: z.number().min(0).max(168).optional(),
   fareRequirements: z.string().max(1000).optional(),
   suggestedContribution: z.string().max(160).optional(),
@@ -398,7 +449,7 @@ export const tourSchema = z.object({
   highlights: z.array(text(1000)).max(30),
   itineraryGroups: z
     .array(
-      z.object({ title: text(160), start: z.number().int().min(0).max(29) }),
+      z.object({ title: text(160), titleHtml: z.string().max(6000).transform(sanitizeRichText).optional(), start: z.number().int().min(0).max(29) }),
     )
     .max(10)
     .refine(
@@ -461,12 +512,19 @@ export const tourSchema = z.object({
 });
 export const pageSchema = z.object({
   benefits: z
-    .array(z.object({ title: z.string().max(250), text: z.string().max(5000) }))
+    .array(z.object({
+      title: z.string().max(250),
+      titleHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
+      text: z.string().max(5000),
+      html: z.string().max(30000).transform(sanitizeRichText).optional(),
+    }))
     .max(30)
     .optional(),
   contentBlocks: z.array(contentSectionSchema).max(60).optional(),
   canonicalPath: canonicalPathSchema.optional(),
   bodyHtml: z.string().max(100000).transform(sanitizeRichText).optional(),
+  titleHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
+  subtitleHtml: z.string().max(12000).transform(sanitizeRichText).optional(),
   updatedAt: z.string().datetime().optional(),
   sourceUrl: z.string().url().optional(),
   title: text(250),

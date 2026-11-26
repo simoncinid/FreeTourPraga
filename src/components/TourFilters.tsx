@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FilterSelect } from "@/components/FilterSelect";
 import { SlotDatePicker } from "@/components/SlotDatePicker";
 import { TourCard } from "@/components/TourCard";
+import { scrollWindowToTop } from "@/lib/scroll-window";
 import type { Tour } from "@/lib/types";
 
 const PAGE_SIZE_DESKTOP = 6;
@@ -60,6 +61,10 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
   );
 
   const filtered = Boolean(category !== "all" || date || guests !== "1");
+  function goToPage(next: number) {
+    setPage(next);
+    scrollWindowToTop();
+  }
   function reset() {
     setCategory("all");
     setDate("");
@@ -169,7 +174,7 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
                 className="card-carousel-nav"
                 aria-label="Pagina precedente"
                 disabled={safePage === 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                onClick={() => goToPage(Math.max(0, safePage - 1))}
               >
                 <ChevronLeft size={20} aria-hidden />
               </button>
@@ -185,7 +190,7 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
                     role="tab"
                     aria-label={`Vai alla pagina ${i + 1} di ${totalPages}`}
                     aria-current={safePage === i ? "true" : undefined}
-                    onClick={() => setPage(i)}
+                    onClick={() => goToPage(i)}
                   >
                     <span />
                   </button>
@@ -196,7 +201,7 @@ export function TourFilters({ tours }: { tours: Tour[] }) {
                 className="card-carousel-nav"
                 aria-label="Pagina successiva"
                 disabled={safePage >= totalPages - 1}
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
               >
                 <ChevronRight size={20} aria-hidden />
               </button>

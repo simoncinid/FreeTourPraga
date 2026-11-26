@@ -101,6 +101,7 @@ function CategoryMenu({
             <button
               type="button"
               role="option"
+              aria-selected={false}
               className="tour-category-new"
               onClick={(e) => {
                 e.preventDefault();
@@ -210,9 +211,7 @@ export function AdminTourList({
     ? filtered
     : filtered.slice(current * pageSize, (current + 1) * pageSize);
 
-  useEffect(() => {
-    if (page > count - 1) setPage(Math.max(0, count - 1));
-  }, [page, count]);
+  if (page !== current) setPage(current);
 
   useEffect(() => {
     const el = createDialog.current;

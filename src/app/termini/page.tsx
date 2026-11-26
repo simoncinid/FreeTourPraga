@@ -1,3 +1,4 @@
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { RichContent } from "@/components/RichContent";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -16,8 +17,8 @@ export default async function Page() {
   return (
     <section className={`${ui.page} ${ui.legal} section`}>
       <div className="container-page max-w-3xl">
-        <h1 {...pageEdit("termini", "title")} className="display-xl mb-7">
-          {content?.title || "Termini di prenotazione"}
+        <h1 {...pageEdit("termini", "titleHtml", "inline")} className="display-xl mb-7">
+          <InlineCopy html={content?.titleHtml}>{content?.title || "Termini di prenotazione"}</InlineCopy>
         </h1>
         <div
           {...pageEdit("termini", "bodyHtml", "html")}
@@ -54,12 +55,10 @@ export default async function Page() {
                 Puoi modificare o cancellare la singola prenotazione dal link
                 ricevuto via email, senza account, oppure contattare lo staff.
                 Le modifiche dipendono dai posti disponibili. La scheda del tour
-                e la conferma indicano il termine per la cancellazione gratuita
-                e il rimborso applicabile. Se la scheda non indica una politica
-                specifica, puoi cancellare fino a {s.cancellationHours} ore
-                prima per ricevere il rimborso integrale. Dopo questo termine il
-                rimborso è del {s.lateRefundPercent}%.
+                e la conferma riportano la clausola di cancellazione applicabile.
+                In assenza di una clausola specifica sul tour vale quanto segue:
               </p>
+              <p className="whitespace-pre-wrap">{s.cancellationClause}</p>
               <p>
                 I rimborsi sono effettuati sul metodo di pagamento originale e
                 seguono i tempi del circuito di pagamento. Se un tour viene

@@ -150,6 +150,10 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   const { fecha, hora, when } = pragueDateParts(slot.startsAt);
   const cf7 = cf7MailForSlug(tour.slug, tour.title);
   const manageUrl = `${site.url}/gestisci-prenotazione/${b.pnr}/${bookingManagementProof(b.id, b.pnr)}`;
+  const whatsappText = `Ciao, vorrei modificare o annullare la prenotazione ${b.pnr} per ${tour.title} del ${fecha} alle ${hora}. Nome: ${b.name}.`;
+  const whatsappModifica = contact.whatsappNumber
+    ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(whatsappText)}`
+    : "";
   const calendarUrl = `${site.url}/api/calendar/booking/${b.pnr}?manage=${bookingManagementProof(b.id, b.pnr)}`;
   const paymentLine =
     b.status === "cancelled"
@@ -203,6 +207,7 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
     nota: b.bookingNote ?? (isFreeTour(tour) ? freeTourNote(tour) : ""),
     cancellazione: cancellationNote(b.policy ?? tour, settings),
     manageUrl,
+    whatsappModifica,
     calendarUrl,
     assistenza: `${contact.email} · ${contact.phone || ""}`.trim(),
     telefonoContatto: contact.phone || "",
@@ -231,14 +236,23 @@ export function notification(s: PlatformState, b: Reservation, kind: string) {
   const presenceNotice =
     "Il nostro team ti contatterà via WhatsApp per chiederti di confermare la tua presenza.";
   const presenceHtml = `<p style="padding:12px;background:#edf5f8"><strong>${presenceNotice}</strong></p>`;
-  const text = renderEmailTemplate(
+  let text = renderEmailTemplate(
     template.text.replaceAll("EUR {totale}", "{totale}"),
     vars,
   );
-  const html = renderEmailTemplate(
+  let html = renderEmailTemplate(
     template.html.replaceAll("EUR {totale}", "{totale}"),
     htmlVars,
   );
+  if (
+    whatsappModifica &&
+    /conferm|aggiorn|modific/i.test(kind) &&
+    !text.includes("wa.me/") &&
+    !html.includes("wa.me/")
+  ) {
+    text = `${text}\n\nRichiedi modifica o annullo su WhatsApp: ${whatsappModifica}`;
+    html = `${html}<p><a href="${escapeHtml(whatsappModifica)}">Richiedi modifica o annullo su WhatsApp</a></p>`;
+  }
   b.calendarSequence = (b.calendarSequence ?? -1) + 1;
   enqueue(s, {
     key: `email:${b.pnr}:${kind}:${randomUUID()}`,
@@ -464,6 +478,7 @@ export function quote(
       lastMinuteApplied,
       cancellationHours: tour.cancellationHours ?? settings.cancellationHours,
       lateRefundPercent: tour.lateRefundPercent ?? settings.lateRefundPercent,
+      cancellationClause: cancellationNote(tour, settings),
       bookingNote: isFreeTour(tour)
         ? freeTourNote(tour)
         : lastMinuteApplied
@@ -592,8 +607,9 @@ export async function createOrder(
         policy: {
           cancellationHours: item.cancellationHours,
           lateRefundPercent: item.lateRefundPercent,
+          cancellationClause: item.cancellationClause,
         },
-        termsVersion: `2026-11-06:${hash(JSON.stringify({ terms: s.pages.termini || null, cancellationHours: item.cancellationHours, lateRefundPercent: item.lateRefundPercent })).slice(0, 16)}`,
+        termsVersion: `2026-11-06:${hash(JSON.stringify({ terms: s.pages.termini || null, cancellationHours: item.cancellationHours, lateRefundPercent: item.lateRefundPercent, cancellationClause: item.cancellationClause })).slice(0, 16)}`,
       };
       s.bookings.push(b);
       order.pnrs.push(b.pnr);

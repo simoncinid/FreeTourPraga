@@ -30,15 +30,31 @@ export function tourPrices(tour: Tour, guests: number) {
     fixedGroup: group,
   };
 }
-export function cancellationNote(
-  tour: Pick<Tour, "cancellationHours" | "lateRefundPercent">,
-  defaults = { cancellationHours: 24, lateRefundPercent: 0 },
+/** Testo standard usato come default globale e fallback. */
+export const DEFAULT_CANCELLATION_CLAUSE =
+  "Cancellazione gratuita fino a 24 ore prima della partenza, con rimborso integrale degli importi pagati. Dopo il termine o in caso di mancata presentazione, non è previsto alcun rimborso.";
+
+type CancellationSource = {
+  cancellationClause?: string | null;
+};
+
+/** Tour (se valorizzato) → globale → testo standard. */
+export function resolveCancellationClause(
+  source?: CancellationSource | null,
+  settings?: CancellationSource | null,
 ) {
-  const hours = tour.cancellationHours ?? defaults.cancellationHours;
-  const refund = tour.lateRefundPercent ?? defaults.lateRefundPercent;
-  if (hours === 0)
-    return "Puoi cancellare o modificare gratuitamente la prenotazione prima dell’inizio del tour.";
-  return `Cancellazione gratuita fino a ${hours} ore prima della partenza, con rimborso integrale degli importi pagati. Dopo il termine o in caso di mancata presentazione, ${refund ? `il rimborso è del ${refund}% dell’importo pagato` : "non è previsto alcun rimborso"}.`;
+  const tourText = source?.cancellationClause?.trim();
+  if (tourText) return tourText;
+  const globalText = settings?.cancellationClause?.trim();
+  if (globalText) return globalText;
+  return DEFAULT_CANCELLATION_CLAUSE;
+}
+
+export function cancellationNote(
+  source?: CancellationSource | null,
+  settings?: CancellationSource | null,
+) {
+  return resolveCancellationClause(source, settings);
 }
 
 export function bookingLeadMs(tour: {

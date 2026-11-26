@@ -1,4 +1,5 @@
-import { SiteRichText } from "@/components/SiteRichText";
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "@/components/SiteRichText";
+import { RichInline } from "@/components/RichInline";
 import { siteEdit } from "@/lib/visual-content";
 import { MeetingPoints } from "@/components/MeetingPoints";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -106,16 +107,16 @@ export default async function HomePage() {
           >
             <div className={styles.heroCopy}>
               <p
-                {...siteEdit("home.heroEyebrow")}
+                {...siteInlineEdit("home.heroEyebrow")}
                 className="uppercase-tag mb-5 text-primary"
               >
-                {h.heroEyebrow}
+                <SiteInlineText content={c} path="home.heroEyebrow">{h.heroEyebrow}</SiteInlineText>
               </p>
               <h1
-                {...siteEdit("home.heroTitle", "text", h.heroTitle)}
+                {...siteInlineEdit("home.heroTitle")}
                 className="display-xl hero-title mb-5 !text-white"
               >
-                {h.heroTitle}
+                <SiteInlineText content={c} path="home.heroTitle">{h.heroTitle}</SiteInlineText>
               </h1>
               <div className={styles.heroCtaBlock}>
                 <SiteRichText content={c} path="home.heroBody" text={h.heroBody} className="body-md mb-8 !text-white/90" />
@@ -123,6 +124,7 @@ export default async function HomePage() {
                   <HeroTourCta
                     href={h.primaryHref}
                     label={h.primaryLabel}
+                    labelHtml={c.formattedText?.["home-primaryLabel"]}
                     tours={tours.map((t) => ({
                       title: t.title,
                       imageUrl: t.imageUrl,
@@ -130,14 +132,16 @@ export default async function HomePage() {
                     }))}
                   />
                   <a
-                    {...siteEdit("home.secondaryLabel")}
+                    data-cms-hide-parent
                     className={`button-secondary ${styles.heroWhatsapp}`}
                     href={contentWhatsapp(
                       c,
                       "Ciao, vorrei informazioni sui tour.",
                     )}
                   >
-                    {h.secondaryLabel}
+                    <span {...siteInlineEdit("home.secondaryLabel")}>
+                      <SiteInlineText content={c} path="home.secondaryLabel">{h.secondaryLabel}</SiteInlineText>
+                    </span>
                     <span className={styles.heroWhatsappIcon} aria-hidden>
                       <Phone size={14} strokeWidth={2.25} />
                     </span>
@@ -167,13 +171,10 @@ export default async function HomePage() {
                       />
                       <div>
                         <strong
-                          {...siteEdit(
-                            `home.stats.${index}.value`,
-                            "text",
-                            item.value,
-                          )}
+                          {...siteInlineEdit(`home.stats.${index}.value`)}
                           className={styles.benefitTitle}
                         >
+                          <SiteInlineText content={c} path={`home.stats.${index}.value`}>
                           {titleWords.slice(0, titleMid).join(" ")}
                           {titleWords.length > 1 ? (
                             <>
@@ -182,12 +183,13 @@ export default async function HomePage() {
                             </>
                           ) : null}
                           {titleWords.slice(titleMid).join(" ")}
+                          </SiteInlineText>
                         </strong>
                         <p
-                          {...siteEdit(`home.stats.${index}.label`)}
+                          {...siteInlineEdit(`home.stats.${index}.label`)}
                           className={styles.benefitLabel}
                         >
-                          {item.label}
+                          <SiteInlineText content={c} path={`home.stats.${index}.label`}>{item.label}</SiteInlineText>
                         </p>
                       </div>
                     </li>
@@ -201,18 +203,19 @@ export default async function HomePage() {
       <section className="editorial-section">
         <div className="container-page">
           <p
-            {...siteEdit("home.toursEyebrow")}
+            {...siteInlineEdit("home.toursEyebrow")}
             className="uppercase-tag mb-3 text-primary"
           >
-            {h.toursEyebrow}
+            <SiteInlineText content={c} path="home.toursEyebrow">{h.toursEyebrow}</SiteInlineText>
           </p>
-          <h2 {...siteEdit("home.toursTitle")} className="display-lg mb-3">
-            {h.toursTitle}
+          <h2 {...siteInlineEdit("home.toursTitle")} className="display-lg mb-3">
+            <SiteInlineText content={c} path="home.toursTitle">{h.toursTitle}</SiteInlineText>
           </h2>
           <SiteRichText content={c} path="home.toursBody" text={h.toursBody} className={`${styles.toursLead} body-md mb-8`} />
           {groups.length > 0 ? (
             <ExperienceRotator
               groups={groups}
+              formattedText={c.formattedText}
               intervalSeconds={h.carouselIntervalSeconds}
             />
           ) : (
@@ -230,17 +233,18 @@ export default async function HomePage() {
         <div className="container-page grid items-center gap-12 lg:grid-cols-[.8fr_1.2fr]">
           <div>
             <p
-              {...siteEdit("home.trustEyebrow")}
+              {...siteInlineEdit("home.trustEyebrow")}
               className="uppercase-tag mb-3 text-primary"
             >
-              {h.trustEyebrow}
+              <SiteInlineText content={c} path="home.trustEyebrow">{h.trustEyebrow}</SiteInlineText>
             </p>
             <h2
-              {...siteEdit("home.trustTitle", "text", h.trustTitle)}
+              {...siteInlineEdit("home.trustTitle")}
               data-cms-multiline="true"
               className="display-lg !text-white"
             >
-              {h.trustTitle.split(/(nostro ospite)/i).map((part, index) =>
+              <SiteInlineText content={c} path="home.trustTitle">
+                {h.trustTitle.split(/(nostro ospite)/i).map((part, index) =>
                 part.toLocaleLowerCase("it") === "nostro ospite" ? (
                   <span key={index} className={styles.trustAccent}>
                     {part}
@@ -249,6 +253,7 @@ export default async function HomePage() {
                   part
                 ),
               )}
+              </SiteInlineText>
             </h2>
             <SiteRichText content={c} path="home.trustBody" text={h.trustBody} className="body-md mt-5 !text-white/85" />
           </div>
@@ -259,11 +264,12 @@ export default async function HomePage() {
                 <article key={pillar.title} className={styles.trustCard}>
                   <div className={styles.trustCardHeading}>
                     <Icon size={36} className={styles.trustIcon} aria-hidden />
-                    <h3
-                      {...siteEdit(`home.pillars.${index}.title`)}
-                      className="title-md !text-white"
-                    >
-                      {pillar.title}
+                    <h3 {...siteInlineEdit(`home.pillars.${index}.title`)} className="title-md !text-white">
+                      <SiteInlineText content={c} path={`home.pillars.${index}.title`}>
+                        {/<[a-z][\s\S]*>/i.test(pillar.title)
+                          ? <RichInline html={pillar.title} />
+                          : pillar.title}
+                      </SiteInlineText>
                     </h3>
                   </div>
                   <SiteRichText content={c} path={`home.pillars.${index}.text`} text={pillar.text} className="body-sm mt-3 !text-white/80" />
@@ -276,21 +282,23 @@ export default async function HomePage() {
       <section className="editorial-section">
         <div className="container-page">
           <p
-            {...siteEdit("home.galleryEyebrow")}
+            {...siteInlineEdit("home.galleryEyebrow")}
             className="uppercase-tag mb-3 text-primary"
           >
-            {h.galleryEyebrow}
+            <SiteInlineText content={c} path="home.galleryEyebrow">{h.galleryEyebrow}</SiteInlineText>
           </p>
-          <h2 {...siteEdit("home.galleryTitle")} className="display-lg mb-3">
-            {h.galleryTitle}
+          <h2 {...siteInlineEdit("home.galleryTitle")} className="display-lg mb-3">
+            <SiteInlineText content={c} path="home.galleryTitle">{h.galleryTitle}</SiteInlineText>
           </h2>
           <SiteRichText content={c} path="home.galleryBody" text={h.galleryBody} className={`${styles.galleryLead} body-md mb-8`} />
-          <HomeGallery items={c.gallery} />
+          <HomeGallery
+            items={c.gallery.filter((item) => item.channel !== "useful")}
+          />
         </div>
       </section>
       <section className="container-page py-12">
-        <h2 {...siteEdit("home.answersTitle")} className="display-lg mb-3">
-          {h.answersTitle}
+        <h2 {...siteInlineEdit("home.answersTitle")} className="display-lg mb-3">
+          <SiteInlineText content={c} path="home.answersTitle">{h.answersTitle}</SiteInlineText>
         </h2>
         <SiteRichText content={c} path="home.answersBody" text={h.answersBody} className="mb-6" />
         <HomeAnswers items={c.answers} formattedText={c.formattedText} />
@@ -301,6 +309,7 @@ export default async function HomePage() {
             label: "Punto standard — Teatro degli Stati",
             address: c.globals.address,
             binding: "globals.address",
+            addressHtml: c.formattedText?.["globals-address"],
             mapUrl: `https://www.google.com/maps?q=${encodeURIComponent(c.globals.address)}`,
           },
           ...(c.globals.castleMeetingAddress
@@ -309,6 +318,7 @@ export default async function HomePage() {
                   label: "Castello di Praga con interni",
                   address: c.globals.castleMeetingAddress,
                   binding: "globals.castleMeetingAddress",
+                  addressHtml: c.formattedText?.["globals-castleMeetingAddress"],
                   mapUrl: "https://maps.app.goo.gl/W3UdjsUfZNNMmhKF7",
                 },
               ]
@@ -329,16 +339,17 @@ export default async function HomePage() {
           <div className={styles.partnerPanel}>
             <div className={styles.partnerCopy}>
               <p
-                {...siteEdit("home.partnerEyebrow")}
+                {...siteInlineEdit("home.partnerEyebrow")}
                 className="uppercase-tag text-primary"
               >
-                {h.partnerEyebrow}
+                <SiteInlineText content={c} path="home.partnerEyebrow">{h.partnerEyebrow}</SiteInlineText>
               </p>
               <h2
-                {...siteEdit("home.partnerTitle", "text", h.partnerTitle)}
+                {...siteInlineEdit("home.partnerTitle")}
                 data-cms-multiline="true"
                 className="display-lg"
               >
+                <SiteInlineText content={c} path="home.partnerTitle">
                 {h.partnerTitle
                   .split(/(su misura)/i)
                   .map((part, index) =>
@@ -348,13 +359,14 @@ export default async function HomePage() {
                       part
                     ),
                   )}
-              </h2>
+              </SiteInlineText>
+            </h2>
               <SiteRichText content={c} path="home.partnerBody" text={h.partnerBody} className="body-md" />
               <Link
                 href="/partner-europa"
                 className={`button-primary ${styles.partnerCta}`}
               >
-                <span {...siteEdit("home.partnerLabel")}>{h.partnerLabel}</span>
+                <span {...siteInlineEdit("home.partnerLabel")}><SiteInlineText content={c} path="home.partnerLabel">{h.partnerLabel}</SiteInlineText></span>
                 <ArrowRight
                   size={20}
                   className={styles.partnerCtaArrow}

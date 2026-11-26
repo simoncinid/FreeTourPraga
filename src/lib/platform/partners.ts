@@ -1,8 +1,13 @@
+import { sanitizeRichText } from "../rich-text";
 import { z } from "zod";
 import type { PlatformState } from "./model";
 import { localDateSchema, tourImageUrlSchema } from "./validation";
 import { pragueLocal } from "./time";
 export const partnerSchema = z.object({
+  formattedText: z.partialRecord(
+    z.enum(["name", "description", "email", "phone"]),
+    z.string().max(20000).transform(sanitizeRichText),
+  ).optional(),
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/),
   name: z.string().trim().min(1).max(150),
   description: z.string().max(5000),

@@ -1,14 +1,15 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, Pencil, Trash2, BarChart3 } from "lucide-react";
 import type { EuropeanPartner, PlatformState } from "@/lib/platform/model";
 import { partnerStats } from "@/lib/partner-statistics";
 import { ImageSourceField } from "./ImageSourceField";
 import { AdminNotice } from "./AdminNotice";
 import { recordsCss as css, RecordDrawer } from "./AdminRecords";
-function emptyPartner(): EuropeanPartner {
+import { blockEnterSubmit } from "@/lib/form-guards";
+function emptyPartner(id: string): EuropeanPartner {
   return {
-    id: crypto.randomUUID(),
+    id,
     name: "",
     description: "",
     imageUrl: "",
@@ -22,11 +23,12 @@ export function PartnersManager({
   data,
   busy,
   mutate,
-  from,
-  to,
+  from: periodFrom,
+  to: periodTo,
   onFromChange,
   onToChange,
-  openNewKey = 0,
+  newDraftId = "",
+  onDraftClosed,
 }: {
   data: PlatformState | Pick<PlatformState, "partners" | "partnerClicks">;
   busy: boolean;
@@ -35,14 +37,18 @@ export function PartnersManager({
   to: string;
   onFromChange: (value: string) => void;
   onToChange: (value: string) => void;
-  openNewKey?: number;
+  newDraftId?: string;
+  onDraftClosed: (id: string) => void;
 }) {
   const [tab, setTab] = useState("partners"),
     [search, setSearch] = useState(""),
     [status, setStatus] = useState("");
-  const [periodFrom, setPeriodFrom] = useState(from),
-    [periodTo, setPeriodTo] = useState(to);
-  const [draft, setDraft] = useState<EuropeanPartner | null>(null),
+  const [lastDraftId, setLastDraftId] = useState(newDraftId);
+  const [draft, setDraft] = useState<EuropeanPartner | null>(() =>
+    newDraftId && !data.partners?.some(({ id }) => id === newDraftId)
+      ? emptyPartner(newDraftId)
+      : null,
+  ),
     [historyId, setHistoryId] = useState<string | null>(null),
     [editorTab, setEditorTab] = useState("data");
   const [upload, setUpload] = useState(false),
@@ -83,30 +89,22 @@ export function PartnersManager({
   }
   function changeFrom(value: string) {
     if (!value || value === periodFrom) return;
-    setPeriodFrom(value);
     onFromChange(value);
     if (value > periodTo) {
-      setPeriodTo(value);
       onToChange(value);
     }
   }
   function changeTo(value: string) {
     if (!value || value === periodTo) return;
-    setPeriodTo(value);
     onToChange(value);
   }
-  useEffect(() => {
-    if (!openNewKey) return;
-    edit(emptyPartner());
-  }, [openNewKey]);
-  useEffect(() => {
-    setPeriodFrom(from);
-  }, [from]);
-  useEffect(() => {
-    setPeriodTo(to);
-  }, [to]);
+  if (newDraftId !== lastDraftId) {
+    setLastDraftId(newDraftId);
+    if (newDraftId) edit(emptyPartner(newDraftId));
+  }
   const close = () => {
     if (!upload && !busy) {
+      if (draft) onDraftClosed(draft.id);
       setDraft(null);
       setHistoryId(null);
       setNotice("");
@@ -386,6 +384,7 @@ export function PartnersManager({
         >
           <form
             className={css.form}
+            onKeyDown={blockEnterSubmit}
             onInvalidCapture={(event) => {
               if (editorTab !== "data") {
                 event.preventDefault();
@@ -398,7 +397,10 @@ export function PartnersManager({
               event.preventDefault();
               if (upload || busy) return;
               const result = await mutate("partner", draft, "PUT");
-              if (result) setDraft(null);
+              if (result) {
+                onDraftClosed(draft.id);
+                setDraft(null);
+              }
             }}
           >
             <nav className={css.tabs} aria-label="Campi partner">
@@ -502,7 +504,11 @@ export function PartnersManager({
               >
                 Annulla
               </button>
-              <button className="button-primary" disabled={busy || upload}>
+              <button
+                type="submit"
+                className="button-primary"
+                disabled={busy || upload}
+              >
                 Salva partner
               </button>
             </footer>

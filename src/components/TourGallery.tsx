@@ -10,10 +10,12 @@ export function TourGallery({
   title,
   photos,
   editPaths,
+  editable = false,
 }: {
   title: string;
   photos: TourPhoto[];
   editPaths?: string[];
+  editable?: boolean;
 }) {
   const [selected, setSelected] = useState(0);
   const [lastLoaded, setLastLoaded] = useState(photos[0]);
@@ -58,6 +60,7 @@ export function TourGallery({
         {lastLoaded && lastLoaded.url !== active.url && (
           <Image
             src={lastLoaded.url}
+            unoptimized={editable}
             alt=""
             aria-hidden="true"
             fill
@@ -70,6 +73,7 @@ export function TourGallery({
           data-tour-field={editPaths?.[selected]}
           data-tour-kind="image"
           src={active.url}
+          unoptimized={editable}
           alt={active.alt}
           fill
           preload={selected === 0}
@@ -123,6 +127,7 @@ export function TourGallery({
               data-tour-field={editPaths?.[index]}
               data-tour-kind="image"
               src={photo.url}
+              unoptimized={editable}
               alt=""
               fill
               sizes="(min-width: 768px) 15vw, 25vw"

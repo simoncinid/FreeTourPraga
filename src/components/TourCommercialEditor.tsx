@@ -1,21 +1,30 @@
 "use client";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PriceInput } from "./PriceInput";
 import { useState } from "react";
 import { TourPackageSelect } from "./TourPackageSelect";
 import type { CatalogTour } from "@/lib/platform/model";
 import type { CommissionRule, PriceCategory } from "@/lib/types";
 import { categoriesFor } from "@/lib/participant-pricing";
+import { pragueLocal } from "@/lib/platform/time";
+import { isFreeTour } from "@/lib/tour-rules";
+import { CountInput } from "./CountInput";
+import css from "./tour-edit-panels.module.css";
 export function TourCommercialEditor({
   tour: t,
   availableTours,
   change,
-  section = "all",
+  section,
 }: {
-  section?: "all" | "categories" | "rules" | "commissions";
+  section: "categories" | "rules" | "commissions";
   tour: CatalogTour;
   availableTours: CatalogTour[];
   change: (key: keyof CatalogTour, value: unknown) => void;
 }) {
+  const today = pragueLocal(new Date().toISOString()).slice(0, 10);
+  const [offerFrom, setOfferFrom] = useState(today);
+  const [offerTo, setOfferTo] = useState(today);
+  const [offerPercent, setOfferPercent] = useState(10);
   const [categoryPage, setCategoryPage] = useState(0);
   const [rulePage, setRulePage] = useState(0);
   const categories = categoriesFor(t),
@@ -39,7 +48,7 @@ export function TourCommercialEditor({
     <>
       <section
         data-tour-panel="categories"
-        hidden={section !== "all" && section !== "categories"}
+        hidden={section !== "categories"}
         className="card tour-prices grid gap-5 p-6"
         onInvalidCapture={(e) => {
           const index = Number(
@@ -58,17 +67,51 @@ export function TourCommercialEditor({
         }}
       >
         <h2 className="display-md">Categorie e prezzi</h2>
-        <label>
-          Valuta
-          <select
-            className="text-input"
-            value={t.currency ?? "EUR"}
-            onChange={(e) => change("currency", e.target.value)}
-          >
-            <option value="EUR">EUR — Euro</option>
-            <option value="CZK">CZK — Corona ceca</option>
-          </select>
-        </label>
+        <div className={css.three}>
+          <label>
+            Tipo di tour
+            <select
+              className="text-input"
+              value={isFreeTour(t) ? "free" : "paid"}
+              onChange={(e) => {
+                const free = e.target.value === "free";
+                change("isFreeTour", free);
+                change("priceLabel", free ? "Offerta libera" : "");
+                if (free) {
+                  change("basePriceCents", 0);
+                  change("childPriceCents", 0);
+                  change("infantPriceCents", 0);
+                }
+              }}
+            >
+              <option value="paid">A pagamento</option>
+              <option value="free">Free tour · offerta libera</option>
+            </select>
+          </label>
+          <label>
+            Valuta
+            <select
+              className="text-input"
+              value={t.currency ?? "EUR"}
+              onChange={(event) => change("currency", event.target.value)}
+            >
+              <option value="EUR">EUR — Euro</option>
+              <option value="CZK">CZK — Corona ceca</option>
+            </select>
+          </label>
+          {/* <label>
+            Documenti richiesti per la tariffa ridotta
+            <input className="text-input" value={t.fareRequirements ?? ""}
+              onChange={(event) => change("fareRequirements", event.target.value)} />
+          </label> */}
+          {t.isFreeTour && (
+            <label>
+              Offerta consigliata
+              <input className="text-input" value={t.suggestedContribution ?? ""}
+                onChange={(event) => change("suggestedContribution", event.target.value)} />
+            </label>
+          )}
+        </div>
         <p>
           Ogni categoria compare nella prenotazione. Età e condizioni possono
           sovrapporsi: il cliente sceglie la categoria applicabile per ciascuna
@@ -199,20 +242,22 @@ export function TourCommercialEditor({
           <button
             type="button"
             className="button-secondary"
+            aria-label="Pagina precedente"
             disabled={currentCategoryPage === 0}
             onClick={() => setCategoryPage(currentCategoryPage - 1)}
           >
-            Precedente
+            <ChevronLeft size={16} />
           </button>
           <button
             type="button"
             className="button-secondary"
+            aria-label="Pagina successiva"
             disabled={
               currentCategoryPage >= Math.ceil(categories.length / 3) - 1
             }
             onClick={() => setCategoryPage(currentCategoryPage + 1)}
           >
-            Successiva
+            <ChevronRight size={16} />
           </button>
         </div>
         <button
@@ -241,52 +286,43 @@ export function TourCommercialEditor({
           Consenti offerte last-minute su questo tour
         </label>
       </section>
+      {!t.priceCategories?.length && (
+        <section data-tour-panel="categories" hidden={section !== "categories"}
+          className="card grid gap-4 p-6">
+          <h2 className="display-md">Listino precedente alle categorie</h2>
+          <div className={css.three}>
+            {([
+              ["basePriceCents", "Prezzo adulti"],
+              ["childPriceCents", "Prezzo bambini"],
+              ["infantPriceCents", "Prezzo infanti"],
+            ] as const).map(([key, label]) => (
+              <label key={key}>
+                {label}
+                <PriceInput cents={t[key] ?? 0} onChange={(value) => change(key, value ?? 0)} />
+              </label>
+            ))}
+            {([
+              ["adultMinAge", "Età minima adulti"],
+              ["childMinAge", "Età minima bambini"],
+            ] as const).map(([key, label]) => (
+              <label key={key}>
+                {label}
+                <input className="text-input" type="number" min={0} value={t[key] ?? ""}
+                  onChange={(event) => change(key, Number(event.target.value))} />
+              </label>
+            ))}
+          </div>
+        </section>
+      )}
       <section
-        data-tour-panel="rules"
-        hidden={section !== "all" && section !== "rules"}
-        className="card tour-group-rules grid gap-4 p-6"
-      >
-        <h2 className="display-md">Regole gruppi Free Tour</h2>
-        <label>
-          Modalità
-          <select
-            className="text-input"
-            value={t.freeGroupMode ?? "fixed"}
-            onChange={(e) => change("freeGroupMode", e.target.value)}
-          >
-            <option value="fixed">Tariffa fissa oltre soglia</option>
-            <option value="contact">
-              Contattare il servizio clienti oltre soglia
-            </option>
-            <option value="none">Offerta libera per tutti i gruppi</option>
-          </select>
-        </label>
-        <label>
-          Soglia partecipanti
-          <input
-            className="text-input"
-            type="number"
-            min={0}
-            max={10000}
-            value={t.freeGroupLimit ?? 6}
-            onChange={(e) => change("freeGroupLimit", Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Tariffa per persona oltre soglia ({t.currency ?? "EUR"})
-          <PriceInput cents={t.freeGroupPriceCents ?? 1200}
-            onChange={(value) => change("freeGroupPriceCents", value ?? 0)} />
-        </label>
-      </section>
-      <section
-        data-tour-panel="rules"
-        hidden={section !== "all" && section !== "rules"}
+        data-tour-panel="categories"
+        hidden={section !== "categories"}
         className="card tour-payments grid gap-4 p-6"
       >
         <h2 className="display-md">Pagamenti</h2>
         <p>
-          I metodi selezionati sono disponibili per questo tour. I tour nello
-          stesso ordine devono avere almeno un metodo in comune.
+          Il checkout pubblico usa WhatsApp. Questi metodi si applicano alle
+          prenotazioni che indicano esplicitamente contanti o bonifico.
         </p>
         {(["cash", "bank_transfer"] as const).map((method) => (
           <label key={method}>
@@ -321,9 +357,213 @@ export function TourCommercialEditor({
           />
         </label>
       </section>
+      <section data-tour-panel="categories" hidden={section !== "categories"} className="card grid gap-4 p-6">
+        <header className={css.sectionHead}>
+          <div>
+            <h2>Offerte</h2>
+            <p>Sconto in percentuale, valido solo nel periodo indicato per questo tour.</p>
+          </div>
+        </header>
+        <ul>
+          {(t.seasonalOffers ?? []).map((offer) => (
+            <li key={offer.id}>
+              −{offer.percent}% dal {offer.from.split("-").reverse().join("/")} al{" "}
+              {offer.to.split("-").reverse().join("/")}{" "}
+              <button
+                type="button"
+                className="button-secondary button-danger"
+                onClick={() =>
+                  change(
+                    "seasonalOffers",
+                    (t.seasonalOffers ?? []).filter((item) => item.id !== offer.id),
+                  )
+                }
+              >
+                Rimuovi
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className={css.three}>
+          <label>
+            Dal
+            <input className="text-input" type="date" value={offerFrom} onChange={(e) => setOfferFrom(e.target.value)} />
+          </label>
+          <label>
+            Al
+            <input className="text-input" type="date" min={offerFrom} value={offerTo} onChange={(e) => setOfferTo(e.target.value)} />
+          </label>
+          <label>
+            Sconto %
+            <input className="text-input" type="number" min={1} max={100} value={offerPercent} onChange={(e) => setOfferPercent(Number(e.target.value))} />
+          </label>
+        </div>
+        <button
+          type="button"
+          className="button-primary"
+          disabled={!offerFrom || !offerTo || offerFrom > offerTo || offerPercent < 1}
+          onClick={() =>
+            change("seasonalOffers", [
+              ...(t.seasonalOffers ?? []),
+              {
+                id: crypto.randomUUID(),
+                from: offerFrom,
+                to: offerTo,
+                percent: offerPercent,
+              },
+            ])
+          }
+        >
+          Aggiungi offerta
+        </button>
+      </section>
+      <section data-tour-panel="rules" hidden={section !== "rules"}
+        className="card grid gap-4 p-6">
+        <h2 className="display-md">Limiti e anticipo di prenotazione</h2>
+        <div className={css.three}>
+          <label>
+            Partecipanti per prenotazione
+            <CountInput value={Number(t.maxGuests) || undefined} min={1} max={10000}
+              placeholder="Es. 25" required onChange={(value) => change("maxGuests", value)} />
+          </label>
+          <label>
+            Anticipo consigliato per prenotare (ore)
+            <input className="text-input" type="number" min={0} max={168}
+              value={t.advanceBookingHours ?? ""}
+              onChange={(event) => change("advanceBookingHours", Number(event.target.value))} />
+          </label>
+          <label>
+            Prenotabile fino a (ore prima)
+            <input
+              className="text-input"
+              type="number"
+              min={0}
+              max={168}
+              value={t.bookingCutoffHours}
+              onChange={(e) => change("bookingCutoffHours", Number(e.target.value))}
+            />
+          </label>
+          <label>
+            Minuti aggiuntivi
+            <input
+              className="text-input"
+              type="number"
+              min={0}
+              max={59}
+              value={t.bookingCutoffMinutes ?? 0}
+              onChange={(e) =>
+                change("bookingCutoffMinutes", Number(e.target.value))
+              }
+            />
+          </label>
+          <label>
+            Minimo partecipanti per la partenza
+            <input
+              className="text-input"
+              type="number"
+              min={1}
+              max={10000}
+              value={t.minParticipants ?? ""}
+              onChange={(e) =>
+                change(
+                  "minParticipants",
+                  e.target.value ? Number(e.target.value) : undefined,
+                )
+              }
+            />
+          </label>
+        </div>
+      </section>
+      <section
+        data-tour-panel="rules"
+        hidden={section !== "rules"}
+        className="card tour-group-rules grid gap-4 p-6"
+      >
+        <h2 className="display-md">Regole gruppi Free Tour</h2>
+        <label>
+          Modalità
+          <select
+            className="text-input"
+            value={t.freeGroupMode ?? "fixed"}
+            onChange={(e) => change("freeGroupMode", e.target.value)}
+          >
+            <option value="fixed">Tariffa fissa oltre soglia</option>
+            <option value="contact">
+              Contattare il servizio clienti oltre soglia
+            </option>
+            <option value="none">Offerta libera per tutti i gruppi</option>
+          </select>
+        </label>
+        <label>
+          Soglia partecipanti
+          <input
+            className="text-input"
+            type="number"
+            min={0}
+            max={10000}
+            value={t.freeGroupLimit ?? 6}
+            onChange={(e) => change("freeGroupLimit", Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Tariffa per persona oltre soglia ({t.currency ?? "EUR"})
+          <PriceInput cents={t.freeGroupPriceCents ?? 1200}
+            onChange={(value) => change("freeGroupPriceCents", value ?? 0)} />
+        </label>
+      </section>
+      <section data-tour-panel="rules" hidden={section !== "rules"}
+        className="card grid gap-4 p-6">
+        <h2 className="display-md">Policy di cancellazione</h2>
+        {/* <label className="grid gap-2">
+          Clausola di cancellazione (tour)
+          <textarea
+            className="text-input"
+            rows={5}
+            maxLength={4000}
+            placeholder="Vuoto = usa la clausola globale delle Impostazioni"
+            value={t.cancellationClause ?? ""}
+            onChange={(e) => change("cancellationClause", e.target.value)}
+          />
+          <span className="text-sm">
+            Se lasci vuoto, sul sito e nelle email compare la clausola globale.
+          </span>
+        </label> */}
+        <div className={css.three}>
+          {(
+            [
+              [
+                "cancellationHours",
+                "Rimborso automatico: ore gratuite",
+                0,
+                720,
+                24,
+              ],
+              [
+                "lateRefundPercent",
+                "Rimborso automatico dopo il termine (%)",
+                0,
+                100,
+                0,
+              ],
+            ] as const
+          ).map(([key, label, min, max, fallback]) => (
+            <label key={key}>
+              {label}
+              <input
+                className="text-input"
+                type="number"
+                min={min}
+                max={max}
+                value={t[key] ?? fallback}
+                onChange={(e) => change(key, Number(e.target.value))}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
       <section
         data-tour-panel="commissions"
-        hidden={section !== "all" && section !== "commissions"}
+        hidden={section !== "commissions"}
         className="card tour-commission-card grid gap-4 p-6"
       >
         <h2 className="display-md">Commissioni affiliati</h2>
@@ -470,18 +710,20 @@ export function TourCommercialEditor({
             <button
               type="button"
               className="button-secondary"
+              aria-label="Regola precedente"
               disabled={currentRulePage === 0}
               onClick={() => setRulePage(Math.max(0, currentRulePage - 1))}
             >
-              Precedente
+              <ChevronLeft size={16} />
             </button>
             <button
               type="button"
               className="button-secondary"
+              aria-label="Regola successiva"
               disabled={currentRulePage >= rules.length - 1}
               onClick={() => setRulePage(currentRulePage + 1)}
             >
-              Successiva
+              <ChevronRight size={16} />
             </button>
           </div>
         )}

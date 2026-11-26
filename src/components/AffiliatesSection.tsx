@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { commissionMatured } from "@/lib/platform/commissions";
 import type { Affiliate, CatalogTour, Reservation } from "@/lib/platform/model";
 import { formatMoney } from "@/lib/format";
+import { blockEnterSubmit } from "@/lib/form-guards";
 
 const PAGE_SIZE = 6;
 
@@ -293,10 +294,11 @@ export function AffiliatesSection({
           <button
             type="button"
             className="button-secondary"
+            aria-label="Pagina precedente"
             disabled={currentPage <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
           >
-            Precedente
+            <ChevronLeft size={16} />
           </button>
           <span>
             {currentPage + 1} / {pageCount}
@@ -304,10 +306,11 @@ export function AffiliatesSection({
           <button
             type="button"
             className="button-secondary"
+            aria-label="Pagina successiva"
             disabled={currentPage >= pageCount - 1}
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
           >
-            Successiva
+            <ChevronRight size={16} />
           </button>
         </div>
       )}
@@ -354,6 +357,7 @@ function AffiliateEditor({
   return (
     <form
       className="affiliate-modal-form"
+      onKeyDown={blockEnterSubmit}
       onSubmit={(e) => {
         e.preventDefault();
         void save({
@@ -465,7 +469,7 @@ function AffiliateEditor({
         >
           Annulla
         </button>
-        <button disabled={busy} className="button-primary">
+        <button type="submit" disabled={busy} className="button-primary">
           {editing ? "Salva modifiche" : "Crea affiliato"}
         </button>
       </div>

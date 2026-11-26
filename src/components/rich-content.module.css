@@ -1,4 +1,7 @@
 .content { overflow-wrap: anywhere; white-space: normal; }
+.content :is(b, strong) { font-weight: 700; }
+.content :is(i, em) { font-style: italic; }
+.content u { text-decoration: underline; }
 .content p, .content ul, .content ol, .content figure, .content table { margin: 0 0 1.25em; }
 .content h1, .content h2, .content h3, .content h4 {
   font-family: var(--font-display), Arial, sans-serif;

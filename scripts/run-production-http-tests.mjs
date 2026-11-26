@@ -187,6 +187,8 @@ try {
       testEnv,
     );
     await resetTestLimits();
+    await run(process.execPath, ["scripts/format-toolbar-e2e.mjs"], testEnv);
+    await resetTestLimits();
     await run(process.execPath, ["scripts/visual-content-e2e.mjs"], testEnv);
   }
   await run(

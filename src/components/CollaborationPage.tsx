@@ -1,3 +1,6 @@
+import { InlineCopy } from "./RichInline";
+import { RichContent } from "./RichContent";
+import type { ContentPage } from "@/lib/platform/model";
 import { pageEdit } from "@/lib/visual-content";
 import type { LucideIcon } from "lucide-react";
 import { Handshake, Hotel, Users } from "lucide-react";
@@ -8,6 +11,7 @@ const defaultIcons = [Users, Hotel, Handshake] as const;
 
 export function CollaborationPage({
   pageKey,
+  formatted,
   eyebrow,
   title,
   titleLines,
@@ -16,11 +20,12 @@ export function CollaborationPage({
   formVariant = "partner",
 }: {
   pageKey?: string;
+  formatted?: Pick<ContentPage, "titleHtml" | "subtitleHtml" | "bodyHtml"> | null;
   eyebrow: string;
   title: string;
   titleLines?: string[];
   body: string;
-  benefits: { title: string; text: string; icon?: LucideIcon }[];
+  benefits: { title: string; titleHtml?: string; text: string; html?: string; icon?: LucideIcon }[];
   formVariant?: InquiryVariant;
 }) {
   const lines = titleLines?.length ? titleLines : [title];
@@ -30,22 +35,22 @@ export function CollaborationPage({
       <div className="container-page grid items-start gap-16 lg:grid-cols-[.9fr_1.1fr]">
         <div>
           <p
-            {...(pageKey ? pageEdit(pageKey, "subtitle") : {})}
+            {...(pageKey ? pageEdit(pageKey, "subtitleHtml", "inline") : {})}
             className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
           >
-            {eyebrow}
+            <InlineCopy html={formatted?.subtitleHtml}>{eyebrow}</InlineCopy>
           </p>
           <h1 className="display-xl mb-5">
-            <span {...(pageKey ? pageEdit(pageKey, "title") : {})}>
-              {lines.join("\n")}
+            <span {...(pageKey ? pageEdit(pageKey, "titleHtml", "inline") : {})}>
+              <InlineCopy html={formatted?.titleHtml}>{lines.join("\n")}</InlineCopy>
             </span>
           </h1>
-          <p
-            {...(pageKey ? pageEdit(pageKey, "body") : {})}
+          <div
+            {...(pageKey ? pageEdit(pageKey, "bodyHtml", "html") : {})}
             className="body-md mb-10"
           >
-            {body}
-          </p>
+            {formatted?.bodyHtml ? <RichContent html={formatted.bodyHtml} /> : body}
+          </div>
           <div className={ui.partnerBenefits}>
             {benefits.map((benefit, index) => {
               const Icon =
@@ -56,19 +61,19 @@ export function CollaborationPage({
                   <div>
                     <strong
                       {...(pageKey
-                        ? pageEdit(pageKey, `benefits.${index}.title`)
+                        ? pageEdit(pageKey, `benefits.${index}.titleHtml`, "inline")
                         : {})}
                       className="block text-ink"
                     >
-                      {benefit.title}
+                      <InlineCopy html={benefit.titleHtml}>{benefit.title}</InlineCopy>
                     </strong>
-                    <small
+                    <div className="text-sm"
                       {...(pageKey
-                        ? pageEdit(pageKey, `benefits.${index}.text`)
+                        ? pageEdit(pageKey, `benefits.${index}.html`, "html")
                         : {})}
                     >
-                      {benefit.text}
-                    </small>
+                      {benefit.html ? <RichContent html={benefit.html} /> : benefit.text}
+                    </div>
                   </div>
                 </div>
               );

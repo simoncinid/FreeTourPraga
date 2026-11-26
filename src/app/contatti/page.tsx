@@ -1,3 +1,6 @@
+import { SiteInlineText } from "@/components/SiteRichText";
+import { RichContent } from "@/components/RichContent";
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit, siteEdit } from "@/lib/visual-content";
 import { catalog } from "@/lib/platform/public";
 import { BrandIcon } from "@/components/BrandIcon";
@@ -40,21 +43,21 @@ export default async function Page() {
       <div className={`container-page ${ui.contactGrid}`}>
         <div>
           <p
-            {...pageEdit("contatti", "subtitle")}
+            {...pageEdit("contatti", "subtitleHtml", "inline")}
             className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
           >
-            {page?.subtitle || "Un consiglio da chi vive qui"}
+            <InlineCopy html={page?.subtitleHtml}>{page?.subtitle || "Un consiglio da chi vive qui"}</InlineCopy>
           </p>
-          <h1 {...pageEdit("contatti", "title")} className="display-xl mb-6">
-            {page?.title || "Praga è più vicina di quanto pensi."}
+          <h1 {...pageEdit("contatti", "titleHtml", "inline")} className="display-xl mb-6">
+            <InlineCopy html={page?.titleHtml}>{page?.title || "Praga è più vicina di quanto pensi."}</InlineCopy>
           </h1>
-          <p
-            {...pageEdit("contatti", "body")}
+          <div
+            {...pageEdit("contatti", "bodyHtml", "html")}
             className="body-md mb-10 max-w-md"
           >
-            {page?.body ||
+            {page?.bodyHtml ? <RichContent html={page.bodyHtml} /> : page?.body ||
               "Un dubbio sul tour, sul punto d’incontro o sull’esperienza giusta per te? Parliamone: siamo qui per aiutarti a organizzare la visita."}
-          </p>
+          </div>
           <div className={ui.contactRows}>
             <a
               className={ui.contactRow}
@@ -72,7 +75,7 @@ export default async function Page() {
               <Mail size={36} className={ui.contactIcon} aria-hidden />
               <span>
                 <strong className="block text-ink">Email</strong>
-                <small {...siteEdit("globals.email")}>{site.email}</small>
+                <small {...siteEdit("globals.email")}><SiteInlineText content={c} path="globals.email">{site.email}</SiteInlineText></small>
               </span>
             </a>
             <div className={ui.contactRow}>
@@ -81,7 +84,7 @@ export default async function Page() {
                 <strong className="block text-ink">
                   Punto d’incontro principale
                 </strong>
-                <small {...siteEdit("globals.address")}>{site.address}</small>
+                <small {...siteEdit("globals.address")}><SiteInlineText content={c} path="globals.address">{site.address}</SiteInlineText></small>
               </span>
             </div>
             {hasOtherPoints && (
@@ -116,9 +119,7 @@ export default async function Page() {
                       className={ui.contactOtherPoint}
                     >
                       <strong className="block">Castello con interni</strong>
-                      <span {...siteEdit("globals.castleMeetingAddress")}>
-                        {site.castleMeetingAddress}
-                      </span>
+                      <span {...siteEdit("globals.castleMeetingAddress")}><SiteInlineText content={c} path="globals.castleMeetingAddress">{site.castleMeetingAddress}</SiteInlineText></span>
                     </a>
                   )}
                   {site.officeAddress && (
@@ -126,9 +127,7 @@ export default async function Page() {
                       <strong className="block">
                         Sede ufficio — previo appuntamento
                       </strong>
-                      <span {...siteEdit("globals.officeAddress")}>
-                        {site.officeAddress}
-                      </span>
+                      <span {...siteEdit("globals.officeAddress")}><SiteInlineText content={c} path="globals.officeAddress">{site.officeAddress}</SiteInlineText></span>
                     </p>
                   )}
                 </div>

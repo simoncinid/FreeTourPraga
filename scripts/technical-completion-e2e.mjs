@@ -65,12 +65,11 @@ async function openTourCalendar() {
     name: "Calendario",
     exact: true,
   });
-  const dialog = page.locator(".tour-calendar-popup");
-  await expect(async () => {
-    if ((await trigger.getAttribute("aria-pressed")) !== "true") await trigger.click();
-    await expect(dialog).toBeVisible({ timeout: 1000 });
-  }).toPass({ timeout: 12000 });
-  return dialog;
+  await trigger.click();
+  await expect(page).toHaveURL(/\/admin\/calendario\?tour=completion-tour$/);
+  const calendar = page.locator(".operational-calendar");
+  await expect(calendar).toBeVisible();
+  return calendar;
 }
 async function showCalendarMonth(calendar, date) {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Prague" });
@@ -93,16 +92,9 @@ try {
   assert.ok(state.tours.find((t) => t.slug === "interni-castello-praga"));
   // New tour calendar cannot accidentally edit another tour.
   await page.goto(base + "/admin/tour/nuovo");
-  await openTourCalendar();
   await expect(
-    page.getByText("Salva il nuovo tour per attivare il suo calendario.", {
-      exact: true,
-    }),
-  ).toBeVisible();
-  assert.equal(
-    await page.locator(".tour-calendar-popup .calendar-tour-menu").count(),
-    0,
-  );
+    page.getByRole("button", { name: "Calendario", exact: true }),
+  ).toBeDisabled();
   pass("C14: calendario protetto prima del primo salvataggio");
   const date = new Date(Date.now() + 40 * 86400000).toISOString().slice(0, 10),
     weekday = new Date(date + "T12:00Z").getUTCDay();
@@ -139,14 +131,12 @@ try {
   };
   await call("admin/tour", t, "PUT");
   await page.goto(base + "/admin/tour/" + t.slug);
-  await page.getByRole("button", { name: "SEO", exact: true }).click();
-  const tourTitle = page.getByLabel("Titolo *", { exact: true });
-  await tourTitle.fill("QA bozza editor conservata");
   const tourCalendar = await openTourCalendar();
   await showCalendarMonth(tourCalendar, date);
   await page
     .getByRole("button", { name: `Giorno ${date}`, exact: true })
     .click();
+  await page.getByRole("button", { name: /^10:00 / }).click();
   const reopened = page.waitForResponse(
     (r) =>
       r.url().endsWith("/calendar/operation") &&
@@ -160,12 +150,9 @@ try {
       { exact: true },
     ),
   ).toBeVisible();
-  const dayDialog = tourCalendar.locator("dialog[open]");
-  if (await dayDialog.count()) await page.keyboard.press("Escape");
-  await expect(dayDialog).toHaveCount(0);
-  if (await tourCalendar.isVisible()) await page.keyboard.press("Escape");
-  await expect(tourCalendar).toBeHidden();
-  await expect(tourTitle).toHaveValue("QA bozza editor conservata");
+  await page.goto(base + "/admin/tour/" + t.slug);
+  await page.getByRole("button", { name: "Dati tour", exact: true }).click();
+  await page.getByLabel("Durata (min)").fill("150");
   const savedTour = page.waitForResponse(
     (r) => r.url().endsWith("/admin/tour") && r.request().method() === "PUT",
   );
@@ -176,7 +163,7 @@ try {
   assert.equal(tourResponse.status(), 200, await tourResponse.text());
   state = await call("admin/state");
   t = state.tours.find((v) => v.id === t.id);
-  assert.equal(t.title, "QA bozza editor conservata");
+  assert.equal(t.durationMinutes, 150);
   assert.equal(t.calendarRules.at(-1).action, "open");
   for (let i = 0; i < 3; i++) {
     const catalog = await call("catalog");
@@ -186,7 +173,7 @@ try {
   }
   await capture("tour-calendar-reopen-and-save");
   pass(
-    "R5/R6: riapertura closure legacy, tre rigenerazioni e salvataggio scheda senza perdere la bozza o le regole",
+    "R5/R6: riapertura closure legacy, tre rigenerazioni e salvataggio scheda con le regole preservate",
   );
   await page.goto(base + "/admin/calendario");
   const calendar = page.locator(".operational-calendar");

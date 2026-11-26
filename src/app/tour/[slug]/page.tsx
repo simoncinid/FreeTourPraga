@@ -2,19 +2,21 @@ import {
   estimatedEuroPrice,
   tourHeadlinePrice,
 } from "@/lib/participant-pricing";
+import { CmsPreviewMount } from "@/components/CmsPreviewMount";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { bookingDeadlineNote, cancellationNote } from "@/lib/tour-rules";
 import ui from "@/components/public-ui.module.css";
 import type { Metadata } from "next";
 import { TourGallery } from "@/components/TourGallery";
 import { tourPhotos } from "@/lib/tour-gallery";
+import "@/components/rich-content.module.css";
 import { notFound } from "next/navigation";
-import { Check, Clock3, Info, PackageCheck, Ticket, Users, MessageCircle, X } from "lucide-react";
+import { Clock3, Info, PackageCheck, Ticket, Users, MessageCircle } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 import { TourMobileBooking } from "@/components/TourMobileBooking";
 import { GoogleMap } from "@/components/GoogleMap";
 import { TripAdvisorSection } from "@/components/TripAdvisorSection";
-import { TourHighlights } from "@/components/TourHighlights";
+import { TourInfoList, TourItinerary } from "@/components/TourDetailLists";
 import { JsonLd } from "@/components/JsonLd";
 import panels from "@/components/tour-panels.module.css";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -30,6 +32,10 @@ import { absoluteUrl, site } from "@/lib/site";
 import { breadcrumbJsonLd, tourJsonLd } from "@/lib/seo";
 import { tourPath } from "@/lib/public-paths";
 import { RichContent } from "@/components/RichContent";
+import { RemovedTourText } from "@/components/RemovedContentStyles";
+import { TourEditableText } from "@/components/TourEditableText";
+import { RichInline } from "@/components/RichInline";
+import { richHasText } from "@/lib/rich-text";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -91,11 +97,16 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
   let tour: import("@/lib/types").Tour | undefined = (await catalog()).find(
     (t) => t.slug === slug || t.canonicalPath === `/tour/${slug}/`,
   );
-  const previewId = (await searchParams)?.["cms-tour"];
+  const query = await searchParams;
+  const previewId = query?.["cms-tour"];
+  let editing = false;
+  let globalCancellation: string | undefined;
   if (typeof previewId === "string") {
     const staff = await session();
     if (staff && ["admin", "operator"].includes(staff.role)) {
+      editing = true;
       const state = await readState({ generateSlots: false });
+      globalCancellation = cancellationNote(undefined, state.settings);
       const stored = state.tours.find((t) => t.id === previewId);
       if (stored) tour = publicTour(state, stored);
       else if ((await searchParams)?.["cms-new"] === "1" && state.tours[0]) {
@@ -111,26 +122,25 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
     }
   }
   if (!tour) notFound();
+  if (editing && query?.["cms-card"] === "1") return (
+    <div className="mx-auto max-w-md py-8"><CmsPreviewMount id="cms-tour-card" /></div>
+  );
   const price = tourHeadlinePrice(tour);
   const adultEuro = estimatedEuroPrice(
     tour.priceCategories?.find(({ id }) => id === "adults")?.estimatedEuroCents,
   );
   const duration = tour.durationLabel || minutesToLabel(tour.durationMinutes);
-  const highlights = tour.highlights.map((text, index) => ({
-    text,
-    html: tour.formattedCopy?.highlights?.[index] ?? undefined,
-    index,
-    images: (tour.highlightGalleries?.[index] || []).slice(0, 4),
-  }));
-  const groups =
-    tour.itineraryGroups?.filter(({ start }) => start < highlights.length) ??
-    [];
   const bookingDeadline = bookingDeadlineNote(tour);
   const content = await publicSiteContent();
   const whatsappHref = (m: string) => contentWhatsapp(content, m);
+  const copy = tour.detailCopy ?? {};
+  const label = (key: keyof NonNullable<typeof tour.detailCopy>, fallback: string) => (
+    <TourEditableText tour={tour} path={`detailCopy.${key}`} text={copy[key]?.trim() || fallback} fallback={fallback} />
+  );
 
   return (
-    <section className={`${ui.page} ${ui.detail} pb-20 pt-10`}>
+    <section data-tour-id={tour.id} className={`${ui.page} ${ui.detail} pb-20 pt-10`}>
+      <RemovedTourText tour={tour} />
       <JsonLd
         data={[
           tourJsonLd(tour),
@@ -146,21 +156,41 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
           <div
             className={`grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end ${ui.detailTitleRow}`}
           >
-            <h1
-              data-tour-field="title"
-              className="display-xl tour-detail-title mb-0 min-w-0"
-            >
-              {tour.title}
-            </h1>
+            {richHasText(tour.formattedCopy?.title) ? (
+              <RichInline
+                as="h1"
+                html={tour.formattedCopy!.title!}
+                className="display-xl tour-detail-title mb-0 min-w-0"
+                data-tour-field="formattedCopy.title"
+                data-tour-kind="inline"
+              />
+            ) : (
+              <h1
+                data-tour-field="formattedCopy.title"
+                data-tour-kind="inline"
+                className="display-xl tour-detail-title mb-0 min-w-0"
+              >
+                {tour.title}
+              </h1>
+            )}
             <div className={ui.detailOffer}>
               <div className={ui.detailPrice}>
-                <span>{price.isFree ? "Prezzo" : "Tariffa intera adulti"}</span>
+                <span>
+                  {label(
+                    "priceLabel",
+                    price.isFree ? "Prezzo" : "Tariffa intera adulti",
+                  )}
+                </span>
                 <strong>
                   {adultEuro
                     ? formatMoney(price.priceCents, tour.currency)
                     : price.text}
                 </strong>
-                {adultEuro && <span>{adultEuro} a persona</span>}
+                {adultEuro && (
+                  <span>
+                    {adultEuro} {label("pricePersonLabel", "a persona")}
+                  </span>
+                )}
                 {price.isFree && tour.suggestedContribution && (
                   <span>Offerta consigliata {tour.suggestedContribution}</span>
                 )}
@@ -168,25 +198,19 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               <div className={ui.detailMeta}>
                 <span>
                   <Clock3 size={15} aria-hidden />{" "}
-                  <span
-                    data-tour-field={
-                      tour.durationLabel ? "durationLabel" : "durationMinutes"
-                    }
-                    data-tour-kind={tour.durationLabel ? "text" : "number"}
-                  >
-                    {duration}
-                  </span>
+                  <TourEditableText tour={tour} path="durationLabel" text={duration} fallback={minutesToLabel(tour.durationMinutes)} />
                 </span>
                 <span>
-                  <Users size={15} aria-hidden /> Guida in{" "}
-                  <span data-tour-field="language">{tour.language}</span>
+                  <Users size={15} aria-hidden />{" "}
+                  {label("guidePrefix", "Guida in")}{" "}
+                  <span>{tour.language}</span>
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        <TourGallery
+        {editing ? <CmsPreviewMount id="cms-tour-gallery" /> : <TourGallery
           key={tour.id}
           title={tour.title}
           photos={tourPhotos(tour)}
@@ -195,26 +219,30 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
               ? "imageUrl"
               : `galleryImages.${tourGalleryImages(tour).findIndex((p) => p.url === photo.url)}.url`,
           )}
-        />
+        />}
 
         <nav aria-label="Sezioni del tour" className={ui.tourSectionNav}>
-          {[
-            ["esperienza", "Descrizione"],
-            ["dettagli", "Itinerario"],
-            ["incontro", "Informazioni utili"],
-            ["cancellazione", "Cancellazione"],
-            ["punto-incontro", "Punto di incontro"],
-            ["recensioni", "Recensioni"],
-          ].map(([id, label]) => (
-            <a key={id} href={`#${id}`}>
-              {label}
+          {(
+            [
+              ["esperienza", label("navDescrizione", "Descrizione")],
+              ["dettagli", label("navItinerario", "Itinerario")],
+              ["incontro", label("navInfo", "Informazioni utili")],
+              ["cancellazione", label("navCancellazione", "Cancellazione")],
+              ["punto-incontro", label("navIncontro", "Punto di incontro")],
+              ["recensioni", label("navRecensioni", "Recensioni")],
+            ] as const
+          ).map(([id, text]) => (
+            <a key={id} href={`#${id}`} data-tour-hide-parent>
+              {text}
             </a>
           ))}
         </nav>
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px]">
           <div className="grid gap-10">
             <section id="esperienza">
-              <h2 className="display-md mb-4">Descrizione</h2>
+              <h2 className="display-md mb-4">
+                {label("headingDescrizione", "Descrizione")}
+              </h2>
               <div
                 className="body-md"
                 data-tour-field="descriptionHtml"
@@ -229,43 +257,35 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
             </section>
             <SectionBlocks blocks={tour.contentBlocks} tourEditable />
             <section id="dettagli" className={panels.highlightPanel}>
-              <h2 className="display-md mb-4">Itinerario</h2>
-              {groups.length ? (
-                groups.map((group, index) => (
-                  <div key={group.start} className="mb-5 last:mb-0">
-                    <h3
-                      className="display-sm mb-3"
-                      data-tour-field={`itineraryGroups.${index}.title`}
-                    >
-                      {group.title}
-                    </h3>
-                    <TourHighlights
-                      items={highlights.slice(
-                        group.start,
-                        groups[index + 1]?.start,
-                      )}
-                    />
-                  </div>
-                ))
-              ) : (
-                <TourHighlights items={highlights} />
-              )}
+              <h2 className="display-md mb-4">
+                {label("headingItinerario", "Itinerario")}
+              </h2>
+              {editing ? <CmsPreviewMount id="cms-tour-highlights" /> : <TourItinerary tour={tour} />}
             </section>
             <section id="incontro">
-              <h2 className="display-md mb-4">Informazioni utili</h2>
+              <h2 className="display-md mb-4">
+                {label("headingInfo", "Informazioni utili")}
+              </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className={`card p-6 ${panels.practicalPanel}`}>
-                  <h3 className="display-sm mb-3 flex items-center gap-2"><PackageCheck aria-hidden /> Incluso</h3>
-                  <TourInfoList tour={tour} field="inclusions" />
-                  {!!tour.exclusions?.length && (
-                    <>
-                      <h3 className="display-sm mb-3 mt-5">Non incluso</h3>
-                      <TourInfoList tour={tour} field="exclusions" />
-                    </>
+                  <h3 className="display-sm mb-3 flex items-center gap-2"><PackageCheck aria-hidden /> {label("headingIncluso", "Incluso")}</h3>
+                  {editing ? <CmsPreviewMount id="cms-tour-inclusions" /> : <TourInfoList tour={tour} field="inclusions" />}
+                  {editing ? (
+                    <CmsPreviewMount id="cms-tour-exclusions" />
+                  ) : (
+                    <TourInfoList
+                      tour={tour}
+                      field="exclusions"
+                      heading={
+                        <h3 className="display-sm mb-3 mt-5">
+                          {label("headingEscluso", "Non incluso")}
+                        </h3>
+                      }
+                    />
                   )}
                 </div>
                 <div className={`card p-6 ${panels.practicalPanel}`}>
-                  <h3 className="display-sm mb-3 flex items-center gap-2"><Info aria-hidden /> Informazioni pratiche</h3>
+                  <h3 className="display-sm mb-3 flex items-center gap-2"><Info aria-hidden /> {label("headingPratiche", "Informazioni pratiche")}</h3>
                   <ul className={`${panels.practicalList} body-md mb-3`}>
                     {(tour.operatingDays || tour.departureTime) && (
                       <li>
@@ -283,20 +303,26 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                         <Clock3 size={17} aria-hidden /> <span>Arriva {tour.arrivalMinutes} minuti prima della partenza.</span>
                       </li>
                     )}
-                    {tour.fareRequirements && <li><Ticket size={17} aria-hidden /><span>{tour.fareRequirements}</span></li>}
+                    {(tour.fareRequirements || editing) && <li><Ticket size={17} aria-hidden /><TourEditableText tour={tour} path="fareRequirements" text={tour.fareRequirements || "Requisiti tariffari facoltativi"} fallback="Requisiti tariffari facoltativi" /></li>}
                   </ul>
-                  <TourInfoList tour={tour} field="safetyNotes" />
+                  {editing ? <CmsPreviewMount id="cms-tour-safetyNotes" /> : <TourInfoList tour={tour} field="safetyNotes" />}
                 </div>
               </div>
             </section>
             <section id="cancellazione" className="card grid gap-3 p-6">
-              <h2 className="display-md">Cancellazione</h2>
-              <p className="body-md">{cancellationNote(tour)}</p>
+              <h2 className="display-md">
+                {label("headingCancellazione", "Cancellazione")}
+              </h2>
+              <p className="body-md whitespace-pre-wrap">
+                <TourEditableText tour={tour} path="cancellationClause" text={cancellationNote(tour)} fallback={globalCancellation} />
+              </p>
               {bookingDeadline && <p className="body-md">{bookingDeadline}</p>}
             </section>
-            <GoogleMap tour={tour} />
+            <GoogleMap tour={tour} preview={editing} />
             <section id="recensioni">
-              <h2 className="display-md mb-4">Recensioni</h2>
+              <h2 className="display-md mb-4">
+                {label("headingRecensioni", "Recensioni")}
+              </h2>
               <TripAdvisorSection layout="card" />
             </section>
             <section
@@ -309,20 +335,26 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
                   aria-hidden
                 />
                 <h2 className="display-md !mb-0 !text-on-dark">
-                  Hai dubbi o domande prima di prenotare?
+                  {label(
+                    "whatsappTitle",
+                    "Hai dubbi o domande prima di prenotare?",
+                  )}
                 </h2>
               </div>
               <p className="body-sm mb-5 !text-hairline-soft">
-                Il nostro team in italiano ti aiuta a organizzare la visita a
-                Praga.
+                {label(
+                  "whatsappBody",
+                  "Il nostro team in italiano ti aiuta a organizzare la visita a Praga.",
+                )}
               </p>
               <a
+                data-tour-hide-parent
                 className="button-primary !bg-[var(--whatsapp)] !text-white hover:!bg-[#148a3e]"
                 href={whatsappHref(
                   `Ciao FreeTourPraga, mi trovo nella pagina del tour ${tour.title} e vorrei un'informazione rapida sulla disponibilità.`,
                 )}
               >
-                Scrivici su WhatsApp
+                {label("whatsappCta", "Scrivici su WhatsApp")}
               </a>
             </section>
           </div>
@@ -331,29 +363,5 @@ export default async function TourDetailPage({ params, searchParams }: Props) {
         </div>
       </div>
     </section>
-  );
-}
-
-function TourInfoList({ tour, field }: {
-  tour: import("@/lib/types").Tour;
-  field: "inclusions" | "exclusions" | "safetyNotes";
-}) {
-  const Icon = field === "inclusions" ? Check : field === "exclusions" ? X : Info;
-  return (
-    <ul className={`${panels.practicalList} body-md`}>
-      {(tour[field] ?? []).map((item, index) => {
-        const html = tour.formattedCopy?.[field]?.[index];
-        const ItemIcon = field === "safetyNotes" && /bigliett|tram|trasport/i.test(item) ? Ticket : Icon;
-        return (
-          <li key={index}>
-            <ItemIcon size={17} aria-hidden className={field === "inclusions" ? "text-success" : field === "exclusions" ? "text-red-700" : ""} />
-            <div data-tour-field={html ? `formattedCopy.${field}.${index}` : `${field}.${index}`}
-              data-tour-kind={html ? "html" : "text"}>
-              {html ? <RichContent html={html} /> : item}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
   );
 }

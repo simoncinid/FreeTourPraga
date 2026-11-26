@@ -442,7 +442,7 @@ export function QuickBooking({
                 Il cambio applicato ai pagamenti con carta può variare.
               </p>
             )}
-            <p className="quick-booking-note">
+            <p className="quick-booking-note whitespace-pre-wrap">
               {cancellationNote(currentTour)}
             </p>
             {deadline && <p className="quick-booking-note">{deadline}</p>}

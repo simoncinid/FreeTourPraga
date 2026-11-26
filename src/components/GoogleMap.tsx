@@ -1,20 +1,25 @@
 "use client";
 
+import { RichInline } from "./RichInline";
 import styles from "./public-ui.module.css";
 import type { Tour } from "@/lib/types";
 
-export function GoogleMap({ tour }: { tour: Tour }) {
+export function GoogleMap({ tour, preview = false }: { tour: Tour; preview?: boolean }) {
+  const info = (key: "meetingPoint" | "meetingAddress" | "meetingInstructions") => {
+    const html = tour.formattedCopy?.[key];
+    return html ? <RichInline html={html} /> : tour[key] || (preview ? "Informazione facoltativa" : "");
+  };
   return (
     <section id="punto-incontro" className="card overflow-hidden">
       <div className="grid gap-3 p-6">
         <h2 className="display-md">Il punto d’incontro</h2>
         <p className="body-md">
-          <span data-tour-field="meetingPoint">{tour.meetingPoint}</span> ·{" "}
-          <span data-tour-field="meetingAddress">{tour.meetingAddress}</span>
+          <span data-tour-field="formattedCopy.meetingPoint" data-tour-kind="inline">{info("meetingPoint")}</span> ·{" "}
+          <span data-tour-field="formattedCopy.meetingAddress" data-tour-kind="inline">{info("meetingAddress")}</span>
         </p>
-        {tour.meetingInstructions && (
-          <p className="body-md" data-tour-field="meetingInstructions">
-            {tour.meetingInstructions}
+        {(tour.meetingInstructions || preview) && (
+          <p className="body-md" data-tour-field="formattedCopy.meetingInstructions" data-tour-kind="inline">
+            {info("meetingInstructions")}
           </p>
         )}
       </div>

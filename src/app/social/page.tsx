@@ -1,3 +1,5 @@
+import { RichContent } from "@/components/RichContent";
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { SocialLinks } from "@/components/SocialLinks";
 import { publicPage } from "@/lib/platform/public";
@@ -13,13 +15,13 @@ export default async function Page() {
   return (
     <section className="section">
       <div className="container-page max-w-3xl">
-        <h1 {...pageEdit("social", "title")} className="display-xl mb-5">
-          {page?.title || "Praga, anche sui social"}
+        <h1 {...pageEdit("social", "titleHtml", "inline")} className="display-xl mb-5">
+          <InlineCopy html={page?.titleHtml}>{page?.title || "Praga, anche sui social"}</InlineCopy>
         </h1>
-        <p {...pageEdit("social", "body")} className="body-md mb-8">
-          {page?.body ||
+        <div {...pageEdit("social", "bodyHtml", "html")} className="body-md mb-8">
+            {page?.bodyHtml ? <RichContent html={page.bodyHtml} /> : page?.body ||
             "Scopri scorci della città, racconti dai tour e idee per il tuo prossimo viaggio. Seguici sui canali ufficiali di FreeTourPraga."}
-        </p>
+          </div>
         <SocialLinks />
         <SectionBlocks
           binding={{ scope: "page", key: "social", path: ["contentBlocks"] }}

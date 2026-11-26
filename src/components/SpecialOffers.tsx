@@ -1,3 +1,4 @@
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "./SiteRichText";
 import { siteEdit } from "@/lib/visual-content";
 import Link from "next/link";
 import { publicSiteContent } from "@/lib/platform/public";
@@ -5,28 +6,27 @@ import { formatMoney } from "@/lib/format";
 import styles from "./special-offers.module.css";
 
 export async function SpecialOffers() {
-  const { home: h } = await publicSiteContent();
+  const content = await publicSiteContent();
+  const { home: h } = content;
   if (!h.specialOffers?.length) return null;
   return (
     <section className={`container-page py-10 ${styles.section}`}>
       <details className={`card p-6 ${styles.panel}`}>
         <summary className={`display-md ${styles.summary}`}>
-          <span {...siteEdit("home.specialOffersTitle")}>
-            {h.specialOffersTitle ||
-              "Offerte speciali tramite servizio clienti"}
+          <span {...siteInlineEdit("home.specialOffersTitle")}>
+            <SiteInlineText content={content} path="home.specialOffersTitle">{h.specialOffersTitle ||
+              "Offerte speciali tramite servizio clienti"}</SiteInlineText>
           </span>
         </summary>
-        <p {...siteEdit("home.specialOffersNote")} className={styles.note}>
-          {h.specialOffersNote}
-        </p>
+        <SiteRichText content={content} path="home.specialOffersNote" text={h.specialOffersNote ?? ""} className={styles.note} />
         <ul className={styles.list}>
           {h.specialOffers.map((o, i) => (
             <li key={i} className={styles.row}>
               <span
-                {...siteEdit(`home.specialOffers.${i}.label`)}
+                {...siteInlineEdit(`home.specialOffers.${i}.label`)}
                 className={styles.label}
               >
-                {o.label}
+                <SiteInlineText content={content} path={`home.specialOffers.${i}.label`}>{o.label}</SiteInlineText>
               </span>
               <strong
                 {...siteEdit(`home.specialOffers.${i}.priceCents`, "money")}
@@ -39,8 +39,8 @@ export async function SpecialOffers() {
           ))}
         </ul>
         <Link href="/contatti" className={`button-secondary ${styles.cta}`}>
-          <span {...siteEdit("home.specialOffersCtaLabel")}>
-            {h.specialOffersCtaLabel || "Contattaci per le offerte"}
+          <span {...siteInlineEdit("home.specialOffersCtaLabel")}>
+            <SiteInlineText content={content} path="home.specialOffersCtaLabel">{h.specialOffersCtaLabel || "Contattaci per le offerte"}</SiteInlineText>
           </span>
         </Link>
       </details>

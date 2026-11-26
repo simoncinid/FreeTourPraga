@@ -2,7 +2,11 @@ import {
   collaborationDefaults,
   partnerBenefits,
 } from "../collaboration-content";
-import { defaultNavigation, type NavigationItem } from "../navigation";
+import {
+  defaultNavigation,
+  withRequiredAltroLinks,
+  type NavigationItem,
+} from "../navigation";
 import { faqs, trustPillars } from "../data";
 import { aiQuestions } from "../ai-content";
 import { site, socialLinks, tripAdvisor } from "../site";
@@ -23,23 +27,12 @@ export const CONTENT_PAGE_KEYS = [
   "privacy",
   "termini",
 ] as const;
-export type BlogBlock =
-  | { type: "text"; heading: string; text: string; html?: string }
-  | { type: "image"; imageUrl: string; alt: string; caption: string }
-  | {
-      type: "split";
-      heading: string;
-      text: string;
-      html?: string;
-      imageUrl: string;
-      alt: string;
-      caption: string;
-      imagePosition: "left" | "right";
-    };
+export type BlogBlock = import("../types").ContentSectionBlock;
 
 export type SiteContent = {
   contentVersion?: 2;
   formattedText?: Record<string, string>;
+  hiddenText?: string[];
   globals: {
     brandName: string;
     description: string;
@@ -114,15 +107,24 @@ export type SiteContent = {
     seoDescription?: string;
     sourceUrl?: string;
     title: string;
+    titleHtml?: string;
     caption: string;
+    captionHtml?: string;
     imageUrl: string;
     imageAlt?: string;
     intro?: string;
     introHtml?: string;
+    hiddenText?: string[];
+    formattedText?: Partial<Record<"kicker" | "backLabel" | "footerBackLabel" | "ctaLabel", string>>;
+    kicker?: string;
+    backLabel?: string;
+    footerBackLabel?: string;
     blocks?: BlogBlock[];
     ctaEnabled?: boolean;
     ctaLabel: string;
     ctaHref: string;
+    /** Blog e Informazioni utili sono elenchi distinti. Assente = blog. */
+    channel?: "blog" | "useful";
   }[];
   faqs: { q: string; a: string; answerHtml?: string }[];
   answers: { question: string; answer: string }[];
@@ -372,8 +374,10 @@ export function siteContent(
   }
   content.contentVersion = 2;
   // Discard legacy customer-account links, including navigation already saved in the CMS.
-  content.globals.navigation = content.globals.navigation.filter(
-    (link) => !/^\/account(?:[/?#]|$)/.test(link.href),
+  content.globals.navigation = withRequiredAltroLinks(
+    content.globals.navigation.filter(
+      (link) => !/^\/account(?:[/?#]|$)/.test(link.href),
+    ),
   );
   content.gallery = content.gallery.map(normalizeGalleryItem);
   if (stored?.faqs && stored.faqs.length < 10) {

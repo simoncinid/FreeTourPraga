@@ -1,5 +1,4 @@
-import { SiteRichText } from "@/components/SiteRichText";
-import { siteEdit } from "@/lib/visual-content";
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "@/components/SiteRichText";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import { publicPage } from "@/lib/platform/public";
 import { BlogHashRedirect } from "@/components/BlogHashRedirect";
@@ -17,20 +16,23 @@ export default async function Page() {
       <BlogHashRedirect />
       <div className={`container-page ${ui.blogInner}`}>
         <p
-          {...siteEdit("home.galleryEyebrow")}
+          {...siteInlineEdit("home.galleryEyebrow")}
           className={`${ui.eyebrow} uppercase-tag text-primary`}
         >
-          {c.home.galleryEyebrow}
+          <SiteInlineText content={c} path="home.galleryEyebrow">{c.home.galleryEyebrow}</SiteInlineText>
         </p>
         <h1
-          {...siteEdit("home.galleryTitle")}
+          {...siteInlineEdit("home.galleryTitle")}
           className={`display-xl ${ui.blogTitle}`}
         >
-          {c.home.galleryTitle}
+          <SiteInlineText content={c} path="home.galleryTitle">{c.home.galleryTitle}</SiteInlineText>
         </h1>
-        <SiteRichText content={c} path="home.galleryBody" text={c.home.galleryBody} className={`body-md ${ui.blogLead} whitespace-nowrap max-[899px]:whitespace-normal`} />
+        <SiteRichText content={c} path="home.galleryBody" text={c.home.galleryBody} className={`body-md ${ui.blogLead}`} />
         <div className={ui.blogList}>
-          <BlogGuideList items={c.gallery} layout="list" />
+          <BlogGuideList
+            items={c.gallery.filter((item) => item.channel !== "useful")}
+            layout="list"
+          />
         </div>
         <SectionBlocks
           binding={{ scope: "page", key: "blog", path: ["contentBlocks"] }}

@@ -1,3 +1,4 @@
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { RichContent } from "@/components/RichContent";
 import { SectionBlocks } from "@/components/SectionBlocks";
@@ -17,8 +18,8 @@ export default async function Page() {
   return (
     <section className={`${ui.page} ${ui.legal} section`}>
       <div className="container-page max-w-3xl">
-        <h1 {...pageEdit("privacy", "title")} className="display-xl mb-7">
-          {content?.title || "Privacy e cookie"}
+        <h1 {...pageEdit("privacy", "titleHtml", "inline")} className="display-xl mb-7">
+          <InlineCopy html={content?.titleHtml}>{content?.title || "Privacy e cookie"}</InlineCopy>
         </h1>
         <div
           {...pageEdit("privacy", "bodyHtml", "html")}

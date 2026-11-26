@@ -944,13 +944,16 @@ summary.contactRow {
   min-width: 0;
 }
 .blogTitle {
-  max-width: 950px;
+  max-width: min(950px, 100%);
   margin: 12px 0 14px;
   font-size: clamp(38px, 4vw, 55px);
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 .blogLead {
   margin-bottom: 28px;
+  max-width: min(52rem, 100%);
+  overflow-wrap: anywhere;
 }
 .blogList {
   min-width: 0;
@@ -981,18 +984,10 @@ summary.contactRow {
 @media (min-width: 1024px) {
   .blog {
     min-height: calc(100svh - var(--header-height, 74px));
-    height: calc(100svh - var(--header-height, 74px));
-    padding-block: clamp(20px, 3vh, 36px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    padding-block: clamp(28px, 4vh, 48px);
   }
   .blogInner {
-    height: auto;
     min-height: 0;
-    justify-content: center;
   }
   .blog :global(.uppercase-tag) {
     margin-bottom: 0;
@@ -1005,16 +1000,17 @@ summary.contactRow {
     margin-bottom: 28px;
     font-size: 15px;
     line-height: 1.5;
+    max-width: 52rem;
+    white-space: normal;
   }
   .blogList {
-    flex: 0 0 auto;
     min-height: 0;
   }
   .blog :global(.card) > div:last-child {
-    padding: 14px 16px 16px;
+    padding: 18px 20px;
   }
   .blog :global(.card) h2 {
-    font-size: 20px;
+    font-size: 22px;
   }
 }
 .help {
@@ -1921,8 +1917,34 @@ summary.contactRow {
 }
 
 .tourCardItinerary summary,
-.tourCardFacts summary {
+.tourCardFacts summary,
+.tourCardPrices summary {
   cursor: pointer;
+}
+
+.tourCardPrices {
+  flex: 0 0 auto;
+}
+
+.tourCardPrices summary {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+
+.tourCardPrices :global(.tour-facts) {
+  margin-top: 8px;
+  gap: 6px;
+}
+
+.tourCardPrices :global(.tour-facts),
+.tourCardPrices :global(.tour-facts) p,
+.tourCardPrices :global(.tour-facts) li {
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 
 .tourCardMeta .tourCardCustomFact {

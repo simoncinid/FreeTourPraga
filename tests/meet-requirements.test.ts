@@ -148,7 +148,9 @@ test("per-tour policies are frozen and confirmation uses editable templates then
   const order = await createOrder(input(state), randomUUID());
   let saved = await readState();
   const b = saved.bookings[0];
-  assert.deepEqual(b.policy, { cancellationHours: 48, lateRefundPercent: 35 });
+  assert.equal(b.policy!.cancellationHours, 48);
+  assert.equal(b.policy!.lateRefundPercent, 35);
+  assert.ok(b.policy!.cancellationClause.trim().length > 0);
   const mail = saved.jobs.find(
     (j) => j.type === "email" && j.bookingPnr === b.pnr && j.to === b.email,
   )!;

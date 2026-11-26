@@ -37,7 +37,10 @@ test("the eight tour records migrate once and keep committed departures and book
   assert.deepEqual(state.bookings[0], originalBooking);
   assert.equal(committedSlot.endsAt, endsAt);
   assert.deepEqual(free.schedule?.times, ["10:00", "14:30"]);
-  assert.match(cancellationNote(free), /prima dell’inizio/);
+  assert.match(
+    cancellationNote(free, state.settings),
+    /Cancellazione gratuita|prima dell’inizio/,
+  );
   assert.equal(applyTourPages(state, now).applied, false);
 
   for (const record of records) {

@@ -1,4 +1,5 @@
 "use client";
+import { InlineCopy } from "./RichInline";
 import { siteEdit } from "@/lib/visual-content";
 
 import Image from "next/image";
@@ -11,16 +12,18 @@ const MAX_THUMBS = 5;
 export function HeroTourCta({
   href,
   label,
+  labelHtml,
   tours,
 }: {
   href: string;
   label: string;
+  labelHtml?: string;
   tours: { title: string; imageUrl: string; slug: string }[];
 }) {
   const thumbs = tours.slice(0, MAX_THUMBS);
 
   return (
-    <Link href={href} className={`button-primary ${styles.cta}`}>
+    <Link href={href} data-cms-hide-parent className={`button-primary ${styles.cta}`}>
       <span
         {...siteEdit("home.primaryLabel")}
         data-cms-href={JSON.stringify({
@@ -29,7 +32,7 @@ export function HeroTourCta({
         })}
         className={styles.label}
       >
-        {label}
+        <InlineCopy html={labelHtml}>{label}</InlineCopy>
       </span>
       <span className={styles.thumbs} aria-hidden>
         {thumbs.map((tour, index) => (

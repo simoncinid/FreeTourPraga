@@ -1,3 +1,4 @@
+import { InlineCopy } from "@/components/RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import Link from "next/link";
 import { ArrowUpRight, MessageCircle } from "lucide-react";
@@ -47,13 +48,13 @@ export default async function Page() {
       <div className={`container-page ${ui.helpGrid}`}>
         <div className={ui.helpIntro}>
           <p
-            {...pageEdit("aiuto", "subtitle")}
+            {...pageEdit("aiuto", "subtitleHtml", "inline")}
             className={`${ui.eyebrow} uppercase-tag text-primary`}
           >
-            {page?.subtitle || "Assistenza"}
+            <InlineCopy html={page?.subtitleHtml}>{page?.subtitle || "Assistenza"}</InlineCopy>
           </p>
-          <h1 {...pageEdit("aiuto", "title")} className="display-xl">
-            {page?.title || "Come possiamo aiutarti?"}
+          <h1 {...pageEdit("aiuto", "titleHtml", "inline")} className="display-xl">
+            <InlineCopy html={page?.titleHtml}>{page?.title || "Come possiamo aiutarti?"}</InlineCopy>
           </h1>
           <div
             {...pageEdit(

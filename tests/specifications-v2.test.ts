@@ -325,7 +325,10 @@ test("menu ordering and children persist, customer accounts stay excluded", () =
     siteNavigation(c).map((n) => n.label),
     ["Contatti", "Altro"],
   );
-  assert.equal(siteNavigation(c)[1].children!.length, 1);
+  assert.deepEqual(
+    siteNavigation(c)[1].children!.map((n) => n.href),
+    ["/lavora-con-noi", "/diventa-un-partner", "/faq"],
+  );
 });
 test("new page and tour blocks reject unsafe image URLs and preserve ordered sections", () => {
   const { t } = fixture();

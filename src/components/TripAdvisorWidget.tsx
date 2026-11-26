@@ -1,5 +1,6 @@
 "use client";
-import { siteEdit } from "@/lib/visual-content";
+import type { SiteContent } from "@/lib/platform/content";
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "./SiteRichText";
 
 import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -117,6 +118,7 @@ export function TripAdvisorWidget({
   tripAdvisor,
   layout = "section",
   googleReviewUrl,
+  formattedText,
 }: {
   tripAdvisor: {
     profileUrl: string;
@@ -128,6 +130,7 @@ export function TripAdvisorWidget({
   };
   layout?: "section" | "card";
   googleReviewUrl?: string;
+  formattedText?: SiteContent["formattedText"];
 }) {
   const reviews = tripAdvisor.reviews;
   const [index, setIndex] = useState(0);
@@ -269,8 +272,10 @@ export function TripAdvisorWidget({
             <span>Tripadvisor</span>
           </div>
           <h2 id="reviews-title" className={styles.showcaseTitle}>
-            <span {...siteEdit("globals.tripAdvisorTitle")}>
-              {tripAdvisor.title || "Dicono di noi"}
+            <span {...siteInlineEdit("globals.tripAdvisorTitle")}>
+              <SiteInlineText content={{ formattedText }} path="globals.tripAdvisorTitle">
+                {tripAdvisor.title || "Dicono di noi"}
+              </SiteInlineText>
             </span>
             <span aria-hidden>.</span>
           </h2>
@@ -296,9 +301,7 @@ export function TripAdvisorWidget({
               </a>
             </div>
           </div>
-          <p className="body-md">
-            <span {...siteEdit("globals.tripAdvisorBody")}>{body}</span>
-          </p>
+          <SiteRichText content={{ formattedText }} path="globals.tripAdvisorBody" text={body} className="body-md" />
         </div>
         <div className={styles.reviewScene}>
           <div className={styles.sceneHalo} aria-hidden />

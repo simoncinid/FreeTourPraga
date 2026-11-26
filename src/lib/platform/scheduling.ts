@@ -1,4 +1,4 @@
-import { bookingLeadMs } from "../tour-rules";
+import { bookingLeadMs, resolveCancellationClause } from "../tour-rules";
 import { paymentMethodsFor } from "../tour-payments";
 import { tourHeadlinePrice } from "../participant-pricing";
 import { applyCalendarRule, orderedCalendarRules } from "./calendar-rules";
@@ -136,6 +136,7 @@ export function publicTour(state: PlatformState, tour: CatalogTour) {
       tour.cancellationHours ?? state.settings.cancellationHours,
     lateRefundPercent:
       tour.lateRefundPercent ?? state.settings.lateRefundPercent,
+    cancellationClause: resolveCancellationClause(tour, state.settings),
     slots: tour.operationalReviewRequired
       ? []
       : tour.slots

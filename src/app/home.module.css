@@ -288,8 +288,8 @@
   }
 
   .hero :global(.hero-title) {
-    font-size: clamp(30px, 8.2vw, 38px);
-    line-height: 1.06;
+    font-size: clamp(38px, 10.5vw, 50px);
+    line-height: 1.04;
   }
 
   .hero :global(.uppercase-tag) {

@@ -1,3 +1,4 @@
+import { InlineCopy } from "./RichInline";
 import { pageEdit } from "@/lib/visual-content";
 import { SectionBlocks } from "./SectionBlocks";
 import type { ContentPage } from "@/lib/platform/model";
@@ -13,16 +14,16 @@ export function ContentBlock({
     <section className="section">
       <div className="container-page max-w-4xl">
         <p
-          {...(pageKey ? pageEdit(pageKey, "subtitle") : {})}
+          {...(pageKey ? pageEdit(pageKey, "subtitleHtml", "inline") : {})}
           className="micro-label text-primary"
         >
-          {page.subtitle}
+          <InlineCopy html={page.subtitleHtml}>{page.subtitle}</InlineCopy>
         </p>
         <h1
-          {...(pageKey ? pageEdit(pageKey, "title") : {})}
+          {...(pageKey ? pageEdit(pageKey, "titleHtml", "inline") : {})}
           className="display-xl my-5"
         >
-          {page.title}
+          <InlineCopy html={page.titleHtml}>{page.title}</InlineCopy>
         </h1>
         <div
           {...(pageKey

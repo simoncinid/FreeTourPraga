@@ -6,24 +6,26 @@ import { InquiriesManager } from "./InquiriesManager";
 import { AdminEmailCenter } from "./AdminEmailCenter";
 import { AdminNotice } from "./AdminNotice";
 import { RichTextEditor } from "./RichTextEditor";
-import { TourCardEditor } from "./TourCardEditor";
+// import { TourCardEditor } from "./TourCardEditor";
+import { sampleParagraph, samplePhotos } from "@/lib/content-placeholders";
 import { AdminTourList } from "./AdminTourList";
 import { SlotDatePicker } from "./SlotDatePicker";
 import { Pencil } from "lucide-react";
 import { jsonEqual } from "@/lib/json-equal";
 import { categoriesFor } from "@/lib/participant-pricing";
 import { OperationalCalendar } from "./OperationalCalendar";
+import { ChangeHistory } from "./ChangeHistory";
 import { SupportTickets } from "./SupportTickets";
 import { StaffAccounts } from "./StaffAccounts";
 import { AffiliatesSection } from "./AffiliatesSection";
 import { PartnersManager } from "./PartnersManager";
-import { SectionBlocksEditor } from "./SectionBlocksEditor";
 import { TourCommercialEditor } from "./TourCommercialEditor";
 import { TourOperationsEditor } from "./TourOperationsEditor";
 import Link from "next/link";
-import { TourGalleryEditor } from "./TourGalleryEditor";
+// import { TourGalleryEditor } from "./TourGalleryEditor";
 import { tourGalleryImages } from "@/lib/tour-gallery";
 import { ContentWorkspace } from "./ContentWorkspace";
+import { FormatToolProvider } from "./FormatTool";
 import type { SiteContent } from "@/lib/platform/content";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -33,7 +35,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -55,8 +56,12 @@ import {
   Download,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   CalendarClock,
   Trash2,
+  Newspaper,
+  Save,
+  History,
 } from "lucide-react";
 import type {
   Affiliate,
@@ -68,6 +73,7 @@ import type {
 import type { StaffPublic } from "@/lib/platform/staff";
 import { pragueLocal } from "@/lib/platform/time";
 import { formatMoney } from "@/lib/format";
+import { blockEnterSubmit } from "@/lib/form-guards";
 type Data = Omit<PlatformState, "orders" | "rateLimits" | "events"> & {
   role: string;
   staffUsers?: StaffPublic[];
@@ -86,12 +92,25 @@ const navigation = [
   ["pre-tour", "Email", Mail],
   ["last-minute", "Last minute", Settings2],
   ["contenuti", "Contenuti", FileText],
+  ["articoli", "Articoli", Newspaper],
   ["richieste", "Richieste", Users],
   ["impostazioni", "Regole e tariffe", Settings2],
 ] as const;
 
+function navHref(slug: string) {
+  if (slug === "articoli") return "/admin/contenuti/articoli";
+  return `/admin${slug ? `/${slug}` : ""}`;
+}
+
+function navActive(slug: string, section: string, detail?: string) {
+  if (slug === "articoli") return section === "contenuti" && detail === "articoli";
+  if (slug === "contenuti") return section === "contenuti" && detail !== "articoli";
+  return section === slug;
+}
+
 /** Fuori perimetro Fase 1: OTA, Ads, audit. */
 const PHASE2_OR_EXTRA_SECTIONS = new Set<string>(["canali", "report", "audit"]);
+const desktopEditorSections = new Set<string>(["tour", "contenuti", "articoli"]);
 
 const phase1Navigation = navigation.filter(
   ([slug]) => !PHASE2_OR_EXTRA_SECTIONS.has(slug),
@@ -104,6 +123,7 @@ const labels: Record<string, string> = {
   present: "Presente",
   no_show: "Assente",
   paid: "Pagato",
+  contacted: "Contattato",
   not_required: "Pagamento non richiesto",
   refunded: "Rimborsato",
   failed: "Da verificare",
@@ -313,41 +333,24 @@ function uniqueTourSlug(base: string, tours: CatalogTour[]) {
   return slug;
 }
 function blankTour(
-  source: CatalogTour,
   title: string,
   category: string,
   slug: string,
 ): CatalogTour {
-  const t = structuredClone(source);
   const name = title.trim() || "Nuovo tour";
   const cat = category.trim() || "Nuovi";
-  const short =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vitae nisl at arcu blandit facilisis.";
-  const long =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae nisi vitae nisl aliquet tincidunt. Sed euismod, nisl sit amet tincidunt tincidunt, nisl nisl aliquam nisl, vitae aliquam nisl nisl sit amet nisl. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet ligula.";
+  const short = sampleParagraph;
+  const long = `${sampleParagraph} Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.`;
   const highlights = [
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
     "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
   ];
-  const inclusions = [
-    "Lorem ipsum guida locale in italiano",
-    "Consectetur adipiscing elit per tutto il percorso",
-    "Tempor incididunt con assistenza in loco",
-  ];
-  const exclusions = [
-    "Biglietti di ingresso non inclusi (lorem ipsum)",
-    "Trasporti e pasti a carico del partecipante",
-    "Mance e spese personali",
-  ];
-  const safetyNotes = [
-    "Indossare scarpe comode: lorem ipsum dolor sit amet.",
-    "Il tour si svolge a piedi con pause regolari.",
-    "In caso di maltempo il percorso può essere adattato.",
-  ];
+  const inclusions = [highlights[0], highlights[1]];
+  const exclusions = [highlights[2]];
+  const safetyNotes = [highlights[3]];
   return {
-    ...t,
     id: crypto.randomUUID(),
     slug,
     title: name,
@@ -363,27 +366,40 @@ function blankTour(
       { title: "Inizio percorso (lorem)", start: 0 },
       { title: "Tappa centrale (ipsum)", start: 2 },
     ],
-    highlightGalleries: highlights.map(() => []),
-    galleryImages: t.galleryImages?.length
-      ? t.galleryImages.slice(0, 4).map((photo, i) => ({
-          ...photo,
-          alt: photo.alt || `Foto esempio ${i + 1} — ${name}`,
-        }))
-      : undefined,
+    imageUrl: samplePhotos[0].url,
+    galleryImages: samplePhotos.slice(1),
+    highlightGalleries: highlights.map((_, index) => [samplePhotos[index].url]),
     contentBlocks: [
+      { type: "text", heading: "Lorem ipsum", text: long, html: `<p>${long}</p>` },
       {
-        type: "text",
-        heading: "Panoramica del tour",
-        text: long,
-        html: `<p>${long}</p>`,
-      },
-      {
-        type: "text",
-        heading: "Cosa sappiamo già",
-        text: short,
-        html: `<p>${short}</p>`,
+        type: "split", heading: "Dolor sit amet", text: short, html: `<p>${short}</p>`,
+        imageUrl: samplePhotos[1].url, alt: samplePhotos[1].alt,
+        caption: "Lorem ipsum dolor sit amet", imagePosition: "right",
       },
     ],
+    currency: "EUR",
+    basePriceCents: 2500,
+    childPriceCents: 1500,
+    infantPriceCents: 0,
+    adultMinAge: 12,
+    childMinAge: 4,
+    isFreeTour: false,
+    paymentMethods: ["cash"],
+    maxGuests: 20,
+    minParticipants: 1,
+    durationMinutes: 120,
+    walkingDifficulty: 2,
+    bookingCutoffHours: 2,
+    arrivalMinutes: 15,
+    cancellationHours: 24,
+    lateRefundPercent: 0,
+    reminderHours: 24,
+    operatingDays: "Sabato e domenica",
+    departureTime: "10:00",
+    mapUrl: "https://www.google.com/maps?q=50.087,14.421",
+    mapEmbedUrl: "https://www.google.com/maps?q=50.087,14.421&output=embed",
+    latitude: 50.087,
+    longitude: 14.421,
     slots: [],
     calendarRules: [],
     calendarLog: [],
@@ -407,16 +423,13 @@ function blankTour(
     walkingLabel: "Passo tranquillo",
     fareRequirements:
       "Documento d’identità richiesto per eventuali riduzioni (lorem ipsum).",
-    suggestedContribution: t.isFreeTour
-      ? "Offerta libera consigliata: lorem ipsum"
-      : t.suggestedContribution,
-    priceLabel: t.isFreeTour ? "Offerta libera" : t.priceLabel || "",
-    guide: "Guida lorem ipsum",
-    language: t.language || "Italiano",
+    cancellationClause: "",
+    guide: "Lorem ipsum",
+    language: "Italiano",
     cardPreview: {
       title: name,
       description: short,
-      itinerary: highlights.join(" · "),
+      itinerary: `<ul>${highlights.map((highlight) => `<li>${highlight}</li>`).join("")}</ul>`,
       facts: [
         "Durata esempio: 2 ore",
         "Lingua: Italiano",
@@ -480,7 +493,9 @@ export function AdminWorkspace() {
     [partnerTo, setPartnerTo] = useState(() =>
       new Date().toISOString().slice(0, 10),
     ),
-    [partnerNewKey, setPartnerNewKey] = useState(0),
+    [partnerDraftId, setPartnerDraftId] = useState(""),
+    [overviewFilterSlot, setOverviewFilterSlot] = useState<HTMLDivElement | null>(null),
+    [articlesCreateKey, setArticlesCreateKey] = useState(0),
     [mobileMenuOpen, setMobileMenuOpen] = useState(false),
     [adminMobile, setAdminMobile] = useState(false),
     [bookingsFiltersOpen, setBookingsFiltersOpen] = useState(false),
@@ -490,16 +505,18 @@ export function AdminWorkspace() {
     [newTourCategory, setNewTourCategory] = useState(""),
     [newTourCategoryNew, setNewTourCategoryNew] = useState(false),
     [staffComposeOpen, setStaffComposeOpen] = useState(false),
-    [supportComposeOpen, setSupportComposeOpen] = useState(false);
+    [supportComposeOpen, setSupportComposeOpen] = useState(false),
+    [calendarHistoryOpen, setCalendarHistoryOpen] = useState(false);
   const tourCreateDialog = useRef<HTMLDialogElement>(null);
+  const desktopEditorBlocked = adminMobile && desktopEditorSections.has(section);
   useEffect(() => {
     const next = searchParams.get("affiliate") || "";
     setAffiliateFilter(next);
     setBookingsPage(0);
   }, [searchParams]);
   useEffect(() => {
-    if (section !== "contenuti") setContentChrome(null);
-  }, [section]);
+    if (section !== "contenuti" || detail === "articoli") setContentChrome(null);
+  }, [section, detail]);
   useEffect(() => {
     setMobileMenuOpen(false);
     setExpandedBookingId(null);
@@ -516,9 +533,11 @@ export function AdminWorkspace() {
   useEffect(() => {
     const el = tourCreateDialog.current;
     if (!el) return;
-    if (tourCreateOpen && !el.open) el.showModal();
-    if (!tourCreateOpen && el.open) el.close();
-  }, [tourCreateOpen]);
+    if (desktopEditorBlocked && tourCreateOpen) setTourCreateOpen(false);
+    const shouldOpen = tourCreateOpen && !desktopEditorBlocked;
+    if (shouldOpen && !el.open) el.showModal();
+    if (!shouldOpen && el.open) el.close();
+  }, [tourCreateOpen, desktopEditorBlocked]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -797,6 +816,7 @@ export function AdminWorkspace() {
     router.replace("/accesso");
   };
   return (
+    <FormatToolProvider>
     <div className="admin-shell">
       <header
         className={`admin-mobile-header${mobileMenuOpen ? " is-open" : ""}`}
@@ -823,18 +843,18 @@ export function AdminWorkspace() {
           <div className="admin-mobile-panel">
             <nav className="admin-mobile-nav">
               {phase1Navigation
-                .filter(([slug]) => slug !== "contenuti")
+                .filter(([slug]) => !desktopEditorSections.has(slug))
                 .map(([slug, label, Icon]) => (
-                <Link
-                  key={slug}
-                  href={`/admin${slug ? "/" + slug : ""}`}
-                  className={section === slug ? "active" : ""}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Icon size={18} />
-                  {label}
-                </Link>
-              ))}
+                  <Link
+                    key={slug}
+                    href={navHref(slug)}
+                    className={navActive(slug, section, detail) ? "active" : ""}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon size={18} />
+                    {label}
+                  </Link>
+                ))}
             </nav>
             <div className="admin-mobile-panel-footer">
               <button
@@ -844,6 +864,17 @@ export function AdminWorkspace() {
               >
                 <LogOut size={16} />
                 Esci
+              </button>
+              <button
+                type="button"
+                className="admin-sidebar-history"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setCalendarHistoryOpen(true);
+                }}
+              >
+                <History size={16} />
+                Storico
               </button>
             </div>
           </div>
@@ -858,8 +889,8 @@ export function AdminWorkspace() {
           {phase1Navigation.map(([slug, label, Icon]) => (
             <Link
               key={slug}
-              href={`/admin${slug ? "/" + slug : ""}`}
-              className={section === slug ? "active" : ""}
+              href={navHref(slug)}
+              className={navActive(slug, section, detail) ? "active" : ""}
             >
               <Icon size={18} />
               {label}
@@ -878,13 +909,21 @@ export function AdminWorkspace() {
             <LogOut size={16} />
             Esci
           </button>
+          <button
+            type="button"
+            className="admin-sidebar-history"
+            onClick={() => setCalendarHistoryOpen(true)}
+          >
+            <History size={16} />
+            Storico
+          </button>
         </div>
       </aside>
       <div
-        className={`admin-main min-w-0${["", "prenotazioni", "tour", "calendario", "affiliati", "contenuti", "pre-tour", "richieste", "partner-europa", "utenti", "supporto"].includes(section) ? " admin-compact" : ""}${section === "calendario" ? " admin-calendar-page" : ""}${section === "affiliati" ? " admin-affiliates-page" : ""}${section === "prenotazioni" && !detail ? " admin-bookings-page" : ""}${section === "tour" && !detail ? " admin-tours-page" : ""}${section === "contenuti" ? " admin-contents-page" : ""}${section === "partner-europa" ? " admin-partners-page" : ""}${section === "pre-tour" ? " admin-email-page" : ""}${section === "richieste" ? " admin-inquiries-page" : ""}${section === "last-minute" ? " admin-last-minute-page" : ""}${section === "impostazioni" ? " admin-settings-page" : ""}${section === "utenti" ? " admin-staff-page" : ""}${section === "supporto" ? " admin-support-page" : ""}`}
+        className={`admin-main min-w-0${["", "prenotazioni", "tour", "calendario", "affiliati", "contenuti", "pre-tour", "richieste", "partner-europa", "utenti", "supporto"].includes(section) ? " admin-compact" : ""}${section === "calendario" ? " admin-calendar-page" : ""}${section === "affiliati" ? " admin-affiliates-page" : ""}${section === "prenotazioni" && !detail ? " admin-bookings-page" : ""}${section === "tour" && !detail ? " admin-tours-page" : ""}${section === "contenuti" && detail === "articoli" ? " admin-articles-page" : section === "contenuti" ? " admin-contents-page" : ""}${section === "partner-europa" ? " admin-partners-page" : ""}${section === "pre-tour" ? " admin-email-page" : ""}${section === "richieste" ? " admin-inquiries-page" : ""}${section === "last-minute" ? " admin-last-minute-page" : ""}${section === "impostazioni" ? " admin-settings-page" : ""}${section === "utenti" ? " admin-staff-page" : ""}${section === "supporto" ? " admin-support-page" : ""}`}
       >
         <header
-          className={`mb-7 flex items-center justify-between gap-4${adminMobile ? " admin-header-mobile" : " flex-wrap"}`}
+          className={`mb-7 flex items-center justify-between gap-4${adminMobile ? " admin-header-mobile" : " flex-wrap"}${section === "" ? " admin-header-overview" : ""}`}
         >
           <div className="min-w-0">
             <h1 className="display-lg">
@@ -909,12 +948,48 @@ export function AdminWorkspace() {
                   </Link>
                   <span className="tour-page-title-desktop">Tour e orari</span>
                 </>
+              ) : section === "contenuti" && detail === "articoli" ? (
+                "Articoli"
               ) : (
                 navigation.find((n) => n[0] === section)?.[1] || "Gestione"
               )}
             </h1>
           </div>
           <div className="admin-header-actions">
+            {!desktopEditorBlocked && section === "contenuti" && detail === "articoli" && (
+              <>
+                <button
+                  type="button"
+                  className="articles-header-icon articles-header-save"
+                  aria-label="Pubblica articoli"
+                  disabled={busy}
+                  onClick={() =>
+                    (
+                      document.getElementById(
+                        "articles-editor-form",
+                      ) as HTMLFormElement | null
+                    )?.requestSubmit()
+                  }
+                >
+                  <Save size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="articles-header-icon articles-header-add"
+                  aria-label="Nuovo articolo"
+                  onClick={() => setArticlesCreateKey((n) => n + 1)}
+                >
+                  <Plus size={18} />
+                </button>
+              </>
+            )}
+            {section === "" && (
+              <div
+                id="overview-kpi-filters"
+                className="overview-kpi-filters"
+                ref={setOverviewFilterSlot}
+              />
+            )}
             {section === "partner-europa" && (
               <>
                 <a
@@ -928,7 +1003,7 @@ export function AdminWorkspace() {
                   type="button"
                   className="partners-header-icon partners-header-add"
                   aria-label="Nuovo partner"
-                  onClick={() => setPartnerNewKey((n) => n + 1)}
+                  onClick={() => setPartnerDraftId(crypto.randomUUID())}
                 >
                   <Plus size={18} />
                 </button>
@@ -993,77 +1068,81 @@ export function AdminWorkspace() {
                 </a>
               </>
             )}
-            {section === "tour" &&
-              (adminMobile ? (
-                <button
-                  type="button"
-                  className="tours-header-add"
-                  aria-label="Crea un tour"
-                  onClick={() => {
-                    setNewTourTitle("");
-                    {
-                      const cats = [
-                        ...new Set(
-                          data.tours
-                            .map((t) => t.category.trim())
-                            .filter(Boolean),
-                        ),
-                      ].sort((a, b) => a.localeCompare(b, "it"));
-                      setNewTourCategoryNew(!cats.length);
-                      setNewTourCategory(cats[0] || "");
-                    }
-                    setTourCreateOpen(true);
-                  }}
-                >
-                  <Plus size={20} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="button-primary"
-                  onClick={() => {
-                    setNewTourTitle("");
-                    {
-                      const cats = [
-                        ...new Set(
-                          data.tours
-                            .map((t) => t.category.trim())
-                            .filter(Boolean),
-                        ),
-                      ].sort((a, b) => a.localeCompare(b, "it"));
-                      setNewTourCategoryNew(!cats.length);
-                      setNewTourCategory(cats[0] || "");
-                    }
-                    setTourCreateOpen(true);
-                  }}
-                >
-                  <Plus size={16} />
-                  Crea un tour
-                </button>
-              ))}
+            {!desktopEditorBlocked && section === "tour" && (
+              <button
+                type="button"
+                className="button-primary"
+                onClick={() => {
+                  setNewTourTitle("Lorem ipsum");
+                  {
+                    const cats = [
+                      ...new Set(
+                        data.tours
+                          .map((t) => t.category.trim())
+                          .filter(Boolean),
+                      ),
+                    ].sort((a, b) => a.localeCompare(b, "it"));
+                    setNewTourCategoryNew(!cats.length);
+                    setNewTourCategory(cats[0] || "Nuovi");
+                  }
+                  setTourCreateOpen(true);
+                }}
+              >
+                <Plus size={16} />
+                Crea un tour
+              </button>
+            )}
             {section === "calendario" && adminMobile && (
               <div
                 id="calendar-mv-month-slot"
                 className="calendar-mv-month-slot"
               />
             )}
-            {section !== "contenuti" &&
+            {section === "calendario" && !adminMobile ? (
+              <div className="calendar-dv-header-tools">
+                <div
+                  id="calendar-dv-history-slot"
+                  className="calendar-dv-history-slot"
+                />
+                <button
+                  type="button"
+                  onClick={() => load().catch((e) => setMessage(e.message))}
+                  className="button-secondary calendar-dv-refresh"
+                >
+                  <RefreshCw size={16} />
+                  Aggiorna
+                </button>
+              </div>
+            ) : (
+              section !== "contenuti" &&
               section !== "partner-europa" &&
               section !== "pre-tour" &&
               section !== "richieste" &&
               section !== "utenti" &&
               section !== "supporto" &&
               !adminMobile && (
-              <button
-                onClick={() => load().catch((e) => setMessage(e.message))}
-                className="button-secondary"
-              >
-                <RefreshCw size={16} />
-                Aggiorna
-              </button>
+                <button
+                  type="button"
+                  onClick={() => load().catch((e) => setMessage(e.message))}
+                  className="button-secondary"
+                >
+                  <RefreshCw size={16} />
+                  Aggiorna
+                </button>
+              )
             )}
-            {section === "contenuti" && contentChrome && (
+            {!desktopEditorBlocked && section === "contenuti" && detail !== "articoli" && contentChrome && (
               <>
+                {contentChrome.dirty > 0 && (
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={contentChrome.busy}
+                    onClick={() => contentChrome.discard()}
+                  >
+                    Annulla bozza
+                  </button>
+                )}
                 <button
                   type="button"
                   className="button-primary"
@@ -1088,7 +1167,16 @@ export function AdminWorkspace() {
         </header>
         {message && <AdminNotice key={message} message={message} />}
         <div className="admin-stage">
-          {PHASE2_OR_EXTRA_SECTIONS.has(section) ? (
+          {desktopEditorBlocked ? (
+            <div className="card p-6">
+              <p className="body-md mb-4">
+                La modifica di tour, articoli e sito è disponibile solo da desktop.
+              </p>
+              <Link href="/admin" className="button-secondary">
+                Torna alla panoramica
+              </Link>
+            </div>
+          ) : PHASE2_OR_EXTRA_SECTIONS.has(section) ? (
             <div className="card p-6">
               <h2 className="display-md mb-3">Disponibile dalla Fase 2</h2>
               <p className="body-md">
@@ -1106,6 +1194,7 @@ export function AdminWorkspace() {
                 <AdminOverview
                   data={data}
                   busy={busy}
+                  filterSlot={overviewFilterSlot}
                   updateInquiry={(id, status) =>
                     mutate("inquiry", { id, status }, "PATCH")
                   }
@@ -1123,6 +1212,11 @@ export function AdminWorkspace() {
                     booking={booking}
                     tour={data.tours.find((t) => t.slug === booking.tourSlug)!}
                     busy={busy}
+                    history={data.audit.filter(
+                      (entry) =>
+                        entry.booking === booking.pnr ||
+                        entry.target === booking.pnr,
+                    )}
                     save={(body) => mutate("booking", body, "PATCH")}
                   />
                 ) : (
@@ -1249,12 +1343,13 @@ export function AdminWorkspace() {
                           <button
                             type="button"
                             className="button-secondary"
+                            aria-label="Pagina precedente"
                             disabled={bookingsPageSafe <= 0}
                             onClick={() =>
                               setBookingsPage((p) => Math.max(0, p - 1))
                             }
                           >
-                            Precedente
+                            <ChevronLeft size={16} />
                           </button>
                           <span>
                             {bookingsPageSafe + 1} / {bookingsPageCount} ·{" "}
@@ -1263,6 +1358,7 @@ export function AdminWorkspace() {
                           <button
                             type="button"
                             className="button-secondary"
+                            aria-label="Pagina successiva"
                             disabled={
                               bookingsPageSafe >= bookingsPageCount - 1
                             }
@@ -1272,7 +1368,7 @@ export function AdminWorkspace() {
                               )
                             }
                           >
-                            Successiva
+                            <ChevronRight size={16} />
                           </button>
                         </div>
                       )}
@@ -1285,40 +1381,9 @@ export function AdminWorkspace() {
                     tour={
                       data.tours.find((t) => t.slug === detail) ||
                       blankTour(
-                        data.tours[0],
                         "Nuovo tour",
                         "Nuovi",
                         uniqueTourSlug("nuovo-tour", data.tours),
-                      )
-                    }
-                    calendar={(reconcile) =>
-                      data.tours.some((t) => t.slug === detail) ? (
-                        <OperationalCalendar
-                          refresh={load}
-                          tours={data.tours.filter((t) => !t.archivedAt)}
-                          closedDates={data.closedDates}
-                          notices={data.notices}
-                          fixedTourId={
-                            data.tours.find((t) => t.slug === detail)?.id
-                          }
-                          busy={busy}
-                          save={async (body) => {
-                            const result = await mutate(
-                              "calendar/operation",
-                              body,
-                            );
-                            if (!result) throw Error("Modifica non salvata");
-                            const updated = result.tours?.find(
-                              (t: CatalogTour) => t.slug === detail,
-                            );
-                            if (updated) reconcile(updated);
-                            return result;
-                          }}
-                        />
-                      ) : (
-                        <p className="card p-6">
-                          Salva il nuovo tour per attivare il suo calendario.
-                        </p>
                       )
                     }
                     availableTours={data.tours.filter((t) => !t.archivedAt)}
@@ -1347,10 +1412,20 @@ export function AdminWorkspace() {
                 ))}
               {section === "calendario" && (
                 <OperationalCalendar
+                  key={searchParams.get("tour") || "all"}
                   refresh={load}
                   tours={data.tours.filter((t) => !t.archivedAt)}
                   closedDates={data.closedDates}
                   notices={data.notices}
+                  initialTourId={
+                    (() => {
+                      const q = searchParams.get("tour");
+                      if (!q) return undefined;
+                      return data.tours.find(
+                        (t) => t.slug === q || t.id === q,
+                      )?.id;
+                    })()
+                  }
                   busy={busy}
                   save={async (body) => {
                     const result = await mutate("calendar/operation", body);
@@ -1371,7 +1446,10 @@ export function AdminWorkspace() {
                   to={partnerTo}
                   onFromChange={setPartnerFrom}
                   onToChange={setPartnerTo}
-                  openNewKey={partnerNewKey}
+                  newDraftId={partnerDraftId}
+                  onDraftClosed={(id) =>
+                    setPartnerDraftId((current) => current === id ? "" : current)
+                  }
                 />
               )}
 
@@ -1489,6 +1567,8 @@ export function AdminWorkspace() {
                   saveSite={(content) => mutate("site-content", content, "PUT")}
                   savePage={(body) => mutate("page", body, "PUT")}
                   onChromeChange={setContentChrome}
+                  articlesCreateSignal={articlesCreateKey}
+                  onArticleCreated={() => setArticlesCreateKey(0)}
                 />
               )}
               {section === "utenti" && (
@@ -1607,16 +1687,11 @@ export function AdminWorkspace() {
             e.preventDefault();
             const title = newTourTitle.trim();
             if (!title) return;
-            if (!data.tours[0]) {
-              setMessage("Crea prima un tour di base nel sistema.");
-              return;
-            }
             const slug = uniqueTourSlug(
               slugifyTourTitle(title),
               data.tours,
             );
             const tour = blankTour(
-              data.tours[0],
               title,
               newTourCategory || "Nuovi",
               slug,
@@ -1627,7 +1702,7 @@ export function AdminWorkspace() {
               setNewTourTitle("");
               setNewTourCategory("");
               setNewTourCategoryNew(false);
-              setMessage(`Bozza «${tour.title}» creata. Aprila da Modifica per completarla.`);
+              router.push(`/admin/tour/${tour.slug}`);
             }
           }}
         >
@@ -1707,7 +1782,14 @@ export function AdminWorkspace() {
           </button>
         </form>
       </dialog>
+      <ChangeHistory
+        entries={data.audit}
+        open={calendarHistoryOpen}
+        onClose={() => setCalendarHistoryOpen(false)}
+        title="Storico modifiche"
+      />
     </div>
+    </FormatToolProvider>
   );
 }
 function ManualBooking({
@@ -1839,6 +1921,7 @@ function ManualBooking({
       <RichTextEditor
         label="Note"
         html={notes.html}
+        text={notes.text}
         onChange={(html, text) => setNotes({ html, text })}
       />
       <label className="flex gap-3 text-sm">
@@ -1857,10 +1940,23 @@ function BookingDetail({
   tour,
   busy,
   save,
+  history = [],
 }: {
   booking: Reservation;
   tour: CatalogTour;
   busy: boolean;
+  history?: {
+    id: string;
+    actor: string;
+    action: string;
+    target: string;
+    at: string;
+    before?: string;
+    after?: string;
+    tour?: string;
+    when?: string;
+    booking?: string;
+  }[];
   save: (b: unknown) => Promise<unknown>;
 }) {
   const [editCustomer, setEditCustomer] = useState(false);
@@ -1874,8 +1970,14 @@ function BookingDetail({
     [infants, setInfants] = useState(b.infants);
   const [status, setStatus] = useState(b.status);
   const [payment, setPayment] = useState(b.paymentStatus);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [notify, setNotify] = useState(false);
   const [slotId, setSlot] = useState(b.slotId);
+  const [seenPayment, setSeenPayment] = useState(b.paymentStatus);
+  if (seenPayment !== b.paymentStatus) {
+    setSeenPayment(b.paymentStatus);
+    setPayment(b.paymentStatus);
+  }
   const [now] = useState(() => Date.now());
   const availableSlots = tour.slots.filter(
     (s) =>
@@ -2204,27 +2306,49 @@ function BookingDetail({
               ))}
             </select>
           </label>
-          <label>
-            Stato pagamento
-            <select
-              className="text-input"
-              value={payment}
-              onChange={(e) =>
-                setPayment(e.target.value as Reservation["paymentStatus"])
-              }
-            >
-              {(
-                ["pending", "awaiting_payment"].includes(b.status) &&
-                b.paymentMethod === "whatsapp"
-                  ? ["pending", "paid"]
-                  : ["not_required", "paid", "pending"]
-              ).map((x) => (
-                <option key={x} value={x}>
-                  {labels[x]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="payment-quick-field">
+            <span>Stato pagamento</span>
+            {payment === "not_required" || payment === "refunded" ? (
+              <p>{labels[payment] || payment}</p>
+            ) : (
+              <div className="payment-quick" role="group" aria-label="Stato pagamento">
+                {(
+                  [
+                    ["pending", "Non pagato", "unpaid"],
+                    ["contacted", "Contattato", "contacted"],
+                    ["paid", "Pagato", "paid"],
+                  ] as const
+                ).map(([value, label, tone]) => {
+                  const pressed =
+                    value === "pending"
+                      ? payment === "pending" || payment === "failed"
+                      : payment === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      data-tone={tone}
+                      aria-pressed={pressed}
+                      disabled={busy || b.status === "cancelled"}
+                      onClick={() => {
+                        const previous = payment;
+                        setPayment(value);
+                        void save({
+                          pnr: b.pnr,
+                          action: "update",
+                          paymentStatus: value,
+                        }).then((result) => {
+                          if (!result) setPayment(previous);
+                        });
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
         <label className="flex gap-3">
           <input
@@ -2234,6 +2358,19 @@ function BookingDetail({
           />
           Invia notifica al cliente
         </label>
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={() => setHistoryOpen(true)}
+        >
+          Storico modifiche
+        </button>
+        <ChangeHistory
+          entries={history}
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          title={`Storico · ${b.pnr}`}
+        />
         <button
           className="button-primary booking-save"
           disabled={busy || b.status === "cancelled"}
@@ -2392,6 +2529,7 @@ function BookingDetail({
   );
 }
 
+/* Conversione usata dal precedente editor della card.
 function htmlToPlain(html: string) {
   const parsed = new DOMParser().parseFromString(html || "", "text/html");
   return parsed.body.textContent?.replace(/\s+/g, " ").trim() || "";
@@ -2401,28 +2539,30 @@ function htmlToLines(html: string) {
   const nodes = [
     ...parsed.body.querySelectorAll("p, li, h1, h2, h3, h4, div"),
   ];
-  const lines = (nodes.length ? nodes : [parsed.body])
+  const lines = (nodes.length ? nodes : [])
     .map((node) => ({
       plain: (node.textContent || "").replace(/\s+/g, " ").trim(),
-      html: node === parsed.body ? `<p>${(node.textContent || "").trim()}</p>` : (node as HTMLElement).outerHTML,
+      html: (node as HTMLElement).outerHTML,
     }))
     .filter((line) => line.plain);
   if (lines.length) return lines;
   const plain = htmlToPlain(html);
-  return plain ? [{ plain, html: `<p>${plain}</p>` }] : [];
+  const rich = (html || "").trim();
+  return plain
+    ? [{ plain, html: rich.includes("<") ? rich : `<p>${plain}</p>` }]
+    : [];
 }
+*/
 function TourEditor({
   tour,
   availableTours,
   categories,
-  calendar,
   defaults,
   closedDates = [],
   busy,
   save,
 }: {
   tour: CatalogTour;
-  calendar: (reconcile: (tour: CatalogTour) => void) => ReactNode;
   availableTours: CatalogTour[];
   defaults: Settings;
   categories: string[];
@@ -2430,55 +2570,120 @@ function TourEditor({
   busy: boolean;
   save: (t: CatalogTour) => Promise<unknown>;
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState("content");
   const [t, setT] = useState(() => ({
     ...tour,
+    cancellationClause: tour.cancellationClause ?? "",
     cancellationHours: tour.cancellationHours ?? defaults.cancellationHours,
     lateRefundPercent: tour.lateRefundPercent ?? defaults.lateRefundPercent,
     galleryImages: tourGalleryImages(tour),
   }));
-  const [galleryUploading, setGalleryUploading] = useState(false);
+  // const [galleryUploading, setGalleryUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const calendarDialog = useRef<HTMLDialogElement>(null);
-  const set = (key: keyof CatalogTour, value: unknown) =>
-    setT((p) => ({ ...p, [key]: value }));
-  useEffect(() => {
-    const el = calendarDialog.current;
-    if (!el) return;
-    if (calendarOpen && !el.open) el.showModal();
-    if (!calendarOpen && el.open) el.close();
-  }, [calendarOpen]);
+  const formRef = useRef<HTMLFormElement>(null);
+  const persistTour = () => {
+    if (busy || coverUploading) return;
+    const invalid = formRef.current?.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+      "input:invalid, select:invalid, textarea:invalid",
+    );
+    if (invalid) {
+      invalid.reportValidity();
+      return;
+    }
+    void save({
+      ...t,
+      calendarRules: tour.calendarRules,
+      closures: !jsonEqual(t.calendarRules ?? [], tour.calendarRules ?? [])
+        ? tour.closures
+        : t.closures,
+      slots: (!jsonEqual(t.calendarRules ?? [], tour.calendarRules ?? [])
+        ? tour.slots
+        : t.slots
+      ).map((s) => ({
+        ...s,
+        startsAt: new Date(s.startsAt).toISOString(),
+        endsAt: new Date(s.endsAt).toISOString(),
+      })),
+    });
+  };
+  const set = (
+    key: keyof CatalogTour,
+    value:
+      | unknown
+      | ((prev: CatalogTour[keyof CatalogTour]) => unknown),
+  ) =>
+    setT((p) => {
+      const resolved =
+        typeof value === "function"
+          ? (value as (prev: CatalogTour[keyof CatalogTour]) => unknown)(
+              p[key],
+            )
+          : value;
+      if (
+        key === "formattedCopy" &&
+        resolved &&
+        typeof resolved === "object" &&
+        !Array.isArray(resolved)
+      ) {
+        return {
+          ...p,
+          formattedCopy: {
+            ...(p.formattedCopy || {}),
+            ...(resolved as CatalogTour["formattedCopy"]),
+          },
+        };
+      }
+      return { ...p, [key]: resolved };
+    });
+  const tourSettings = {
+    tour: t,
+    change: set,
+    categories,
+    busy: busy || coverUploading,
+    onUploading: setCoverUploading,
+  };
+  const hasSavedCalendar = availableTours.some(({ id }) => id === tour.id);
   return (
     <div className="tour-admin-screen">
       <nav className="tour-admin-tabs" aria-label="Sezioni del tour">
         {[
-          ["content", "Contenuto"],
-          ["card", "Anteprima"],
+          ["details", "Dati tour"],
+          ["content", "Editor visuale"],
+          ["card", "Card visuale"],
           ["categories", "Prezzi"],
-          ["rules", "Gruppi"],
+          ["rules", "Prenotabilità"],
           ["operations", "Orari"],
           ["commissions", "Commissioni"],
           ["settings", "SEO"],
-          ["sections", "Sezioni"],
-          ["gallery", "Galleria"],
+          // ["gallery", "Galleria"],
           ["calendar", "Calendario"],
         ].map(([key, label]) => (
           <button
             type="button"
             key={key}
-            aria-pressed={key === "calendar" ? calendarOpen : tab === key}
-            onClick={() =>
-              key === "calendar" ? setCalendarOpen(true) : setTab(key)
-            }
+            aria-pressed={tab === key}
+            disabled={coverUploading || (key === "calendar" && !hasSavedCalendar)}
+            title={key === "calendar" && !hasSavedCalendar ? "Salva il tour per aprire il calendario" : undefined}
+            onClick={() => {
+              if (key === "calendar") {
+                router.push(
+                  `/admin/calendario?tour=${encodeURIComponent(tour.slug)}`,
+                );
+                return;
+              }
+              setTab(key);
+            }}
           >
             {label}
           </button>
         ))}
       </nav>
       <form
+        ref={formRef}
         className="tour-admin-form"
         hidden={false}
+        onKeyDown={blockEnterSubmit}
         onInvalidCapture={(event) => {
           const input = event.target as HTMLInputElement;
           const panel =
@@ -2490,31 +2695,14 @@ function TourEditor({
           }
         }}
         onSubmit={(e) => {
+          // Solo il click su «Salva tour e programmazione» persiste: Invio o
+          // submit implicito non devono mai scrivere sul database.
           e.preventDefault();
-          if (busy || galleryUploading || coverUploading) return;
-          save({
-            ...t,
-            calendarRules: tour.calendarRules,
-            closures: !jsonEqual(
-              t.calendarRules ?? [],
-              tour.calendarRules ?? [],
-            )
-              ? tour.closures
-              : t.closures,
-            slots: (!jsonEqual(t.calendarRules ?? [], tour.calendarRules ?? [])
-              ? tour.slots
-              : t.slots
-            ).map((s) => ({
-              ...s,
-              startsAt: new Date(s.startsAt).toISOString(),
-              endsAt: new Date(s.endsAt).toISOString(),
-            })),
-          });
         }}
       >
         <div className="tour-admin-panels">
           <div className="tour-admin-pane" data-tour-panel="card" hidden={tab !== "card"}>
-            <TourCardEditor
+            {/* <TourCardEditor
               tour={t}
               onChange={(preview) =>
                 setT((current) => {
@@ -2523,7 +2711,15 @@ function TourEditor({
                     cardPreview: preview,
                   };
                   if (preview.title?.trim()) {
-                    next.title = preview.title.trim();
+                    const titlePlain = htmlToPlain(preview.title);
+                    next.title = titlePlain || preview.title.trim();
+                    next.formattedCopy = {
+                      ...current.formattedCopy,
+                      ...next.formattedCopy,
+                      title: preview.title.includes("<")
+                        ? preview.title
+                        : undefined,
+                    };
                   }
                   if (preview.description != null) {
                     const plain = htmlToPlain(preview.description);
@@ -2533,6 +2729,7 @@ function TourEditor({
                       next.descriptionHtml = preview.description;
                       next.formattedCopy = {
                         ...current.formattedCopy,
+                        ...next.formattedCopy,
                         shortDescription: preview.description,
                       };
                       next.seoDescription = plain.slice(0, 160);
@@ -2542,6 +2739,7 @@ function TourEditor({
                       next.descriptionHtml = undefined;
                       next.formattedCopy = {
                         ...current.formattedCopy,
+                        ...next.formattedCopy,
                         shortDescription: undefined,
                       };
                     }
@@ -2551,6 +2749,7 @@ function TourEditor({
                     if (lines.length) {
                       next.highlights = lines.map((line) => line.plain);
                       next.formattedCopy = {
+                        ...current.formattedCopy,
                         ...next.formattedCopy,
                         highlights: lines.map((line) => line.html),
                       };
@@ -2566,6 +2765,7 @@ function TourEditor({
                     } else {
                       next.highlights = [];
                       next.formattedCopy = {
+                        ...current.formattedCopy,
                         ...next.formattedCopy,
                         highlights: [],
                       };
@@ -2574,33 +2774,35 @@ function TourEditor({
                   return next;
                 })
               }
-            />
-          </div>
-          <div
-            data-tour-panel="content"
-            className="tour-admin-pane"
-            hidden={tab !== "content"}
-          >
-            <TourVisualEditor
-              tour={t}
-              previewTour={tour}
+            /> */}
+            {tab === "card" && <TourVisualEditor
+              tour={t} previewTour={tour} variant="card"
               isNew={!availableTours.some((item) => item.id === tour.id)}
-              change={set}
-              onUploading={setCoverUploading}
+              change={set} onUploading={setCoverUploading}
+            />}
+          </div>
+          <div className="tour-admin-pane" data-tour-panel="details" hidden={tab !== "details"}>
+            <TourSettingsEditor {...tourSettings} section="details" />
+          </div>
+          <div className="tour-admin-pane" data-tour-panel="content" hidden={tab !== "content"}>
+            <TourSettingsEditor
+              {...tourSettings}
+              section="content"
+              panels={{
+                visual: (
+                  <TourVisualEditor
+                    tour={t}
+                    previewTour={tour}
+                    isNew={!availableTours.some((item) => item.id === tour.id)}
+                    change={set}
+                    onUploading={setCoverUploading}
+                  />
+                ),
+              }}
             />
           </div>
-          <div
-            data-tour-panel="settings"
-            className="tour-admin-pane"
-            hidden={tab !== "settings"}
-          >
-            <TourSettingsEditor
-              tour={t}
-              change={set}
-              categories={categories}
-              busy={busy || galleryUploading || coverUploading}
-              onUploading={setCoverUploading}
-            />
+          <div className="tour-admin-pane" data-tour-panel="settings" hidden={tab !== "settings"}>
+            <TourSettingsEditor {...tourSettings} section="seo" />
           </div>
           <div
             className="tour-admin-pane tour-commercial"
@@ -2621,17 +2823,6 @@ function TourEditor({
           </div>
           <div
             className="tour-admin-pane"
-            data-tour-panel="sections"
-            hidden={tab !== "sections"}
-          >
-            <SectionBlocksEditor
-              blocks={t.contentBlocks}
-              onChange={(blocks) => set("contentBlocks", blocks)}
-              onUploading={setCoverUploading}
-            />
-          </div>
-          <div
-            className="tour-admin-pane"
             data-tour-panel="operations"
             hidden={tab !== "operations"}
           >
@@ -2641,63 +2832,42 @@ function TourEditor({
               closedDates={closedDates}
             />
           </div>
-          <div
+          {/* <div
             className="tour-admin-pane"
             data-tour-panel="gallery"
             hidden={tab !== "gallery"}
           >
-            <TourGalleryEditor
-              photos={t.galleryImages}
-              disabled={busy || coverUploading}
-              onChange={(photos) => set("galleryImages", photos)}
-              onUploading={setGalleryUploading}
+            <TourSettingsEditor
+              {...tourSettings}
+              section="media"
+              panels={{
+                gallery: (
+                  <TourGalleryEditor
+                    photos={t.galleryImages}
+                    disabled={busy || coverUploading}
+                    onChange={(photos) => set("galleryImages", photos)}
+                    onUploading={setGalleryUploading}
+                  />
+                ),
+              }}
             />
-          </div>
+          </div> */}
         </div>
         <div className="tour-admin-save">
           <button
+            type="button"
             className="button-primary"
             disabled={
               busy ||
-              galleryUploading ||
               coverUploading ||
               t.paymentMethods?.length === 0
             }
+            onClick={persistTour}
           >
             Salva tour e programmazione
           </button>
         </div>
       </form>
-      <dialog
-        ref={calendarDialog}
-        className="calendar-day-modal tour-calendar-popup"
-        onClose={() => setCalendarOpen(false)}
-        onCancel={(event) => {
-          event.preventDefault();
-          setCalendarOpen(false);
-        }}
-      >
-        <div className="calendar-day-modal-head">
-          <h3>Calendario</h3>
-          <button
-            type="button"
-            className="admin-modal-close"
-            aria-label="Chiudi"
-            onClick={() => setCalendarOpen(false)}
-          >
-            <X size={18} />
-          </button>
-        </div>
-        {calendarOpen && calendar((updated) =>
-          setT((current) => ({
-            ...current,
-            slots: updated.slots,
-            calendarRules: updated.calendarRules,
-            calendarLog: updated.calendarLog,
-            closures: updated.closures,
-          })),
-        )}
-      </dialog>
     </div>
   );
 }
@@ -2732,6 +2902,7 @@ function SettingsEditor({
   return (
     <form
       className="card grid gap-6 p-6 settings-rules-form"
+      onKeyDown={blockEnterSubmit}
       onSubmit={(e) => {
         e.preventDefault();
         save(s);
@@ -2745,26 +2916,50 @@ function SettingsEditor({
           "paymentHoldMinutes",
           "Scadenza messaggio WhatsApp (minuti)",
         )}
-        {field(
-          "cancellationHours",
-          "Cancellazione gratuita fino a (ore prima)",
-        )}
-        {field("lateRefundPercent", "Rimborso dopo il termine (%)")}
         {field("retentionDays", "Conservazione dati (giorni)")}
       </div>
+      <label className="grid gap-2">
+        <span>Clausola di cancellazione (globale)</span>
+        <textarea
+          className="text-input"
+          rows={5}
+          maxLength={4000}
+          required
+          value={s.cancellationClause}
+          onChange={(e) =>
+            setS((p) => ({ ...p, cancellationClause: e.target.value }))
+          }
+        />
+        <span className="text-sm">
+          Testo mostrato su schede tour, checkout ed email quando il singolo tour
+          non ha una clausola propria.
+        </span>
+      </label>
+      <div className="form-grid">
+        {field(
+          "cancellationHours",
+          "Rimborso automatico: ore di cancellazione gratuita",
+        )}
+        {field(
+          "lateRefundPercent",
+          "Rimborso automatico dopo il termine (%)",
+        )}
+      </div>
       <p className="text-sm settings-help-desktop">
-        La scadenza WhatsApp vale solo per le prenotazioni ancora «Nuove»: se
-        entro quel tempo non passano in «In attesa pagamento», i posti si
-        liberano e parte l’email di prenotazione scaduta. Listino last-minute in{" "}
-        <Link href="/admin/last-minute">Last minute</Link>. Testi email in{" "}
-        <Link href="/admin/pre-tour">Email</Link>.
+        Le ore e la percentuale restano usate solo per calcolo rimborso e
+        spostamento. La scadenza WhatsApp vale solo per le prenotazioni ancora
+        «Nuove»: se entro quel tempo non passano in «In attesa pagamento», i
+        posti si liberano e parte l’email di prenotazione scaduta. Listino
+        last-minute in <Link href="/admin/last-minute">Last minute</Link>. Testi
+        email in <Link href="/admin/pre-tour">Email</Link>.
       </p>
       <p className="text-sm settings-help-mobile">
-        WhatsApp sulle «Nuove»: se scadono, posti liberi + email. Listino in{" "}
+        Ore/% solo per rimborso automatico. WhatsApp sulle «Nuove»: se scadono,
+        posti liberi + email. Listino in{" "}
         <Link href="/admin/last-minute">Last minute</Link>, testi in{" "}
         <Link href="/admin/pre-tour">Email</Link>.
       </p>
-      <button className="button-primary" disabled={busy}>
+      <button type="submit" className="button-primary" disabled={busy}>
         Salva regole
       </button>
     </form>
@@ -2783,6 +2978,7 @@ function LastMinuteEditor({
   return (
     <form
       className="card grid gap-6 p-6"
+      onKeyDown={blockEnterSubmit}
       onSubmit={(e) => {
         e.preventDefault();
         save(s);
@@ -2824,7 +3020,7 @@ function LastMinuteEditor({
           }
         />
       </div>
-      <button className="button-primary" disabled={busy}>
+      <button type="submit" className="button-primary" disabled={busy}>
         Salva last-minute
       </button>
     </form>
@@ -2872,7 +3068,7 @@ function OtaImport({
           minLength={10}
         />
       </label>
-      <button className="button-primary" disabled={busy}>
+      <button type="submit" className="button-primary" disabled={busy}>
         Analizza e importa
       </button>
     </form>

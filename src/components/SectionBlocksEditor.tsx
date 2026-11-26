@@ -1,11 +1,13 @@
 "use client";
 import { CONTENT_SECTION_STRUCTURE_ENABLED } from "@/lib/content-policy";
 import type { ContentSectionBlock } from "@/lib/types";
+import { InlineRichField } from "./InlineRichField";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageSourceField } from "./ImageSourceField";
 import { SectionBlocks } from "./SectionBlocks";
-import { RecordDrawer } from "./AdminRecords";
+import { RecordDrawer, recordsCss as css } from "./AdminRecords";
 import { AdminNotice } from "./AdminNotice";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Trash2 } from "lucide-react";
 import { useState } from "react";
 export function SectionBlocksEditor({
   blocks = [],
@@ -43,24 +45,57 @@ export function SectionBlocksEditor({
           className="grid gap-3 rounded border p-4"
           key={i}
         >
-          <legend>
-            Blocco {i + 1} ·{" "}
-            {b.type === "text"
-              ? "Testo"
-              : b.type === "image"
-                ? "Foto"
-                : "Testo e foto"}
-          </legend>
+          <div className="flex items-center gap-3 text-sm">
+            <strong className="min-w-0 flex-1 truncate">
+              Blocco {i + 1} ·{" "}
+              {b.type === "text"
+                ? "Testo"
+                : b.type === "image"
+                  ? "Foto"
+                  : "Testo e foto"}
+            </strong>
+            {CONTENT_SECTION_STRUCTURE_ENABLED && (
+              <div className={css.drawerTitleActions}>
+                <button
+                  type="button"
+                  className={css.icon}
+                  aria-label="Sposta blocco su"
+                  title="Sposta blocco su"
+                  disabled={i === 0}
+                  onClick={() => move(i, -1)}
+                >
+                  <ChevronUp size={15} />
+                </button>
+                <button
+                  type="button"
+                  className={css.icon}
+                  aria-label="Sposta blocco giù"
+                  title="Sposta blocco giù"
+                  disabled={i === blocks.length - 1}
+                  onClick={() => move(i, 1)}
+                >
+                  <ChevronDown size={15} />
+                </button>
+                <button
+                  type="button"
+                  className={`${css.icon} ${css.danger}`}
+                  aria-label="Rimuovi blocco"
+                  title="Rimuovi blocco"
+                  onClick={() => onChange(blocks.filter((_, j) => j !== i))}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            )}
+          </div>
           {b.type !== "image" && (
             <>
-              <label>
-                Titolo
-                <input
-                  className="text-input"
-                  value={b.heading}
-                  onChange={(e) => update(i, { heading: e.target.value })}
-                />
-              </label>
+              <InlineRichField
+                label="Titolo"
+                text={b.heading}
+                html={b.headingHtml}
+                onChange={(headingHtml, heading) => update(i, { heading, headingHtml })}
+              />
               <RichTextEditor label="Testo" text={b.text} html={b.html}
                 onChange={(html, text) => update(i, { html, text })} />
             </>
@@ -82,14 +117,12 @@ export function SectionBlocksEditor({
                   onChange={(e) => update(i, { alt: e.target.value })}
                 />
               </label>
-              <label>
-                Didascalia
-                <input
-                  className="text-input"
-                  value={b.caption}
-                  onChange={(e) => update(i, { caption: e.target.value })}
-                />
-              </label>
+              <InlineRichField
+                label="Didascalia"
+                text={b.caption}
+                html={b.captionHtml}
+                onChange={(captionHtml, caption) => update(i, { caption, captionHtml })}
+              />
             </>
           )}
           {b.type === "split" && (
@@ -109,31 +142,6 @@ export function SectionBlocksEditor({
               </select>
             </label>
           )}
-          {CONTENT_SECTION_STRUCTURE_ENABLED && (
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                disabled={i === 0}
-                onClick={() => move(i, -1)}
-              >
-                Sposta su
-              </button>
-              <button
-                type="button"
-                disabled={i === blocks.length - 1}
-                onClick={() => move(i, 1)}
-              >
-                Sposta giù
-              </button>
-              <button
-                type="button"
-                className="button-secondary button-danger"
-                onClick={() => onChange(blocks.filter((_, j) => j !== i))}
-              >
-                Rimuovi blocco
-              </button>
-            </div>
-          )}
         </fieldset>
       ))}
       {blocks.length > 0 && (
@@ -144,18 +152,20 @@ export function SectionBlocksEditor({
           <button
             type="button"
             className="button-secondary"
+            aria-label="Sezione precedente"
             disabled={!page}
             onClick={() => setPage(page - 1)}
           >
-            Precedente
+            <ChevronLeft size={16} />
           </button>
           <button
             type="button"
             className="button-secondary"
+            aria-label="Sezione successiva"
             disabled={page >= blocks.length - 1}
             onClick={() => setPage(page + 1)}
           >
-            Successiva
+            <ChevronRight size={16} />
           </button>
         </div>
       )}

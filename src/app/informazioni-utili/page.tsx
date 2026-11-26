@@ -1,3 +1,4 @@
+import { InlineCopy } from "@/components/RichInline";
 import { RichContent } from "@/components/RichContent";
 import { pageEdit } from "@/lib/visual-content";
 import { publicPage } from "@/lib/platform/public";
@@ -23,10 +24,10 @@ export default async function Page() {
       <div className="container-page">
         <div className={ui.usefulHeader}>
           <h1
-            {...pageEdit("informazioni-utili", "title")}
+            {...pageEdit("informazioni-utili", "titleHtml", "inline")}
             className={`display-xl ${ui.usefulTitle}`}
           >
-            {page?.title || "Informazioni utili"}
+            <InlineCopy html={page?.titleHtml}>{page?.title || "Informazioni utili"}</InlineCopy>
           </h1>
           <div
             {...pageEdit("informazioni-utili", "bodyHtml", "html")}
@@ -43,7 +44,10 @@ export default async function Page() {
           }}
           blocks={page?.contentBlocks}
         />
-        <BlogGuideList items={c.gallery} layout="grid" />
+        <BlogGuideList
+          items={c.gallery.filter((item) => item.channel === "useful")}
+          layout="list"
+        />
         <div className={ui.usefulActions}>
           <Link href="/faq" className="button-primary">
             Domande frequenti

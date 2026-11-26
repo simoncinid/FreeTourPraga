@@ -1,5 +1,4 @@
-import { SiteRichText } from "@/components/SiteRichText";
-import { siteEdit } from "@/lib/visual-content";
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "@/components/SiteRichText";
 import { SectionBlocks } from "@/components/SectionBlocks";
 import ui from "@/components/public-ui.module.css";
 import { FaqAccordion } from "@/components/FaqAccordion";
@@ -22,19 +21,19 @@ export default async function Page() {
       <div className="container-page">
         <JsonLd data={faqJsonLd(faqs)} />
         <p
-          {...siteEdit("home.faqEyebrow")}
+          {...siteInlineEdit("home.faqEyebrow")}
           className={`${ui.eyebrow} uppercase-tag mb-4 text-primary`}
         >
-          {c.home.faqEyebrow}
+          <SiteInlineText content={c} path="home.faqEyebrow">{c.home.faqEyebrow}</SiteInlineText>
         </p>
         <h1
-          {...siteEdit("home.faqTitle")}
+          {...siteInlineEdit("home.faqTitle")}
           className="display-xl mb-4 max-w-3xl"
         >
-          {c.home.faqTitle}
+          <SiteInlineText content={c} path="home.faqTitle">{c.home.faqTitle}</SiteInlineText>
         </h1>
         <SiteRichText content={c} path="home.faqBody" text={c.home.faqBody} className="body-md mb-10 max-w-3xl" />
-        <FaqAccordion items={faqs} />
+        <FaqAccordion items={faqs} formattedText={c.formattedText} />
         <p className="mt-10 text-sm">
           Non hai trovato la risposta?{" "}
           <Link

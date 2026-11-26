@@ -9,14 +9,14 @@ export type ContentPatch = {
   expected?: unknown;
   value?: unknown;
 };
-export type EditKind = "text" | "html" | "image" | "link" | "money";
+export type EditKind = "text" | "inline" | "html" | "image" | "link" | "money";
 export function cms(
   binding: ContentBinding,
   kind: EditKind = "text",
   value?: string,
 ) {
   return {
-    "data-cms": JSON.stringify(binding),
+    "data-cms": bindingId(binding),
     "data-cms-kind": kind,
     ...(value !== undefined ? { "data-cms-value": value } : {}),
   };
@@ -45,7 +45,8 @@ export const articleEdit = (
     },
     kind,
   );
-export const bindingId = (binding: ContentBinding) => JSON.stringify(binding);
+export const bindingId = ({ scope, key, path }: ContentBinding) =>
+  JSON.stringify(key ? { scope, key, path } : { scope, path });
 export function readContentPath(value: unknown, path: string[]): unknown {
   let cursor = value;
   for (const key of path) {

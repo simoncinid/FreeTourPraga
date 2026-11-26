@@ -1,9 +1,18 @@
 "use client";
 import { RichTextEditor } from "./RichTextEditor";
+import { InlineRichField } from "./InlineRichField";
+import { readRichTextField } from "./useRichTextField";
+import { hasInlineFormatting, paintPreviewText, previewInlineValue, removedFieldCss } from "./previewText";
+import { richHasText } from "@/lib/rich-text";
 import { AdminNotice } from "./AdminNotice";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
+import { observePreviewMounts } from "./CmsPreviewMount";
+import { BlogArticle } from "./BlogArticle";
+import type { GuideItem } from "@/lib/guides";
+import { writeContentPath } from "@/lib/visual-content";
 import { siteNavigation } from "@/lib/navigation";
 import { ImageSourceField } from "./ImageSourceField";
 import { pageLabels } from "@/lib/content-sections";
@@ -18,10 +27,24 @@ import {
   type ContentPatch,
   type EditKind,
 } from "@/lib/visual-content";
-import type { SiteContent } from "@/lib/platform/content";
+import type { BlogBlock, SiteContent } from "@/lib/platform/content";
 import type { ContentPage, EuropeanPartner } from "@/lib/platform/model";
 import type { Tour } from "@/lib/types";
+import { sampleParagraph, samplePhotos } from "@/lib/content-placeholders";
 import css from "./visual-content-editor.module.css";
+
+function sampleArticleBlock(type: BlogBlock["type"]): BlogBlock {
+  const text = { heading: "Lorem ipsum", text: sampleParagraph };
+  const photo = samplePhotos[type === "split" ? 2 : 1];
+  const image = {
+    imageUrl: photo.url,
+    alt: photo.alt,
+    caption: "Lorem ipsum dolor sit amet",
+  };
+  if (type === "text") return { type, ...text };
+  if (type === "image") return { type, ...image };
+  return { type, ...text, ...image, imagePosition: "right" };
+}
 export type VisualContentChrome = {
   dirty: number;
   canSave: boolean;
@@ -144,9 +167,38 @@ function nodeValue(node: HTMLElement, kind: EditKind) {
   if (kind === "link") return node.getAttribute("href") || "";
   if (kind === "html")
     return node.querySelector(".rich-content")?.innerHTML || node.innerHTML;
+  if (kind === "inline") return previewInlineValue(node);
   return node.innerText;
 }
-const paintedHtml = new WeakMap<HTMLElement, string>();
+function plainTextBinding(binding: ContentBinding): ContentBinding | undefined {
+  const fields: Record<string, string> = {
+    html: "text",
+    bodyHtml: "body",
+    introHtml: "intro",
+    answerHtml: "a",
+    titleHtml: "title",
+    subtitleHtml: "subtitle",
+    headingHtml: "heading",
+    captionHtml: "caption",
+  };
+  const plainField = fields[binding.path.at(-1) ?? ""];
+  if (binding.scope === "site" && binding.path[0] === "formattedText")
+    return { ...binding, path: binding.path[1].split("-") };
+  return plainField
+    ? { ...binding, path: [...binding.path.slice(0, -1), plainField] }
+    : undefined;
+}
+function textStyleBinding(binding: ContentBinding): ContentBinding {
+  return { ...binding, path: ["formattedText", binding.path.join("-")] };
+}
+const hiddenTextBinding: ContentBinding = { scope: "site", path: ["hiddenText"] };
+const previewOriginals = new WeakMap<HTMLElement, {
+  html: string;
+  text: string;
+  src: string | null;
+  srcset: string | null;
+  href: string | null;
+}>();
 function decorateRichImages(doc: Document) {
   for (const root of doc.querySelectorAll<HTMLElement>(
     '[data-cms-kind="html"]',
@@ -160,40 +212,77 @@ function decorateRichImages(doc: Document) {
 function paint(
   doc: Document | undefined | null,
   patches: Record<string, ContentPatch>,
+  hidden: readonly string[],
+  readSaved: (binding: ContentBinding) => unknown,
 ) {
   if (!doc) return;
+  const removed = new Set(hidden);
+  const hasPatches = Object.keys(patches).length > 0;
   for (const node of doc.querySelectorAll<HTMLElement>("[data-cms]")) {
-    const patch = patches[node.dataset.cms!];
-    if (!patch) continue;
-    const value = String(patch.value ?? "");
     if (node.dataset.cmsRichImage !== undefined) continue;
-    if (node.dataset.cmsKind === "link") {
-      node.setAttribute("href", value);
-    } else if (node.dataset.cmsKind === "image") {
+    node.toggleAttribute("data-cms-removed", removed.has(node.dataset.cms!));
+    const kind = node.dataset.cmsKind;
+    const patch = patches[node.dataset.cms!];
+    const binding = patch?.binding ?? (hasPatches && (kind === "inline" || kind === "text")
+      ? JSON.parse(node.dataset.cms!) as ContentBinding
+      : undefined);
+    const plainBinding = binding && kind === "inline" ? plainTextBinding(binding) : undefined;
+    const plain = plainBinding && patches[bindingId(plainBinding)]?.value;
+    const style = binding && kind === "text" ? patches[bindingId(textStyleBinding(binding))] : undefined;
+    if (!patch && !style && typeof plain !== "string") {
+      const original = previewOriginals.get(node);
+      if (!original) continue;
+      previewOriginals.delete(node);
+      if (node.dataset.cmsKind === "image" || node.dataset.cmsKind === "link") {
+        for (const attribute of ["src", "srcset", "href"] as const) {
+          const value = original[attribute];
+          if (value === null) node.removeAttribute(attribute);
+          else node.setAttribute(attribute, value);
+        }
+      } else if (node.innerHTML !== original.html) {
+        node.innerHTML = original.html;
+      }
+      continue;
+    }
+    if (!previewOriginals.has(node)) previewOriginals.set(node, {
+      html: node.innerHTML,
+      text: node.textContent ?? "",
+      src: node.getAttribute("src"),
+      srcset: node.getAttribute("srcset"),
+      href: node.getAttribute("href"),
+    });
+    const value = String(patch?.value ?? "");
+    if (kind === "text" && typeof style?.value === "string" && style.value) {
+      paintPreviewText(node, style.value, "inline");
+    } else if (kind === "text" && style && !patch) {
+      paintPreviewText(node, previewOriginals.get(node)!.text, "text");
+    } else if (kind === "link") {
+      if (node.getAttribute("href") !== value) node.setAttribute("href", value);
+    } else if (kind === "image") {
       if (node.getAttribute("src") !== value) {
         node.removeAttribute("srcset");
         node.setAttribute("src", value);
       }
-    } else if (node.dataset.cmsKind === "html") {
-      if (paintedHtml.get(node) !== value) {
-        node.innerHTML = value;
-        paintedHtml.set(node, value);
-      }
+    } else if (kind === "inline" && !value) {
+      const savedPlain = plainBinding && readSaved(plainBinding);
+      const fallback = typeof savedPlain === "string" ? savedPlain : previewOriginals.get(node)!.text;
+      paintPreviewText(node, typeof plain === "string" ? plain : fallback, "text");
+    } else if (kind === "html" || kind === "inline") {
+      paintPreviewText(node, value, kind);
     } else {
-      const text =
-        node.dataset.cmsKind === "money"
-          ? formatMoney(Number(patch.value), node.dataset.cmsCurrency || "EUR")
-          : value;
-      if (node.textContent !== text) node.textContent = text;
+      const text = kind === "money"
+        ? formatMoney(Number(patch?.value), node.dataset.cmsCurrency || "EUR")
+        : value;
+      paintPreviewText(node, text, "text");
     }
   }
 }
 type Selection = {
   binding: ContentBinding;
   kind: EditKind;
-  value: string;
   label: string;
   richImage?: number;
+  link?: boolean;
   currency?: string;
 };
 export function VisualContentEditor({
@@ -205,6 +294,7 @@ export function VisualContentEditor({
   busy,
   save,
   onChromeChange,
+  articleDraft,
 }: {
   content: SiteContent;
   pages: Record<string, ContentPage>;
@@ -214,9 +304,21 @@ export function VisualContentEditor({
   busy: boolean;
   save: (body: unknown) => Promise<unknown>;
   onChromeChange?: (chrome: VisualContentChrome | null) => void;
+  articleDraft?: {
+    guide: GuideItem;
+    change: (guide: GuideItem) => void;
+    onUploading: (busy: boolean) => void;
+    locked?: boolean;
+  };
 }) {
-  const destinations = visualDestinations(content, pages, tours);
-  const initial =
+  const destinations = articleDraft ? [] : visualDestinations(content, pages, tours);
+  const [articleMount, setArticleMount] = useState<HTMLElement | null>(null);
+  const article = useRef(articleDraft?.guide);
+  useLayoutEffect(() => { article.current = articleDraft?.guide; }, [articleDraft]);
+  const initial = articleDraft ? {
+    label: articleDraft.guide.title, href: "/cms-articolo", scope: "article" as const,
+    key: articleDraft.guide.id || `guide:${guideSlug(articleDraft.guide)}`,
+  } :
     destinations.find((d) => d.key === pageEditorKey(detail || "homepage")) ||
     destinations[0];
   const [destination, setDestination] = useState(initial),
@@ -269,15 +371,16 @@ export function VisualContentEditor({
     source = useRef({ content, pages, partners }),
     cleanup = useRef<() => void>(() => {});
   const dirty = Object.keys(patches).length;
-  useEffect(() => {
-    patchRef.current = patches;
-    paint(frame.current?.contentDocument, patches);
-    if (frame.current?.contentDocument)
-      decorateRichImages(frame.current.contentDocument);
-  }, [patches]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dirty && !busy) source.current = { content, pages, partners };
   }, [content, pages, partners, dirty, busy]);
+  useLayoutEffect(() => {
+    patchRef.current = patches;
+    paint(frame.current?.contentDocument, patches, hiddenText(patches), storedValue);
+    if (frame.current?.contentDocument)
+      decorateRichImages(frame.current.contentDocument);
+  }, [patches, articleDraft?.guide.hiddenText, content.hiddenText]);
+
 
   useEffect(() => {
     const listener = (e: BeforeUnloadEvent) => {
@@ -323,14 +426,33 @@ export function VisualContentEditor({
     if (selection) dialog.current?.showModal();
   }, [selection]);
   useEffect(() => () => cleanup.current(), []);
+  function hiddenText(patches = patchRef.current): string[] {
+    if (article.current) return article.current.hiddenText ?? [];
+    const fields = (binding: ContentBinding, saved?: string[]) => {
+      const patch = patches[bindingId(binding)];
+      return (patch ? patch.value as string[] | undefined : saved) ?? [];
+    };
+    return [
+      ...fields(hiddenTextBinding, source.current.content.hiddenText),
+      ...source.current.content.gallery.flatMap((guide) => fields({
+        scope: "article",
+        key: guide.id || `guide:${guideSlug(guide)}`,
+        path: ["hiddenText"],
+      }, guide.hiddenText)),
+    ];
+  }
+  function storedValue(binding: ContentBinding) {
+    if (binding.scope === "article" && article.current)
+      return readContentPath(article.current, binding.path);
+    return original(binding, source.current.content, source.current.pages, source.current.partners);
+  }
+  function draftValue(binding: ContentBinding) {
+    const patch = patchRef.current[bindingId(binding)];
+    return patch ? patch.value : storedValue(binding);
+  }
   function put(binding: ContentBinding, next: unknown) {
-    const id = bindingId(binding),
-      expected = original(
-        binding,
-        source.current.content,
-        source.current.pages,
-        source.current.partners,
-      );
+    const id = bindingId(binding);
+    const expected = storedValue(binding);
     const result = { ...patchRef.current };
     if (jsonEqual(expected, next)) delete result[id];
     else result[id] = { binding, expected, value: next };
@@ -366,21 +488,13 @@ export function VisualContentEditor({
     visible?: string,
     node?: HTMLElement,
   ) {
-    const id = bindingId(binding);
-    const stored =
-      patchRef.current[id]?.value ??
-      original(
-        binding,
-        source.current.content,
-        source.current.pages,
-        source.current.partners,
-      );
-    const next =
-      kind === "money" && typeof stored === "number"
-        ? String(stored / 100)
-        : kind === "html" && typeof stored === "string" && stored
-          ? stored
-          : (visible ?? (typeof stored === "string" ? stored : ""));
+    const stored = draftValue(binding);
+    const style = kind === "text" ? draftValue(textStyleBinding(binding)) : undefined;
+    const next = typeof style === "string" && style ? style : kind === "money" && typeof stored === "number"
+      ? String(stored / 100)
+      : (kind === "html" || kind === "inline") && typeof stored === "string" && stored
+        ? stored
+        : visible ?? (typeof stored === "string" ? stored : "");
     const richImage =
       node?.dataset.cmsRichImage !== undefined
         ? Number(node.dataset.cmsRichImage)
@@ -408,17 +522,7 @@ export function VisualContentEditor({
           binding: altBinding,
           label: "Testo alternativo",
           value: altBinding
-            ? String(
-                patchRef.current[bindingId(altBinding)]?.value ??
-                  original(
-                    altBinding,
-                    source.current.content,
-                    source.current.pages,
-                    source.current.partners,
-                  ) ??
-                  node?.getAttribute("alt") ??
-                  "",
-              )
+            ? String(draftValue(altBinding) ?? node?.getAttribute("alt") ?? "")
             : node?.getAttribute("alt") || "",
         });
     }
@@ -427,26 +531,17 @@ export function VisualContentEditor({
       additional.push({
         binding: hrefBinding,
         label: "Destinazione del pulsante",
-        value: String(
-          patchRef.current[bindingId(hrefBinding)]?.value ??
-            original(
-              hrefBinding,
-              source.current.content,
-              source.current.pages,
-              source.current.partners,
-            ) ??
-            "",
-        ),
+        value: String(draftValue(hrefBinding) ?? ""),
       });
     }
     setNotice("");
     setExtras(additional);
-    setValue(next);
+    setValue(hiddenText().includes(bindingId(binding)) ? "" : next);
     setSelection({
       binding,
       kind,
-      value: next,
       richImage,
+      link: !node?.closest("a,button"),
       currency: node?.dataset.cmsCurrency,
       label:
         kind === "image"
@@ -465,14 +560,23 @@ export function VisualContentEditor({
     cleanup.current();
     const doc = frame.current?.contentDocument;
     if (!doc?.body?.querySelector("main")) return;
+    const stopWatchingMount = articleDraft && observePreviewMounts(doc, () => {
+      setArticleMount(doc.querySelector<HTMLElement>("#cms-article-preview[data-cms-mounted]"));
+    });
     connected.current = doc;
+    doc.body.setAttribute("data-cms-editor", "");
     const style = doc.createElement("style");
-    style.textContent =
-      '[data-cms]{transition:outline-color .15s}[data-cms]:hover{outline:2px dashed #0b83a6;outline-offset:4px;cursor:text}[data-cms-kind="image"]:hover{cursor:pointer}[data-cms-kind="text"]:empty,[data-cms-kind="html"]:empty{display:inline-block;min-width:30px;min-height:20px;outline:1px dashed #0b83a6}.consent-banner,.consent-settings{display:none!important}';
+    style.textContent = removedFieldCss +
+      '[data-cms]{transition:outline-color .15s}[data-cms]:hover{outline:2px dashed #0b83a6;outline-offset:4px;cursor:text}[data-cms-kind="image"]:hover{cursor:pointer}[data-cms-kind="text"]:empty,[data-cms-kind="inline"]:empty,[data-cms-kind="html"]:empty{display:inline-block;min-width:30px;min-height:20px;outline:1px dashed #0b83a6}.consent-banner,.consent-settings{display:none!important}';
     doc.head.appendChild(style);
     const dbl = (event: MouseEvent) => {
       const element = event.target as Element;
       let node = element.closest<HTMLElement>("[data-cms]");
+      if (!node && element.matches("details, summary, [data-cms-hide-parent]")) {
+        node = element.querySelector<HTMLElement>(
+          element.matches("details") ? ":scope > summary [data-cms]" : ":scope > [data-cms]",
+        );
+      }
       if (!node && !element.closest("a,button") && element.tagName !== "IMG") {
         const background = element.closest("[data-cms-background]");
         node = background
@@ -493,14 +597,12 @@ export function VisualContentEditor({
       event.preventDefault();
       event.stopPropagation();
       const b = JSON.parse(node.dataset.cms!) as ContentBinding;
+      if (articleDraft && b.scope !== "article") return;
       const kind = (node.dataset.cmsKind || "text") as EditKind;
       open(
         b,
         kind,
-        node.dataset.cmsRichImage === undefined &&
-          patchRef.current[bindingId(b)]
-          ? String(patchRef.current[bindingId(b)].value ?? "")
-          : nodeValue(node, kind),
+        nodeValue(node, kind),
         node,
       );
     };
@@ -515,6 +617,7 @@ export function VisualContentEditor({
       if (!a) return;
       event.preventDefault();
       event.stopPropagation();
+      if (articleDraft) return;
       const url = new URL(a.href, location.origin);
       const target = destinations.find(
         (d) =>
@@ -543,16 +646,16 @@ export function VisualContentEditor({
       pending = true;
       requestAnimationFrame(() => {
         pending = false;
-        paint(doc, patchRef.current);
+        paint(doc, patchRef.current, hiddenText(), storedValue);
         decorateRichImages(doc);
       });
     });
-    observer.observe(doc.body, { subtree: true, childList: true });
-    paint(doc, patchRef.current);
+    observer.observe(doc.body, { subtree: true, childList: true, characterData: true });
+    paint(doc, patchRef.current, hiddenText(), storedValue);
     decorateRichImages(doc);
     // Old tree links to an individual blog article keep opening that article.
     const hash = decodeURIComponent(window.location.hash);
-    if (hash.startsWith("#articolo-")) {
+    if (!articleDraft && hash.startsWith("#articolo-")) {
       const a = source.current.content.gallery.find(
         (a) => `#articolo-${guideSlug(a)}` === hash,
       );
@@ -569,6 +672,7 @@ export function VisualContentEditor({
     setReadySource(frame.current?.getAttribute("src") || "");
     cleanup.current = () => {
       observer.disconnect();
+      if (stopWatchingMount) stopWatchingMount();
       doc.removeEventListener("dblclick", dbl, true);
       doc.removeEventListener("click", click, true);
       doc.removeEventListener("submit", submit, true);
@@ -576,17 +680,38 @@ export function VisualContentEditor({
   }
   function apply() {
     if (!selection) return;
+    const field = dialog.current?.querySelector<HTMLElement>("[contenteditable='true']");
+    const rich = field ? readRichTextField(field) : undefined;
+    const hasMedia = Boolean(field?.querySelector("img,hr,table"));
+    const nextValue = rich ? (rich.plain || hasMedia ? rich.html : "") : value;
+    if (articleDraft && selection.kind === "image" && !/^(?:\/(?!\/)|https:\/\/)/i.test(value.trim())) {
+      setNotice("Inserisci un percorso immagine o un URL HTTPS.");
+      return;
+    }
+    const id = bindingId(selection.binding);
+    const hiddenBinding: ContentBinding = selection.binding.scope === "article"
+      ? { ...selection.binding, path: ["hiddenText"] }
+      : hiddenTextBinding;
+    const savedHidden = storedValue(hiddenBinding) as string[] | undefined;
+    const hidden = (draftValue(hiddenBinding) as string[] | undefined) ?? [];
+    const wasHidden = hidden.includes(id);
+    const hide = Boolean(rich && !rich.plain && !hasMedia);
+    const nextHidden = hide ? [...new Set([...hidden, id])] : hidden.filter((entry) => entry !== id);
+    if (hide !== wasHidden && !articleDraft)
+      put(hiddenBinding, nextHidden.length || savedHidden ? nextHidden : undefined);
+    if (hide) {
+      if (articleDraft) {
+        const guide = { ...articleDraft.guide, hiddenText: nextHidden };
+        article.current = guide;
+        articleDraft.change(guide);
+      }
+      setSelection(null);
+      return;
+    }
+
     seedPage(selection.binding);
     if (selection.richImage !== undefined) {
-      const current =
-        patchRef.current[bindingId(selection.binding)]?.value ??
-        original(
-          selection.binding,
-          source.current.content,
-          source.current.pages,
-          source.current.partners,
-        ) ??
-        "";
+      const current = draftValue(selection.binding) ?? "";
       const parsed = new DOMParser().parseFromString(
         String(current),
         "text/html",
@@ -596,7 +721,7 @@ export function VisualContentEditor({
         setNotice("Foto non più presente. Ricarica la pagina.");
         return;
       }
-      image.setAttribute("src", value);
+      image.setAttribute("src", value.trim());
       image.setAttribute("alt", extras[0]?.value || "");
       put(selection.binding, parsed.body.innerHTML);
     } else {
@@ -604,32 +729,42 @@ export function VisualContentEditor({
         const amount = Number(value.replace(",", "."));
         if (!value.trim() || !Number.isFinite(amount) || amount < 0) return;
         put(selection.binding, Math.round(amount * 100));
-      } else put(selection.binding, value);
+      } else {
+        if (selection.kind === "text" && rich) {
+          const style = textStyleBinding(selection.binding);
+          const html = hasInlineFormatting(rich.html) ? rich.html : "";
+          const previousStyle = storedValue(style);
+          put(style, html || (previousStyle ? "" : previousStyle));
+          put(selection.binding, rich.plain);
+        } else {
+          if (selection.kind === "inline" && !hasInlineFormatting(nextValue)) {
+            const savedStyle = storedValue(selection.binding);
+            put(selection.binding, savedStyle ? "" : savedStyle);
+          } else {
+            put(selection.binding, selection.kind === "image" ? value.trim() : nextValue);
+          }
+        }
+      }
       for (const extra of extras)
         if (extra.binding) put(extra.binding, extra.value);
     }
 
-    if (selection.kind === "html") {
-      const b = selection.binding,
-        last = b.path.at(-1);
-      const sibling =
-        ({ html: "text", bodyHtml: "body", introHtml: "intro", answerHtml: "a" } as Record<string, string>)[last ?? ""];
-      const plainPath = b.scope === "site" && b.path[0] === "formattedText"
-        ? b.path[1].split("-")
-        : sibling ? [...b.path.slice(0, -1), sibling] : null;
-      if (plainPath) {
-        const doc = new DOMParser().parseFromString(
-          value.replace(/<\/(?:p|div|h[1-6]|li)>|<br\s*\/?>/gi, "$&\n"),
-          "text/html",
-        );
-        put(
-          { ...b, path: plainPath },
-          doc.body.textContent?.trim() || "",
-        );
-      }
+    if (rich) {
+      const plainBinding = plainTextBinding(selection.binding);
+      if (plainBinding) put(plainBinding, rich.plain);
+    }
+    if (articleDraft) {
+      const guide = structuredClone(articleDraft.guide);
+      if (wasHidden) guide.hiddenText = nextHidden;
+      for (const { binding, value: next } of Object.values(patchRef.current))
+        writeContentPath(guide, binding.path, next);
+      article.current = guide;
+      articleDraft.change(guide);
+      patchRef.current = {};
+      setPatches({});
     }
     setSelection(null);
-    setNotice("Modifica in bozza. Premi Salva modifiche per pubblicarla.");
+    setNotice(articleDraft ? "" : "Modifica in bozza. Premi Salva modifiche per pubblicarla.");
   }
   async function publish() {
     setNotice("");
@@ -688,7 +823,43 @@ export function VisualContentEditor({
       : { scope: "page", key: pageKey!, path: [field] };
   return (
     <section className={css.workspace} aria-label="Editor visuale delle pagine">
-      <div className={css.toolbar}>
+      {articleDraft ? (
+        <div className={css.articleToolbar}>
+          <p className={`text-sm ${css.articleHint}`}>
+            Fai doppio clic su un testo o su una foto per modificarli.
+          </p>
+          <div className={css.articleActions}>
+            {(
+              [
+                ["text", "Aggiungi testo"],
+                ["image", "Aggiungi immagine"],
+                ["split", "Aggiungi testo e immagine"],
+              ] as const
+            ).map(([type, label]) => (
+              <button
+                key={type}
+                type="button"
+                className="button-secondary"
+                disabled={
+                  articleDraft.locked ||
+                  (articleDraft.guide.blocks?.length ?? 0) >= 40
+                }
+                onClick={() =>
+                  articleDraft.change({
+                    ...articleDraft.guide,
+                    blocks: [
+                      ...(articleDraft.guide.blocks ?? []),
+                      sampleArticleBlock(type),
+                    ],
+                  })
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : <div className={css.toolbar}>
         <label className={css.pageSelect}>
           <span>Pagina</span>
           <select
@@ -716,15 +887,6 @@ export function VisualContentEditor({
             )}
           </select>
         </label>
-        {dirty > 0 && (
-          <button
-            type="button"
-            className={`button-secondary ${css.discardButton}`}
-            onClick={discard}
-          >
-            Annulla bozza
-          </button>
-        )}
         <div className={css.devices}>
           <button
             type="button"
@@ -748,7 +910,7 @@ export function VisualContentEditor({
             </button>
           ))}
         </div>
-      </div>
+      </div>}
       {notice && !selection && <AdminNotice key={notice} message={notice} />}
       <dialog
         ref={seoDialog}
@@ -808,7 +970,7 @@ export function VisualContentEditor({
           </div>
         </div>
       </dialog>
-      {readySource !== iframeSource && (
+      {(readySource !== iframeSource || (articleDraft && !articleMount)) && (
         <p role="status">Caricamento della pagina modificabile…</p>
       )}
       <div ref={stage} className={css.stage}>
@@ -817,6 +979,7 @@ export function VisualContentEditor({
           style={{ width: viewportWidth * previewScale, height: previewHeight }}
         >
           <iframe
+            key={iframeSource}
             ref={frame}
             title={`Pagina pubblica modificabile: ${destination.label}`}
             src={iframeSource}
@@ -826,17 +989,19 @@ export function VisualContentEditor({
               width: viewportWidth,
               height: previewHeight / previewScale,
               transform: `scale(${previewScale})`,
-              pointerEvents: readySource === iframeSource ? "auto" : "none",
+              pointerEvents: readySource === iframeSource && !busy ? "auto" : "none",
             }}
           />
         </div>
       </div>
+      {articleMount && articleDraft && createPortal(<BlogArticle guide={articleDraft.guide} preview />, articleMount)}
       {selection && (
         <dialog
           ref={dialog}
           className={css.dialog}
           onCancel={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             if (!uploading) setSelection(null);
           }}
         >
@@ -848,11 +1013,21 @@ export function VisualContentEditor({
                 label="Foto"
                 value={value}
                 onChange={setValue}
-                onUploading={setUploading}
+                onUploading={(busy) => { setUploading(busy); articleDraft?.onUploading(busy); }}
                 onNotice={setNotice}
               />
             ) : selection.kind === "html" ? (
-              <RichTextEditor label="Testo formattato" html={value} onChange={setValue} />
+              <RichTextEditor
+                label="Testo formattato"
+                html={richHasText(value) ? value : undefined}
+                text={value}
+                onChange={(html, plain) => setValue(plain ? html : plain)}
+              />
+            ) : selection.kind === "link" ? (
+              <label>
+                Indirizzo del collegamento
+                <input className="text-input" value={value} onChange={(event) => setValue(event.target.value)} />
+              </label>
             ) : selection.kind === "money" ? (
               <label>
                 Prezzo offerta ({selection.currency || "EUR"})
@@ -868,18 +1043,14 @@ export function VisualContentEditor({
                 />
               </label>
             ) : (
-              <label>
-                Testo
-                <textarea
-                  className="text-input"
-                  aria-label="Testo da modificare"
-                  rows={7}
-                  maxLength={30000}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  autoFocus
-                />
-              </label>
+              <InlineRichField
+                label="Testo"
+                link={selection.link}
+                multiline
+                html={richHasText(value) && value.includes("<") ? value : undefined}
+                text={value}
+                onChange={(html, plain) => setValue(plain ? html : plain)}
+              />
             )}
             {extras.map((extra, index) => (
               <label key={extra.label}>
@@ -899,8 +1070,7 @@ export function VisualContentEditor({
             ))}
             {notice && <AdminNotice key={notice} message={notice} />}
             <p>
-              La modifica viene applicata alla bozza. Il salvataggio pubblica
-              soltanto i campi modificati.
+              {articleDraft ? "Pubblica articoli per salvare la bozza." : "La modifica viene applicata alla bozza e salvata quando pubblichi."}
             </p>
             <div className={css.actions}>
               <button

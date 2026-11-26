@@ -11,7 +11,7 @@ export async function TripAdvisorSection({
 }: {
   layout?: "section" | "card";
 }) {
-  const { globals: g } = await publicSiteContent();
+  const { globals: g, formattedText } = await publicSiteContent();
   const live = await loadTripadvisorScore().catch(() => null);
   const reviews = tripadvisorReviews.map((review) => ({
     author: review.author,
@@ -25,6 +25,7 @@ export async function TripAdvisorSection({
   return (
     <TripAdvisorWidget
       layout={layout}
+      formattedText={formattedText}
       googleReviewUrl={g.googleReviewUrl}
       tripAdvisor={{
         profileUrl: g.tripAdvisorUrl || tripAdvisor.profileUrl,

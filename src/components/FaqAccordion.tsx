@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { siteEdit } from "@/lib/visual-content";
+import type { SiteContent } from "@/lib/platform/content";
+import { SiteInlineText, siteInlineEdit } from "./SiteRichText";
 import { RichContent } from "./RichContent";
 
 export function FaqAccordion({
   items,
+  formattedText,
 }: {
+  formattedText?: SiteContent["formattedText"];
   items: { q: string; a: string; answerHtml?: string }[];
 }) {
   const [visible, setVisible] = useState(10);
@@ -16,7 +20,7 @@ export function FaqAccordion({
       {items.slice(0, visible).map((item, index) => (
         <details name="domande-frequenti" key={item.q} className="card">
           <summary className="font-bold cursor-pointer">
-            <span {...siteEdit(`faqs.${index}.q`)}>{item.q}</span>
+            <span {...siteInlineEdit(`faqs.${index}.q`)}><SiteInlineText content={{ formattedText }} path={`faqs.${index}.q`}>{item.q}</SiteInlineText></span>
             <Plus size={18} aria-hidden />
           </summary>
           {item.answerHtml ? (

@@ -19,12 +19,24 @@ const https = z
     }
   }, "È richiesto un URL HTTPS");
 const optionalText = (max: number) => z.string().trim().max(max).default("");
+const hiddenText = z.array(z.string().max(1400).refine((value) => {
+  try {
+    const binding = JSON.parse(value);
+    return ["site", "page", "article", "partner"].includes(binding?.scope) &&
+      (binding.key === undefined || typeof binding.key === "string") &&
+      Array.isArray(binding.path) && binding.path.length >= 1 &&
+      binding.path.every((part: unknown) => typeof part === "string" && /^[a-zA-Z0-9_-]+$/.test(part));
+  } catch {
+    return false;
+  }
+})).max(2000).optional();
 const articleHref = z.union([z.literal(""), localPath, https]);
 export const blogBlockSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
     html: z.string().max(100000).transform(sanitizeRichText).optional(),
     heading: optionalText(250),
+    headingHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
     text: z.string().trim().min(1).max(20000),
   }),
   z.object({
@@ -32,15 +44,18 @@ export const blogBlockSchema = z.discriminatedUnion("type", [
     imageUrl: tourSchema.shape.imageUrl,
     alt: optionalText(250),
     caption: optionalText(1000),
+    captionHtml: z.string().max(12000).transform(sanitizeRichText).optional(),
   }),
   z.object({
     type: z.literal("split"),
     html: z.string().max(100000).transform(sanitizeRichText).optional(),
     heading: optionalText(250),
+    headingHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
     text: z.string().trim().min(1).max(20000),
     imageUrl: tourSchema.shape.imageUrl,
     alt: optionalText(250),
     caption: optionalText(1000),
+    captionHtml: z.string().max(12000).transform(sanitizeRichText).optional(),
     imagePosition: z.enum(["left", "right"]).default("right"),
   }),
 ]);
@@ -75,15 +90,26 @@ export const blogArticleSchema = z
       .optional(),
     updatedAt: z.string().datetime().optional(),
     title: short,
+    titleHtml: z.string().max(6000).transform(sanitizeRichText).optional(),
     caption: body,
+    captionHtml: z.string().max(30000).transform(sanitizeRichText).optional(),
     imageUrl: tourSchema.shape.imageUrl,
     imageAlt: optionalText(250),
     intro: optionalText(20000),
     introHtml: z.string().max(100000).transform(sanitizeRichText).optional(),
+    hiddenText,
+    formattedText: z.partialRecord(
+      z.enum(["kicker", "backLabel", "footerBackLabel", "ctaLabel"]),
+      z.string().max(6000).transform(sanitizeRichText),
+    ).optional(),
+    kicker: optionalText(120).optional(),
+    backLabel: optionalText(80).optional(),
+    footerBackLabel: optionalText(80).optional(),
     blocks: z.array(blogBlockSchema).max(40).default([]),
     ctaEnabled: z.boolean().default(false),
     ctaLabel: optionalText(250),
     ctaHref: articleHref.default(""),
+    channel: z.enum(["blog", "useful"]).optional(),
   })
   .superRefine((article, ctx) => {
     if (article.ctaEnabled) {
@@ -102,8 +128,9 @@ export const blogArticleSchema = z
     }
   });
 export const siteContentSchema = z.object({
+  hiddenText,
   formattedText: z.record(
-    z.string().regex(/^(?:home-[a-zA-Z]+Body|home-pillars-\d+-text|answers-\d+-answer|globals-(?:description|footerText|footerNote|tripAdvisorBody))$/),
+    z.string().regex(/^(?:home-[a-zA-Z]+(?:Body|Title|Eyebrow|Label|Note)|home-pillars-\d+-(?:text|title)|home-stats-\d+-(?:value|label)|home-groups-\d+-title|home-specialOffers-\d+-label|answers-\d+-(?:answer|question)|faqs-\d+-q|globals-(?:description|footerText|footerNote|tripAdvisorTitle|tripAdvisorBody|brandName|email|phone|address|officeAddress|castleMeetingAddress))$/),
     z.string().max(100000).transform(sanitizeRichText),
   ).optional(),
   contentVersion: z.literal(2).default(2),

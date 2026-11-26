@@ -29,7 +29,11 @@ export type Reservation = {
   adults: number;
   children: number;
   infants: number;
-  policy?: { cancellationHours: number; lateRefundPercent: number };
+  policy?: {
+    cancellationHours: number;
+    lateRefundPercent: number;
+    cancellationClause: string;
+  };
   bookingNote?: string;
   unitAdultCents?: number;
   unitChildCents?: number;
@@ -40,7 +44,13 @@ export type Reservation = {
   totalCents: number;
   paymentInstructions?: string;
   paymentMethod: "cash" | "bank_transfer" | "stripe" | "ota" | "whatsapp";
-  paymentStatus: "pending" | "paid" | "refunded" | "not_required" | "failed";
+  paymentStatus:
+    | "pending"
+    | "contacted"
+    | "paid"
+    | "refunded"
+    | "not_required"
+    | "failed";
   status:
     | "confirmed"
     | "pending"
@@ -126,10 +136,12 @@ export type Affiliate = {
   wpId?: number;
 };
 export type ContentPage = {
-  benefits?: { title: string; text: string }[];
+  benefits?: { title: string; titleHtml?: string; text: string; html?: string }[];
   contentBlocks?: ContentSectionBlock[];
   canonicalPath?: string;
   bodyHtml?: string;
+  titleHtml?: string;
+  subtitleHtml?: string;
   updatedAt?: string;
   sourceUrl?: string;
   title: string;
@@ -145,6 +157,8 @@ export type Settings = {
   paymentHoldMinutes: number;
   cancellationHours: number;
   lateRefundPercent: number;
+  /** Clausola di cancellazione mostrata su sito, checkout ed email. */
+  cancellationClause: string;
   retentionDays: number;
   emailFooter: string;
   emailTemplates: EmailTemplates;
@@ -164,6 +178,7 @@ export type OtaMessage = {
   createdAt: string;
 };
 export type EuropeanPartner = {
+  formattedText?: Partial<Record<"name" | "description" | "email" | "phone", string>>;
   id: string;
   name: string;
   description: string;
@@ -211,6 +226,11 @@ export type PlatformState = {
     action: string;
     target: string;
     at: string;
+    before?: string;
+    after?: string;
+    tour?: string;
+    when?: string;
+    booking?: string;
   }[];
   notices?: { id: string; text: string; at: string }[];
   tickets?: {
@@ -220,6 +240,11 @@ export type PlatformState = {
     status: "open" | "working" | "done";
     at: string;
     updatedAt: string;
+    attachments?: {
+      name: string;
+      url: string;
+      kind: "image" | "video";
+    }[];
   }[];
   rateLimits: Record<string, { count: number; resetAt: number }>;
   events: string[];

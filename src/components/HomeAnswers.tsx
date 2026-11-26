@@ -1,7 +1,6 @@
 "use client";
-import { siteEdit } from "@/lib/visual-content";
 
-import { SiteRichText } from "./SiteRichText";
+import { SiteInlineText, SiteRichText, siteInlineEdit } from "./SiteRichText";
 import { CardCarousel } from "./CardCarousel";
 import styles from "@/app/home.module.css";
 import type { SiteContent } from "@/lib/platform/content";
@@ -20,10 +19,10 @@ function AnswerCard({ item, index, formattedText }: { item: Answer; index: numbe
   return (
     <article className={`card p-6 ${styles.answerCard}`}>
       <h3
-        {...siteEdit(`answers.${index}.question`)}
+        {...siteInlineEdit(`answers.${index}.question`)}
         className={`title-md mb-3 ${styles.answerTitle}`}
       >
-        {item.question}
+        <SiteInlineText content={{ formattedText }} path={`answers.${index}.question`}>{item.question}</SiteInlineText>
       </h3>
       <SiteRichText content={{ formattedText }} path={`answers.${index}.answer`} text={item.answer} />
     </article>

@@ -18,6 +18,8 @@ import { sanitizeRichText } from "../rich-text";
 import { tourGalleryImages } from "../tour-gallery";
 import QRCode from "qrcode";
 import { audit, localMode, readState, transaction } from "./store";
+import type { PlatformState } from "./model";
+import { inferredTourCode } from "../tour-code";
 import {
   bearer,
   checkOrigin,
@@ -62,7 +64,7 @@ import {
 import { runJobs, sendEmailTest } from "./providers";
 import { emailProvider } from "./email-delivery";
 import { maintainPrivacy } from "./maintenance";
-import { uploadMedia } from "./media";
+import { uploadMedia, uploadSupportFile } from "./media";
 import { mergeContentPages, siteContent } from "./content";
 import { siteContentSchema } from "./content-validation";
 import { prepareArticles } from "../article-urls";
@@ -78,6 +80,32 @@ import {
 import { isFreeTour, tourPrices } from "../tour-rules";
 import { normalizeSettings } from "./email-templates";
 import { pragueLocal } from "./time";
+
+function departureLines(
+  s: PlatformState,
+  tourIds: string[],
+  dates: string[],
+) {
+  const wanted = new Set(dates);
+  const lines: string[] = [];
+  for (const tour of s.tours.filter((item) => tourIds.includes(item.id))) {
+    const code = inferredTourCode(tour) || "—";
+    for (const slot of tour.slots) {
+      if (slot.removed && slot.reserved === 0) continue;
+      const local = pragueLocal(slot.startsAt);
+      const date = local.slice(0, 10);
+      if (!wanted.has(date)) continue;
+      lines.push(
+        `${date.slice(8)} ${local.slice(11, 16)} ${code} ${slot.reserved}/${slot.capacity}${slot.closed ? " chiuso" : ""}`,
+      );
+    }
+  }
+  return lines.sort().slice(0, 30).join(" | ");
+}
+
+function tourBrief(tour: PlatformState["tours"][number]) {
+  return `${tour.published ? "pubblicato" : "bozza"} · ${tour.title} · sigla ${tour.code || inferredTourCode(tour) || "—"} · max ${tour.maxGuests} · guida ${tour.guide || "—"} · ${tour.isFreeTour ? "free" : "pagamento"}`;
+}
 const ok = (data: unknown) =>
   NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 export async function platformApi(request: Request, path: string[]) {
@@ -106,6 +134,7 @@ export async function platformApi(request: Request, path: string[]) {
           multiTourPercent: s.settings.multiTourPercent,
           minimumTours: s.settings.minimumTours,
           cancellationHours: s.settings.cancellationHours,
+          cancellationClause: s.settings.cancellationClause,
           lastMinuteEnabled: s.settings.lastMinuteEnabled,
           lastMinuteHours: s.settings.lastMinuteHours,
           lastMinuteDiscountPercent: s.settings.lastMinuteDiscountPercent,
@@ -290,7 +319,11 @@ export async function platformApi(request: Request, path: string[]) {
       const user = await requireStaff();
       const section = path[1];
       if (route === "admin/media" && method === "POST")
-        return ok(await uploadMedia(request));
+        return ok(
+          request.headers.get("x-upload-kind") === "support"
+            ? await uploadSupportFile(request)
+            : await uploadMedia(request),
+        );
       if (route === "admin/state" && method === "GET") {
         const s = await readState();
         const content = siteContent(s.siteContent, s.pages);
@@ -403,6 +436,16 @@ export async function platformApi(request: Request, path: string[]) {
         const body = calendarOperationSchema.parse(await jsonBody(request));
         let warnings: string[] = [];
         const tours = await transaction((s) => {
+          const dates = body.dates?.length
+            ? [...new Set(body.dates)]
+            : [];
+          const span =
+            dates.length && dates.length <= 14
+              ? dates
+              : dates.length
+                ? [dates[0], dates[dates.length - 1]]
+                : [body.from, body.to];
+          const before = departureLines(s, body.tourIds, span);
           const ops = body.dates
             ? [...new Set(body.dates)].map((date) => ({
                 ...body,
@@ -412,7 +455,18 @@ export async function platformApi(request: Request, path: string[]) {
               }))
             : [body];
           warnings = ops.flatMap((op) => calendarOperation(s, op, user.email).warnings);
-          audit(s, user.email, "calendar.operation", JSON.stringify(body));
+          const names = s.tours
+            .filter((tour) => body.tourIds.includes(tour.id))
+            .map((tour) => inferredTourCode(tour) || tour.title)
+            .join(", ");
+          audit(s, user.email, "calendar.operation", JSON.stringify(body), {
+            before: before || "nessuna partenza nel periodo",
+            after: `${body.action}${body.times?.length ? ` ${body.times.join(", ")}` : ""}${body.capacity ? ` capienza ${body.capacity}` : ""} · ${departureLines(s, body.tourIds, span) || "aggiornato"}`,
+            tour: names,
+            when: body.dates?.length
+              ? `${body.dates[0]} → ${body.dates[body.dates.length - 1]}`
+              : `${body.from} → ${body.to}`,
+          });
           return s.tours.filter((t) => body.tourIds.includes(t.id));
         });
         return ok({ ok: true, tours, warnings });
@@ -490,7 +544,7 @@ export async function platformApi(request: Request, path: string[]) {
               .enum(["confirmed", "present", "no_show", "awaiting_payment"])
               .optional(),
             paymentStatus: z
-              .enum(["paid", "pending", "not_required"])
+              .enum(["paid", "pending", "contacted", "not_required"])
               .optional(),
             notify: z.boolean().default(false),
           })
@@ -713,6 +767,7 @@ export async function platformApi(request: Request, path: string[]) {
                 409,
                 "Registra il pagamento per confermare la prenotazione",
               );
+            const beforePayment = `${b.status} / ${b.paymentStatus}`;
             if (body.status) b.status = body.status;
             if (body.paymentStatus) b.paymentStatus = body.paymentStatus;
             if (whatsappHold && b.paymentStatus === "paid") {
@@ -720,7 +775,16 @@ export async function platformApi(request: Request, path: string[]) {
               notification(s, b, "Confermata");
             } else if (body.notify && !whatsappHold)
               notification(s, b, "Aggiornata");
-            audit(s, user.email, "booking.update", b.pnr);
+            const slot = s.tours
+              .find((tour) => tour.slug === b.tourSlug)
+              ?.slots.find((item) => item.id === b.slotId);
+            audit(s, user.email, "booking.update", b.pnr, {
+              before: beforePayment,
+              after: `${b.status} / ${b.paymentStatus}`,
+              tour: b.tourSlug,
+              booking: b.pnr,
+              when: slot ? pragueLocal(slot.startsAt).slice(0, 16) : undefined,
+            });
             return b;
           }),
         );
@@ -769,6 +833,37 @@ export async function platformApi(request: Request, path: string[]) {
           .object({
             title: z.string().trim().min(3).max(160),
             body: z.string().trim().min(3).max(5000),
+            attachments: z
+              .array(
+                z.object({
+                  name: z.string().trim().min(1).max(120),
+                  url: z.string().refine((value) => {
+                    if (
+                      /^\/api\/media\/[-a-f0-9]{36}\.(webp|mp4|webm)$/.test(
+                        value,
+                      )
+                    )
+                      return true;
+                    const base = process.env.MEDIA_PUBLIC_BASE?.replace(
+                      /\/$/,
+                      "",
+                    );
+                    if (!base) return false;
+                    try {
+                      const url = new URL(value);
+                      return (
+                        url.origin === new URL(base).origin &&
+                        /\/[-a-f0-9]{36}\.(webp|mp4|webm)$/.test(url.pathname)
+                      );
+                    } catch {
+                      return false;
+                    }
+                  }, "Allegato non valido"),
+                  kind: z.enum(["image", "video"]),
+                }),
+              )
+              .max(4)
+              .optional(),
           })
           .parse(await jsonBody(request));
         await transaction((s) => {
@@ -781,8 +876,13 @@ export async function platformApi(request: Request, path: string[]) {
             status: "open",
             at: now,
             updatedAt: now,
+            attachments: body.attachments ?? [],
           });
-          audit(s, user.email, "ticket.open", body.title);
+          audit(s, user.email, "ticket.open", body.title, {
+            after: body.attachments?.length
+              ? `${body.title} · allegati ${body.attachments.map((file) => file.name).join(", ")}`
+              : body.title,
+          });
         });
         return ok({ ok: true });
       }
@@ -1068,8 +1168,13 @@ export async function platformApi(request: Request, path: string[]) {
               input.descriptionHtml = undefined;
             if (old && input.formattedCopy) {
               const formatted = input.formattedCopy;
+              // Drop stale HTML only when the plain sibling changed and HTML did not.
+              // Never drop title / meeting* HTML solely because plain text matches.
               for (const field of ["shortDescription", "highlights", "inclusions", "exclusions", "safetyNotes"] as const) {
-                if (!jsonEqual(old[field], input[field]) && jsonEqual(old.formattedCopy?.[field], formatted[field]))
+                if (
+                  !jsonEqual(old[field], input[field]) &&
+                  jsonEqual(old.formattedCopy?.[field], formatted[field])
+                )
                   delete formatted[field];
               }
             }
@@ -1180,9 +1285,14 @@ export async function platformApi(request: Request, path: string[]) {
               generateScheduledSlots(input);
             }
             const index = s.tours.findIndex((t) => t.id === input.id);
+            const previous = index < 0 ? undefined : s.tours[index];
             if (index < 0) s.tours.push(input);
             else s.tours[index] = input;
-            audit(s, user.email, "tour.save", input.slug);
+            audit(s, user.email, "tour.save", input.slug, {
+              before: previous ? tourBrief(previous) : "nuovo tour",
+              after: tourBrief(input),
+              tour: inferredTourCode(input) || input.title,
+            });
             return input;
           }),
         );
