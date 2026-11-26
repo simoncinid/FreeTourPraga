@@ -60,10 +60,11 @@
 .tableArea {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
   background: white;
   border: 1px solid #dce4ec;
   border-radius: 12px;
+  scrollbar-width: thin;
 }
 .table {
   width: 100%;
@@ -80,6 +81,9 @@
   font-weight: 500;
   background: #f7f9fc;
   border-bottom: 1px solid #e6edf3;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .table td {
   vertical-align: middle;
@@ -162,8 +166,12 @@
   flex-shrink: 0;
   font-size: 11px;
 }
-.pagination > span {
+.paginationMeta {
   margin-right: auto;
+}
+.paginationCompactMeta {
+  display: none;
+  font-variant-numeric: tabular-nums;
 }
 .empty {
   font-size: 12px;
@@ -188,6 +196,12 @@
   font-size: 11px;
   line-height: 1.6;
   flex-shrink: 0;
+}
+.colShort {
+  display: none;
+}
+.colFull {
+  display: inline;
 }
 .drawer {
   position: fixed;
@@ -357,13 +371,149 @@
   flex-direction: column;
   gap: 12px;
 }
+.tabsGrow {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+.tabsGrow button {
+  flex: 1;
+  text-align: center;
+}
 @media (max-width: 700px) {
-  .toolbar,
+  .toolbar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .form > .tabs {
+    width: 100%;
+  }
+  .form > .tabs button {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
   .filters {
+    flex-wrap: nowrap;
+    width: 100%;
+    gap: 8px;
+  }
+  .filtersStats {
     flex-wrap: wrap;
   }
+  .filtersStats .period {
+    order: 1;
+    flex: 1 1 100%;
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .filtersStats .period label {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .filtersStats .period input {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  .filtersStats .search {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+  }
   .search {
-    flex: 1;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+  .filters > select {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 112px;
+    min-width: 0;
+    padding-inline: 8px !important;
+  }
+  .statsNote {
+    display: none;
+  }
+  .colFull {
+    display: none;
+  }
+  .colShort {
+    display: inline;
+  }
+  .nameCol {
+    width: 52% !important;
+  }
+  .statsNameCol {
+    width: 38% !important;
+  }
+  .statsMetricCol {
+    width: 56px !important;
+  }
+  .mobileHide {
+    display: none !important;
+  }
+  .paginationMobileCompact {
+    justify-content: center;
+    gap: 6px;
+  }
+  .paginationMobileCompact .paginationMeta {
+    display: none;
+  }
+  .paginationMobileCompact .paginationCompactMeta {
+    display: inline;
+    margin: 0;
+    min-width: 2.5em;
+    text-align: center;
+  }
+  .paginationMobileCompact :global(.button-secondary) {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    color: #48657d !important;
+  }
+  .paginationMobileCompact :global(.button-secondary):disabled {
+    opacity: 0.35;
+  }
+  .paginationMobileCompact :global(.button-secondary):hover:not(:disabled) {
+    background: transparent !important;
+  }
+  .statusCol {
+    width: 40px !important;
+  }
+  .clicksCol {
+    width: 44px !important;
+  }
+  .actionsCol {
+    width: 72px !important;
+  }
+  .statusPill {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border-radius: 50%;
+    background: #9aabba;
+    vertical-align: middle;
+  }
+  .statusPill.done {
+    background: #1f9d55;
+    color: transparent;
+  }
+  .statusPill .statusLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
   .table td,
   .table th {
@@ -373,12 +523,258 @@
   .period {
     flex-wrap: wrap;
   }
+  .drawer {
+    inset: unset;
+    top: 16px;
+    right: 8px;
+    bottom: 16px;
+    left: 8px;
+    margin: auto;
+    width: calc(100vw - 16px);
+    max-width: 440px;
+    height: fit-content;
+    max-height: calc(100dvh - 32px);
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 18px 60px #102a4333;
+  }
+  .drawer:has(.history) {
+    height: min(78dvh, calc(100dvh - 32px));
+    max-height: calc(100dvh - 32px);
+  }
+  .drawer:has(.history) .drawerShell {
+    overflow: hidden;
+  }
+  .drawer:has(.history) .history {
+    flex: 1;
+    min-height: 0;
+  }
+  .drawer:has(.history) .tableArea {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .drawer:has(:global(.calendar-day-panel)),
+  .drawer:has(:global(.calendar-program-panel)) {
+    height: calc(100dvh - 32px);
+    max-height: calc(100dvh - 32px);
+  }
   .drawerShell {
-    padding: 16px;
-    gap: 12px;
+    padding: 12px;
+    gap: 8px;
+    height: 100%;
+    max-height: calc(100dvh - 32px);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .drawer:has(:global(.calendar-day-panel)) .drawerShell {
+    padding-top: 8px;
+    gap: 0;
+    position: relative;
+  }
+  .drawer:has(:global(.calendar-day-panel)) .drawerHeader > div:first-child {
+    display: none;
+  }
+  .drawer:has(:global(.calendar-day-panel)) .drawerHeader {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-height: 0;
+    width: auto;
+  }
+  .drawerHeader {
+    padding-bottom: 8px;
+    gap: 8px;
+  }
+  .drawerHeader p {
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+  .drawerHeader h2 {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  .drawerFooter {
+    padding-top: 8px;
+    gap: 6px;
   }
   .formGrid {
     gap: 9px;
+  }
+  .inquiryToolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .inquiryFilters {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+  .inquiryFilters > select {
+    order: 1;
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+  }
+  .inquiryFilters .search {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .inquiryCount {
+    margin-left: auto;
+  }
+  .inquiryList {
+    display: block;
+  }
+  .inquiryItem {
+    display: block;
+    border-bottom: 1px solid #e4edf5;
+  }
+  .inquiryItem:last-child {
+    border-bottom: 0;
+  }
+  .inquiryToggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .inquiryToggle > svg {
+    flex: 0 0 auto;
+    color: #5d7284;
+    transition: transform 0.18s ease;
+  }
+  .inquiryOpen .inquiryToggle > svg {
+    transform: rotate(180deg);
+  }
+  .inquiryNameRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .inquiryName {
+    display: block;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #29485f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .inquiryDot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    background: #9aabba;
+  }
+  .inquiryDotNew {
+    background: #d18b2c;
+  }
+  .inquiryDotDone {
+    background: #1f9d55;
+  }
+  .inquiryBody {
+    display: grid;
+    gap: 8px;
+    padding: 0 14px 14px;
+  }
+  .inquiryMeta,
+  .inquiryMessage {
+    display: block;
+    margin: 0;
+    font-size: 12px;
+    color: #667b8c;
+    overflow-wrap: anywhere;
+  }
+  .inquiryMessage {
+    color: #29485f;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .inquiryActions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .inquiryActions :global(.button-secondary),
+  .inquiryActions :global(.button-primary) {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+    justify-content: center;
+    gap: 6px;
+  }
+  .inquiryToolbar + .tableArea .table {
+    display: none;
+  }
+  .inquiryToolbar ~ .pagination,
+  .inquiryToolbar ~ footer {
+    display: none;
+  }
+  .drawer:has(.inquiryDrawerFooter) {
+    height: 80dvh;
+    max-height: 80dvh;
+  }
+  .drawer:has(.inquiryDrawerFooter) .drawerShell {
+    height: 100%;
+    max-height: 80dvh;
+    overflow: hidden;
+  }
+  .drawer:has(.inquiryDrawerFooter) .message {
+    flex: 1;
+    min-height: 0;
+  }
+  .drawer:has(.inquiryDrawerFooter) .message textarea {
+    flex: 1;
+    min-height: 120px;
+  }
+  .inquiryDrawerTitleDot {
+    display: inline-block;
+  }
+  .inquiryDrawerStatus {
+    display: none;
+  }
+  .inquiryDrawerFooter {
+    justify-content: stretch;
+  }
+  .inquiryDrawerFooter :global(.button-primary) {
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+  }
+}
+.inquiryDrawerTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.inquiryDrawerTitleDot {
+  display: none;
+}
+@media (min-width: 701px) {
+  .inquiryList {
+    display: none;
   }
 }
 .formGrid[hidden],

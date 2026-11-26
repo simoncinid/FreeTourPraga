@@ -136,7 +136,6 @@ export function TourCard({ tour, title }: { tour: Tour; title?: string }) {
             <TourFacts
               tour={tour}
               pricesOnly={preview?.facts !== undefined}
-              priceLabelText={preview?.pricesLabel}
             />
           </div>
           <div className={styles.tourCardFooter}>

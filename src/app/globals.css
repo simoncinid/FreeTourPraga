@@ -319,6 +319,41 @@ button.button-danger:hover {
   background: var(--surface-card);
 }
 
+.staff-pause-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.25em;
+  height: 1.25em;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid rgb(var(--primary));
+  border-radius: 4px;
+  background: #fff;
+  color: rgb(var(--primary));
+  font-size: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.staff-pause-icon svg {
+  width: 0.85em;
+  height: 0.85em;
+  color: inherit;
+  stroke: currentColor;
+}
+
+.staff-pause-icon:hover:not(:disabled) {
+  background: var(--primary-soft);
+}
+
+.staff-pause-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .shadow-card {
   box-shadow: rgba(11, 29, 55, 0.06) 0 8px 28px;
 }
@@ -1427,7 +1462,11 @@ input[type="radio"] {
     display: none !important;
   }
   .bookings-header-icon,
-  .tours-header-add {
+  .tours-header-add,
+  .partners-header-icon,
+  .affiliates-header-add,
+  .staff-header-add,
+  .support-header-add {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1435,15 +1474,73 @@ input[type="radio"] {
     height: 40px;
     border-radius: 8px;
     flex: 0 0 auto;
+    box-sizing: border-box;
   }
   .bookings-header-add,
-  .tours-header-add {
+  .tours-header-add,
+  .partners-header-add,
+  .affiliates-header-add,
+  .staff-header-add,
+  .support-header-add {
     background: rgb(var(--primary));
     color: var(--on-primary);
+    border: 0;
   }
   .bookings-header-download {
     background: transparent;
     color: var(--navy);
+  }
+  .partners-header-download {
+    background: #167044;
+    color: #fff;
+    border: 0;
+    text-decoration: none;
+  }
+  .partners-header-download:hover {
+    background: #125a37;
+    color: #fff;
+  }
+  .admin-header-mobile .display-lg {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  .admin-header-mobile .partners-header-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .admin-shell:has(.admin-partners-page) {
+    --admin-mobile-header-height: 56px;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+  .admin-main.admin-compact.admin-partners-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    max-height: calc(100dvh - 56px);
+    min-height: 0;
+    overflow: hidden;
+    padding: 14px 14px 12px;
+    box-sizing: border-box;
+  }
+  .admin-partners-page > header {
+    flex: 0 0 auto;
+    margin-bottom: 12px !important;
+  }
+  .admin-partners-page > .admin-stage {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-partners-page > .admin-stage > * {
+    flex: 1;
+    min-height: 0;
   }
   .bookings-page-actions {
     display: none !important;
@@ -1703,8 +1800,52 @@ input[type="radio"] {
 }
 
 .bookings-header-icon,
-.tours-header-add {
+.tours-header-add,
+.staff-header-add,
+.support-header-add {
   display: none;
+}
+.partners-header-icon,
+.affiliates-header-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.partners-header-add,
+.affiliates-header-add {
+  background: rgb(var(--primary));
+  color: var(--on-primary);
+  border: 0;
+}
+.admin-affiliates-page > header .affiliates-header-add {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+.partners-header-download {
+  background: #167044;
+  color: #fff;
+  border: 0;
+  text-decoration: none;
+}
+.partners-header-download:hover {
+  background: #125a37;
+  color: #fff;
+}
+.admin-partners-page > header .display-lg {
+  font-size: 28px;
+  line-height: 1.15;
+}
+.admin-partners-page > header .partners-header-icon {
+  width: 32px;
+  height: 32px;
 }
 .bookings-filters-summary {
   display: none;
@@ -1795,7 +1936,9 @@ input[type="radio"] {
 }
 @media (max-width: 700px) {
   .bookings-header-icon,
-  .tours-header-add {
+  .tours-header-add,
+  .staff-header-add,
+  .support-header-add {
     display: inline-flex;
   }
   .bookings-filters-summary {
@@ -2301,6 +2444,38 @@ button.button-danger,
   color: var(--body);
   margin: 0;
 }
+.quick-booking-clauses {
+  margin: 0;
+}
+.quick-booking-clauses > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--body);
+  user-select: none;
+}
+.quick-booking-clauses > summary::-webkit-details-marker {
+  display: none;
+}
+.quick-booking-clauses > summary > svg {
+  flex-shrink: 0;
+  color: var(--ink);
+  opacity: 0.7;
+}
+.quick-booking-clauses > summary:hover > svg,
+.quick-booking-clauses[open] > summary > svg {
+  opacity: 1;
+  color: rgb(var(--primary));
+}
+.quick-booking-clauses-body {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
 .quick-booking-error {
   font-size: 14px;
   line-height: 1.25;
@@ -2313,6 +2488,15 @@ button.button-danger,
 }
 .quick-booking-actions .button-secondary {
   background: var(--primary-soft);
+  color: var(--primary-muted) !important;
+  border-color: transparent;
+}
+.quick-booking-actions .button-primary:disabled,
+.quick-booking-actions .button-secondary:disabled {
+  background: var(--primary-soft);
+  color: var(--primary-muted) !important;
+  border-color: transparent;
+  opacity: 1;
 }
 .quick-booking .button-primary,
 .quick-booking .button-secondary {
@@ -2981,7 +3165,7 @@ body:has(.admin-shell) .back-to-top {
     padding: 10px 14px 10px;
     overflow: hidden;
   }
-  .admin-calendar-page .operational-calendar > h2 {
+  .admin-calendar-page .operational-calendar .calendar-op-title {
     display: none;
   }
   .admin-calendar-page .calendar-toolbar {
@@ -3355,6 +3539,9 @@ body:has(.reservation-summary) .floating-instagram {
 @media (max-width: 700px) {
   .admin-main.admin-compact {
     padding: 18px 14px 32px;
+  }
+  .admin-main.admin-compact.admin-partners-page {
+    padding: 14px 14px 12px;
   }
   .booking-side {
     grid-template-columns: minmax(0, 1fr);
@@ -3848,8 +4035,12 @@ body:has(.reservation-summary) .floating-instagram {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   flex-wrap: wrap;
+}
+.calendar-op-title {
+  flex: 1 0 100%;
+  margin: 0;
 }
 .calendar-toolbar-tools {
   display: flex;
@@ -3945,6 +4136,9 @@ body:has(.reservation-summary) .floating-instagram {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+.calendar-op-title {
+  margin: 0;
+}
 .calendar-month-nav {
   display: inline-flex;
   align-items: center;
@@ -3960,6 +4154,9 @@ body:has(.reservation-summary) .floating-instagram {
   letter-spacing: -0.02em;
   text-transform: capitalize;
 }
+.calendar-month-short {
+  display: none;
+}
 .calendar-month-nav > button {
   display: grid;
   place-items: center;
@@ -3974,6 +4171,9 @@ body:has(.reservation-summary) .floating-instagram {
 .calendar-month-nav > button:hover {
   background: #f5f8fc;
   border-color: #b9c9d8;
+}
+.calendar-day-empty-mv {
+  display: none;
 }
 .calendar-tour-menu {
   position: relative;
@@ -4117,6 +4317,45 @@ body:has(.reservation-summary) .floating-instagram {
   align-items: start;
   justify-content: space-between;
   gap: 10px;
+}
+.affiliate-card-toggle {
+  display: none;
+}
+.affiliate-card-desktop-head {
+  flex: 1;
+  min-width: 0;
+}
+.affiliate-card-desktop-head .affiliate-card-name-row {
+  margin-bottom: 4px;
+}
+.affiliate-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.affiliate-card-name-row h2 {
+  margin: 0;
+  min-width: 0;
+}
+.affiliate-status-dot {
+  display: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: #9aabba;
+}
+.affiliate-status-dot.is-active {
+  background: #1f9d55;
+}
+.affiliate-card-meta-mobile {
+  display: none;
+}
+.affiliate-card-body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
 }
 .affiliate-card h2 {
   margin: 0 0 4px;
@@ -4424,8 +4663,206 @@ button.admin-modal-close:hover {
   }
 }
 @media (max-width: 700px) {
+  .admin-shell:has(.admin-affiliates-page),
+  .admin-shell:has(.admin-email-page),
+  .admin-shell:has(.admin-inquiries-page),
+  .admin-shell:has(.admin-bookings-page),
+  .admin-shell:has(.admin-tours-page),
+  .admin-shell:has(.admin-staff-page),
+  .admin-shell:has(.admin-support-page) {
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+  .admin-main.admin-compact.admin-affiliates-page,
+  .admin-main.admin-compact.admin-email-page,
+  .admin-main.admin-compact.admin-inquiries-page,
+  .admin-main.admin-compact.admin-bookings-page,
+  .admin-main.admin-compact.admin-tours-page,
+  .admin-main.admin-compact.admin-staff-page,
+  .admin-main.admin-compact.admin-support-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    max-height: calc(100dvh - 56px);
+    min-height: 0;
+    overflow: hidden;
+    padding: 14px 14px 12px;
+    box-sizing: border-box;
+  }
+  .admin-affiliates-page > header,
+  .admin-email-page > header,
+  .admin-inquiries-page > header,
+  .admin-bookings-page > header,
+  .admin-tours-page > header,
+  .admin-staff-page > header,
+  .admin-support-page > header {
+    flex: 0 0 auto;
+    margin-bottom: 12px !important;
+  }
+  .admin-affiliates-page > .admin-stage,
+  .admin-email-page > .admin-stage,
+  .admin-inquiries-page > .admin-stage,
+  .admin-bookings-page > .admin-stage,
+  .admin-tours-page > .admin-stage,
+  .admin-staff-page > .admin-stage,
+  .admin-support-page > .admin-stage {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-affiliates-page > .admin-stage > *,
+  .admin-email-page > .admin-stage > *,
+  .admin-inquiries-page > .admin-stage > *,
+  .admin-bookings-page > .admin-stage > *,
+  .admin-tours-page > .admin-stage > *,
+  .admin-staff-page > .admin-stage > *,
+  .admin-support-page > .admin-stage > * {
+    flex: 1;
+    min-height: 0;
+  }
+  .admin-bookings-page .bookings-workspace {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .admin-bookings-page .bookings-workspace > .card,
+  .admin-bookings-page .bookings-workspace > .mb-4 {
+    flex-shrink: 0;
+  }
+  .admin-bookings-page .bookings-mobile-list,
+  .admin-bookings-page .table-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .admin-bookings-page .admin-pagination {
+    display: none !important;
+  }
+  .admin-tours-page .tour-directory {
+    height: 100%;
+  }
+  .admin-tours-page .tour-directory-mobile {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .affiliates-toolbar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .affiliates-search.admin-search {
+    max-width: none;
+    min-width: 0;
+  }
   .affiliates-grid {
-    grid-template-columns: 1fr;
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    background: #fff;
+    border: 1px solid #dce4ec;
+    border-radius: 12px;
+  }
+  .affiliate-card {
+    gap: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid #e4edf5;
+    box-shadow: none;
+    background: transparent;
+  }
+  .affiliate-card:last-child {
+    border-bottom: 0;
+  }
+  .affiliate-card-top {
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 12px 14px;
+  }
+  .affiliate-card-desktop-head,
+  .affiliate-status-chip {
+    display: none !important;
+  }
+  .affiliate-status-dot {
+    display: inline-block;
+  }
+  .affiliate-card-toggle {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .affiliate-card-toggle > svg {
+    flex: 0 0 auto;
+    color: #5d7284;
+    transition: transform 0.18s ease;
+  }
+  .affiliate-card.is-open .affiliate-card-toggle > svg {
+    transform: rotate(180deg);
+  }
+  .affiliate-card-name-row h2 {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .affiliate-card-qr {
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+  .affiliate-card-body {
+    display: none;
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+  .affiliate-card.is-open .affiliate-card-body {
+    display: grid;
+  }
+  .affiliate-card-meta-mobile {
+    display: block;
+    margin: 0;
+  }
+  .affiliate-card-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .affiliate-card-actions .button-secondary {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+    justify-content: center;
+    padding: 0 6px;
+  }
+  .affiliates-empty {
+    padding: 24px 14px;
   }
   .affiliate-modal-grid {
     grid-template-columns: 1fr;
@@ -4562,6 +4999,9 @@ button.admin-modal-close:hover {
   min-height: 0;
   overflow: hidden;
 }
+.calendar-day-section-title-mv {
+  display: none;
+}
 .calendar-day-panel-body {
   display: flex;
   flex-direction: column;
@@ -4626,11 +5066,37 @@ button.admin-modal-close:hover {
   border-bottom-color: transparent;
   padding-bottom: 16px;
 }
-.calendar-day-section > h4 {
+.calendar-day-section > h4,
+.calendar-day-section-summary h4 {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
   color: #14324b;
+}
+.calendar-day-section-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.calendar-day-section-summary::-webkit-details-marker {
+  display: none;
+}
+.calendar-day-section-summary > svg {
+  flex: 0 0 auto;
+  color: #5d7284;
+  transition: transform 0.18s ease;
+}
+.calendar-day-section[open] > .calendar-day-section-summary > svg {
+  transform: rotate(180deg);
+}
+.calendar-day-section-body {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
 }
 .calendar-day-section-head {
   display: flex;
@@ -4650,7 +5116,8 @@ button.admin-modal-close:hover {
   min-height: 36px;
   font-size: 12px;
 }
-.calendar-day-section > label {
+.calendar-day-section > label,
+.calendar-day-section-body > label {
   display: grid;
   gap: 6px;
   font-size: 12px;
@@ -4662,7 +5129,8 @@ button.admin-modal-close:hover {
   height: 40px;
   min-height: 40px;
 }
-.calendar-day-section > .button-primary {
+.calendar-day-section > .button-primary,
+.calendar-day-section-body > .button-primary {
   width: 100%;
   justify-content: center;
 }
@@ -5047,8 +5515,24 @@ button.admin-modal-close:hover {
   }
   .admin-compact.admin-affiliates-page > .admin-stage,
   .admin-compact.admin-bookings-page > .admin-stage,
-  .admin-compact.admin-contents-page > .admin-stage {
+  .admin-compact.admin-contents-page > .admin-stage,
+  .admin-compact.admin-partners-page > .admin-stage,
+  .admin-compact.admin-email-page > .admin-stage,
+  .admin-compact.admin-inquiries-page > .admin-stage,
+  .admin-compact.admin-tours-page > .admin-stage {
     overflow: hidden;
+  }
+  .admin-compact.admin-partners-page > .admin-stage,
+  .admin-compact.admin-email-page > .admin-stage,
+  .admin-compact.admin-inquiries-page > .admin-stage {
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-compact.admin-partners-page > .admin-stage > *,
+  .admin-compact.admin-email-page > .admin-stage > *,
+  .admin-compact.admin-inquiries-page > .admin-stage > * {
+    flex: 1;
+    min-height: 0;
   }
   .admin-compact .booking-editor {
     height: 100%;
@@ -5214,35 +5698,12 @@ button.admin-modal-close:hover {
   }
 }
 @media (max-width: 650px) {
-  .calendar-toolbar {
-    gap: 12px;
-  }
-  .calendar-toolbar-tools {
-    width: 100%;
-  }
   .calendar-toolbar-tools .calendar-tour-menu,
   .calendar-tour-menu {
     width: auto;
     flex: 1 1 auto;
     min-width: 0;
     margin-left: 0;
-  }
-  .calendar-month-nav > strong {
-    min-width: 0;
-    flex: 1;
-    font-size: 15px;
-  }
-  .calendar-month-grid > button {
-    padding: 3px;
-    min-height: 58px;
-  }
-  .calendar-month-grid small {
-    font-size: 8px;
-    white-space: nowrap;
-  }
-  .calendar-month-grid > strong {
-    padding: 3px;
-    font-size: 9px;
   }
 }
 @media (min-width: 1100px) {
@@ -5878,19 +6339,43 @@ button.admin-modal-close:hover {
     background: #fff;
     border: 1px solid #d8e6f2;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: auto;
   }
   .tour-directory-mobile-item {
-    position: relative;
-    padding: 12px 28px 12px 14px;
+    padding: 0;
   }
   .tour-directory-mobile-item + .tour-directory-mobile-item {
     border-top: 1px solid #e4edf5;
   }
+  .tour-directory-mobile-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+  }
+  .tour-directory-mobile-toggle svg {
+    flex: 0 0 auto;
+    color: #687e91;
+    transition: transform 0.15s ease;
+  }
+  .tour-directory-mobile-item.is-open .tour-directory-mobile-toggle svg {
+    transform: rotate(180deg);
+  }
+  .tour-directory-mobile-name-row {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .tour-directory-status-dot {
-    position: absolute;
-    top: 14px;
-    right: 12px;
+    flex: 0 0 auto;
     width: 10px;
     height: 10px;
     border-radius: 9999px;
@@ -5903,15 +6388,20 @@ button.admin-modal-close:hover {
     background: #9aabba;
   }
   .tour-directory-mobile-title {
-    display: block;
-    padding-right: 4px;
+    flex: 1;
+    min-width: 0;
     font-weight: 600;
     color: var(--navy);
     line-height: 1.3;
-    overflow-wrap: anywhere;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tour-directory-mobile-body {
+    padding: 0 14px 12px;
   }
   .tour-directory-mobile-meta {
-    margin: 4px 0 10px;
+    margin: 0 0 10px;
     font-size: 12px;
     color: #687e91;
     overflow-wrap: anywhere;
@@ -5929,6 +6419,9 @@ button.admin-modal-close:hover {
     min-width: 0;
     width: auto;
     max-width: none;
+  }
+  .tour-directory-pagination {
+    display: none !important;
   }
   .admin-shell .tour-directory .data-table {
     min-width: 0 !important;
@@ -6190,4 +6683,706 @@ button.admin-modal-close:hover {
 .tour-package-footer button:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+.settings-help-mobile {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .admin-shell:has(.admin-last-minute-page) {
+    --admin-mobile-header-height: 56px;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+  .admin-main.admin-last-minute-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    max-height: calc(100dvh - 56px);
+    min-height: 0;
+    overflow: hidden;
+    padding: 14px 14px 12px;
+    box-sizing: border-box;
+  }
+  .admin-last-minute-page > header {
+    flex: 0 0 auto;
+    margin-bottom: 12px !important;
+  }
+  .admin-last-minute-page > .admin-stage {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-last-minute-page > .admin-stage > form {
+    flex: 1;
+    min-height: 0;
+    align-content: start;
+  }
+
+  .admin-shell:has(.admin-settings-page) {
+    --admin-mobile-header-height: 56px;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+  .admin-main.admin-settings-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    max-height: calc(100dvh - 56px);
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px 12px 8px;
+    box-sizing: border-box;
+  }
+  .admin-settings-page > header {
+    flex: 0 0 auto;
+    margin-bottom: 6px !important;
+  }
+  .admin-settings-page > header .display-lg {
+    font-size: 22px;
+    line-height: 1.15;
+  }
+  .admin-settings-page > .admin-stage {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-settings-page .settings-rules-form {
+    flex: 1;
+    min-height: 0;
+    gap: 8px;
+    padding: 10px 12px;
+    align-content: start;
+    overflow: hidden;
+  }
+  .admin-settings-page .settings-rules-form > .display-md {
+    font-size: 18px;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .admin-settings-page .settings-rules-form .form-grid {
+    gap: 6px;
+  }
+  .admin-settings-page .settings-rules-form label {
+    gap: 2px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  .admin-settings-page .settings-rules-form .text-input {
+    min-height: 34px;
+    height: 34px;
+    padding: 4px 10px;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .admin-settings-page .settings-help-desktop {
+    display: none;
+  }
+  .admin-settings-page .settings-help-mobile {
+    display: block;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .admin-settings-page .settings-rules-form .button-primary {
+    width: 100%;
+    min-height: 36px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    justify-self: stretch;
+  }
+  .admin-shell:has(.admin-calendar-page) {
+    --admin-mobile-header-height: 56px;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+  .admin-main.admin-compact.admin-calendar-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    max-height: calc(100dvh - 56px);
+    min-height: 0;
+    padding: 8px 10px 8px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .admin-calendar-page > header {
+    flex: 0 0 auto;
+    margin: 0 !important;
+    gap: 6px !important;
+  }
+  .admin-calendar-page > header .micro-label {
+    display: none;
+  }
+  .admin-calendar-page > header h1 {
+    font-size: 18px !important;
+    margin: 0 !important;
+    line-height: 1.15;
+  }
+  .admin-calendar-page .calendar-mv-month-slot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-nav {
+    gap: 2px;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-nav > strong {
+    min-width: 0;
+    width: auto;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-full {
+    display: none;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-short {
+    display: inline;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-nav > button {
+    width: auto;
+    height: auto;
+    min-height: 0 !important;
+    padding: 2px;
+    border: 0 !important;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #14324b;
+  }
+  .admin-calendar-page .calendar-mv-month-slot .calendar-month-nav > button:hover {
+    background: transparent !important;
+    color: #0b83a6;
+  }
+  .admin-calendar-page .operational-calendar {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .admin-calendar-page .calendar-toolbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+  .admin-calendar-page .calendar-op-title {
+    display: none !important;
+  }
+  .admin-calendar-page .calendar-toolbar-tools {
+    width: 100%;
+    margin-left: 0;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .admin-calendar-page .calendar-program-trigger {
+    height: 32px;
+    min-height: 32px !important;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+  .admin-calendar-page .calendar-tour-menu {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+  .admin-calendar-page .calendar-tour-menu > summary {
+    min-height: 32px;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+  .admin-calendar-page .calendar-toolbar-tools > a.button-secondary {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+    min-height: 32px !important;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+  .admin-calendar-page .calendar-workspace,
+  .admin-calendar-page .calendar-view {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+  }
+  .admin-calendar-page .calendar-workspace,
+  .admin-calendar-page .calendar-view {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100%;
+  }
+  .admin-calendar-page .calendar-month-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    gap: 3px !important;
+    grid-template-rows: 14px;
+    grid-auto-rows: minmax(0, 1fr);
+    align-content: stretch;
+    overflow: hidden;
+  }
+  .admin-calendar-page .calendar-month-grid > strong {
+    padding: 0;
+    font-size: 9px;
+    line-height: 1;
+    align-self: end;
+  }
+  .admin-calendar-page .calendar-month-grid > span {
+    min-height: 0;
+    height: 100%;
+  }
+  .admin-calendar-page .calendar-month-grid > button {
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 4px 3px !important;
+    gap: 2px;
+    font-size: 10px;
+    line-height: 1.1;
+    overflow: hidden;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .admin-calendar-page .calendar-month-grid .calendar-day-number {
+    display: block !important;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #14324b;
+  }
+  .admin-calendar-page .calendar-month-grid .calendar-day-meta,
+  .admin-calendar-page .calendar-day-occupancy-label {
+    display: none !important;
+  }
+  .admin-calendar-page .calendar-day-occupancy {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #14324b;
+  }
+  .admin-calendar-page .calendar-day-occupancy-empty {
+    opacity: 0.35;
+  }
+  .admin-calendar-page .calendar-program-panel {
+    gap: 8px;
+    overflow: auto;
+  }
+  .admin-calendar-page .calendar-program-panel > label {
+    gap: 2px;
+    font-size: 11px;
+  }
+  .admin-calendar-page .calendar-program-panel .text-input {
+    height: 34px;
+    min-height: 34px !important;
+    font-size: 12px;
+  }
+  .admin-calendar-page .calendar-program-days {
+    padding: 6px 6px;
+  }
+  .admin-calendar-page .calendar-program-panel .calendar-weekdays {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: clamp(2px, 1.2vw, 6px);
+    justify-content: space-between;
+    width: 100%;
+  }
+  .admin-calendar-page .calendar-program-panel .calendar-weekdays label {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    font-size: clamp(9px, 2.7vw, 11px);
+    gap: clamp(2px, 0.8vw, 4px);
+    white-space: nowrap;
+  }
+  .admin-calendar-page .calendar-program-panel .calendar-weekdays input {
+    width: clamp(11px, 3.2vw, 14px);
+    height: clamp(11px, 3.2vw, 14px);
+    flex-shrink: 0;
+  }
+  .admin-calendar-page .calendar-program-hint {
+    display: none;
+  }
+  .admin-calendar-page .calendar-program-range {
+    gap: 6px;
+  }
+  .admin-calendar-page .calendar-program-actions {
+    gap: 6px;
+  }
+  .admin-calendar-page .calendar-program-actions .button-primary,
+  .admin-calendar-page .calendar-program-actions .button-secondary {
+    min-height: 34px !important;
+    height: auto !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+  .admin-calendar-page .calendar-day-section-title-dv {
+    display: none;
+  }
+  .admin-calendar-page .calendar-day-section-title-mv {
+    display: inline;
+  }
+  .admin-calendar-page .calendar-day-panel-body {
+    gap: 12px;
+  }
+  .admin-calendar-page .calendar-day-section-head {
+    padding-right: 28px;
+    align-items: flex-start;
+  }
+  .admin-calendar-page .calendar-day-jump {
+    display: flex;
+    gap: 6px;
+    padding: 8px 6px;
+  }
+  .admin-calendar-page .calendar-day-jump .button-secondary {
+    height: 32px;
+    min-height: 32px !important;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 700px) {
+  .calendar-program-panel {
+    gap: 8px !important;
+    overflow: auto !important;
+  }
+  .calendar-program-hint {
+    display: none !important;
+  }
+  .calendar-day-section-title-dv {
+    display: none !important;
+  }
+  .calendar-day-section-title-mv {
+    display: inline !important;
+  }
+  .calendar-day-panel-body {
+    gap: 12px !important;
+  }
+  .calendar-day-section-head {
+    padding-right: 28px !important;
+    align-items: flex-start !important;
+  }
+  .calendar-day-jump {
+    display: flex !important;
+    gap: 6px !important;
+    padding: 8px 6px !important;
+  }
+  .calendar-day-jump .button-secondary {
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+  .calendar-program-days {
+    padding: 6px 6px !important;
+  }
+  .calendar-program-panel .calendar-weekdays {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: clamp(2px, 1.2vw, 6px) !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+  .calendar-program-panel .calendar-weekdays label {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    font-size: clamp(9px, 2.7vw, 11px) !important;
+    gap: clamp(2px, 0.8vw, 4px) !important;
+    white-space: nowrap !important;
+  }
+  .calendar-program-panel .calendar-weekdays input {
+    width: clamp(11px, 3.2vw, 14px) !important;
+    height: clamp(11px, 3.2vw, 14px) !important;
+    flex-shrink: 0 !important;
+  }
+  .calendar-toolbar-tools > a.button-secondary {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: none !important;
+    justify-content: center !important;
+  }
+  .calendar-program-actions {
+    gap: 6px !important;
+  }
+  .calendar-program-actions .button-primary,
+  .calendar-program-actions .button-secondary,
+  .calendar-program-panel .button-primary,
+  .calendar-program-panel .button-secondary {
+    min-height: 34px !important;
+    height: auto !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Staff + Support MV */
+.staff-workspace,
+.support-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+}
+.staff-intro,
+.support-intro {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 13px;
+  color: #415f76;
+  line-height: 1.4;
+}
+.support-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.support-search.admin-search {
+  flex: 0 0 70%;
+  max-width: 70%;
+  min-width: 0;
+}
+.support-status-filter {
+  flex: 0 0 calc(30% - 10px);
+  max-width: calc(30% - 10px);
+  min-width: 0;
+  width: auto;
+}
+@media (max-width: 700px) {
+  .support-toolbar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .support-search.admin-search {
+    flex: 1 1 0;
+    max-width: none;
+  }
+  .support-status-filter {
+    flex: 0 0 30%;
+    max-width: 30%;
+  }
+}
+.staff-list,
+.support-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  background: #fff;
+  border: 1px solid #d8e6f2;
+  border-radius: 10px;
+}
+.support-empty {
+  margin: 0;
+  padding: 18px 14px;
+  font-size: 14px;
+  color: #687e91;
+}
+.staff-item + .staff-item,
+.support-item + .support-item {
+  border-top: 1px solid #e4edf5;
+}
+.support-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 0;
+}
+.support-item-head .support-item-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--navy);
+}
+.support-status-trigger,
+.admin-shell .support-status-trigger {
+  width: auto;
+  min-width: 8.6rem;
+  max-width: 11rem;
+}
+@media (min-width: 701px) {
+  .admin-support-page .support-workspace {
+    height: auto;
+    min-height: 0;
+  }
+  .admin-support-page .support-list {
+    flex: none;
+    overflow: visible;
+  }
+  .admin-support-page .support-item-body {
+    padding: 8px 16px 16px;
+  }
+  .admin-support-page .support-status-dot {
+    display: none;
+  }
+}
+.staff-item-toggle,
+.support-item-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+.staff-item-toggle svg,
+.support-item-toggle svg {
+  flex: 0 0 auto;
+  color: #687e91;
+  transition: transform 0.15s ease;
+}
+.staff-item.is-open .staff-item-toggle svg,
+.support-item.is-open .support-item-toggle svg {
+  transform: rotate(180deg);
+}
+.staff-item-name-row,
+.support-item-name-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.staff-item-name,
+.support-item-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--navy);
+}
+.staff-status-dot,
+.support-status-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #9aabba;
+}
+.staff-status-dot.is-active,
+.support-status-dot.is-done {
+  background: #1f9d55;
+}
+.staff-status-dot.is-paused,
+.support-status-dot.is-open {
+  background: #e2a017;
+}
+.support-status-dot.is-working {
+  background: #d97706;
+}
+.staff-item-body,
+.support-item-body {
+  display: grid;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+.staff-item-actions {
+  display: flex;
+  width: 100%;
+}
+.staff-item-actions .button-secondary {
+  flex: 1 1 0;
+  justify-content: center;
+}
+.staff-password-panel {
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #d8e6f2;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.staff-panel-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: var(--navy);
+  font-weight: 600;
+}
+.staff-panel-summary::-webkit-details-marker {
+  display: none;
+}
+.staff-password-panel[open] .staff-panel-summary svg {
+  transform: rotate(180deg);
+}
+.staff-panel-summary svg {
+  transition: transform 0.15s ease;
+  color: #687e91;
+}
+.staff-panel-body {
+  padding: 0 14px 14px;
+}
+.staff-compose-modal,
+.support-compose-modal {
+  width: min(420px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid #d8e6f2;
+  border-radius: 12px;
+  background: #fff;
+}
+.staff-compose-modal::backdrop,
+.support-compose-modal::backdrop {
+  background: rgba(20, 50, 75, 0.35);
+}
+.staff-compose-modal-form,
+.support-compose-modal-form {
+  padding: 16px;
+}
+.staff-compose-modal-head,
+.support-compose-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.staff-compose-modal-head h2,
+.support-compose-modal-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--navy);
 }

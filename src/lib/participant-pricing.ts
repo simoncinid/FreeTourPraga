@@ -1,30 +1,49 @@
 import { formatMoney } from "./format";
-import type { ParticipantSelection, Tour } from "./types";
+import type { ParticipantSelection, PriceCategory, Tour } from "./types";
 import { freeTourNote, isFreeTour, tourPrices } from "./tour-rules";
+
+/** Compact age for titles: Bambini (6-12), Adulti (20+), Infanti (0-5). */
+export function categoryTitle(
+  label: string,
+  minAge?: number,
+  maxAge?: number,
+) {
+  if (/\d/.test(label) && /(anni|sotto|over|\()/i.test(label)) return label;
+  if (minAge !== undefined && maxAge !== undefined)
+    return `${label} (${minAge}-${maxAge})`;
+  if (minAge !== undefined) return `${label} (${minAge}+)`;
+  if (maxAge !== undefined) return `${label} (0-${maxAge})`;
+  return label;
+}
+
 export function categoriesFor(tour: Tour) {
   return tour.priceCategories?.length
     ? tour.priceCategories
-    : [
+    : ([
         {
           id: "adults",
-          label: `Adulti (da ${tour.adultMinAge ?? 12} anni)`,
+          label: "Adulti",
           priceCents: tour.basePriceCents,
+          minAge: tour.adultMinAge ?? 12,
         },
         {
           id: "children",
-          label: `Bambini (${tour.childMinAge ?? 4}–${(tour.adultMinAge ?? 12) - 1} anni)`,
+          label: "Bambini",
           priceCents: tour.childPriceCents,
+          minAge: tour.childMinAge ?? 4,
+          maxAge: (tour.adultMinAge ?? 12) - 1,
         },
         ...((tour.childMinAge ?? 4) > 0
           ? [
               {
                 id: "infants",
-                label: `Minori di ${tour.childMinAge ?? 4} anni`,
+                label: "Infanti",
                 priceCents: tour.infantPriceCents,
+                maxAge: (tour.childMinAge ?? 4) - 1,
               },
             ]
           : []),
-      ];
+      ] satisfies PriceCategory[]);
 }
 /** Use the adult category as the headline reference, never a free infant tariff.
  * For custom lists without an adults ID the first configured category is the reference.

@@ -44,7 +44,7 @@ function WriteReviewCta({
               height={16}
             />
           </span>
-          Scrivi una recensione su Tripadvisor
+          Recensisci su Tripadvisor
           <ArrowUpRight
             size={15}
             className={styles.reviewsButtonArrow}

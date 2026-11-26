@@ -1,7 +1,8 @@
 "use client";
 import { AdminNotice } from "./AdminNotice";
 import { RecordDrawer, recordsCss } from "./AdminRecords";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -27,6 +28,20 @@ const MONTH_NAMES = [
   "Ottobre",
   "Novembre",
   "Dicembre",
+];
+const MONTH_SHORT = [
+  "Gen",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mag",
+  "Giu",
+  "Lug",
+  "Ago",
+  "Set",
+  "Ott",
+  "Nov",
+  "Dic",
 ];
 const WEEKDAYS = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 const RULE_ACTIONS = {
@@ -123,6 +138,8 @@ export function OperationalCalendar({
 
   const today = pragueLocal(new Date().toISOString()).slice(0, 10);
   const [month, setMonth] = useState(today.slice(0, 7));
+  const [calendarMv, setCalendarMv] = useState(false);
+  const [monthSlot, setMonthSlot] = useState<HTMLElement | null>(null);
   const [ids, setIds] = useState<string[]>(
     fixedTourId ? [fixedTourId] : tours.map((t) => t.id),
   );
@@ -167,6 +184,21 @@ export function OperationalCalendar({
   const viewEnd = mark?.to ?? viewRange.to;
   const [year, mo] = month.split("-").map(Number);
   const monthTitle = `${MONTH_NAMES[mo - 1]} - ${year}`;
+  const monthShort = `${MONTH_SHORT[mo - 1]} ${String(year).slice(2)}`;
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const sync = () => {
+      setCalendarMv(mq.matches);
+      setMonthSlot(
+        mq.matches
+          ? document.getElementById("calendar-mv-month-slot")
+          : null,
+      );
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
   const multipleMonths = viewStart.slice(0, 7) !== viewEnd.slice(0, 7);
   const iso = (d: Date) => d.toISOString().slice(0, 10);
   const viewDays =
@@ -309,35 +341,50 @@ export function OperationalCalendar({
     });
   }
 
+  const monthNav = (
+    <div className="calendar-month-nav">
+      <button
+        type="button"
+        aria-label="Mese precedente"
+        onClick={() => {
+          setMark(null);
+          setMonth((value) => shiftMonth(value, -1));
+        }}
+      >
+        <ChevronLeft size={16} />
+      </button>
+      <strong aria-live="polite">
+        <span className="calendar-month-full">
+          {multipleMonths ? `${viewStart} – ${viewEnd}` : monthTitle}
+        </span>
+        <span className="calendar-month-short">
+          {multipleMonths
+            ? `${viewStart.slice(5)}–${viewEnd.slice(5)}`
+            : monthShort}
+        </span>
+      </strong>
+      <button
+        type="button"
+        aria-label="Mese successivo"
+        onClick={() => {
+          setMark(null);
+          setMonth((value) => shiftMonth(value, 1));
+        }}
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
   return (
     <section className="card operational-calendar">
-      <h2 className="display-md">Calendario operativo</h2>
+      {calendarMv &&
+        monthSlot &&
+        createPortal(monthNav, monthSlot)}
       <div className="calendar-toolbar">
-        <div className="calendar-month-nav">
-          <button
-            type="button"
-            aria-label="Mese precedente"
-            onClick={() => {
-              setMark(null);
-              setMonth((value) => shiftMonth(value, -1));
-            }}
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <strong aria-live="polite">
-            {multipleMonths ? `${viewStart} – ${viewEnd}` : monthTitle}
-          </strong>
-          <button
-            type="button"
-            aria-label="Mese successivo"
-            onClick={() => {
-              setMark(null);
-              setMonth((value) => shiftMonth(value, 1));
-            }}
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+        {!calendarMv && (
+          <h2 className="display-md calendar-op-title">Calendario operativo</h2>
+        )}
+        {!calendarMv && monthNav}
         <div className="calendar-toolbar-tools">
           <button
             type="button"
@@ -517,15 +564,31 @@ export function OperationalCalendar({
                     setMessage("");
                   }}
                 >
-                  <strong>{multipleMonths ? date.slice(5).split("-").reverse().join("/") : Number(date.slice(8))}</strong>
-                  <small>
+                  <strong className="calendar-day-number">
+                    {multipleMonths
+                      ? date.slice(5).split("-").reverse().join("/")
+                      : Number(date.slice(8))}
+                  </strong>
+                  <small className="calendar-day-meta">
                     {open.length
                       ? `${open.map((slot) => slot.time).slice(0, 2).join(" ")}${open.length > 2 ? "…" : ""} · ${left}`
                       : slots.length
                         ? "chiuso"
                         : "—"}
                   </small>
-                  {slots.length > 0 && <small>{reserved}/{capacity} prenotati</small>}
+                  {slots.length > 0 ? (
+                    <small className="calendar-day-occupancy">
+                      {reserved}/{capacity}
+                      <span className="calendar-day-occupancy-label">
+                        {" "}
+                        prenotati
+                      </span>
+                    </small>
+                  ) : (
+                    <small className="calendar-day-occupancy calendar-day-occupancy-empty">
+                      —
+                    </small>
+                  )}
                 </button>
               );
             })}
@@ -735,7 +798,16 @@ export function OperationalCalendar({
 
             <section className="calendar-day-section" id="calendar-day-partenze">
               <div className="calendar-day-section-head">
-                <h4>Partenze del giorno</h4>
+                <h4>
+                  <span className="calendar-day-section-title-dv">
+                    Partenze del giorno
+                  </span>
+                  <span className="calendar-day-section-title-mv">
+                    {modalDates.length === 1
+                      ? `Partenze del ${modalDates[0].split("-").reverse().join("/")}`
+                      : `Partenze di ${modalDates.length} giorni`}
+                  </span>
+                </h4>
                 {dayTourOptions.length > 1 && (
                   <label className="calendar-day-tour-filter">
                     <select
@@ -946,153 +1018,168 @@ export function OperationalCalendar({
               )}
             </section>
 
-            <section
+            <details
               className="calendar-day-section calendar-day-section-add"
               id="calendar-day-aggiungi"
             >
-              <h4>Aggiungi un orario</h4>
-              <p className="calendar-program-hint">
-                Crea una nuova partenza su{" "}
-                {modalDates.length === 1
-                  ? "questo giorno"
-                  : "i giorni selezionati"}
-                , per un solo tour.
-              </p>
-              <label>
-                Tour
-                <select
-                  className="text-input"
-                  value={effectiveNewTourId}
-                  onChange={(e) => setNewTourId(e.target.value)}
-                  required
+              <summary className="calendar-day-section-summary">
+                <h4>Aggiungi un orario</h4>
+                <ChevronDown size={16} aria-hidden />
+              </summary>
+              <div className="calendar-day-section-body">
+                <p className="calendar-program-hint">
+                  Crea una nuova partenza su{" "}
+                  {modalDates.length === 1
+                    ? "questo giorno"
+                    : "i giorni selezionati"}
+                  , per un solo tour.
+                </p>
+                <label>
+                  Tour
+                  <select
+                    className="text-input"
+                    value={effectiveNewTourId}
+                    onChange={(e) => setNewTourId(e.target.value)}
+                    required
+                  >
+                    {addTourOptions.length !== 1 && (
+                      <option value="">Seleziona un tour</option>
+                    )}
+                    {addTourOptions.map((tour) => (
+                      <option key={tour.id} value={tour.id}>
+                        {tour.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="calendar-program-range">
+                  <label>
+                    Orario
+                    <input
+                      className="text-input"
+                      value={newTime}
+                      onChange={(e) => setNewTime(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Posti disponibili
+                    <input
+                      className="text-input"
+                      type="number"
+                      min={1}
+                      max={10000}
+                      value={capacity}
+                      onChange={(e) => setCapacity(Number(e.target.value))}
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="button-primary"
+                  disabled={busy || !effectiveNewTourId}
+                  onClick={() => {
+                    if (!effectiveNewTourId) {
+                      setMessage("Seleziona il tour per la nuova partenza.");
+                      return;
+                    }
+                    const parsed = parseCalendarTimes(newTime);
+                    if (!parsed.ok) {
+                      setMessage(parsed.error);
+                      return;
+                    }
+                    void run({
+                      tourIds: [effectiveNewTourId],
+                      dates: modalDates,
+                      from: modalDates[0],
+                      to: modalDates[0],
+                      times: parsed.times,
+                      action: "open",
+                      capacity,
+                    });
+                  }}
                 >
-                  {addTourOptions.length !== 1 && (
-                    <option value="">Seleziona un tour</option>
-                  )}
-                  {addTourOptions.map((tour) => (
-                    <option key={tour.id} value={tour.id}>
-                      {tour.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="calendar-program-range">
-                <label>
-                  Orario
-                  <input
-                    className="text-input"
-                    value={newTime}
-                    onChange={(e) => setNewTime(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Posti disponibili
-                  <input
-                    className="text-input"
-                    type="number"
-                    min={1}
-                    max={10000}
-                    value={capacity}
-                    onChange={(e) => setCapacity(Number(e.target.value))}
-                  />
-                </label>
+                  Aggiungi orario
+                </button>
               </div>
-              <button
-                type="button"
-                className="button-primary"
-                disabled={busy || !effectiveNewTourId}
-                onClick={() => {
-                  if (!effectiveNewTourId) {
-                    setMessage("Seleziona il tour per la nuova partenza.");
-                    return;
-                  }
-                  const parsed = parseCalendarTimes(newTime);
-                  if (!parsed.ok) {
-                    setMessage(parsed.error);
-                    return;
-                  }
-                  void run({
-                    tourIds: [effectiveNewTourId],
-                    dates: modalDates,
-                    from: modalDates[0],
-                    to: modalDates[0],
-                    times: parsed.times,
-                    action: "open",
-                    capacity,
-                  });
-                }}
-              >
-                Aggiungi orario
-              </button>
-            </section>
+            </details>
 
-            <section
+            <details
               className="calendar-day-section calendar-day-section-bulk"
               id="calendar-day-azione"
             >
-              <h4>Azione su tutte le partenze</h4>
-              <p className="calendar-program-hint">
-                Applica la stessa operazione a tutti gli orari del giorno (o solo a quelli indicati).
-              </p>
-              <label>
-                Operazione
-                <select
-                  className="text-input"
-                  value={action}
-                  onChange={(e) => setAction(e.target.value)}
-                >
-                  <option value="close">Chiudi partenze</option>
-                  <option value="open">Apri / aggiungi orari</option>
-                  <option value="capacity">Modifica capienza</option>
-                  <option value="restore">Ripristina programmazione base</option>
-                </select>
-              </label>
-              <label>
-                Orari coinvolti
-                <input
-                  className="text-input"
-                  value={times}
-                  placeholder="Vuoto = tutti · oppure 10:00, 14:30"
-                  onChange={(e) => setTimes(e.target.value)}
-                />
-              </label>
-              {action !== "close" && action !== "restore" && (
+              <summary className="calendar-day-section-summary">
+                <h4>Azione su tutte le partenze</h4>
+                <ChevronDown size={16} aria-hidden />
+              </summary>
+              <div className="calendar-day-section-body">
+                <p className="calendar-program-hint">
+                  Applica la stessa operazione a tutti gli orari del giorno (o
+                  solo a quelli indicati).
+                </p>
                 <label>
-                  Posti per orario
+                  Operazione
+                  <select
+                    className="text-input"
+                    value={action}
+                    onChange={(e) => setAction(e.target.value)}
+                  >
+                    <option value="close">Chiudi partenze</option>
+                    <option value="open">Apri / aggiungi orari</option>
+                    <option value="capacity">Modifica capienza</option>
+                    <option value="restore">
+                      Ripristina programmazione base
+                    </option>
+                  </select>
+                </label>
+                <label>
+                  Orari coinvolti
                   <input
                     className="text-input"
-                    type="number"
-                    min={1}
-                    max={10000}
-                    value={capacity}
-                    onChange={(e) => setCapacity(Number(e.target.value))}
+                    value={times}
+                    placeholder="Vuoto = tutti · oppure 10:00, 14:30"
+                    onChange={(e) => setTimes(e.target.value)}
                   />
                 </label>
-              )}
-              <button
-                type="button"
-                className="button-primary"
-                disabled={busy || !ids.length || !modalDates.length}
-                onClick={() => {
-                  const parsed = parseCalendarTimes(times);
-                  if (!parsed.ok) {
-                    setMessage(parsed.error);
-                    return;
-                  }
-                  void run({
-                    dates: modalDates,
-                    from: modalDates[0],
-                    to: modalDates[0],
-                    times: parsed.times,
-                    action,
-                    capacity:
-                      action === "close" || action === "restore" ? undefined : capacity,
-                  });
-                }}
-              >
-                Applica al giorno
-              </button>
-            </section>
+                {action !== "close" && action !== "restore" && (
+                  <label>
+                    Posti per orario
+                    <input
+                      className="text-input"
+                      type="number"
+                      min={1}
+                      max={10000}
+                      value={capacity}
+                      onChange={(e) => setCapacity(Number(e.target.value))}
+                    />
+                  </label>
+                )}
+                <button
+                  type="button"
+                  className="button-primary"
+                  disabled={busy || !ids.length || !modalDates.length}
+                  onClick={() => {
+                    const parsed = parseCalendarTimes(times);
+                    if (!parsed.ok) {
+                      setMessage(parsed.error);
+                      return;
+                    }
+                    void run({
+                      dates: modalDates,
+                      from: modalDates[0],
+                      to: modalDates[0],
+                      times: parsed.times,
+                      action,
+                      capacity:
+                        action === "close" || action === "restore"
+                          ? undefined
+                          : capacity,
+                    });
+                  }}
+                >
+                  Applica al giorno
+                </button>
+              </div>
+            </details>
 
             <p className="calendar-program-hint">
               {lastEdit
@@ -1104,22 +1191,26 @@ export function OperationalCalendar({
               <button
                 type="button"
                 className="button-secondary"
-                onClick={() =>
-                  document
-                    .getElementById("calendar-day-aggiungi")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
+                onClick={() => {
+                  const el = document.getElementById(
+                    "calendar-day-aggiungi",
+                  ) as HTMLDetailsElement | null;
+                  if (el) el.open = true;
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
               >
                 Aggiungi un orario
               </button>
               <button
                 type="button"
                 className="button-secondary"
-                onClick={() =>
-                  document
-                    .getElementById("calendar-day-azione")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
+                onClick={() => {
+                  const el = document.getElementById(
+                    "calendar-day-azione",
+                  ) as HTMLDetailsElement | null;
+                  if (el) el.open = true;
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
               >
                 Azione su tutte le partenze
               </button>

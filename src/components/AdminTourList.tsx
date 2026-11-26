@@ -147,6 +147,8 @@ export function AdminTourList({
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(12);
+  const [mobile, setMobile] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [createFor, setCreateFor] = useState<CatalogTour | null>(null);
   const [newCategory, setNewCategory] = useState("");
   const createDialog = useRef<HTMLDialogElement>(null);
@@ -168,14 +170,22 @@ export function AdminTourList({
         .includes(query.toLocaleLowerCase("it")),
   );
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const sync = () => {
+      setMobile(mq.matches);
+      if (!mq.matches) setExpanded(null);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   useLayoutEffect(() => {
     const el = tableWrapRef.current;
     if (!el) return;
     const measure = () => {
-      if (window.matchMedia("(max-width: 700px)").matches) {
-        setPageSize(8);
-        return;
-      }
+      if (window.matchMedia("(max-width: 700px)").matches) return;
       const head = el.querySelector("thead tr") as HTMLElement | null;
       const row = el.querySelector("tbody tr") as HTMLElement | null;
       const headH = head?.getBoundingClientRect().height || 40;
@@ -196,10 +206,9 @@ export function AdminTourList({
 
   const count = Math.max(1, Math.ceil(filtered.length / pageSize)),
     current = Math.min(page, count - 1);
-  const visible = filtered.slice(
-    current * pageSize,
-    (current + 1) * pageSize,
-  );
+  const visible = mobile
+    ? filtered
+    : filtered.slice(current * pageSize, (current + 1) * pageSize);
 
   useEffect(() => {
     if (page > count - 1) setPage(Math.max(0, count - 1));
@@ -252,48 +261,71 @@ export function AdminTourList({
         </label>
       </div>
       <div className="tour-directory-mobile">
-        {visible.map((t) => (
-          <article className="tour-directory-mobile-item" key={t.id}>
-            <span
-              className={`tour-directory-status-dot${t.published ? " is-published" : " is-draft"}`}
-              title={t.published ? "Pubblicato" : "Bozza"}
-              aria-label={t.published ? "Pubblicato" : "Bozza"}
-            />
-            <Link
-              className="tour-directory-mobile-title"
-              href={`/admin/tour/${t.slug}`}
+        {visible.map((t) => {
+          const open = expanded === t.id;
+          return (
+            <article
+              className={`tour-directory-mobile-item${open ? " is-open" : ""}`}
+              key={t.id}
             >
-              {t.title}
-            </Link>
-            <p className="tour-directory-mobile-meta">
-              {t.category} · {tourHeadlinePrice(t).text} · {t.slots.length}{" "}
-              partenze
-            </p>
-            <div className="tour-directory-actions">
               <button
                 type="button"
-                className="button-secondary"
-                disabled={busy}
+                className="tour-directory-mobile-toggle"
+                aria-expanded={open}
                 onClick={() =>
-                  void update(
-                    { id: t.id, published: !t.published },
-                    "PATCH",
-                  )
+                  setExpanded((id) => (id === t.id ? null : t.id))
                 }
               >
-                {t.published ? "Nascondi" : "Mostra"}
+                <span className="tour-directory-mobile-name-row">
+                  <span className="tour-directory-mobile-title">{t.title}</span>
+                  <span
+                    className={`tour-directory-status-dot${t.published ? " is-published" : " is-draft"}`}
+                    title={t.published ? "Pubblicato" : "Bozza"}
+                    aria-label={t.published ? "Pubblicato" : "Bozza"}
+                  />
+                </span>
+                <ChevronDown size={16} aria-hidden />
               </button>
-              <button
-                type="button"
-                className="button-secondary button-danger"
-                disabled={busy}
-                onClick={() => archiveTour(t)}
-              >
-                Elimina
-              </button>
-            </div>
-          </article>
-        ))}
+              {open && (
+                <div className="tour-directory-mobile-body">
+                  <p className="tour-directory-mobile-meta">
+                    {t.category} · {tourHeadlinePrice(t).text} · {t.slots.length}{" "}
+                    partenze
+                  </p>
+                  <div className="tour-directory-actions">
+                    <Link
+                      className="button-secondary"
+                      href={`/admin/tour/${t.slug}`}
+                    >
+                      Modifica
+                    </Link>
+                    <button
+                      type="button"
+                      className="button-secondary"
+                      disabled={busy}
+                      onClick={() =>
+                        void update(
+                          { id: t.id, published: !t.published },
+                          "PATCH",
+                        )
+                      }
+                    >
+                      {t.published ? "Nascondi" : "Mostra"}
+                    </button>
+                    <button
+                      type="button"
+                      className="button-secondary button-danger"
+                      disabled={busy}
+                      onClick={() => archiveTour(t)}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                </div>
+              )}
+            </article>
+          );
+        })}
         {!filtered.length && (
           <p className="p-5 text-sm">Nessun tour corrisponde alla ricerca.</p>
         )}
@@ -388,29 +420,31 @@ export function AdminTourList({
           <p className="p-5 text-sm">Nessun tour corrisponde alla ricerca.</p>
         )}
       </div>
-      <div className="admin-pagination tour-directory-pagination">
-        <button
-          type="button"
-          className="button-secondary"
-          aria-label="Pagina precedente"
-          disabled={!current}
-          onClick={() => setPage(current - 1)}
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <span>
-          {filtered.length} tour · Pagina {current + 1} di {count}
-        </span>
-        <button
-          type="button"
-          className="button-secondary"
-          aria-label="Pagina successiva"
-          disabled={current >= count - 1}
-          onClick={() => setPage(current + 1)}
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div>
+      {!mobile && (
+        <div className="admin-pagination tour-directory-pagination">
+          <button
+            type="button"
+            className="button-secondary"
+            aria-label="Pagina precedente"
+            disabled={!current}
+            onClick={() => setPage(current - 1)}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span>
+            {filtered.length} tour · Pagina {current + 1} di {count}
+          </span>
+          <button
+            type="button"
+            className="button-secondary"
+            aria-label="Pagina successiva"
+            disabled={current >= count - 1}
+            onClick={() => setPage(current + 1)}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
       <dialog
         ref={createDialog}
         className="tour-create-modal"

@@ -1883,6 +1883,9 @@ summary.contactRow {
   gap: 0.35rem;
   margin-top: 0.75rem;
 }
+.detail :global(.quick-booking-clauses > summary) {
+  color: var(--body);
+}
 @media (min-width: 1024px) {
   .detail :global(.tour-booking-form) {
     max-height: calc(100dvh - 7rem);

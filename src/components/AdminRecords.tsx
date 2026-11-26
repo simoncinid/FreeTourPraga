@@ -31,15 +31,19 @@ export function RecordPager({
   pages,
   total,
   onChange,
+  compactOnMobile = false,
 }: {
   page: number;
   pages: number;
   total: number;
   onChange: (page: number) => void;
+  compactOnMobile?: boolean;
 }) {
   return (
-    <footer className={css.pagination}>
-      <span>
+    <footer
+      className={`${css.pagination}${compactOnMobile ? ` ${css.paginationMobileCompact}` : ""}`}
+    >
+      <span className={css.paginationMeta}>
         {total} risultati · Pagina {page + 1} di {pages}
       </span>
       <button
@@ -51,6 +55,9 @@ export function RecordPager({
       >
         <ChevronLeft size={16} />
       </button>
+      <span className={css.paginationCompactMeta} aria-hidden="true">
+        {page + 1}/{pages}
+      </span>
       <button
         type="button"
         className="button-secondary"
@@ -70,7 +77,7 @@ export function RecordDrawer({
   locked = false,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle: string;
   close: () => void;
   locked?: boolean;

@@ -1,16 +1,11 @@
 "use client";
-import { useState } from "react";
-import { Search, Plus, Pencil, Trash2, BarChart3 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Pencil, Trash2, BarChart3 } from "lucide-react";
 import type { EuropeanPartner, PlatformState } from "@/lib/platform/model";
 import { partnerStats } from "@/lib/partner-statistics";
 import { ImageSourceField } from "./ImageSourceField";
 import { AdminNotice } from "./AdminNotice";
-import {
-  recordsCss as css,
-  RecordDrawer,
-  RecordPager,
-  useRecordPagination,
-} from "./AdminRecords";
+import { recordsCss as css, RecordDrawer } from "./AdminRecords";
 function emptyPartner(): EuropeanPartner {
   return {
     id: crypto.randomUUID(),
@@ -31,6 +26,7 @@ export function PartnersManager({
   to,
   onFromChange,
   onToChange,
+  openNewKey = 0,
 }: {
   data: PlatformState | Pick<PlatformState, "partners" | "partnerClicks">;
   busy: boolean;
@@ -39,40 +35,76 @@ export function PartnersManager({
   to: string;
   onFromChange: (value: string) => void;
   onToChange: (value: string) => void;
+  openNewKey?: number;
 }) {
   const [tab, setTab] = useState("partners"),
     [search, setSearch] = useState(""),
     [status, setStatus] = useState("");
+  const [periodFrom, setPeriodFrom] = useState(from),
+    [periodTo, setPeriodTo] = useState(to);
   const [draft, setDraft] = useState<EuropeanPartner | null>(null),
     [historyId, setHistoryId] = useState<string | null>(null),
     [editorTab, setEditorTab] = useState("data");
   const [upload, setUpload] = useState(false),
     [notice, setNotice] = useState("");
-  const stats = partnerStats(data as PlatformState, from, to),
-    history = stats.find((row) => row.id === historyId);
-  const partners = (data.partners || []).filter(
-    (item) =>
-      !item.deleted &&
-      (!status ||
-        (status === "published" ? item.published : !item.published)) &&
-      `${item.name} ${item.email}`
+  const query = search.trim().toLocaleLowerCase("it");
+  const stats = useMemo(
+    () => partnerStats(data as PlatformState, periodFrom, periodTo),
+    [data, periodFrom, periodTo],
+  );
+  const history = stats.find((row) => row.id === historyId);
+  const partners = useMemo(
+    () =>
+      (data.partners || []).filter(
+        (item) =>
+          !item.deleted &&
+          (!status ||
+            (status === "published" ? item.published : !item.published)) &&
+          `${item.name} ${item.email}`
+            .toLocaleLowerCase("it")
+            .includes(query),
+      ),
+    [data.partners, status, query],
+  );
+  const statistics = useMemo(() => {
+    const byId = new Map((data.partners || []).map((item) => [item.id, item]));
+    return stats.filter((item) => {
+      if (!query) return true;
+      const partner = byId.get(item.id);
+      return `${item.name} ${partner?.email || ""}`
         .toLocaleLowerCase("it")
-        .includes(search.toLocaleLowerCase("it")),
-  );
-  const statistics = stats.filter((item) =>
-    item.name.toLocaleLowerCase("it").includes(search.toLocaleLowerCase("it")),
-  );
-  const { area: pagingArea, ...paging } = useRecordPagination(
-      tab === "partners" ? partners.length : statistics.length,
-    ),
-    { area: dailyPagingArea, ...dailyPaging } = useRecordPagination(
-      history?.daily.length || 0,
-    );
+        .includes(query);
+    });
+  }, [stats, data.partners, query]);
   function edit(partner: EuropeanPartner) {
     setEditorTab("data");
     setNotice("");
     setDraft({ ...partner });
   }
+  function changeFrom(value: string) {
+    if (!value || value === periodFrom) return;
+    setPeriodFrom(value);
+    onFromChange(value);
+    if (value > periodTo) {
+      setPeriodTo(value);
+      onToChange(value);
+    }
+  }
+  function changeTo(value: string) {
+    if (!value || value === periodTo) return;
+    setPeriodTo(value);
+    onToChange(value);
+  }
+  useEffect(() => {
+    if (!openNewKey) return;
+    edit(emptyPartner());
+  }, [openNewKey]);
+  useEffect(() => {
+    setPeriodFrom(from);
+  }, [from]);
+  useEffect(() => {
+    setPeriodTo(to);
+  }, [to]);
   const close = () => {
     if (!upload && !busy) {
       setDraft(null);
@@ -85,15 +117,16 @@ export function PartnersManager({
   return (
     <section className={css.center}>
       <header className={css.toolbar}>
-        <div className={css.tabs} role="tablist" aria-label="Partner Europa">
+        <div
+          className={`${css.tabs} ${css.tabsGrow}`}
+          role="tablist"
+          aria-label="Partner Europa"
+        >
           <button
             type="button"
             role="tab"
             aria-selected={tab === "partners"}
-            onClick={() => {
-              setTab("partners");
-              paging.setPage(0);
-            }}
+            onClick={() => setTab("partners")}
           >
             Partner
           </button>
@@ -101,25 +134,16 @@ export function PartnersManager({
             type="button"
             role="tab"
             aria-selected={tab === "stats"}
-            onClick={() => {
-              setTab("stats");
-              paging.setPage(0);
-            }}
+            onClick={() => setTab("stats")}
           >
             Statistiche
           </button>
         </div>
-        <button
-          type="button"
-          className="button-primary"
-          onClick={() => edit(emptyPartner())}
-        >
-          <Plus size={15} />
-          Nuovo partner
-        </button>
       </header>
       <div className={css.toolbar}>
-        <div className={css.filters}>
+        <div
+          className={`${css.filters}${tab === "stats" ? ` ${css.filtersStats}` : ""}`}
+        >
           <label className={css.search}>
             <Search size={15} />
             <input
@@ -127,10 +151,8 @@ export function PartnersManager({
               aria-label="Cerca partner"
               placeholder="Cerca partner per nome o email"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                paging.setPage(0);
-              }}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              onInput={(e) => setSearch(e.currentTarget.value)}
             />
           </label>
           {tab === "partners" ? (
@@ -138,10 +160,7 @@ export function PartnersManager({
               className="text-input"
               aria-label="Stato partner"
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                paging.setPage(0);
-              }}
+              onChange={(e) => setStatus(e.currentTarget.value)}
             >
               <option value="">Tutti gli stati</option>
               <option value="published">Pubblicati</option>
@@ -155,8 +174,9 @@ export function PartnersManager({
                   aria-label="Statistiche dal"
                   className="text-input"
                   type="date"
-                  value={from}
-                  onChange={(e) => onFromChange(e.target.value)}
+                  value={periodFrom}
+                  onChange={(e) => changeFrom(e.currentTarget.value)}
+                  onInput={(e) => changeFrom(e.currentTarget.value)}
                 />
               </label>
               <label>
@@ -165,170 +185,184 @@ export function PartnersManager({
                   aria-label="Statistiche al"
                   className="text-input"
                   type="date"
-                  min={from}
-                  value={to}
-                  onChange={(e) => onToChange(e.target.value)}
+                  min={periodFrom}
+                  value={periodTo}
+                  onChange={(e) => changeTo(e.currentTarget.value)}
+                  onInput={(e) => changeTo(e.currentTarget.value)}
                 />
               </label>
             </div>
           )}
         </div>
       </div>
-      <div ref={pagingArea} className={css.tableArea}>
+      <div className={css.tableArea}>
         <table className={css.table}>
           <colgroup>
-            <col style={{ width: "28%" }} />
+            <col
+              className={tab === "stats" ? css.statsNameCol : css.nameCol}
+              style={{ width: "28%" }}
+            />
             {tab === "partners" ? (
               <>
-                <col style={{ width: "29%" }} />
-                <col style={{ width: 115 }} />
-                <col style={{ width: 95 }} />
-                <col />
+                <col className={css.mobileHide} style={{ width: "29%" }} />
+                <col className={css.statusCol} style={{ width: 115 }} />
+                <col className={css.clicksCol} style={{ width: 95 }} />
+                <col className={css.mobileHide} />
               </>
             ) : (
               <>
-                <col />
-                <col />
-                <col />
+                <col className={css.statsMetricCol} />
+                <col className={css.statsMetricCol} />
+                <col className={css.statsMetricCol} />
               </>
             )}
-            <col style={{ width: 90 }} />
+            <col className={css.actionsCol} style={{ width: 90 }} />
           </colgroup>
           <thead>
             <tr>
               {(tab === "partners"
                 ? [
-                    "Partner",
-                    "Contatto",
-                    "Stato",
-                    "Click",
-                    "Visitatori-giorno",
-                    "",
+                    { label: "Partner", short: "Partner", hide: false },
+                    { label: "Contatto", short: "Contatto", hide: true },
+                    { label: "Stato", short: "Stato", hide: false },
+                    { label: "Click", short: "Click", hide: false },
+                    {
+                      label: "Visitatori-giorno",
+                      short: "Visite",
+                      hide: true,
+                    },
+                    { label: "", short: "", hide: false },
                   ]
                 : [
-                    "Partner",
-                    "Click totali",
-                    "Visitatori-giorno",
-                    "Senza consenso",
-                    "",
+                    { label: "Partner", short: "Partner", hide: false },
+                    { label: "Click totali", short: "Click", hide: false },
+                    { label: "Visitatori-giorno", short: "Visite", hide: false },
+                    { label: "Senza consenso", short: "Anon", hide: false },
+                    { label: "", short: "", hide: false },
                   ]
-              ).map((label, index) => (
+              ).map((col, index) => (
                 <th
                   key={index}
-                  className={
+                  className={[
                     index > 1 && index < (tab === "partners" ? 5 : 4)
                       ? css.number
-                      : undefined
-                  }
+                      : undefined,
+                    col.hide ? css.mobileHide : undefined,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
-                  {label || <span className="sr-only">Azioni</span>}
+                  {col.label ? (
+                    <>
+                      <span className={css.colFull}>{col.label}</span>
+                      <span className={css.colShort}>{col.short}</span>
+                    </>
+                  ) : (
+                    <span className="sr-only">Azioni</span>
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {tab === "partners"
-              ? partners
-                  .slice(paging.start, paging.start + paging.size)
-                  .map((item) => {
-                    const count = stats.find((row) => row.id === item.id);
-                    return (
-                      <tr
-                        key={item.id}
-                        className={css.clickable}
-                        onClick={() => edit(item)}
-                      >
-                        <td>
-                          <strong>{item.name}</strong>
-                          <small>{item.website}</small>
-                        </td>
-                        <td>
-                          {item.email || "—"}
-                          <small>{item.phone || ""}</small>
-                        </td>
-                        <td className={css.number}>
-                          <span
-                            className={`${css.badge} ${item.published ? css.done : ""}`}
-                          >
-                            {item.published ? "Pubblicato" : "Bozza"}
-                          </span>
-                        </td>
-                        <td className={css.number}>{count?.clicks || 0}</td>
-                        <td className={css.number}>
-                          {count?.uniqueVisitorDays || 0}
-                        </td>
-                        <td className={css.actions}>
-                          <div>
-                            <button
-                              type="button"
-                              className={css.icon}
-                              aria-label={`Modifica ${item.name}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                edit(item);
-                              }}
-                            >
-                              <Pencil size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={busy}
-                              className={`${css.icon} ${css.danger}`}
-                              aria-label={`Elimina ${item.name}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                if (
-                                  window.confirm(
-                                    `Eliminare ${item.name}? Le statistiche rimangono disponibili.`,
-                                  )
-                                )
-                                  void mutate(
-                                    "partner",
-                                    { id: item.id },
-                                    "DELETE",
-                                  );
-                              }}
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-              : statistics
-                  .slice(paging.start, paging.start + paging.size)
-                  .map((item) => (
+              ? partners.map((item) => {
+                  const count = stats.find((row) => row.id === item.id);
+                  return (
                     <tr
                       key={item.id}
                       className={css.clickable}
-                      onClick={() => {
-                        setHistoryId(item.id);
-                        dailyPaging.setPage(0);
-                      }}
+                      onClick={() => edit(item)}
                     >
                       <td>
                         <strong>{item.name}</strong>
-                        {item.deleted && <small>Partner eliminato</small>}
+                        <small>{item.website}</small>
                       </td>
-                      <td className={css.number}>{item.clicks}</td>
-                      <td className={css.number}>{item.uniqueVisitorDays}</td>
-                      <td className={css.number}>{item.unmeasuredClicks}</td>
-                      <td className={css.actions}>
-                        <button
-                          type="button"
-                          className={css.icon}
-                          aria-label={`Storico ${item.name}`}
-                          onClick={() => {
-                            setHistoryId(item.id);
-                            dailyPaging.setPage(0);
-                          }}
+                      <td className={css.mobileHide}>
+                        {item.email || "—"}
+                        <small>{item.phone || ""}</small>
+                      </td>
+                      <td className={css.number}>
+                        <span
+                          className={`${css.badge} ${css.statusPill} ${item.published ? css.done : ""}`}
+                          title={item.published ? "Pubblicato" : "Bozza"}
+                          aria-label={
+                            item.published ? "Pubblicato" : "Bozza"
+                          }
                         >
-                          <BarChart3 size={15} />
-                        </button>
+                          <span className={css.statusLabel}>
+                            {item.published ? "Pubblicato" : "Bozza"}
+                          </span>
+                        </span>
+                      </td>
+                      <td className={css.number}>{count?.clicks || 0}</td>
+                      <td className={`${css.number} ${css.mobileHide}`}>
+                        {count?.uniqueVisitorDays || 0}
+                      </td>
+                      <td className={css.actions}>
+                        <div>
+                          <button
+                            type="button"
+                            className={css.icon}
+                            aria-label={`Modifica ${item.name}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              edit(item);
+                            }}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            className={`${css.icon} ${css.danger}`}
+                            aria-label={`Elimina ${item.name}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (
+                                window.confirm(
+                                  `Eliminare ${item.name}? Le statistiche rimangono disponibili.`,
+                                )
+                              )
+                                void mutate(
+                                  "partner",
+                                  { id: item.id },
+                                  "DELETE",
+                                );
+                            }}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                })
+              : statistics.map((item) => (
+                  <tr
+                    key={item.id}
+                    className={css.clickable}
+                    onClick={() => setHistoryId(item.id)}
+                  >
+                    <td>
+                      <strong>{item.name}</strong>
+                      {item.deleted && <small>Partner eliminato</small>}
+                    </td>
+                    <td className={css.number}>{item.clicks}</td>
+                    <td className={css.number}>{item.uniqueVisitorDays}</td>
+                    <td className={css.number}>{item.unmeasuredClicks}</td>
+                    <td className={css.actions}>
+                      <button
+                        type="button"
+                        className={css.icon}
+                        aria-label={`Storico ${item.name}`}
+                        onClick={() => setHistoryId(item.id)}
+                      >
+                        <BarChart3 size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
           </tbody>
         </table>
         {!(tab === "partners" ? partners.length : statistics.length) && (
@@ -336,18 +370,12 @@ export function PartnersManager({
         )}
       </div>
       {tab === "stats" && (
-        <p className={css.caption}>
+        <p className={`${css.caption} ${css.statsNote}`}>
           Un visitatore consenziente viene contato una volta per partner e
           giorno. I click senza consenso aumentano solo il totale; lo storico
           comprende anche i partner eliminati.
         </p>
       )}
-      <RecordPager
-        page={paging.page}
-        pages={paging.pages}
-        total={tab === "partners" ? partners.length : statistics.length}
-        onChange={paging.setPage}
-      />
       {notice && <AdminNotice key={notice} message={notice} />}
       {draft && (
         <RecordDrawer
@@ -488,11 +516,11 @@ export function PartnersManager({
           close={close}
         >
           <p className={css.caption}>
-            {from} — {to} · {history.clicks} click · {history.uniqueVisitorDays}{" "}
-            visitatori-giorno
+            {periodFrom} — {periodTo} · {history.clicks} click ·{" "}
+            {history.uniqueVisitorDays} visitatori-giorno
           </p>
           <div className={css.history}>
-            <div ref={dailyPagingArea} className={css.tableArea}>
+            <div className={css.tableArea}>
               <table className={css.table}>
                 <thead>
                   <tr>
@@ -502,18 +530,13 @@ export function PartnersManager({
                   </tr>
                 </thead>
                 <tbody>
-                  {history.daily
-                    .slice(
-                      dailyPaging.start,
-                      dailyPaging.start + dailyPaging.size,
-                    )
-                    .map((day) => (
-                      <tr key={day.day}>
-                        <td>{day.day.split("-").reverse().join("/")}</td>
-                        <td>{day.clicks}</td>
-                        <td>{day.uniqueVisitorDays}</td>
-                      </tr>
-                    ))}
+                  {history.daily.map((day) => (
+                    <tr key={day.day}>
+                      <td>{day.day.split("-").reverse().join("/")}</td>
+                      <td>{day.clicks}</td>
+                      <td>{day.uniqueVisitorDays}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
               {!history.daily.length && (
@@ -522,12 +545,6 @@ export function PartnersManager({
                 </p>
               )}
             </div>
-            <RecordPager
-              page={dailyPaging.page}
-              pages={dailyPaging.pages}
-              total={history.daily.length}
-              onChange={dailyPaging.setPage}
-            />
           </div>
         </RecordDrawer>
       )}

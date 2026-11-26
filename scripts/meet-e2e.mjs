@@ -142,9 +142,6 @@ try {
     .click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
-  await expect(
-    dialog.getByText("Numero di persone", { exact: true }),
-  ).toBeVisible();
   await dialog.getByLabel("Data del tour").selectOption(from);
   await dialog
     .getByLabel("Orario", { exact: true })

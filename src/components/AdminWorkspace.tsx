@@ -480,6 +480,7 @@ export function AdminWorkspace() {
     [partnerTo, setPartnerTo] = useState(() =>
       new Date().toISOString().slice(0, 10),
     ),
+    [partnerNewKey, setPartnerNewKey] = useState(0),
     [mobileMenuOpen, setMobileMenuOpen] = useState(false),
     [adminMobile, setAdminMobile] = useState(false),
     [bookingsFiltersOpen, setBookingsFiltersOpen] = useState(false),
@@ -487,7 +488,9 @@ export function AdminWorkspace() {
     [tourCreateOpen, setTourCreateOpen] = useState(false),
     [newTourTitle, setNewTourTitle] = useState(""),
     [newTourCategory, setNewTourCategory] = useState(""),
-    [newTourCategoryNew, setNewTourCategoryNew] = useState(false);
+    [newTourCategoryNew, setNewTourCategoryNew] = useState(false),
+    [staffComposeOpen, setStaffComposeOpen] = useState(false),
+    [supportComposeOpen, setSupportComposeOpen] = useState(false);
   const tourCreateDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const next = searchParams.get("affiliate") || "";
@@ -623,17 +626,19 @@ export function AdminWorkspace() {
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
-  const BOOKINGS_PAGE_SIZE = adminMobile ? 20 : 8;
+  const BOOKINGS_PAGE_SIZE = 8;
   const bookingsSorted = filtered.slice().reverse();
   const bookingsPageCount = Math.max(
     1,
     Math.ceil(bookingsSorted.length / BOOKINGS_PAGE_SIZE),
   );
   const bookingsPageSafe = Math.min(bookingsPage, bookingsPageCount - 1);
-  const bookingsVisible = bookingsSorted.slice(
-    bookingsPageSafe * BOOKINGS_PAGE_SIZE,
-    bookingsPageSafe * BOOKINGS_PAGE_SIZE + BOOKINGS_PAGE_SIZE,
-  );
+  const bookingsVisible = adminMobile
+    ? bookingsSorted
+    : bookingsSorted.slice(
+        bookingsPageSafe * BOOKINGS_PAGE_SIZE,
+        bookingsPageSafe * BOOKINGS_PAGE_SIZE + BOOKINGS_PAGE_SIZE,
+      );
   const active = data.bookings.filter(
     (booking) => booking.status !== "cancelled",
   );
@@ -817,7 +822,9 @@ export function AdminWorkspace() {
         {mobileMenuOpen && (
           <div className="admin-mobile-panel">
             <nav className="admin-mobile-nav">
-              {phase1Navigation.map(([slug, label, Icon]) => (
+              {phase1Navigation
+                .filter(([slug]) => slug !== "contenuti")
+                .map(([slug, label, Icon]) => (
                 <Link
                   key={slug}
                   href={`/admin${slug ? "/" + slug : ""}`}
@@ -874,7 +881,7 @@ export function AdminWorkspace() {
         </div>
       </aside>
       <div
-        className={`admin-main min-w-0${["", "prenotazioni", "tour", "calendario", "affiliati", "contenuti", "pre-tour", "richieste", "partner-europa"].includes(section) ? " admin-compact" : ""}${section === "calendario" ? " admin-calendar-page" : ""}${section === "affiliati" ? " admin-affiliates-page" : ""}${section === "prenotazioni" && !detail ? " admin-bookings-page" : ""}${section === "contenuti" ? " admin-contents-page" : ""}`}
+        className={`admin-main min-w-0${["", "prenotazioni", "tour", "calendario", "affiliati", "contenuti", "pre-tour", "richieste", "partner-europa", "utenti", "supporto"].includes(section) ? " admin-compact" : ""}${section === "calendario" ? " admin-calendar-page" : ""}${section === "affiliati" ? " admin-affiliates-page" : ""}${section === "prenotazioni" && !detail ? " admin-bookings-page" : ""}${section === "tour" && !detail ? " admin-tours-page" : ""}${section === "contenuti" ? " admin-contents-page" : ""}${section === "partner-europa" ? " admin-partners-page" : ""}${section === "pre-tour" ? " admin-email-page" : ""}${section === "richieste" ? " admin-inquiries-page" : ""}${section === "last-minute" ? " admin-last-minute-page" : ""}${section === "impostazioni" ? " admin-settings-page" : ""}${section === "utenti" ? " admin-staff-page" : ""}${section === "supporto" ? " admin-support-page" : ""}`}
       >
         <header
           className={`mb-7 flex items-center justify-between gap-4${adminMobile ? " admin-header-mobile" : " flex-wrap"}`}
@@ -909,23 +916,64 @@ export function AdminWorkspace() {
           </div>
           <div className="admin-header-actions">
             {section === "partner-europa" && (
-              <a
-                className="button-export"
-                href={`/api/platform/admin/partners/stats?from=${partnerFrom}&to=${partnerTo}&format=csv`}
-              >
-                Esporta CSV
-              </a>
+              <>
+                <a
+                  href={`/api/platform/admin/partners/stats?from=${partnerFrom}&to=${partnerTo}&format=csv`}
+                  className="partners-header-icon partners-header-download"
+                  aria-label="Esporta CSV"
+                >
+                  <Download size={18} />
+                </a>
+                <button
+                  type="button"
+                  className="partners-header-icon partners-header-add"
+                  aria-label="Nuovo partner"
+                  onClick={() => setPartnerNewKey((n) => n + 1)}
+                >
+                  <Plus size={18} />
+                </button>
+              </>
             )}
             {section === "affiliati" && (
               <button
                 type="button"
-                className="button-primary"
+                className="affiliates-header-add"
+                aria-label="Nuovo affiliato"
                 onClick={() => setAffiliateModal("new")}
               >
-                <Plus size={16} />
-                Nuovo affiliato
+                <Plus size={adminMobile ? 20 : 18} />
               </button>
             )}
+            {section === "utenti" && adminMobile && (
+              <button
+                type="button"
+                className="staff-header-add"
+                aria-label="Crea account"
+                onClick={() => setStaffComposeOpen(true)}
+              >
+                <Plus size={20} />
+              </button>
+            )}
+            {section === "supporto" &&
+              (adminMobile ? (
+                <button
+                  type="button"
+                  className="support-header-add"
+                  aria-label="Apri ticket"
+                  onClick={() => setSupportComposeOpen(true)}
+                >
+                  <Plus size={20} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="button-primary"
+                  onClick={() => setSupportComposeOpen(true)}
+                >
+                  <Plus size={16} />
+                  Apri ticket
+                </button>
+              ))}
             {section === "prenotazioni" && !detail && (
               <>
                 <Link
@@ -993,16 +1041,27 @@ export function AdminWorkspace() {
                   Crea un tour
                 </button>
               ))}
+            {section === "calendario" && adminMobile && (
+              <div
+                id="calendar-mv-month-slot"
+                className="calendar-mv-month-slot"
+              />
+            )}
             {section !== "contenuti" &&
-              !(adminMobile && (section === "tour" || section === "prenotazioni")) && (
-                <button
-                  onClick={() => load().catch((e) => setMessage(e.message))}
-                  className="button-secondary"
-                >
-                  <RefreshCw size={16} />
-                  Aggiorna
-                </button>
-              )}
+              section !== "partner-europa" &&
+              section !== "pre-tour" &&
+              section !== "richieste" &&
+              section !== "utenti" &&
+              section !== "supporto" &&
+              !adminMobile && (
+              <button
+                onClick={() => load().catch((e) => setMessage(e.message))}
+                className="button-secondary"
+              >
+                <RefreshCw size={16} />
+                Aggiorna
+              </button>
+            )}
             {section === "contenuti" && contentChrome && (
               <>
                 <button
@@ -1184,36 +1243,39 @@ export function AdminWorkspace() {
                       </a>
                     </div>
                     {table(bookingsVisible)}
-                    {bookingsSorted.length > BOOKINGS_PAGE_SIZE && (
-                      <div className="admin-pagination">
-                        <button
-                          type="button"
-                          className="button-secondary"
-                          disabled={bookingsPageSafe <= 0}
-                          onClick={() =>
-                            setBookingsPage((p) => Math.max(0, p - 1))
-                          }
-                        >
-                          Precedente
-                        </button>
-                        <span>
-                          {bookingsPageSafe + 1} / {bookingsPageCount} ·{" "}
-                          {bookingsSorted.length} prenotazioni
-                        </span>
-                        <button
-                          type="button"
-                          className="button-secondary"
-                          disabled={bookingsPageSafe >= bookingsPageCount - 1}
-                          onClick={() =>
-                            setBookingsPage((p) =>
-                              Math.min(bookingsPageCount - 1, p + 1),
-                            )
-                          }
-                        >
-                          Successiva
-                        </button>
-                      </div>
-                    )}
+                    {!adminMobile &&
+                      bookingsSorted.length > BOOKINGS_PAGE_SIZE && (
+                        <div className="admin-pagination">
+                          <button
+                            type="button"
+                            className="button-secondary"
+                            disabled={bookingsPageSafe <= 0}
+                            onClick={() =>
+                              setBookingsPage((p) => Math.max(0, p - 1))
+                            }
+                          >
+                            Precedente
+                          </button>
+                          <span>
+                            {bookingsPageSafe + 1} / {bookingsPageCount} ·{" "}
+                            {bookingsSorted.length} prenotazioni
+                          </span>
+                          <button
+                            type="button"
+                            className="button-secondary"
+                            disabled={
+                              bookingsPageSafe >= bookingsPageCount - 1
+                            }
+                            onClick={() =>
+                              setBookingsPage((p) =>
+                                Math.min(bookingsPageCount - 1, p + 1),
+                              )
+                            }
+                          >
+                            Successiva
+                          </button>
+                        </div>
+                      )}
                   </div>
                 ))}
               {section === "tour" &&
@@ -1309,6 +1371,7 @@ export function AdminWorkspace() {
                   to={partnerTo}
                   onFromChange={setPartnerFrom}
                   onToChange={setPartnerTo}
+                  openNewKey={partnerNewKey}
                 />
               )}
 
@@ -1433,6 +1496,8 @@ export function AdminWorkspace() {
                   users={data.staffUsers ?? []}
                   busy={busy}
                   save={(body, method) => mutate("staff", body, method)}
+                  composeOpen={staffComposeOpen}
+                  onComposeChange={setStaffComposeOpen}
                 />
               )}
               {section === "supporto" && (
@@ -1440,6 +1505,8 @@ export function AdminWorkspace() {
                   tickets={data.tickets ?? []}
                   busy={busy}
                   save={(body, method) => mutate("tickets", body, method)}
+                  composeOpen={supportComposeOpen}
+                  onComposeChange={setSupportComposeOpen}
                 />
               )}
               {section === "richieste" && (
@@ -2664,7 +2731,7 @@ function SettingsEditor({
   );
   return (
     <form
-      className="card grid gap-6 p-6"
+      className="card grid gap-6 p-6 settings-rules-form"
       onSubmit={(e) => {
         e.preventDefault();
         save(s);
@@ -2685,11 +2752,16 @@ function SettingsEditor({
         {field("lateRefundPercent", "Rimborso dopo il termine (%)")}
         {field("retentionDays", "Conservazione dati (giorni)")}
       </div>
-      <p className="text-sm">
+      <p className="text-sm settings-help-desktop">
         La scadenza WhatsApp vale solo per le prenotazioni ancora «Nuove»: se
         entro quel tempo non passano in «In attesa pagamento», i posti si
         liberano e parte l’email di prenotazione scaduta. Listino last-minute in{" "}
         <Link href="/admin/last-minute">Last minute</Link>. Testi email in{" "}
+        <Link href="/admin/pre-tour">Email</Link>.
+      </p>
+      <p className="text-sm settings-help-mobile">
+        WhatsApp sulle «Nuove»: se scadono, posti liberi + email. Listino in{" "}
+        <Link href="/admin/last-minute">Last minute</Link>, testi in{" "}
         <Link href="/admin/pre-tour">Email</Link>.
       </p>
       <button className="button-primary" disabled={busy}>

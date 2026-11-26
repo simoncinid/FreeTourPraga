@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   X,
@@ -65,6 +66,18 @@ const date = (value: string) =>
     dateStyle: "short",
     timeStyle: "short",
   });
+function formatKind(key: EditKey) {
+  return key === "footer" || key === "admin" ? "Testo" : "HTML";
+}
+function formatDotClass(key: EditKey) {
+  return key === "footer" || key === "admin" ? "" : css.dotHtml;
+}
+function statusDotClass(status: Job["status"]) {
+  if (status === "sent") return css.dotSent;
+  if (status === "failed") return css.dotFailed;
+  if (status === "running") return css.dotRunning;
+  return "";
+}
 export function AdminEmailCenter({
   settings,
   jobs,
@@ -85,6 +98,8 @@ export function AdminEmailCenter({
     [size, setSize] = useState(6),
     [search, setSearch] = useState(""),
     [status, setStatus] = useState("");
+  const [mobile, setMobile] = useState(false),
+    [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditKey | null>(null),
     [jobId, setJobId] = useState<string | null>(null),
     [draft, setDraft] = useState(settings);
@@ -92,6 +107,17 @@ export function AdminEmailCenter({
   const tableArea = useRef<HTMLDivElement>(null),
     dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const sync = () => {
+      setMobile(mq.matches);
+      if (!mq.matches) setExpanded(null);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (mobile) return;
     const el = tableArea.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) =>
@@ -99,7 +125,7 @@ export function AdminEmailCenter({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [mobile, tab]);
   const open = editing !== null || jobId !== null;
   useEffect(() => {
     if (open) dialog.current?.showModal();
@@ -110,19 +136,30 @@ export function AdminEmailCenter({
       setJobId(null);
     }
   };
-  const queue = jobs
-    .slice()
-    .reverse()
-    .filter(
-      (job) =>
-        (!status || job.status === status) &&
-        `${job.bookingPnr || ""} ${job.to || ""} ${job.subject || ""}`
-          .toLocaleLowerCase("it")
-          .includes(search.toLocaleLowerCase("it")),
-    );
+  const query = search.trim().toLocaleLowerCase("it");
+  const queue = useMemo(
+    () =>
+      jobs
+        .slice()
+        .reverse()
+        .filter(
+          (job) =>
+            (!status || job.status === status) &&
+            `${job.bookingPnr || ""} ${job.to || ""} ${job.subject || ""}`
+              .toLocaleLowerCase("it")
+              .includes(query),
+        ),
+    [jobs, status, query],
+  );
   const total = tab === "templates" ? templates.length : queue.length,
     pages = Math.max(1, Math.ceil(total / size)),
     current = Math.min(page, pages - 1);
+  const visibleTemplates = mobile
+    ? templates
+    : templates.slice(current * size, (current + 1) * size);
+  const visibleQueue = mobile
+    ? queue
+    : queue.slice(current * size, (current + 1) * size);
   const job = jobs.find((item) => item.id === jobId),
     template = templates.find((item) => item.key === editing);
   function edit(key: EditKey) {
@@ -150,7 +187,11 @@ export function AdminEmailCenter({
   return (
     <section className={css.center}>
       <header className={css.header}>
-        <div className={css.tabs} role="tablist" aria-label="Gestione email">
+        <div
+          className={`${css.tabs} ${css.tabsGrow}`}
+          role="tablist"
+          aria-label="Gestione email"
+        >
           <button
             type="button"
             role="tab"
@@ -158,6 +199,7 @@ export function AdminEmailCenter({
             onClick={() => {
               setTab("templates");
               setPage(0);
+              setExpanded(null);
             }}
           >
             Template <span>{templates.length}</span>
@@ -169,31 +211,33 @@ export function AdminEmailCenter({
             onClick={() => {
               setTab("queue");
               setPage(0);
+              setExpanded(null);
             }}
           >
             Coda <span>{jobs.length}</span>
           </button>
         </div>
-        {tab === "queue" && (
+        {tab === "queue" && !mobile && (
           <button
             type="button"
-            className="button-secondary"
+            className={`button-secondary ${css.queueAction}`}
             disabled={busy}
+            aria-label="Elabora coda"
             onClick={() => void runQueue()}
           >
             <RefreshCw size={14} />
-            Elabora coda
+            <span className={css.queueActionLabel}>Elabora coda</span>
           </button>
         )}
       </header>
       <div className={css.toolbar}>
         {tab === "templates" ? (
-          <p>
+          <p className={css.hint}>
             Scegli un modello per modificarlo. Le modifiche si applicano ai
             prossimi invii.
           </p>
         ) : (
-          <>
+          <div className={css.filters}>
             <label className={css.search}>
               <Search size={15} />
               <input
@@ -202,7 +246,11 @@ export function AdminEmailCenter({
                 placeholder="Cerca PNR, destinatario o oggetto"
                 value={search}
                 onChange={(e) => {
-                  setSearch(e.target.value);
+                  setSearch(e.currentTarget.value);
+                  setPage(0);
+                }}
+                onInput={(e) => {
+                  setSearch(e.currentTarget.value);
                   setPage(0);
                 }}
               />
@@ -212,7 +260,7 @@ export function AdminEmailCenter({
               aria-label="Filtra stato email"
               value={status}
               onChange={(e) => {
-                setStatus(e.target.value);
+                setStatus(e.currentTarget.value);
                 setPage(0);
               }}
             >
@@ -223,34 +271,153 @@ export function AdminEmailCenter({
                 </option>
               ))}
             </select>
-          </>
+          </div>
         )}
       </div>
       <div ref={tableArea} className={css.tableArea}>
-        <table className={css.table}>
-          <thead>
-            <tr>
-              {(tab === "templates"
-                ? ["Modello", "Oggetto / contenuto", "Formato", ""]
-                : [
-                    "Prenotazione / oggetto",
-                    "Destinatario",
-                    "Invio previsto",
-                    "Stato",
-                    "",
-                  ]
-              ).map((heading, i) => (
-                <th key={i}>
-                  {heading || <span className="sr-only">Azioni</span>}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
+        {mobile ? (
+          <div className={css.mobileList}>
             {tab === "templates"
-              ? templates
-                  .slice(current * size, (current + 1) * size)
-                  .map((item) => (
+              ? visibleTemplates.map((item) => {
+                  const open = expanded === item.key;
+                  return (
+                    <article
+                      key={item.key}
+                      className={`${css.mobileItem}${open ? ` ${css.mobileOpen}` : ""}`}
+                    >
+                      <button
+                        type="button"
+                        className={css.mobileToggle}
+                        aria-expanded={open}
+                        onClick={() =>
+                          setExpanded((key) =>
+                            key === item.key ? null : item.key,
+                          )
+                        }
+                      >
+                        <span className={css.mobileNameRow}>
+                          <span className={css.mobileName}>{item.name}</span>
+                          <span
+                            className={`${css.statusDot} ${formatDotClass(item.key)}`}
+                            title={formatKind(item.key)}
+                            aria-label={formatKind(item.key)}
+                          />
+                        </span>
+                        <ChevronDown size={16} aria-hidden />
+                      </button>
+                      {open && (
+                        <div className={css.mobileBody}>
+                          <p className={css.mobileMeta}>{item.description}</p>
+                          <p className={css.mobileSubject}>
+                            {item.key === "footer"
+                              ? settings.emailFooter
+                              : settings.emailTemplates[item.key].subject}
+                          </p>
+                          <div className={css.mobileActions}>
+                            <button
+                              type="button"
+                              className="button-secondary"
+                              onClick={() => edit(item.key)}
+                            >
+                              <Pencil size={15} />
+                              Modifica
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })
+              : visibleQueue.map((item) => {
+                  const open = expanded === item.id;
+                  const label =
+                    item.bookingPnr || item.subject || item.type || item.id;
+                  return (
+                    <article
+                      key={item.id}
+                      className={`${css.mobileItem}${open ? ` ${css.mobileOpen}` : ""}`}
+                    >
+                      <button
+                        type="button"
+                        className={css.mobileToggle}
+                        aria-expanded={open}
+                        onClick={() =>
+                          setExpanded((id) => (id === item.id ? null : item.id))
+                        }
+                      >
+                        <span className={css.mobileNameRow}>
+                          <span className={css.mobileName}>{label}</span>
+                          <span
+                            className={`${css.statusDot} ${statusDotClass(item.status)}`}
+                            title={statuses[item.status]}
+                            aria-label={statuses[item.status]}
+                          />
+                        </span>
+                        <ChevronDown size={16} aria-hidden />
+                      </button>
+                      {open && (
+                        <div className={css.mobileBody}>
+                          <p className={css.mobileMeta}>
+                            {item.type} · {item.attempts} tentativi
+                          </p>
+                          <p className={css.mobileSubject}>{item.to || "—"}</p>
+                          <p className={css.mobileMeta}>{date(item.runAt)}</p>
+                          <div className={css.mobileActions}>
+                            <button
+                              type="button"
+                              className="button-secondary"
+                              onClick={() => {
+                                setJobId(item.id);
+                                setEditing(null);
+                                setEditorTab("text");
+                              }}
+                            >
+                              <Eye size={15} />
+                              Dettagli
+                            </button>
+                            {item.status === "failed" && (
+                              <button
+                                type="button"
+                                className="button-secondary"
+                                disabled={busy}
+                                onClick={() => void retry(item.id)}
+                              >
+                                Riprova
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+            {!total && (
+              <p className={css.empty}>Nessun invio corrisponde ai filtri.</p>
+            )}
+          </div>
+        ) : (
+          <table className={css.table}>
+            <thead>
+              <tr>
+                {(tab === "templates"
+                  ? ["Modello", "Oggetto / contenuto", "Formato", ""]
+                  : [
+                      "Prenotazione / oggetto",
+                      "Destinatario",
+                      "Invio previsto",
+                      "Stato",
+                      "",
+                    ]
+                ).map((heading, i) => (
+                  <th key={i}>
+                    {heading || <span className="sr-only">Azioni</span>}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tab === "templates"
+                ? visibleTemplates.map((item) => (
                     <tr key={item.key} onClick={() => edit(item.key)}>
                       <td>
                         <button
@@ -298,9 +465,7 @@ export function AdminEmailCenter({
                       </td>
                     </tr>
                   ))
-              : queue
-                  .slice(current * size, (current + 1) * size)
-                  .map((item) => (
+                : visibleQueue.map((item) => (
                     <tr
                       key={item.id}
                       onClick={() => {
@@ -345,36 +510,39 @@ export function AdminEmailCenter({
                       </td>
                     </tr>
                   ))}
-          </tbody>
-        </table>
-        {!total && (
+            </tbody>
+          </table>
+        )}
+        {!mobile && !total && (
           <p className={css.empty}>Nessun invio corrisponde ai filtri.</p>
         )}
       </div>
-      <footer className={css.pagination}>
-        <span>
-          {total} {tab === "templates" ? "modelli" : "invii"} · Pagina{" "}
-          {current + 1} di {pages}
-        </span>
-        <button
-          type="button"
-          className="button-secondary"
-          aria-label="Pagina precedente"
-          disabled={!current}
-          onClick={() => setPage(current - 1)}
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <button
-          type="button"
-          className="button-secondary"
-          aria-label="Pagina successiva"
-          disabled={current >= pages - 1}
-          onClick={() => setPage(current + 1)}
-        >
-          <ChevronRight size={16} />
-        </button>
-      </footer>
+      {!mobile && (
+        <footer className={css.pagination}>
+          <span>
+            {total} {tab === "templates" ? "modelli" : "invii"} · Pagina{" "}
+            {current + 1} di {pages}
+          </span>
+          <button
+            type="button"
+            className="button-secondary"
+            aria-label="Pagina precedente"
+            disabled={!current}
+            onClick={() => setPage(current - 1)}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            type="button"
+            className="button-secondary"
+            aria-label="Pagina successiva"
+            disabled={current >= pages - 1}
+            onClick={() => setPage(current + 1)}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </footer>
+      )}
       {open && (
         <dialog
           ref={dialog}

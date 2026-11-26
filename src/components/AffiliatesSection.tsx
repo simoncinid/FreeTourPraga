@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Search, X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import { commissionMatured } from "@/lib/platform/commissions";
 import type { Affiliate, CatalogTour, Reservation } from "@/lib/platform/model";
 import { formatMoney } from "@/lib/format";
@@ -40,6 +40,8 @@ export function AffiliatesSection({
 }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [mobile, setMobile] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
   const filtered = useMemo(() => {
@@ -55,10 +57,23 @@ export function AffiliatesSection({
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
-  const visible = filtered.slice(
-    currentPage * PAGE_SIZE,
-    currentPage * PAGE_SIZE + PAGE_SIZE,
-  );
+  const visible = mobile
+    ? filtered
+    : filtered.slice(
+        currentPage * PAGE_SIZE,
+        currentPage * PAGE_SIZE + PAGE_SIZE,
+      );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 700px)");
+    const sync = () => {
+      setMobile(mq.matches);
+      if (!mq.matches) setExpanded(null);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     const el = dialog.current;
@@ -100,20 +115,51 @@ export function AffiliatesSection({
             (b) => commissionMatured({ tours }, b) && !b.commissionPaid,
           );
           const currencies = [...new Set(rows.map((b) => b.currency ?? "EUR"))];
+          const open = !mobile || expanded === a.code;
           return (
-            <article className="affiliate-card" key={a.code}>
+            <article
+              className={`affiliate-card${open ? " is-open" : ""}`}
+              key={a.code}
+            >
               <div className="affiliate-card-top">
-                <div className="min-w-0">
-                  <h2 className="table-cell-line" title={a.name}>
-                    {a.name}
-                  </h2>
+                <button
+                  type="button"
+                  className="affiliate-card-toggle"
+                  aria-expanded={open}
+                  onClick={() =>
+                    setExpanded((code) => (code === a.code ? null : a.code))
+                  }
+                >
+                  <span className="affiliate-card-name-row">
+                    <h2 className="table-cell-line" title={a.name}>
+                      {a.name}
+                    </h2>
+                    <span
+                      className={`affiliate-status-dot${a.active ? " is-active" : ""}`}
+                      title={a.active ? "Attivo" : "Sospeso"}
+                      aria-label={a.active ? "Attivo" : "Sospeso"}
+                    />
+                  </span>
+                  <ChevronDown size={16} aria-hidden />
+                </button>
+                <div className="affiliate-card-desktop-head min-w-0">
+                  <div className="affiliate-card-name-row">
+                    <h2 className="table-cell-line" title={a.name}>
+                      {a.name}
+                    </h2>
+                    <span
+                      className={`affiliate-status-dot${a.active ? " is-active" : ""}`}
+                      title={a.active ? "Attivo" : "Sospeso"}
+                      aria-label={a.active ? "Attivo" : "Sospeso"}
+                    />
+                  </div>
                   <p className="table-cell-line affiliate-card-meta">
                     {a.type} · {a.code}
                     {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
                     {a.commissionPercent}%
                   </p>
                   <span
-                    className={`status-chip${a.active ? " status-success" : ""}`}
+                    className={`status-chip affiliate-status-chip${a.active ? " status-success" : ""}`}
                   >
                     {a.active ? "Attivo" : "Sospeso"}
                   </span>
@@ -122,105 +168,118 @@ export function AffiliatesSection({
                   href={`/api/platform/admin/affiliate/qr?code=${encodeURIComponent(a.code)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="button-secondary"
+                  className="button-secondary affiliate-card-qr"
                 >
                   QR
                 </a>
               </div>
-              <Link
-                className="affiliate-bookings-link"
-                href={`/admin/prenotazioni?affiliate=${encodeURIComponent(a.code)}`}
-              >
-                {rows.length} prenotazion{rows.length === 1 ? "e" : "i"}
-              </Link>
-              {currencies.map((currency) => (
-                <p
-                  key={currency}
-                  className="affiliate-card-money"
-                  style={{ fontSize: 10, lineHeight: 1.2 }}
-                >
-                  <span>
-                    Previste{" "}
-                    {formatMoney(
-                      rows
-                        .filter(
-                          (b) =>
-                            (b.currency ?? "EUR") === currency &&
-                            !b.commissionPaid &&
-                            ["confirmed", "present"].includes(b.status) &&
-                            !commissionMatured({ tours }, b),
-                        )
-                        .reduce((n, b) => n + b.commissionCents, 0),
-                      currency,
-                    )}
-                  </span>
-                  <span className="affiliate-card-money-sep" aria-hidden>
-                    ·
-                  </span>
-                  <span>
-                    Da liquidare{" "}
-                    {formatMoney(
-                      payable
-                        .filter((b) => (b.currency ?? "EUR") === currency)
-                        .reduce((n, b) => n + b.commissionCents, 0),
-                      currency,
-                    )}
-                  </span>
-                  <span className="affiliate-card-money-sep" aria-hidden>
-                    ·
-                  </span>
-                  <span>
-                    Liquidate{" "}
-                    {formatMoney(
-                      rows
-                        .filter(
-                          (b) =>
-                            (b.currency ?? "EUR") === currency &&
-                            b.commissionPaid &&
-                            b.status !== "cancelled",
-                        )
-                        .reduce((n, b) => n + b.commissionCents, 0),
-                      currency,
-                    )}
-                  </span>
+              <div className="affiliate-card-body">
+                <p className="table-cell-line affiliate-card-meta affiliate-card-meta-mobile">
+                  {a.type} · {a.code}
+                  {a.wpId != null ? ` · WP #${a.wpId}` : ""} ·{" "}
+                  {a.commissionPercent}%
                 </p>
-              ))}
-              <a
-                className="affiliate-card-link table-cell-line"
-                href={
-                  a.wpId != null ? `/?affiliates=${a.wpId}` : `/?ref=${a.code}`
-                }
-                title={
-                  a.wpId != null ? `/?affiliates=${a.wpId}` : `/?ref=${a.code}`
-                }
-              >
-                {a.wpId != null ? `/?affiliates=${a.wpId}` : `/?ref=${a.code}`}
-              </a>
-              <div className="affiliate-card-actions">
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={busy}
-                  onClick={() => onModalChange(a)}
+                <Link
+                  className="affiliate-bookings-link"
+                  href={`/admin/prenotazioni?affiliate=${encodeURIComponent(a.code)}`}
                 >
-                  Modifica
-                </button>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={busy}
-                  onClick={() => void toggleActive(a)}
+                  {rows.length} prenotazion{rows.length === 1 ? "e" : "i"}
+                </Link>
+                {currencies.map((currency) => (
+                  <p
+                    key={currency}
+                    className="affiliate-card-money"
+                    style={{ fontSize: 10, lineHeight: 1.2 }}
+                  >
+                    <span>
+                      Previste{" "}
+                      {formatMoney(
+                        rows
+                          .filter(
+                            (b) =>
+                              (b.currency ?? "EUR") === currency &&
+                              !b.commissionPaid &&
+                              ["confirmed", "present"].includes(b.status) &&
+                              !commissionMatured({ tours }, b),
+                          )
+                          .reduce((n, b) => n + b.commissionCents, 0),
+                        currency,
+                      )}
+                    </span>
+                    <span className="affiliate-card-money-sep" aria-hidden>
+                      ·
+                    </span>
+                    <span>
+                      Da liquidare{" "}
+                      {formatMoney(
+                        payable
+                          .filter((b) => (b.currency ?? "EUR") === currency)
+                          .reduce((n, b) => n + b.commissionCents, 0),
+                        currency,
+                      )}
+                    </span>
+                    <span className="affiliate-card-money-sep" aria-hidden>
+                      ·
+                    </span>
+                    <span>
+                      Liquidate{" "}
+                      {formatMoney(
+                        rows
+                          .filter(
+                            (b) =>
+                              (b.currency ?? "EUR") === currency &&
+                              b.commissionPaid &&
+                              b.status !== "cancelled",
+                          )
+                          .reduce((n, b) => n + b.commissionCents, 0),
+                        currency,
+                      )}
+                    </span>
+                  </p>
+                ))}
+                <a
+                  className="affiliate-card-link table-cell-line"
+                  href={
+                    a.wpId != null
+                      ? `/?affiliates=${a.wpId}`
+                      : `/?ref=${a.code}`
+                  }
+                  title={
+                    a.wpId != null
+                      ? `/?affiliates=${a.wpId}`
+                      : `/?ref=${a.code}`
+                  }
                 >
-                  {a.active ? "Sospendi" : "Riprendi"}
-                </button>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  disabled={busy || !payable.length}
-                  onClick={() => void pay(a.code)}
-                >
-                  Liquida
-                </button>
+                  {a.wpId != null
+                    ? `/?affiliates=${a.wpId}`
+                    : `/?ref=${a.code}`}
+                </a>
+                <div className="affiliate-card-actions">
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={busy}
+                    onClick={() => onModalChange(a)}
+                  >
+                    Modifica
+                  </button>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={busy}
+                    onClick={() => void toggleActive(a)}
+                  >
+                    {a.active ? "Sospendi" : "Riprendi"}
+                  </button>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    disabled={busy || !payable.length}
+                    onClick={() => void pay(a.code)}
+                  >
+                    Liquida
+                  </button>
+                </div>
               </div>
             </article>
           );
@@ -229,7 +288,7 @@ export function AffiliatesSection({
           <p className="affiliates-empty">Nessun affiliato trovato.</p>
         )}
       </div>
-      {filtered.length > PAGE_SIZE && (
+      {!mobile && filtered.length > PAGE_SIZE && (
         <div className="admin-pagination">
           <button
             type="button"

@@ -2,6 +2,7 @@
 
 import {
   categoriesFor,
+  categoryTitle,
   estimatedEuroPrice,
   selectedPrices,
 } from "@/lib/participant-pricing";
@@ -9,7 +10,6 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addToCart } from "@/lib/cart";
-import { TourFacts } from "./TourFacts";
 import { formatMoney } from "@/lib/format";
 import {
   bookingDeadlineNote,
@@ -21,6 +21,7 @@ import {
 import type { Tour } from "@/lib/types";
 import { FilterSelect } from "@/components/FilterSelect";
 import { SlotDatePicker } from "@/components/SlotDatePicker";
+import { Info } from "lucide-react";
 
 const dayFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Europe/Prague",
@@ -197,7 +198,6 @@ export function QuickBooking({
           </button>
         )}
       </header>
-      {inline && <TourFacts tour={currentTour} pricesOnly />}
       {!slots.length ? (
         <div className="quick-booking-empty">
           <p>Al momento non ci sono partenze prenotabili per questo tour.</p>
@@ -253,19 +253,10 @@ export function QuickBooking({
               <input type="hidden" name="slotId" value={slotId} required />
             </label>
           </div>
-          <fieldset className="quick-booking-guests">
-            <legend>Numero di persone</legend>
+          <fieldset className="quick-booking-guests" aria-label="Partecipanti">
             {(dynamic
               ? categoriesFor(currentTour).map((c) => ({
-                  label: c.label,
-                  age:
-                    c.description ||
-                    [
-                      c.minAge !== undefined ? `da ${c.minAge} anni` : "",
-                      c.maxAge !== undefined ? `fino a ${c.maxAge} anni` : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · "),
+                  label: categoryTitle(c.label, c.minAge, c.maxAge),
                   euro:
                     currentTour.currency === "CZK"
                       ? estimatedEuroPrice(c.estimatedEuroCents)
@@ -278,18 +269,23 @@ export function QuickBooking({
                 }))
               : [
                   {
-                    label: "Adulti",
+                    label: categoryTitle(
+                      "Adulti",
+                      tour.adultMinAge ?? 12,
+                    ),
                     euro: "",
-                    age: `Da ${tour.adultMinAge ?? 12} anni`,
                     value: adults,
                     change: setAdults,
                     min: 1,
                     price: units.adult,
                   },
                   {
-                    label: "Bambini",
+                    label: categoryTitle(
+                      "Bambini",
+                      tour.childMinAge ?? 4,
+                      (tour.adultMinAge ?? 12) - 1,
+                    ),
                     euro: "",
-                    age: `${tour.childMinAge ?? 4}–${(tour.adultMinAge ?? 12) - 1} anni`,
                     value: children,
                     change: setChildren,
                     min: 0,
@@ -298,9 +294,12 @@ export function QuickBooking({
                   ...((tour.childMinAge ?? 4) > 0
                     ? [
                         {
-                          label: "Infanti",
+                          label: categoryTitle(
+                            "Infanti",
+                            undefined,
+                            (tour.childMinAge ?? 4) - 1,
+                          ),
                           euro: "",
-                          age: `Minori di ${tour.childMinAge ?? 4} anni`,
                           value: infants,
                           change: setInfants,
                           min: 0,
@@ -313,15 +312,15 @@ export function QuickBooking({
               <div className="quick-booking-guest-row" key={band.label}>
                 <span>
                   {band.label}
-                  <small className="block">{band.age}</small>
                   <strong className="block text-sm">
                     {band.price === 0
                       ? isFreeTour(currentTour)
                         ? "Offerta libera"
                         : "Gratis"
-                      : formatMoney(band.price, currentTour.currency)}
+                      : `${formatMoney(band.price, currentTour.currency)}${
+                          band.euro ? ` - ${band.euro}` : ""
+                        }`}
                   </strong>
-                  {band.euro && <small className="block">{band.euro}</small>}
                 </span>
                 <div className="quantity-control">
                   <button
@@ -401,7 +400,7 @@ export function QuickBooking({
                 if (event.currentTarget.form?.reportValidity())
                   void submit("/tour");
               }}
-              className={valid ? "button-primary" : "button-secondary"}
+              className="button-primary"
             >
               Aggiungi al carrello
             </button>
@@ -428,17 +427,27 @@ export function QuickBooking({
             currentTour.freeGroupMode !== "none") && (
             <p className="quick-booking-note">{freeTourNote(currentTour)}</p>
           )}
-        {paidInCzk && (
-          <p className="quick-booking-note">
-            Gli importi in euro sono indicativi per i pagamenti in contanti. Il
-            cambio applicato ai pagamenti con carta può variare.
-          </p>
-        )}
         {currentTour.fareRequirements && (
           <p className="quick-booking-note">{currentTour.fareRequirements}</p>
         )}
-        <p className="quick-booking-note">{cancellationNote(currentTour)}</p>
-        {deadline && <p className="quick-booking-note">{deadline}</p>}
+        <details className="quick-booking-clauses">
+          <summary>
+            Clicca per le clausole
+            <Info size={14} strokeWidth={2.25} aria-hidden />
+          </summary>
+          <div className="quick-booking-clauses-body">
+            {paidInCzk && (
+              <p className="quick-booking-note">
+                Gli importi in euro sono indicativi per i pagamenti in contanti.
+                Il cambio applicato ai pagamenti con carta può variare.
+              </p>
+            )}
+            <p className="quick-booking-note">
+              {cancellationNote(currentTour)}
+            </p>
+            {deadline && <p className="quick-booking-note">{deadline}</p>}
+          </div>
+        </details>
       </div>
     </>
   );
